@@ -2,10 +2,16 @@ const std = @import("std");
 const kogi = @import("kogi");
 
 pub fn main() !void {
-    // Prints to stderr, ignoring potential errors.
-    std.debug.print("All your {s} are belong to us.\n", .{"codebase"});
-    try kogi.bufferedPrint();
-    kogi.portfolio();
+    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
+    defer _ = gpa.deinit();
+    const allocator = gpa.allocator();
+
+    // Initialize kernel
+    var kernel = kogi.Kernel.init(allocator);
+    defer kernel.deinit();
+
+    // Start interactive CLI
+    try kogi.startCLI(allocator, &kernel);
 }
 
 test "simple test" {

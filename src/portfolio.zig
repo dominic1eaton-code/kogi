@@ -35,6 +35,11 @@ pub const ProjectManager = struct {
 
     pub fn deinit(self: *ProjectManager) void {
         for (self.projects.items) |*project| {
+            // Free each task's strings
+            for (project.tasks.items) |*task| {
+                self.allocator.free(task.title);
+                self.allocator.free(task.description);
+            }
             project.tasks.deinit(self.allocator);
             self.allocator.free(project.name);
             self.allocator.free(project.description);

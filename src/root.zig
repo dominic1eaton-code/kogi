@@ -1,6 +1,13 @@
 //! By convention, root.zig is the root source file when making a library.
 const std = @import("std");
 const portfolio_module = @import("portfolio.zig");
+const kernel_module = @import("kernel.zig");
+const cli_module = @import("cli.zig");
+
+pub const ProjectManager = portfolio_module.ProjectManager;
+pub const Task = portfolio_module.Task;
+pub const Project = portfolio_module.Project;
+pub const Kernel = kernel_module.Kernel;
 
 pub fn bufferedPrint() !void {
     // Stdout is for the actual output of your application, for example if you
@@ -25,4 +32,12 @@ test "basic add functionality" {
 
 pub fn portfolio() void {
     portfolio_module.portfolio();
+}
+
+pub fn runKernel() !void {
+    try kernel_module.runKernel();
+}
+
+pub fn startCLI(allocator: std.mem.Allocator, kernel: *kernel_module.Kernel) !void {
+    try cli_module.startCLI(allocator, kernel);
 }
