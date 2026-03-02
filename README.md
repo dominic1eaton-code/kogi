@@ -1,251 +1,401 @@
-# KOGI - Independent Worker Portfolio & Portfolio Management System
+# KOGI - Operating System for Independent Workers
 
-**KOGI** is a comprehensive, open-source portfolio management and work organization system designed for independent workers of all types: freelancers, contractors, consultants, gig workers, artists, musicians, software developers, gamers, and anyone who wants to organize their work, projects, and assets into a single cohesive, indexable, filterable, and searchable portfolio.
+**KOGI** is a comprehensive, open-source operating system designed for independent workers of all types: freelancers, contractors, consultants, gig workers, artists, musicians, software developers, gamers, and anyone who wants to organize their work, projects, and assets into a unified, manageable system.
+
+Unlike traditional application-based portfolio management, KOGI is architected as a complete **operating system** for worker autonomy—providing system-level abstractions for identity management, workspace organization, connection registries, contact directories, and asset vaults.
 
 ## 🎯 Core Vision
 
-KOGI empowers independent workers to:
-- **Organize** all their work, projects, products, services, and assets
-- **Manage** clients, contacts, jobs, gigs, contracts, and tasks
-- **Track** earnings, hours, deliverables, and performance
-- **Search & Filter** everything across their entire portfolio
-- **Control** their professional capital and intellectual property
-- **Maintain** a unified system of record for all work-related activities
+KOGI is an OS (not just an app) that empowers independent workers to:
+- **Boot up** a complete personal work system
+- **Manage identities** - Create and maintain worker profiles across multiple roles
+- **Organize workspaces** - Structure all work artifacts, projects, and deliverables
+- **Connect globally** - Registry system for managing accounts across platforms
+- **Track relationships** - Directory for contacts, organizations, and business relationships
+- **Value assets** - Vault system for tracking resources, equipment, and capital
+- **Execute tasks** - Post, assign, and complete work engagements
+- **Earn money** - Calculate and track earnings across all work types
 
-## ✨ Key Features
+## ✨ Core Subsystems
 
-### 👥 Worker Management
+### 👤 Identity Management (User Accounts)
 
-- **Diverse Worker Types** - Support for contractors, consultants, freelancers, gig workers, project-based workers, artists, musicians, developers, gamers, and custom types
-- **Worker Profiles** - Track worker names, email, hourly rates, skills, and activation status
-- **Skill Tracking** - Maintain detailed skill lists for each worker
-- **Worker Filtering** - Query and filter workers by type and skills
-- **Status Management** - Activate/deactivate workers as needed
+The Identity subsystem manages worker profiles in the KOGI OS, analogous to user accounts in traditional operating systems.
 
-### 💼 Account Management
+- **Identity Types** - contractors, consultants, freelancers, gig workers, artists, musicians, developers, gamers, custom types
+- **Profiles** - names, email, hourly rates, skills, activation status
+- **Skills System** - detailed capability tracking for each identity
+- **Filtering** - query identities by type and capabilities
+- **Status Control** - activate/deactivate identities as needed
 
-- **Multi-Account Support** - Each worker can manage multiple accounts across different platforms
-- **Account Types**:
-  - Social Media (Twitter, LinkedIn, Instagram, TikTok, etc.)
-  - Work Accounts (Upwork, Fiverr, LinkedIn, freelance platforms)
+### 🌐 Connection Registry
+
+The registry manages all external connections and accounts for identities—like a system mount table or device registry in traditional OS.
+
+- **Connection Types**:
+  - Social Media (Twitter, LinkedIn, Instagram, etc.)
+  - Work Platforms (Upwork, Fiverr, Freelance sites)
   - Personal Accounts (email, messaging, personal platforms)
-  - Email Accounts (Gmail, custom domains, work email)
-  - Software Accounts (GitHub, development tools, SaaS platforms)
-  - Custom Account Types
-- **Account Details** - Username, provider, custom details, activation status
-- **Account Filtering** - Find accounts by provider or type
+  - Email Accounts (Gmail, custom domains, business email)
+  - Software Accounts (GitHub, dev tools, SaaS)
+  - Custom Connection Types
+- **Account Details** - usernames, providers, details, activation status
+- **Registry Queries** - find connections by provider or type
 
-### 📋 Portfolio System (Generic & Flexible)
+### 💼 Personal Workspace
 
-**Universal Portfolio Structure** - Create portfolios for literally anything:
+The Workspace is analogous to a user's home directory in traditional OS, organizing all work-related items hierarchically.
+
+**Universal Workspace Collections** - Create collections for anything:
 - Programs, Projects, Tasks
 - Investments, Financial Assets
 - Music, Artwork, Creative Works
 - Software, Code, Applications
 - Products, Solutions, Services
-- Artifacts, Deliverables, Works-in-Progress
-- Custom Portfolio Types
+- Artifacts, Works, Deliverables
+- Custom Collections
 
-**Portfolio Components**:
-- **Portfolios** - Top-level containers for organizing work
-- **Collections** - Grouped items by type (e.g., "Music Portfolio", "Artwork Collection")
-- **Portfolio Items** - Individual entries (songs, artwork pieces, code projects, services, etc.)
-- **Metadata** - Rich classification system for every item
+**Workspace Structure**:
+- **Workspace** - Top-level personal container
+- **Collections** - Grouped items by type (e.g., "Music", "Code", "Products")
+- **Items** - Individual entries (songs, projects, services, etc.)
+- **Metadata** - Rich classification for every item
 
-**Portfolio Features**:
-- Entity Classification (type, class, category)
-- Flexible Tagging System
-- Custom Fields for domain-specific data
-- Timestamps (created, updated)
-- Ownership Tracking
-- Hierarchical Organization
+**Workspace Features**:
+- Entity type and class classification (19 types, 12 classes)
+- Flexible tagging system
+- Custom fields for domain-specific data
+- Timestamps and ownership tracking
+- Hierarchical organization
+- Full-text search and filtering
 
-### 🔍 Search & Filtering
+### 🔍 Search & Discovery
 
-- **Index-Based Search** - Fast O(n) lookups across entire portfolio
+- **Index-Based Lookup** - Fast O(n) searches across entire workspace
 - **Multi-Criteria Filtering**:
-  - By Name Pattern (substring matching)
-  - By Entity Type (portfolio, project, music, artwork, code, etc.)
-  - By Entity Class (strategic, operational, creative, technical, etc.)
-  - By Category
-  - By Tags
-  - By Owner
-- **Collection Queries** - Retrieve all collections of a specific type
-- **Entity Lookup** - Direct ID-based lookups
+  - Name pattern matching
+  - Entity type filtering
+  - Entity class filtering
+  - Category and tag filtering
+  - Owner-based queries
+- **Collection Queries** - Find collections by type
+- **Direct ID Lookup** - Fast entity retrieval
 
-### 👔 CRM (Customer Relationship Management)
+### 👥 Directory System
 
-- **Client Management** - Track all clients and organizations
-  - Client name, industry, notes
-  - Unlimited contacts per client
-- **Contact Tracking**:
-  - Contact name, email, phone
+The Directory manages contacts and organizations—analogous to system user databases.
+
+- **Organization Management** - Track clients, companies, organizations
+  - Organization name, industry, notes
+  - Unlimited contacts per organization
+- **Contact Tracking** - Professional and personal contacts
+  - Name, email, phone
   - Per-contact notes
-  - Social and professional connections
-- **Client Queries** - Look up clients and their contacts
-- **Relationship History** - All interactions in one place
+  - Relationship tracking
+- **Directory Queries** - Look up organizations and their contacts
 
-### 💰 Assets & Resources
+### 💰 Asset Vault
+
+The Vault manages resources, equipment, intellectual property, and capital—like filesystem storage in traditional OS.
 
 - **Asset Types**:
   - Equipment (computers, hardware, instruments, tools)
   - Software (licenses, subscriptions, digital tools)
-  - Intellectual Property (patents, trademarks, designs)
+  - Intellectual Property (patents, designs, trademarks)
   - Furniture & Office Equipment
   - Vehicles
   - Custom Asset Types
-- **Asset Tracking** - Name, description, value, acquisition date
-- **Portfolio Valuation** - Calculate total asset value
-- **Asset Management** - Add, track, and query assets
+- **Asset Tracking** - name, description, value, acquisition date
+- **Portfolio Valuation** - calculate total asset value
+- **Asset Queries** - inventory and value tracking
 
-### 💼 Job & Contract Management
+### 📋 Task Management & Engagements
 
-- **Job Posting** - Create work assignments with details
+The engagement system matches identities (workers) with tasks (work):
+
+- **Task System** - Post work assignments with:
   - Title, description, budget, deadline
   - Skill requirements
   - Assignment tracking
-- **Contract Management** - Link workers to jobs
+  - Completion status
+- **Engagements** - Link identities to tasks
   - Start/end dates
   - Hourly rates
   - Hours tracking
-  - Contract status (active, completed, terminated)
-- **Hours Logging** - Track billable and non-billable hours
-- **Earnings Calculation** - Automatic worker earnings based on hours × rate
-- **Contract Completion** - Mark contracts done and update job status
+  - Status (active, completed, terminated)
+- **Hours Logging** - Track billable hours
+- **Earnings Calculation** - Automatic earnings computation (hours × rate)
 
-### 📊 Reporting & Analytics
+### 📊 System Statistics & Analytics
 
-- **Worker Statistics**:
-  - Active worker count
-  - Worker type distribution
-  - Account counts per worker
-- **Job Analytics**:
-  - Total jobs posted
-  - Active vs completed jobs
-  - Job assignment tracking
-- **Contract Reports**:
-  - Contract count and status
-  - Contract duration tracking
-  - Termination tracking
-- **Earnings Reports**:
-  - Per-worker earnings calculation
-  - Total earnings across all workers
-  - Hours-based invoicing support
-- **Portfolio Statistics**:
-  - Collection counts
-  - Item counts
-  - Type distribution
+- **Identity Stats** - active count, type distribution, connection counts
+- **Task Analytics** - total posted, active vs completed, assignments
+- **Engagement Reports** - count, status distribution, duration tracking
+- **Earnings Reports** - per-identity earnings, total system earnings
+- **Workspace Analytics** - collection counts, item distribution, type stats
 
-### 🗂️ Data Organization & Management
+### 🔐 Security & Access Control
 
-**Hierarchical Structure**:
-- Portfolios contain collections and items
-- Collections organize items by type
-- Items contain detailed metadata
-- All searchable and filterable
+Enterprise-grade security with authentication, authorization, and role-based access control:
 
-**Rich Metadata**:
-- Entity types (20+ types supported)
-- Entity classes (12+ classes supported)
-- Categories (custom per item)
-- Tags (unlimited, multi-category)
-- Custom fields (string key-value pairs)
-- Timestamps
-- Ownership information
-- Parent-child relationships
+#### Authentication & Credentials
+- **Credential Management** - Secure password storage with salting and hashing (Argon2, Scrypt, PBKDF2)
+- **Session Management** - Token-based sessions with configurable timeouts
+- **Account Lockout** - Automatic lockout after failed login attempts
+- **Multi-Factor Authentication (MFA)** - TOTP, Email, SMS, Hardware token support
+- **Backup Codes** - Recovery codes for MFA-enabled accounts
 
-### 🛡️ Data Management
+#### Authorization & Role-Based Access Control (RBAC)
+- **System Roles** - Predefined roles with permission sets:
+  - **Admin** - Full system access (create/delete users, manage settings, audit logs)
+  - **Worker** - Standard user access (manage own work, create tasks, manage workspace)
+  - **Contractor** - Limited access (view own work, limited task access)
+  - **Moderator** - Content and user management
+  - **Guest** - Read-only access to public resources
+  - **Custom** - Custom permission sets
+- **Permission System** - Granular permissions for all operations:
+  - Identity: create, read, update, delete, manage roles
+  - Workspace: create, read, update, delete, share
+  - Tasks: create, read, update, delete, complete
+  - Engagements: create, read, update, delete, complete
+  - Directory: manage contacts and organizations
+  - Vault: manage assets
+  - System: audit logs, settings, user management
+- **Role Assignment** - Assign roles to identities with optional expiration
+- **Permission Delegation** - Fine-grained permission checking for all operations
 
-- **Memory Safety** - Built in Zig with manual memory management
-- **Complete Cleanup** - Proper deallocation of all allocated strings and collections
-- **No Memory Leaks** - Recursive deallocation through all nested structures
-- **Error Handling** - Proper error propagation and handling
+#### Access Control
+- **Access Levels**:
+  - **Private** - Only resource owner has access
+  - **Protected** - Owner + specific identities
+  - **Internal** - All authenticated users
+  - **Public** - Anyone (no auth required)
+- **Access Control Lists (ACLs)** - Fine-grained access per resource
+- **Ownership Tracking** - Track who owns each resource
 
-### 🧪 Testing & Quality
+#### Audit Logging & Monitoring
+- **Comprehensive Audit Log** - All security events tracked with timestamps
+- **Event Types**:
+  - Login/Logout events
+  - Password changes and resets
+  - Role assignments and revocations
+  - Permission grants and denials
+  - Data access, modification, deletion
+  - Session management events
+  - MFA status changes
+  - API key management
+  - Suspicious activity
+- **Per-Identity Audit Trail** - Query audit logs for specific identities
+- **IP Tracking** - Log IP addresses for all security events
+- **Device Fingerprinting** - Optional device fingerprint tracking
 
-- **Comprehensive Unit Tests** (40+ tests)
-  - Worker management tests
-  - Portfolio operations tests
-  - CRM functionality tests
-  - Asset management tests
-  - Kernel integration tests
-  - Search and filter tests
-- **Integration Tests** - Full end-to-end workflows
-- **Demo Mode** - Interactive demo showcasing all features
+#### Data Protection Features
+- **Secure Session Tokens** - Cryptographically secure session identifiers
+- **Password Hashing** - Multiple hash algorithms with configurable salt
+- **Automatic Session Expiration** - Configurable session timeout (default 1 hour)
+- **Account Lockout** - Prevent brute force attacks
+- **Activity Logging** - Track all sensitive operations
 
-### 💻 Technical Architecture
+### 📝 Logging System
 
-**Modular Design**:
-- `worker.zig` - Worker and account management
-- `portfolio.zig` - Generic portfolio system
-- `kernel.zig` - Core job/contract management engine
-- `crm.zig` - Client relationship management
-- `assets.zig` - Asset and resource tracking
-- `accounts.zig` - Multi-account management
-- `cli.zig` - Command-line interface with demo mode
+Comprehensive structured logging infrastructure with multiple output destinations and filtering:
 
-**Language**: Zig (systems programming language)
-**Memory Model**: GeneralPurposeAllocator with proper lifecycle management
-**Data Structures**: ArrayLists, HashMaps for efficient storage and lookup
+#### Logging Features
+- **Log Levels** - Trace, Debug, Info, Warn, Error, Fatal
+- **Structured Logging** - Modules, messages, context, and metadata
+- **Multiple Outputs** - Write to stdout, stderr, files, memory, or network
+- **Log Filtering** - Query logs by level or module
+- **Ring Buffer** - Configurable maximum entry count (default 10,000)
+- **Thread-Safe** - Mutex-protected concurrent access
+- **Timestamps** - All entries timestamped for correlation
+
+### 📡 Event Management System
+
+Publish-subscribe event bus for system-wide event handling:
+
+#### Event Types
+- **Identity Events** - identity_created, identity_deleted, identity_updated, identity_role_changed
+- **Task Events** - task_created, task_completed, task_assigned, task_deleted
+- **Engagement Events** - engagement_created, engagement_completed, engagement_terminated
+- **Workspace Events** - workspace_created, collection_created, item_added
+- **Connection Events** - connection_added, connection_removed
+- **Directory Events** - organization_added, contact_added
+- **Vault Events** - vault_item_added, vault_item_removed
+- **Security Events** - session_created, session_ended, role_assigned
+- **State Events** - checkpoint_created, backup_completed, restore_completed
+- **Node Events** - node_joined, node_left, node_failed
+- **System Events** - system_started, system_shutdown, system_error
+
+#### Event Features
+- **Pub-Sub Pattern** - Subscribe to event types with callback handlers
+- **Event Publishing** - Atomic event distribution to all subscribers
+- **Event History** - Retain event log with configurable max size
+- **Event Filtering** - Query events by type
+- **Metadata Support** - Rich event data and context
+
+### 💾 State Management System
+
+Sophisticated state management with snapshots, checkpoints, backups, and restore capabilities:
+
+#### Checkpoint & Backup Features
+- **Automatic Checkpoints** - Periodic state snapshots (configurable interval)
+- **Checkpoint Retrieval** - Restore from any historical checkpoint
+- **Compressed Backups** - Support for Gzip, Zstandard, LZ4 compression
+- **Backup Retention** - Configurable retention periods with automatic cleanup
+- **Checksums** - Verify backup integrity
+- **Restore Points** - Named recovery points for easy reference
+- **State Hashing** - Detect state changes between checkpoints
+
+#### State Operations
+- **Create Checkpoint** - Snapshot current system state with hash
+- **Create Backup** - Compress and store checkpoint data
+- **Create Restore Point** - Named recovery point for business operations
+- **Restore from Checkpoint** - Roll back to any previous checkpoint
+- **Restore from Backup** - Recover from archived backup file
+- **Auto-Cleanup** - Remove expired backups based on retention policy
+
+### 🔗 Distributed Node System
+
+Enterprise-grade distributed cluster management with redundancy and automatic failover:
+
+#### Cluster Features
+- **Multi-Node Clusters** - Support for up to 100+ nodes per cluster
+- **Node Roles** - Primary, Replica, Backup, Learner nodes
+- **Automatic Failover** - Primary promotion when leader fails
+- **Health Monitoring** - Configurable health checks with status tracking
+- **Heartbeat Protocol** - Detect node failures and recovery
+- **Load Balancing** - Round-robin, least-connections, weighted, random, IP-hash, response-time strategies
+
+#### Node Management
+- **Node Registration** - Add nodes to cluster dynamically
+- **Status Tracking** - Online, Degraded, Offline, Failing, Recovering, Initializing
+- **Health Checks** - CPU, Memory, Disk usage; Response time; Error counts
+- **Replication** - State replication between nodes with sequence tracking
+- **Cluster Statistics** - Real-time cluster health metrics
+
+#### Failover & Recovery
+- **Automatic Detection** - Detect failed nodes via heartbeat timeout
+- **Replica Promotion** - Automatically promote replicas to primary
+- **Connection Rerouting** - Redirect requests to available nodes
+- **Data Replication** - Maintain replicas across multiple nodes
+- **Recovery Tracking** - Monitor node recovery progress
+
+### 🌐 Networking & Server System
+
+Complete networking infrastructure for remote access and inter-node communication:
+
+#### Server Features
+- **HTTP/HTTPS Server** - Support for multiple protocols (HTTP, gRPC, WebSocket, TCP, UDP)
+- **Request Routing** - Path-based endpoint routing with method matching
+- **Connection Management** - Track active connections with metadata
+- **Request/Response History** - Complete history of all network interactions
+- **Keep-Alive Support** - Optional connection reuse
+- **Compression** - Optional response compression
+- **Thread Pool** - Configurable worker thread pool for concurrent requests
+
+#### API Framework
+- **Endpoint Registration** - Register route handlers dynamically
+- **Authentication** - Per-endpoint authentication requirements
+- **Request/Response Objects** - Structured network communication
+- **Headers** - Full header support for both requests and responses
+- **Status Codes** - Standard HTTP status codes (200, 400, 401, 403, 404, 500, etc.)
+
+#### Network Client
+- **Remote Communication** - Connect to other KOGI OS instances
+- **Request Forwarding** - Send requests to remote nodes
+- **Load Balancing** - Work with cluster for distributed requests
+- **Statistics** - Track sent/received requests and responses
+- **Error Handling** - Robust error handling for network failures
+
+### 🛡️ System Architecture
+
+**Modular Design** (Microkernel-like):
+- `system.zig` - Core OS engine (System)
+- `identity.zig` - Identity management subsystem
+- `workspace.zig` - Workspace/personal work environment
+- `registry.zig` - Connection registry subsystem
+- `directory.zig` - Contact directory subsystem
+- `vault.zig` - Asset vault subsystem
+- `security.zig` - Security, authentication, authorization, RBAC
+- `logging.zig` - Logging system with multiple outputs
+- `events.zig` - Event bus and pub-sub pattern
+- `state.zig` - State management, checkpoints, backups, restore
+- `distributed.zig` - Distributed cluster and node management
+- `networking.zig` - Network server, routing, and inter-node communication
+- `cli.zig` - Shell interface
+
+**Technology Stack**:
+- **Language**: Zig (systems programming language)
+- **Memory Model**: GeneralPurposeAllocator with proper lifecycle management
+- **Collections**: ArrayLists, StringHashMaps for efficient storage
+- **Arch Pattern**: Delegation, separation of concerns
+- **Concurrency**: Thread-safe operations with Mutexes
+- **Distribution**: Multi-node cluster support with replication
 
 ## 🚀 Use Cases
 
 ### Freelancers & Contractors
-- Manage multiple clients and contracts
-- Track hours and earnings
-- Maintain portfolio of completed projects
-- Organize invoicing and payment information
+- Manage multiple clients across different platforms
+- Track time and earnings across engagements
+- Maintain portfolio of completed work
+- Organize invoicing information
 
 ### Creative Professionals
-- Portfolio of artwork, music, or creative works
-- Client management and contact tracking
-- Project and deliverable tracking
+- Portfolio of artwork, music, creative works
+- Client and contact management
+- Project tracking and deliverable organization
 - Earnings and hours tracking
 
 ### Software Developers
-- Code portfolio and project management
-- Contract and gig tracking
-- Skill maintenance and development
-- Client and account management
+- Code and project portfolio
+- Multiple platform account management
+- Engagement tracking across clients
+- Skill and capability maintenance
 
 ### Independent Consultants
 - Client and prospect management
 - Project portfolio and history
-- Contract terms and tracking
-- Earnings and utilization reports
+- Engagement terms tracking
+- Earnings and utilization analytics
 
 ### Gig Workers
 - Multiple platform account management
 - Gig and task assignment tracking
-- Earnings per platform
-- Client ratings and feedback tracking
+- Per-platform earnings tracking
+- Client and rating tracking
 
-### Musicians & Artists
-- Portfolio of works (music, artwork, performances)
+### Artists & Musicians
+- Portfolio of works (music, art, performances)
 - Client/venue management
 - Project and commission tracking
-- Asset and equipment inventory
-
-### Multi-Disciplinary Workers
-- Organize work across multiple domains
-- Unified client management
-- Cross-domain project tracking
-- Consolidated earnings and reporting
+- Equipment and asset inventory
 
 ## 📦 What's Included
 
 ```
 kogi/
 ├── src/
-│   ├── main.zig              # Application entry point
+│   ├── main.zig              # OS entry point
 │   ├── root.zig              # Library exports
-│   ├── worker.zig            # Worker management
-│   ├── accounts.zig          # Account management
-│   ├── portfolio.zig         # Portfolio system
-│   ├── kernel.zig            # Job/contract engine
-│   ├── crm.zig               # Client management
-│   ├── assets.zig            # Asset tracking
-│   ├── cli.zig               # CLI interface
+│   ├── system.zig            # Core OS kernel
+│   ├── identity.zig          # Identity/user management
+│   ├── workspace.zig         # Personal workspace
+│   ├── registry.zig          # Connection registry
+│   ├── directory.zig         # Contact directory
+│   ├── vault.zig             # Asset vault
+│   ├── security.zig          # Security & access control
+│   ├── logging.zig           # Logging system
+│   ├── events.zig            # Event management
+│   ├── state.zig             # State management & backups
+│   ├── distributed.zig       # Distributed cluster
+│   ├── networking.zig        # Networking & server
+│   ├── cli.zig               # Shell interface
+│   ├── portfolio.zig         # Legacy portfolio (backward compat)
+│   ├── kernel.zig            # Legacy kernel (backward compat)
+│   ├── worker.zig            # Legacy worker (backward compat)
+│   ├── accounts.zig          # Legacy accounts (backward compat)
+│   ├── crm.zig               # Legacy CRM (backward compat)
+│   ├── assets.zig            # Legacy assets (backward compat)
 │   └── tests.zig             # Unit tests
 ├── build.zig                 # Build configuration
 ├── build.zig.zon             # Dependency manifest
@@ -257,69 +407,150 @@ kogi/
 ### Prerequisites
 - Zig 0.15.2 or later
 
-### Build
+### Build the OS
 ```bash
 zig build
 ```
 
-### Run
+### Boot the KOGI OS with Demo
 ```bash
 zig build run
 ```
 
-### Run Tests
+### Run System Tests
 ```bash
 zig build test
 ```
 
 ## 📊 Demo
 
-The application includes a comprehensive demo showcasing all features:
-- Creates 3 sample workers with different types and skills
-- Posts 3 jobs with skill requirements
-- Creates 3 contracts linking workers to jobs
-- Logs hours on contracts
-- Displays worker earnings reports
-- Shows system statistics
-- Lists all workers and active jobs
+The KOGI OS includes a comprehensive demo that showcases all system subsystems:
+- Creates 3 sample identities with different types and skills
+- Posts 3 sample tasks with skill requirements
+- Creates 3 engagements linking identities to tasks
+- Logs hours on engagements
+- Displays system statistics
+- Shows identity profiles and active tasks
+- Generates earnings reports
+- Displays all subsystems in action
 
 ## 🎓 Architecture Highlights
 
-### Separation of Concerns
-- **Worker Module** - Handles worker lifecycle, skills, and accounts
-- **Portfolio Module** - Generic, flexible portfolio organization
-- **Kernel Module** - Job and contract management engine
-- **CRM Module** - Client and contact relationship management
-- **Assets Module** - Resource and asset tracking
-- **CLI Module** - User interface and interactions
+### OS-Level Design
+Rather than application design, KOGI employs **operating system architecture**:
 
-### Design Patterns
-- **Module Pattern** - Each subsystem is self-contained
-- **Manager Pattern** - Dedicated managers for each domain (WorkerManager, PortfolioManager, etc.)
-- **Delegation Pattern** - Kernel delegates to specialized managers
-- **Index Pattern** - Fast lookups via IndexEntry system
+**Subsystem Delegation** - Each subsystem (Identity, Workspace, Registry, Directory, Vault, Security, Logging, Events, State, Distributed, Networking) manages its own domain with clear boundaries and delegation patterns.
+
+**System Kernel** - The System core delegates to specialized subsystem managers rather than implementing all logic itself.
+
+**Separation of Concerns** - Worker identity is completely separate from workspace, which is separate from connections, assets, security, logging, events, state, distribution, and networking.
+
+**Extensibility** - New subsystems can be added without modifying existing ones. Custom entity types, classes, connection types, asset types, events, and more are all pluggable.
+
+**Enterprise-Grade Features** - Built-in support for:
+- Distributed deployment across multiple nodes
+- Automatic state backups and recovery
+- Comprehensive audit logging
+- Event-driven architecture
+- Redundancy and failover
+- Network communication
+
+### 🔄 Process Management System
+
+Process management provides complete lifecycle and resource management for running work processes:
+
+- **Process States** - created, ready, running, suspended, waiting, terminated
+- **Priority Scheduling** - idle, low, normal, high, critical with priority-based round-robin scheduling
+- **Resource Limits** - Memory, CPU, threads, open files per process with enforcement
+- **Event Tracking** - 9 event types tracking all process state transitions
+- **Preemptive Scheduling** - Configurable time-slice based scheduling
+- **Process Events** - Created, started, suspended, resumed, blocked, unblocked, context_switched, resource_exceeded, terminated
+- **Thread-Safe Operations** - Mutex protection for all process manager operations
+
+### 🧠 Memory Management System
+
+Complete virtual memory management with allocation tracking and memory protection:
+
+- **Virtual Memory** - 4KB page-aligned memory allocation and tracking
+- **Memory Pages** - MemoryPage structures with permissions (read/write/execute/privileged)
+- **Memory Regions** - Kernel, heap, stack, code, data, shared, I/O regions with per-region permissions
+- **Allocation Tracking** - Track all allocations per process with addresses and sizes
+- **Memory Statistics** - Total/used/free memory, resident/swapped pages, page fault tracking
+- **Page Faults** - Separate tracking for major and minor page faults
+- **Memory Protection** - R/W/X permissions with privileged execution modes
+- **Configurable Memory** - Default 4GB total memory, easily reconfigurable
+
+### 📁 Log Rotation Support
+
+- **File Rotation** - Automatically rotate log files when they exceed a configured maximum size.
+- **Retention Policy** - Keep a fixed number of rotated log files and overwrite older ones in a round-robin fashion.
+- **Zero-Downtime** - Logging continues seamlessly into a new file after rotation.
+
+### 🔍 Observability, Debugging & Optimization
+
+An integrated subsystem for deeper runtime insight and performance improvements:
+
+- **Breakpoints & Logpoints** – Set breakpoints by file/line or function, optionally with conditions.
+- **System Metrics** – Capture CPU, memory, thread, and I/O statistics over time.
+- **Performance Profiling** – Track call counts and aggregate execution time per function.
+- **Optimization Hints** – Store actionable recommendations based on observed metrics.
+- **Runtime Debugger Hooks** – Enable or disable breakpoints programmatically for live debugging.
+
+### 📊 Trace & Audit Management System
+
+Comprehensive execution tracing and audit trail management for observability:
+
+- **Trace Events** - 13 event types: function_call, function_return, syscall_enter/exit, context_switch, interrupt, exception, I/O operations, memory access, lock operations
+- **Trace Manager** - Record and query execution traces with configurable trace levels (off, critical, normal, verbose, debug)
+- **Audit Records** - 15+ audit action types: process create/terminate, memory operations, file operations, permission checks, security events, logins, configuration changes
+- **Audit Results** - success, failure, denied, error status tracking
+- **Audit Severity** - info, warning, critical, alert levels
+- **Performance Metrics** - CPU usage, memory usage, I/O operations, context switches, page faults per process
+- **Distributed Tracing** - Support for trace correlation and distributed trace collection
+- **Ring Buffers** - Configurable limits (100K traces, 100K audit records default) with automatic overflow handling
+
+### 🚀 Bootloader & Kernel Management System
+
+Low-level system boot and kernel initialization management:
+
+- **Boot Modes** - normal, safe, recovery, maintenance, diagnostic
+- **Boot Phases** - firmware, bootloader, kernel_load, kernel_init, drivers, services, complete
+- **Boot Devices** - disk, network, USB, CDROM, PXE boot device types
+- **Kernel Modules** - Register, load, and initialize kernel modules with dependency tracking
+- **Boot Configuration** - Boot device selection, mode, verbose output, debug mode, safe mode, timeouts
+- **Boot Statistics** - Phase timing, modules loaded count, error tracking
+- **Boot Events** - Comprehensive event logging through entire boot process
+- **Boot Severity** - info, warning, error, critical levels for boot events
+- **Configurable Kernel Version** - Track kernel version information
+
+### Design Patterns Used
+- **Module Pattern** - Each subsystem is a self-contained module
+- **Manager Pattern** - Dedicated managers for each domain
+- **Delegation Pattern** - System delegates to managers
 - **Factory Pattern** - Consistent entity creation
-
-### Extensibility
-- New entity types can be added to EntityType enum
-- New entity classes via EntityClass enum
-- Custom fields in Metadata for domain-specific data
-- Flexible account and asset type systems
-- Generic portfolio collections for any purpose
+- **Index Pattern** - Fast lookups via index system
+- **Pub-Sub Pattern** - Event bus for decoupled communication
+- **State Pattern** - Checkpoint and restore capabilities
+- **Load Balancing Pattern** - Distribute work across nodes
+- **Observer Pattern** - Event handlers and trace listeners
+- **Ring Buffer Pattern** - Circular buffers for trace/audit history
 
 ## 🔮 Future Enhancements
 
-Potential features for future versions:
-- Web UI for desktop and mobile access
-- Database persistence (SQLite, PostgreSQL)
-- Advanced analytics and reporting
-- Invoice and payment management
-- Time tracking and invoicing automation
-- Social features and collaboration
-- API for third-party integrations
-- Backup and sync capabilities
-- Tax preparation support
-- Multi-user/team support
+Potential features for future KOGI OS versions:
+- **Persistence Layer** - SQLite/PostgreSQL/RocksDB backend for state storage
+- **REST API** - HTTP endpoints for integrating external applications
+- **Web UI** - Dashboard for visualization and management
+- **Multi-Session** - Support for multiple concurrent workers
+- **Plugins** - Plugin system for extending subsystems
+- **Backup/Restore** - System state backup and recovery
+- **Notifications** - Event system for system state changes
+- **Distributed** - Network-based multi-node support
+- **Encryption** - End-to-end encryption for sensitive data
+- **OAuth/OIDC** - OAuth2 and OpenID Connect provider support
+- **API Keys** - Long-lived API key management and rotation
+- **Two-Factor Auth** - Enhanced MFA options
+- **Compliance** - GDPR, CCPA, compliance reporting
 
 ## 📝 License
 
@@ -327,7 +558,7 @@ Potential features for future versions:
 
 ## 🤝 Contributing
 
-Contributions welcome! Please follow the existing code patterns and include tests for new features.
+Contributions welcome! Please follow the existing module architecture and include tests for new subsystems.
 
 ## 📧 Support
 
@@ -335,4 +566,5 @@ For issues, questions, or suggestions, please open an issue or contact the maint
 
 ---
 
-**KOGI** - Organize Your Work, Manage Your Portfolio, Grow Your Career.
+**KOGI OS** - Your Personal Operating System for Independent Work.
+

@@ -9,6 +9,17 @@ const workspace_module = @import("workspace.zig");
 const registry_module = @import("registry.zig");
 const directory_module = @import("directory.zig");
 const vault_module = @import("vault.zig");
+const security_module = @import("security.zig");
+const logging_module = @import("logging.zig");
+const events_module = @import("events.zig");
+const state_module = @import("state.zig");
+const distributed_module = @import("distributed.zig");
+const networking_module = @import("networking.zig");
+const observability_module = @import("observability.zig");
+const processes_module = @import("processes.zig");
+const memory_module = @import("memory.zig");
+const trace_module = @import("trace.zig");
+const bootloader_module = @import("bootloader.zig");
 const cli_module = @import("cli.zig");
 
 // ========== Core KOGI OS Exports ==========
@@ -52,6 +63,118 @@ pub const Directory = directory_module.Directory;
 pub const VaultItem = vault_module.VaultItem;
 pub const Vault = vault_module.Vault;
 pub const VaultItemType = vault_module.VaultItemType;
+
+// Security Management
+pub const SecurityManager = security_module.SecurityManager;
+pub const Credential = security_module.Credential;
+pub const Session = security_module.Session;
+pub const Role = security_module.Role;
+pub const Permission = security_module.Permission;
+pub const RoleAssignment = security_module.RoleAssignment;
+pub const RolePermissions = security_module.RolePermissions;
+pub const AccessLevel = security_module.AccessLevel;
+pub const AccessControlEntry = security_module.AccessControlEntry;
+pub const AuditLogEntry = security_module.AuditLogEntry;
+pub const SecurityEventType = security_module.SecurityEventType;
+pub const MFAMethod = security_module.MFAMethod;
+pub const MFAConfig = security_module.MFAConfig;
+pub const HashAlgorithm = security_module.HashAlgorithm;
+pub const initializeDefaultRoles = security_module.initializeDefaultRoles;
+
+// Logging System
+pub const Logger = logging_module.Logger;
+pub const LogLevel = logging_module.LogLevel;
+pub const LogEntry = logging_module.LogEntry;
+pub const LogOutput = logging_module.LogOutput;
+pub const LoggerConfig = logging_module.LoggerConfig;
+pub const initGlobalLogger = logging_module.initGlobalLogger;
+pub const getGlobalLogger = logging_module.getGlobalLogger;
+pub const deinitGlobalLogger = logging_module.deinitGlobalLogger;
+
+// Event Management System
+pub const EventBus = events_module.EventBus;
+pub const Event = events_module.Event;
+pub const EventType = events_module.EventType;
+pub const EventHandler = events_module.EventHandler;
+
+// State Management System
+pub const StateManager = state_module.StateManager;
+pub const Checkpoint = state_module.Checkpoint;
+pub const Backup = state_module.Backup;
+pub const RestorePoint = state_module.RestorePoint;
+pub const CompressionType = state_module.CompressionType;
+pub const StateManagerConfig = state_module.StateManagerConfig;
+
+// Distributed Node System
+pub const DistributedCluster = distributed_module.DistributedCluster;
+pub const Node = distributed_module.Node;
+pub const NodeStatus = distributed_module.NodeStatus;
+pub const NodeRole = distributed_module.NodeRole;
+pub const HealthCheckResult = distributed_module.HealthCheckResult;
+pub const ReplicationState = distributed_module.ReplicationState;
+pub const LoadBalancingStrategy = distributed_module.LoadBalancingStrategy;
+pub const ClusterConfig = distributed_module.ClusterConfig;
+
+// Networking & Server System
+pub const NetworkServer = networking_module.NetworkServer;
+pub const NetworkClient = networking_module.NetworkClient;
+pub const NetworkRequest = networking_module.NetworkRequest;
+pub const NetworkResponse = networking_module.NetworkResponse;
+pub const NetworkConnection = networking_module.Connection;
+pub const ServerConfig = networking_module.ServerConfig;
+pub const Router = networking_module.Router;
+pub const Endpoint = networking_module.Endpoint;
+pub const Protocol = networking_module.Protocol;
+pub const RequestMethod = networking_module.RequestMethod;
+pub const ResponseStatus = networking_module.ResponseStatus;
+
+// Observability System
+pub const ObservabilityManager = observability_module.ObservabilityManager;
+pub const Breakpoint = observability_module.Breakpoint;
+pub const BreakpointType = observability_module.BreakpointType;
+pub const SystemMetrics = observability_module.SystemMetrics;
+pub const PerformanceProfile = observability_module.PerformanceProfile;
+pub const OptimizationHint = observability_module.OptimizationHint;
+
+// Process Management System
+pub const ProcessManager = processes_module.ProcessManager;
+pub const ProcessState = processes_module.ProcessState;
+pub const ProcessPriority = processes_module.ProcessPriority;
+pub const Process = processes_module.Process;
+pub const ProcessResources = processes_module.ProcessResources;
+pub const ProcessEvent = processes_module.ProcessEvent;
+pub const ProcessEventType = processes_module.ProcessEventType;
+pub const SchedulerConfig = processes_module.SchedulerConfig;
+
+// Memory Management System
+pub const MemoryAllocator = memory_module.MemoryAllocator;
+pub const MemoryPage = memory_module.MemoryPage;
+pub const MemoryPermissions = memory_module.MemoryPermissions;
+pub const MemoryRegion = memory_module.MemoryRegion;
+pub const MemoryRegionType = memory_module.MemoryRegionType;
+pub const MemoryStats = memory_module.MemoryStats;
+
+// Trace & Audit Management System
+pub const TraceManager = trace_module.TraceManager;
+pub const TraceEvent = trace_module.TraceEvent;
+pub const TraceEventType = trace_module.TraceEventType;
+pub const AuditManager = trace_module.AuditManager;
+pub const AuditRecord = trace_module.AuditRecord;
+pub const AuditActionType = trace_module.AuditActionType;
+pub const AuditResult = trace_module.AuditResult;
+pub const AuditSeverity = trace_module.AuditSeverity;
+pub const PerformanceMetrics = trace_module.PerformanceMetrics;
+
+// Bootloader & Kernel Management System
+pub const BootManager = bootloader_module.BootManager;
+pub const BootConfig = bootloader_module.BootConfig;
+pub const BootMode = bootloader_module.BootMode;
+pub const BootPhase = bootloader_module.BootPhase;
+pub const BootDeviceType = bootloader_module.BootDeviceType;
+pub const KernelModule = bootloader_module.KernelModule;
+pub const BootStats = bootloader_module.BootStats;
+pub const BootEvent = bootloader_module.BootEvent;
+pub const BootSeverity = bootloader_module.BootSeverity;
 
 // ========== Backward Compatibility Aliases ==========
 

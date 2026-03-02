@@ -8,6 +8,17 @@ const workspace_module = @import("workspace.zig");
 const registry_module = @import("registry.zig");
 const directory_module = @import("directory.zig");
 const vault_module = @import("vault.zig");
+const security_module = @import("security.zig");
+const logging_module = @import("logging.zig");
+const events_module = @import("events.zig");
+const state_module = @import("state.zig");
+const distributed_module = @import("distributed.zig");
+const networking_module = @import("networking.zig");
+const observability_module = @import("observability.zig");
+const processes_module = @import("processes.zig");
+const memory_module = @import("memory.zig");
+const trace_module = @import("trace.zig");
+const bootloader_module = @import("bootloader.zig");
 
 /// Task represents a unit of work that can be assigned to an identity
 pub const Task = struct {
@@ -44,16 +55,78 @@ pub const System = struct {
     workspace_manager: workspace_module.WorkspaceManager,
     directory: directory_module.Directory,
     vault: vault_module.Vault,
+    security_manager: security_module.SecurityManager,
+    logger: logging_module.Logger,
+    event_bus: events_module.EventBus,
+    state_manager: state_module.StateManager,
+    cluster: distributed_module.DistributedCluster,
+    network_server: networking_module.NetworkServer,
+    process_manager: processes_module.ProcessManager,
+    memory_allocator: memory_module.MemoryAllocator,
+    trace_manager: trace_module.TraceManager,
+    audit_manager: trace_module.AuditManager,
+    boot_manager: bootloader_module.BootManager,
+    observability: observability_module.ObservabilityManager,
     tasks: std.ArrayList(Task),
     engagements: std.ArrayList(Engagement),
 
     pub fn init(allocator: std.mem.Allocator) System {
+        // Initialize logger with default config
+        var log_outputs = std.ArrayList(logging_module.LogOutput){};
+        log_outputs.append(allocator, .stdout) catch {};
+        const logger_config = logging_module.LoggerConfig{
+            .min_level = .info,
+            .outputs = log_outputs,
+        };
+
+        // Initialize state manager with default config
+        const state_config = state_module.StateManagerConfig{};
+
+        // Initialize cluster with default config
+        const cluster_config = distributed_module.ClusterConfig{
+            .cluster_name = "kogi-cluster",
+            .node_id = 0,
+        };
+
+        // Initialize network server with default config
+        const server_config = networking_module.ServerConfig{};
+
+        // Initialize process manager with default config
+        const scheduler_config = processes_module.SchedulerConfig{};
+
+        // Initialize memory allocator with 4GB total memory
+        const memory_allocator_config = 4096; // 4GB
+
+        // Initialize trace manager
+        const trace_manager = trace_module.TraceManager.init(allocator);
+
+        // Initialize audit manager
+        const audit_manager = trace_module.AuditManager.init(allocator);
+
+        // Initialize boot manager with default config
+        const boot_config = bootloader_module.BootConfig{};
+
+        // Initialize observability manager
+        const observability_mgr = observability_module.ObservabilityManager.init(allocator);
+
         return System{
             .allocator = allocator,
             .identity_manager = identity_module.IdentityManager.init(allocator),
             .workspace_manager = workspace_module.WorkspaceManager.init(allocator),
             .directory = directory_module.Directory.init(allocator),
             .vault = vault_module.Vault.init(allocator),
+            .security_manager = security_module.SecurityManager.init(allocator),
+            .logger = logging_module.Logger.init(allocator, logger_config) catch unreachable,
+            .event_bus = events_module.EventBus.init(allocator),
+            .state_manager = state_module.StateManager.init(allocator, state_config) catch unreachable,
+            .cluster = distributed_module.DistributedCluster.init(allocator, cluster_config),
+            .network_server = networking_module.NetworkServer.init(allocator, server_config),
+            .process_manager = processes_module.ProcessManager.init(allocator, scheduler_config),
+            .memory_allocator = memory_module.MemoryAllocator.init(allocator, memory_allocator_config),
+            .trace_manager = trace_manager,
+            .audit_manager = audit_manager,
+            .boot_manager = bootloader_module.BootManager.init(allocator, boot_config),
+            .observability = observability_mgr,
             .tasks = std.ArrayList(Task){},
             .engagements = std.ArrayList(Engagement){},
         };
@@ -68,6 +141,36 @@ pub const System = struct {
         self.directory.deinit();
         // Clean up vault
         self.vault.deinit();
+        // Clean up security
+        self.security_manager.deinit();
+        // Clean up logging
+        self.logger.deinit();
+        // Clean up events
+        self.event_bus.deinit();
+        // Clean up state
+        self.state_manager.deinit();
+        // Clean up cluster
+        self.cluster.deinit();
+        // Clean up network server
+        self.network_server.deinit();
+        // Clean up process manager
+        var process_manager = self.process_manager;
+        process_manager.deinit();
+        // Clean up memory allocator
+        var memory_allocator = self.memory_allocator;
+        memory_allocator.deinit();
+        // Clean up trace manager
+        var trace_manager = self.trace_manager;
+        trace_manager.deinit();
+        // Clean up audit manager
+        var audit_manager = self.audit_manager;
+        audit_manager.deinit();
+        // Clean up boot manager
+        var boot_manager = self.boot_manager;
+        boot_manager.deinit();
+        // Clean up observability manager
+        var observability_mgr = self.observability;
+        observability_mgr.deinit();
         // Clean up tasks
         for (self.tasks.items) |*task| {
             self.allocator.free(task.title);

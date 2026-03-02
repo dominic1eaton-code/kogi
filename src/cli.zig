@@ -1,6 +1,7 @@
 const std = @import("std");
 const system_module = @import("system.zig");
 const identity_module = @import("identity.zig");
+const security_module = @import("security.zig");
 
 /// Command-line interface for the KOGI Operating System
 pub const CLI = struct {
@@ -29,6 +30,8 @@ pub const CLI = struct {
         std.debug.print("Workspace Items: {}\n", .{item_count});
         std.debug.print("Directory Organizations: {}\n", .{self.system.directory.getOrganizationCount()});
         std.debug.print("Vault Total Value: ${:.2}\n", .{self.system.vault.getTotalValue()});
+        std.debug.print("Audit Log Entries: {}\n", .{self.system.security_manager.getAuditLog().len});
+        std.debug.print("Active Sessions: {}\n", .{self.system.security_manager.sessions.items.len});
     }
 
     /// List all identities
@@ -179,7 +182,59 @@ pub const CLI = struct {
             std.debug.print("  Active Connections: {}\n", .{conn_count});
         }
 
-        std.debug.print("\n✓ Demo completed successfully!\n\n", .{});
+        std.debug.print("\n✓ Demo completed successfully!\n", .{});
+
+        // Demonstrate security features
+        std.debug.print("\n╔════════════════════════════════════════════╗\n", .{});
+        std.debug.print("║         SECURITY & ACCESS CONTROL          ║\n", .{});
+        std.debug.print("╚════════════════════════════════════════════╝\n\n", .{});
+
+        // Initialize default roles
+        var default_roles = try security_module.initializeDefaultRoles(self.allocator);
+        defer {
+            for (default_roles.items) |role| {
+                var perms = role.permissions;
+                perms.deinit(self.allocator);
+            }
+            default_roles.deinit(self.allocator);
+        }
+
+        // Assign roles to identities
+        try self.system.security_manager.assignRole(identity1_id, security_module.Role.worker, 0, null);
+        try self.system.security_manager.assignRole(identity2_id, security_module.Role.contractor, 0, null);
+        try self.system.security_manager.assignRole(identity3_id, security_module.Role.admin, 0, null);
+
+        std.debug.print("Assigned roles:\n", .{});
+        std.debug.print("  Alice Johnson: Worker\n", .{});
+        std.debug.print("  Bob Smith: Contractor\n", .{});
+        std.debug.print("  Carol White: Admin\n\n", .{});
+
+        // Create sessions
+        _ = try self.system.security_manager.createSession(identity1_id, "token_alice_123", "192.168.1.100", "device_fp_1");
+        _ = try self.system.security_manager.createSession(identity2_id, "token_bob_456", "192.168.1.101", "device_fp_2");
+        std.debug.print("Created 2 sessions\n", .{});
+
+        // Test access control
+        std.debug.print("\nAccess Control Examples:\n", .{});
+        const can_alice_create_task = self.system.security_manager.hasPermission(identity1_id, security_module.Permission.create_task);
+        const can_bob_create_task = self.system.security_manager.hasPermission(identity2_id, security_module.Permission.create_task);
+        const can_carol_manage_users = self.system.security_manager.hasPermission(identity3_id, security_module.Permission.manage_users);
+
+        std.debug.print("  Alice (worker) can create tasks: {}\n", .{can_alice_create_task});
+        std.debug.print("  Bob (contractor) can create tasks: {}\n", .{can_bob_create_task});
+        std.debug.print("  Carol (admin) can manage users: {}\n", .{can_carol_manage_users});
+
+        // Display audit log
+        std.debug.print("\n╔════════════════════════════════════════════╗\n", .{});
+        std.debug.print("║              AUDIT LOG (Recent)            ║\n", .{});
+        std.debug.print("╚════════════════════════════════════════════╝\n\n", .{});
+        const audit_log = self.system.security_manager.getAuditLog();
+        const start_idx = if (audit_log.len > 5) audit_log.len - 5 else 0;
+        for (audit_log[start_idx..]) |entry| {
+            std.debug.print("[{s}] Identity {}: {s}\n", .{ @tagName(entry.event_type), entry.identity_id, entry.action });
+        }
+
+        std.debug.print("\n✓ Security demonstration completed!\n\n", .{});
     }
 };
 
