@@ -1,15 +1,7 @@
 const std = @import("std");
-const portfolio = @import("portfolio.zig");
-
-/// Worker represents an independent worker/freelancer in the kogi system
-pub const Worker = struct {
-    id: u32,
-    name: []const u8,
-    email: []const u8,
-    skills: std.ArrayList([]const u8),
-    hourly_rate: f32,
-    active: bool,
-};
+const worker_module = @import("worker.zig");
+const accounts_module = @import("accounts.zig");
+const portfolio_module = @import("portfolio.zig");
 
 /// Job represents a job posting or work assignment
 pub const Job = struct {
@@ -35,36 +27,30 @@ pub const Contract = struct {
     status: enum { active, completed, terminated },
 };
 
-/// Core kernel managing workers, jobs, and contracts
+/// Kernel manages jobs and contracts for the portfolio system
 pub const Kernel = struct {
     allocator: std.mem.Allocator,
-    workers: std.ArrayList(Worker),
+    worker_manager: worker_module.WorkerManager,
+    portfolio_manager: portfolio_module.PortfolioManager,
     jobs: std.ArrayList(Job),
     contracts: std.ArrayList(Contract),
-    project_manager: portfolio.ProjectManager,
 
     pub fn init(allocator: std.mem.Allocator) Kernel {
         return Kernel{
             .allocator = allocator,
-            .workers = std.ArrayList(Worker){},
+            .worker_manager = worker_module.WorkerManager.init(allocator),
+            .portfolio_manager = portfolio_module.PortfolioManager.init(allocator),
             .jobs = std.ArrayList(Job){},
             .contracts = std.ArrayList(Contract){},
-            .project_manager = portfolio.ProjectManager.init(allocator),
         };
     }
 
     pub fn deinit(self: *Kernel) void {
-        // Clean up workers
-        for (self.workers.items) |*worker| {
-            // Free each skill string
-            for (worker.skills.items) |skill| {
-                self.allocator.free(skill);
-            }
-            worker.skills.deinit(self.allocator);
-            self.allocator.free(worker.name);
-            self.allocator.free(worker.email);
-        }
-        self.workers.deinit(self.allocator);
+        // Clean up worker manager
+        self.worker_manager.deinit();
+
+        // Clean up portfolio manager
+        self.portfolio_manager.deinit();
 
         // Clean up jobs
         for (self.jobs.items) |*job| {
@@ -80,37 +66,46 @@ pub const Kernel = struct {
 
         // Clean up contracts
         self.contracts.deinit(self.allocator);
-
-        // Clean up project manager
-        self.project_manager.deinit();
     }
 
-    /// Register a new worker in the system
-    pub fn registerWorker(self: *Kernel, name: []const u8, email: []const u8, hourly_rate: f32) !u32 {
-        const worker_id = @as(u32, @intCast(self.workers.items.len));
-
-        const worker = Worker{
-            .id = worker_id,
-            .name = try self.allocator.dupe(u8, name),
-            .email = try self.allocator.dupe(u8, email),
-            .skills = std.ArrayList([]const u8){},
-            .hourly_rate = hourly_rate,
-            .active = true,
-        };
-
-        try self.workers.append(self.allocator, worker);
-        return worker_id;
+    /// ============ Worker Management (delegates to WorkerManager) ============
+    pub fn registerWorker(self: *Kernel, name: []const u8, email: []const u8, hourly_rate: f32, wtype: worker_module.WorkerType) !u32 {
+        return try self.worker_manager.registerWorker(name, email, hourly_rate, wtype);
     }
 
-    /// Add a skill to a worker's profile
     pub fn addWorkerSkill(self: *Kernel, worker_id: u32, skill: []const u8) !void {
-        if (worker_id < @as(u32, @intCast(self.workers.items.len))) {
-            const skill_copy = try self.allocator.dupe(u8, skill);
-            try self.workers.items[worker_id].skills.append(self.allocator, skill_copy);
-        }
+        return try self.worker_manager.addSkill(worker_id, skill);
     }
 
-    /// Post a new job to the system
+    pub fn getActiveWorkersCount(self: *Kernel) u32 {
+        return self.worker_manager.getActiveCount();
+    }
+
+    /// ============ Account Delegation ============
+    pub fn addWorkerAccount(
+        self: *Kernel,
+        worker_id: u32,
+        acct_type: accounts_module.AccountType,
+        username: []const u8,
+        provider: []const u8,
+        details: []const u8,
+    ) !u32 {
+        return try self.worker_manager.addWorkerAccount(worker_id, acct_type, username, provider, details);
+    }
+
+    pub fn deactivateWorkerAccount(self: *Kernel, worker_id: u32, acct_id: u32) !void {
+        return try self.worker_manager.deactivateWorkerAccount(worker_id, acct_id);
+    }
+
+    pub fn getWorkerActiveAccountCount(self: *Kernel, worker_id: u32) u32 {
+        return self.worker_manager.getWorkerActiveAccountCount(worker_id);
+    }
+
+    pub fn getWorkers(self: *Kernel) []worker_module.Worker {
+        return self.worker_manager.workers.items;
+    }
+
+    /// ============ Job Management ============
     pub fn postJob(self: *Kernel, title: []const u8, description: []const u8, budget: f32, deadline: i64) !u32 {
         const job_id = @as(u32, @intCast(self.jobs.items.len));
 
@@ -129,7 +124,6 @@ pub const Kernel = struct {
         return job_id;
     }
 
-    /// Add a required skill for a job
     pub fn addJobSkillRequirement(self: *Kernel, job_id: u32, skill: []const u8) !void {
         if (job_id < @as(u32, @intCast(self.jobs.items.len))) {
             const skill_copy = try self.allocator.dupe(u8, skill);
@@ -137,7 +131,17 @@ pub const Kernel = struct {
         }
     }
 
-    /// Create a contract between a worker and a job
+    pub fn getActiveJobsCount(self: *Kernel) u32 {
+        var count: u32 = 0;
+        for (self.jobs.items) |job| {
+            if (!job.completed) {
+                count += 1;
+            }
+        }
+        return count;
+    }
+
+    /// ============ Contract Management ============
     pub fn createContract(self: *Kernel, worker_id: u32, job_id: u32, start_date: i64, hourly_rate: f32) !u32 {
         const contract_id = @as(u32, @intCast(self.contracts.items.len));
 
@@ -162,14 +166,12 @@ pub const Kernel = struct {
         return contract_id;
     }
 
-    /// Log hours worked on a contract
     pub fn logHours(self: *Kernel, contract_id: u32, hours: f32) !void {
         if (contract_id < @as(u32, @intCast(self.contracts.items.len))) {
             self.contracts.items[contract_id].hours_worked += hours;
         }
     }
 
-    /// Complete a contract
     pub fn completeContract(self: *Kernel, contract_id: u32, end_date: i64) !void {
         if (contract_id < @as(u32, @intCast(self.contracts.items.len))) {
             self.contracts.items[contract_id].status = .completed;
@@ -183,7 +185,7 @@ pub const Kernel = struct {
         }
     }
 
-    /// Calculate total earnings for a worker
+    /// ============ Reporting and Analytics ============
     pub fn calculateWorkerEarnings(self: *Kernel, worker_id: u32) f32 {
         var total_earnings: f32 = 0.0;
 
@@ -195,31 +197,9 @@ pub const Kernel = struct {
 
         return total_earnings;
     }
-
-    /// Get active jobs count
-    pub fn getActiveJobsCount(self: *Kernel) u32 {
-        var count: u32 = 0;
-        for (self.jobs.items) |job| {
-            if (!job.completed) {
-                count += 1;
-            }
-        }
-        return count;
-    }
-
-    /// Get active workers count
-    pub fn getActiveWorkersCount(self: *Kernel) u32 {
-        var count: u32 = 0;
-        for (self.workers.items) |worker| {
-            if (worker.active) {
-                count += 1;
-            }
-        }
-        return count;
-    }
 };
 
-/// Initialize and run the kogi kernel
+/// Initialize and run the kernel
 pub fn runKernel() !void {
     var gpa = std.heap.GeneralPurposeAllocator(.{}){};
     defer _ = gpa.deinit();

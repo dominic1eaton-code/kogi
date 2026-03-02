@@ -1,49 +1,57 @@
 const std = @import("std");
-const kernel_module = @import("kernel.zig");
+const system_module = @import("system.zig");
+const identity_module = @import("identity.zig");
 
-/// Command-line interface for the kogi portfolio management system
+/// Command-line interface for the KOGI Operating System
 pub const CLI = struct {
     allocator: std.mem.Allocator,
-    kernel: *kernel_module.Kernel,
+    system: *system_module.System,
 
-    pub fn init(allocator: std.mem.Allocator, kernel: *kernel_module.Kernel) CLI {
+    pub fn init(allocator: std.mem.Allocator, system: *system_module.System) CLI {
         return CLI{
             .allocator = allocator,
-            .kernel = kernel,
+            .system = system,
         };
     }
 
     /// Display system statistics
     fn handleViewStatistics(self: *CLI) void {
         std.debug.print("\n╔════════════════════════════════════════════╗\n", .{});
-        std.debug.print("║       SYSTEM STATISTICS                    ║\n", .{});
+        std.debug.print("║       KOGI SYSTEM STATISTICS               ║\n", .{});
         std.debug.print("╚════════════════════════════════════════════╝\n\n", .{});
-        std.debug.print("Active Workers: {}\n", .{self.kernel.getActiveWorkersCount()});
-        std.debug.print("Active Jobs: {}\n", .{self.kernel.getActiveJobsCount()});
-        std.debug.print("Total Contracts: {}\n", .{self.kernel.contracts.items.len});
-        std.debug.print("Total Projects: {}\n", .{self.kernel.project_manager.projects.items.len});
+        std.debug.print("Active Identities: {}\n", .{self.system.getActiveIdentitiesCount()});
+        std.debug.print("Active Tasks: {}\n", .{self.system.getActiveTasksCount()});
+        std.debug.print("Total Engagements: {}\n", .{self.system.engagements.items.len});
+        // Collections and items managed through workspace_manager
+        const collection_count = if (self.system.workspace_manager.workspace) |p| p.collections.items.len else 0;
+        const item_count = if (self.system.workspace_manager.workspace) |p| p.items.items.len else 0;
+        std.debug.print("Workspace Collections: {}\n", .{collection_count});
+        std.debug.print("Workspace Items: {}\n", .{item_count});
+        std.debug.print("Directory Organizations: {}\n", .{self.system.directory.getOrganizationCount()});
+        std.debug.print("Vault Total Value: ${:.2}\n", .{self.system.vault.getTotalValue()});
     }
 
-    /// List all workers
-    fn handleListWorkers(self: *CLI) void {
+    /// List all identities
+    fn handleListIdentities(self: *CLI) void {
         std.debug.print("\n╔════════════════════════════════════════════╗\n", .{});
-        std.debug.print("║           REGISTERED WORKERS               ║\n", .{});
+        std.debug.print("║           SYSTEM IDENTITIES                ║\n", .{});
         std.debug.print("╚════════════════════════════════════════════╝\n\n", .{});
 
-        if (self.kernel.workers.items.len == 0) {
-            std.debug.print("No workers registered.\n", .{});
+        const identities = self.system.getIdentities();
+        if (identities.len == 0) {
+            std.debug.print("No identities created.\n", .{});
             return;
         }
 
-        for (self.kernel.workers.items, 0..) |worker, idx| {
-            std.debug.print("\n[Worker {}] {s}\n", .{ idx, worker.name });
-            std.debug.print("  Email: {s}\n", .{worker.email});
-            std.debug.print("  Hourly Rate: ${:.2}\n", .{worker.hourly_rate});
-            std.debug.print("  Status: {s}\n", .{if (worker.active) "Active" else "Inactive"});
+        for (identities, 0..) |identity, idx| {
+            std.debug.print("\n[Identity {}] {s}\n", .{ idx, identity.name });
+            std.debug.print("  Email: {s}\n", .{identity.email});
+            std.debug.print("  Hourly Rate: ${:.2}\n", .{identity.hourly_rate});
+            std.debug.print("  Status: {s}\n", .{if (identity.active) "Active" else "Inactive"});
 
-            if (worker.skills.items.len > 0) {
+            if (identity.skills.items.len > 0) {
                 std.debug.print("  Skills: ", .{});
-                for (worker.skills.items, 0..) |skill, skill_idx| {
+                for (identity.skills.items, 0..) |skill, skill_idx| {
                     if (skill_idx > 0) std.debug.print(", ", .{});
                     std.debug.print("{s}", .{skill});
                 }
@@ -52,32 +60,33 @@ pub const CLI = struct {
         }
     }
 
-    /// List all jobs
-    fn handleListJobs(self: *CLI) void {
+    /// List all tasks
+    fn handleListTasks(self: *CLI) void {
         std.debug.print("\n╔════════════════════════════════════════════╗\n", .{});
-        std.debug.print("║           ACTIVE JOB POSTINGS              ║\n", .{});
+        std.debug.print("║           ACTIVE TASK POSTINGS             ║\n", .{});
         std.debug.print("╚════════════════════════════════════════════╝\n\n", .{});
 
-        if (self.kernel.jobs.items.len == 0) {
-            std.debug.print("No jobs posted.\n", .{});
+        const tasks = self.system.getTasks();
+        if (tasks.len == 0) {
+            std.debug.print("No tasks posted.\n", .{});
             return;
         }
 
-        for (self.kernel.jobs.items, 0..) |job, idx| {
-            std.debug.print("\n[Job {}] {s}\n", .{ idx, job.title });
-            std.debug.print("  Description: {s}\n", .{job.description});
-            std.debug.print("  Budget: ${:.2}\n", .{job.budget});
-            std.debug.print("  Status: {s}\n", .{if (job.completed) "Completed" else "Open"});
+        for (tasks, 0..) |task, idx| {
+            std.debug.print("\n[Task {}] {s}\n", .{ idx, task.title });
+            std.debug.print("  Description: {s}\n", .{task.description});
+            std.debug.print("  Budget: ${:.2}\n", .{task.budget});
+            std.debug.print("  Status: {s}\n", .{if (task.completed) "Completed" else "Open"});
 
-            if (job.assigned_to) |worker_id| {
-                std.debug.print("  Assigned to: Worker {}\n", .{worker_id});
+            if (task.assigned_to) |identity_id| {
+                std.debug.print("  Assigned to: Identity {}\n", .{identity_id});
             } else {
                 std.debug.print("  Assigned to: Unassigned\n", .{});
             }
 
-            if (job.required_skills.items.len > 0) {
+            if (task.required_skills.items.len > 0) {
                 std.debug.print("  Required Skills: ", .{});
-                for (job.required_skills.items, 0..) |skill, skill_idx| {
+                for (task.required_skills.items, 0..) |skill, skill_idx| {
                     if (skill_idx > 0) std.debug.print(", ", .{});
                     std.debug.print("{s}", .{skill});
                 }
@@ -86,93 +95,96 @@ pub const CLI = struct {
         }
     }
 
-    /// Run a demo of the CLI with sample data
+    /// Run a demo of the KOGI OS with sample data
     pub fn runDemo(self: *CLI) !void {
         std.debug.print("\n╔════════════════════════════════════════════╗\n", .{});
-        std.debug.print("║   KOGI - Portfolio Management System       ║\n", .{});
+        std.debug.print("║   KOGI - Operating System for Workers      ║\n", .{});
         std.debug.print("║          Running Demo Mode                 ║\n", .{});
         std.debug.print("╚════════════════════════════════════════════╝\n", .{});
 
-        // Create sample workers
-        std.debug.print("\n📝 Creating sample workers...\n", .{});
-        const worker1_id = try self.kernel.registerWorker("Alice Johnson", "alice@example.com", 75.50);
-        try self.kernel.addWorkerSkill(worker1_id, "Zig Programming");
-        try self.kernel.addWorkerSkill(worker1_id, "System Design");
+        // Create sample identities
+        std.debug.print("\n📝 Creating system identities...\n", .{});
+        const identity1_id = try self.system.createIdentity("Alice Johnson", "alice@example.com", 75.50, identity_module.IdentityType.developer);
+        try self.system.addIdentitySkill(identity1_id, "Zig Programming");
+        try self.system.addIdentitySkill(identity1_id, "System Design");
 
-        const worker2_id = try self.kernel.registerWorker("Bob Smith", "bob@example.com", 65.00);
-        try self.kernel.addWorkerSkill(worker2_id, "Zig Programming");
-        try self.kernel.addWorkerSkill(worker2_id, "Testing");
+        const identity2_id = try self.system.createIdentity("Bob Smith", "bob@example.com", 65.00, identity_module.IdentityType.developer);
+        try self.system.addIdentitySkill(identity2_id, "Zig Programming");
+        try self.system.addIdentitySkill(identity2_id, "Testing");
 
-        const worker3_id = try self.kernel.registerWorker("Carol White", "carol@example.com", 85.75);
-        try self.kernel.addWorkerSkill(worker3_id, "Project Management");
-        try self.kernel.addWorkerSkill(worker3_id, "Documentation");
+        const identity3_id = try self.system.createIdentity("Carol White", "carol@example.com", 85.75, identity_module.IdentityType.consultant);
+        try self.system.addIdentitySkill(identity3_id, "Project Management");
+        try self.system.addIdentitySkill(identity3_id, "Documentation");
 
-        std.debug.print("✓ Created 3 workers\n", .{});
+        std.debug.print("✓ Created 3 identities\n", .{});
 
-        // Create sample jobs
-        std.debug.print("\n📝 Creating sample jobs...\n", .{});
-        const job1_id = try self.kernel.postJob(
+        // Create sample tasks
+        std.debug.print("\n📝 Posting tasks to system...\n", .{});
+        const task1_id = try self.system.postTask(
             "Build REST API Server",
             "Create a high-performance REST API server in Zig",
             5000.00,
             1746000000,
         );
-        try self.kernel.addJobSkillRequirement(job1_id, "Zig Programming");
-        try self.kernel.addJobSkillRequirement(job1_id, "System Design");
+        try self.system.addTaskSkillRequirement(task1_id, "Zig Programming");
+        try self.system.addTaskSkillRequirement(task1_id, "System Design");
 
-        const job2_id = try self.kernel.postJob(
+        const task2_id = try self.system.postTask(
             "Write Unit Tests",
             "Comprehensive test suite for core modules",
             2000.00,
             1745000000,
         );
-        try self.kernel.addJobSkillRequirement(job2_id, "Zig Programming");
-        try self.kernel.addJobSkillRequirement(job2_id, "Testing");
+        try self.system.addTaskSkillRequirement(task2_id, "Zig Programming");
+        try self.system.addTaskSkillRequirement(task2_id, "Testing");
 
-        const job3_id = try self.kernel.postJob(
+        const task3_id = try self.system.postTask(
             "Project Documentation",
             "Create complete API documentation and user guides",
             1500.00,
             1744000000,
         );
-        try self.kernel.addJobSkillRequirement(job3_id, "Documentation");
+        try self.system.addTaskSkillRequirement(task3_id, "Documentation");
 
-        std.debug.print("✓ Created 3 jobs\n", .{});
+        std.debug.print("✓ Posted 3 tasks\n", .{});
 
-        // Create contracts
-        std.debug.print("\n📝 Creating contracts...\n", .{});
-        const contract1_id = try self.kernel.createContract(worker1_id, job1_id, 1735000000, 75.50);
-        try self.kernel.logHours(contract1_id, 32.5);
+        // Create engagements
+        std.debug.print("\n📝 Creating engagements...\n", .{});
+        const engagement1_id = try self.system.createEngagement(identity1_id, task1_id, 1735000000, 75.50);
+        try self.system.logHours(engagement1_id, 32.5);
 
-        const contract2_id = try self.kernel.createContract(worker2_id, job2_id, 1735000000, 65.00);
-        try self.kernel.logHours(contract2_id, 24.0);
+        const engagement2_id = try self.system.createEngagement(identity2_id, task2_id, 1735000000, 65.00);
+        try self.system.logHours(engagement2_id, 24.0);
 
-        const contract3_id = try self.kernel.createContract(worker3_id, job3_id, 1735000000, 85.75);
-        try self.kernel.logHours(contract3_id, 18.5);
+        const engagement3_id = try self.system.createEngagement(identity3_id, task3_id, 1735000000, 85.75);
+        try self.system.logHours(engagement3_id, 18.5);
 
-        std.debug.print("✓ Created 3 contracts\n", .{});
+        std.debug.print("✓ Created 3 engagements\n", .{});
 
         // Display statistics and listings
         self.handleViewStatistics();
-        self.handleListWorkers();
-        self.handleListJobs();
+        self.handleListIdentities();
+        self.handleListTasks();
 
         // Display earnings information
         std.debug.print("\n╔════════════════════════════════════════════╗\n", .{});
-        std.debug.print("║          WORKER EARNINGS REPORT            ║\n", .{});
+        std.debug.print("║          IDENTITY EARNINGS REPORT          ║\n", .{});
         std.debug.print("╚════════════════════════════════════════════╝\n\n", .{});
 
-        for (self.kernel.workers.items) |worker| {
-            const earnings = self.kernel.calculateWorkerEarnings(worker.id);
-            std.debug.print("{s}: ${:.2}\n", .{ worker.name, earnings });
+        const identities = self.system.getIdentities();
+        for (identities) |identity| {
+            const earnings = self.system.calculateIdentityEarnings(identity.id);
+            std.debug.print("{s}: ${:.2}\n", .{ identity.name, earnings });
+            const conn_count = self.system.getIdentityActiveConnectionCount(identity.id);
+            std.debug.print("  Active Connections: {}\n", .{conn_count});
         }
 
         std.debug.print("\n✓ Demo completed successfully!\n\n", .{});
     }
 };
 
-/// Start the CLI demo
-pub fn startCLI(allocator: std.mem.Allocator, kernel: *kernel_module.Kernel) !void {
-    var cli = CLI.init(allocator, kernel);
+/// Start the KOGI OS CLI shell
+pub fn startCLI(allocator: std.mem.Allocator, system: *system_module.System) !void {
+    var cli = CLI.init(allocator, system);
     try cli.runDemo();
 }

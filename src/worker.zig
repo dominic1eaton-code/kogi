@@ -1,87 +1,157 @@
-// This module defines a worker management system with workers, assignments, and payments.
-// @copyright 2026 Kogi Inc. All rights reserved.
-// @license MIT
-// @author Kogi Team <
 const std = @import("std");
-const ArrayList = std.ArrayList;
-const StringHashMap = std.StringHashMap;
+const accounts_module = @import("accounts.zig");
 
-pub const WorkerManagementSystem = struct {
-    workers: StringHashMap(Worker),
-    assignments: StringHashMap(Assignment),
-    payments: StringHashMap(Payment),
+/// Common errors for the worker module
+pub const WorkerError = error{
+    WorkerNotFound,
+};
+
+/// Broad classification of worker roles supported by the platform.
+pub const WorkerType = enum {
+    contractor,
+    consultant,
+    freelancer,
+    gig,
+    project_based,
+    artist,
+    musician,
+    developer,
+    gamer,
+    other,
+};
+
+/// Worker represents an independent worker/freelancer in the kogi system
+pub const Worker = struct {
+    id: u32,
+    name: []const u8,
+    email: []const u8,
+    worker_type: WorkerType,
+    skills: std.ArrayList([]const u8),
+    hourly_rate: f32,
+    active: bool,
+    account_manager: accounts_module.AccountManager,
+};
+
+/// WorkerManager handles all worker-related operations
+pub const WorkerManager = struct {
     allocator: std.mem.Allocator,
+    workers: std.ArrayList(Worker),
 
-    pub const Worker = struct {
-        name: []const u8,
-        skills: []const u8,
-        hourly_rate: f64,
-        status: []const u8,
-    };
-
-    pub const Assignment = struct {
-        worker_id: []const u8,
-        task: []const u8,
-        deadline: []const u8,
-        budget: f64,
-        status: []const u8,
-    };
-
-    pub const Payment = struct {
-        worker_id: []const u8,
-        amount: f64,
-        status: []const u8,
-    };
-
-    pub fn init(allocator: std.mem.Allocator) WorkerManagementSystem {
-        return .{
-            .workers = StringHashMap(Worker).init(allocator),
-            .assignments = StringHashMap(Assignment).init(allocator),
-            .payments = StringHashMap(Payment).init(allocator),
+    pub fn init(allocator: std.mem.Allocator) WorkerManager {
+        return WorkerManager{
             .allocator = allocator,
+            .workers = std.ArrayList(Worker){},
         };
     }
 
-    pub fn registerWorker(self: *WorkerManagementSystem, worker_id: []const u8, name: []const u8, skills: []const u8, rate: f64) !void {
-        try self.workers.put(worker_id, .{ .name = name, .skills = skills, .hourly_rate = rate, .status = "active" });
+    pub fn deinit(self: *WorkerManager) void {
+        for (self.workers.items) |*worker| {
+            // Free each skill string
+            for (worker.skills.items) |skill| {
+                self.allocator.free(skill);
+            }
+            worker.skills.deinit(self.allocator);
+            self.allocator.free(worker.name);
+            self.allocator.free(worker.email);
+            // deinit accounts
+            worker.account_manager.deinit();
+        }
+        self.workers.deinit(self.allocator);
     }
 
-    pub fn createAssignment(self: *WorkerManagementSystem, assignment_id: []const u8, worker_id: []const u8, task: []const u8, deadline: []const u8, budget: f64) !void {
-        if (!self.workers.contains(worker_id)) return error.WorkerNotFound;
-        try self.assignments.put(assignment_id, .{ .worker_id = worker_id, .task = task, .deadline = deadline, .budget = budget, .status = "pending" });
+    /// Register a new worker in the system
+    pub fn registerWorker(
+        self: *WorkerManager,
+        name: []const u8,
+        email: []const u8,
+        hourly_rate: f32,
+        wtype: WorkerType,
+    ) !u32 {
+        const worker_id = @as(u32, @intCast(self.workers.items.len));
+
+        const worker = Worker{
+            .id = worker_id,
+            .name = try self.allocator.dupe(u8, name),
+            .email = try self.allocator.dupe(u8, email),
+            .worker_type = wtype,
+            .skills = std.ArrayList([]const u8){},
+            .hourly_rate = hourly_rate,
+            .active = true,
+            .account_manager = accounts_module.AccountManager.init(self.allocator),
+        };
+
+        try self.workers.append(self.allocator, worker);
+        return worker_id;
     }
 
-    pub fn updateAssignmentStatus(self: *WorkerManagementSystem, assignment_id: []const u8, status: []const u8) void {
-        if (self.assignments.getPtr(assignment_id)) |assignment| {
-            assignment.status = status;
+    /// Add a skill to a worker's profile
+    pub fn addSkill(self: *WorkerManager, worker_id: u32, skill: []const u8) !void {
+        if (worker_id < @as(u32, @intCast(self.workers.items.len))) {
+            const skill_copy = try self.allocator.dupe(u8, skill);
+            try self.workers.items[worker_id].skills.append(self.allocator, skill_copy);
         }
     }
 
-    pub fn processPayment(self: *WorkerManagementSystem, assignment_id: []const u8, amount: f64) !void {
-        if (self.assignments.get(assignment_id)) |assignment| {
-            try self.payments.put(assignment_id, .{ .worker_id = assignment.worker_id, .amount = amount, .status = "completed" });
-        } else return error.AssignmentNotFound;
+    /// Account management helpers: add an account for a worker
+    pub fn addWorkerAccount(
+        self: *WorkerManager,
+        worker_id: u32,
+        acct_type: accounts_module.AccountType,
+        username: []const u8,
+        provider: []const u8,
+        details: []const u8,
+    ) !u32 {
+        if (worker_id >= @as(u32, @intCast(self.workers.items.len))) {
+            return WorkerError.WorkerNotFound;
+        }
+        return try self.workers.items[worker_id].account_manager.addAccount(
+            acct_type,
+            username,
+            provider,
+            details,
+        );
     }
 
-    pub fn deinit(self: *WorkerManagementSystem) void {
-        self.workers.deinit();
-        self.assignments.deinit();
-        self.payments.deinit();
+    pub fn deactivateWorkerAccount(self: *WorkerManager, worker_id: u32, acct_id: u32) !void {
+        if (worker_id >= @as(u32, @intCast(self.workers.items.len))) {
+            return WorkerError.WorkerNotFound;
+        }
+        try self.workers.items[worker_id].account_manager.deactivateAccount(acct_id);
+    }
+
+    pub fn getWorkerActiveAccountCount(self: *WorkerManager, worker_id: u32) u32 {
+        if (worker_id < @as(u32, @intCast(self.workers.items.len))) {
+            return self.workers.items[worker_id].account_manager.getActiveCount();
+        }
+        return 0;
+    }
+
+    /// Deactivate a worker
+    pub fn deactivateWorker(self: *WorkerManager, worker_id: u32) void {
+        if (worker_id < @as(u32, @intCast(self.workers.items.len))) {
+            self.workers.items[worker_id].active = false;
+        }
+    }
+
+    /// Get count of active workers
+    pub fn getActiveCount(self: *WorkerManager) u32 {
+        var count: u32 = 0;
+        for (self.workers.items) |worker| {
+            if (worker.active) {
+                count += 1;
+            }
+        }
+        return count;
+    }
+
+    /// Return a list of workers matching a given type.
+    pub fn getWorkersByType(self: *WorkerManager, wtype: WorkerType, allocator: std.mem.Allocator) !std.ArrayList(Worker) {
+        var result = std.ArrayList(Worker){};
+        for (self.workers.items) |worker| {
+            if (worker.worker_type == wtype) {
+                try result.append(allocator, worker);
+            }
+        }
+        return result;
     }
 };
-
-pub fn worker() void {
-    const allocator = std.heap.page_allocator;
-    var system = WorkerManagementSystem.init(allocator);
-    defer system.deinit();
-
-    // Example usage
-    _ = system.registerWorker("worker1", "Alice", "Programming, Design", 50.0);
-    _ = system.createAssignment("assignment1", "worker1", "Build a website", "2024-12-31", 5000.0);
-    system.updateAssignmentStatus("assignment1", "in progress");
-    _ = system.processPayment("assignment1", 2500.0);
-}
-
-pub fn executor() void {
-    worker();
-}
