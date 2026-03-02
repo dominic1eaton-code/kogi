@@ -42,7 +42,9 @@ pub const CPUManager = struct {
             self.allocator.free(cpu.name);
             self.allocator.free(cpu.email);
             for (cpu.skills.items) |s| self.allocator.free(s);
-            cpu.skills.deinit(self.allocator);
+            // skills list stored as const in struct, cast to mutable for deinit
+            var mutable_skills = cpu.skills;
+            mutable_skills.deinit(self.allocator);
         }
         self.cpus.deinit(self.allocator);
     }

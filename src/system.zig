@@ -18,6 +18,8 @@ const observability_module = @import("observability.zig");
 const cpu_module = @import("cpu.zig");
 const drivers_module = @import("device_drivers.zig");
 const calendar_module = @import("calendar.zig");
+const time_module = @import("time.zig");
+const cache_module = @import("cache.zig");
 const processes_module = @import("processes.zig");
 const memory_module = @import("memory.zig");
 const trace_module = @import("trace.zig");
@@ -54,6 +56,7 @@ pub const Engagement = struct {
 /// System is the core operating system engine managing all subsystems
 pub const System = struct {
     allocator: std.mem.Allocator,
+    tiered_cache: cache_module.TieredAllocator,
     identity_manager: identity_module.IdentityManager,
     workspace_manager: workspace_module.WorkspaceManager,
     directory: directory_module.Directory,
@@ -73,6 +76,8 @@ pub const System = struct {
     cpu_manager: cpu_module.CPUManager,
     driver_manager: drivers_module.DriverManager,
     scheduler: calendar_module.Scheduler,
+    clock: time_module.Clock,
+    profiler: time_module.Profiler,
     tasks: std.ArrayList(Task),
     engagements: std.ArrayList(Engagement),
 
@@ -112,6 +117,10 @@ pub const System = struct {
         // Initialize boot manager with default config
         const boot_config = bootloader_module.BootConfig{};
 
+        // initialize tiered cache allocator
+        var tiered = cache_module.TieredAllocator.init(allocator) catch unreachable;
+        const cache_alloc = tiered.asAllocator();
+
         // Initialize observability manager
         const observability_mgr = observability_module.ObservabilityManager.init(allocator);
 
@@ -122,27 +131,34 @@ pub const System = struct {
         // initialize scheduler
         const scheduler = calendar_module.Scheduler.init(allocator);
 
+        // initialize clock and profiler
+        const clock = time_module.Clock.init(allocator);
+        const profiler = time_module.Profiler.init(allocator);
+
         return System{
-            .allocator = allocator,
-            .identity_manager = identity_module.IdentityManager.init(allocator),
-            .workspace_manager = workspace_module.WorkspaceManager.init(allocator),
-            .directory = directory_module.Directory.init(allocator),
-            .vault = vault_module.Vault.init(allocator),
-            .security_manager = security_module.SecurityManager.init(allocator),
-            .logger = logging_module.Logger.init(allocator, logger_config) catch unreachable,
-            .event_bus = events_module.EventBus.init(allocator),
-            .state_manager = state_module.StateManager.init(allocator, state_config) catch unreachable,
-            .cluster = distributed_module.DistributedCluster.init(allocator, cluster_config),
-            .network_server = networking_module.NetworkServer.init(allocator, server_config),
-            .process_manager = processes_module.ProcessManager.init(allocator, scheduler_config),
-            .memory_allocator = memory_module.MemoryAllocator.init(allocator, memory_allocator_config),
+            .allocator = cache_alloc,
+            .tiered_cache = tiered,
+            .identity_manager = identity_module.IdentityManager.init(cache_alloc),
+            .workspace_manager = workspace_module.WorkspaceManager.init(cache_alloc),
+            .directory = directory_module.Directory.init(cache_alloc),
+            .vault = vault_module.Vault.init(cache_alloc),
+            .security_manager = security_module.SecurityManager.init(cache_alloc),
+            .logger = logging_module.Logger.init(cache_alloc, logger_config) catch unreachable,
+            .event_bus = events_module.EventBus.init(cache_alloc),
+            .state_manager = state_module.StateManager.init(cache_alloc, state_config) catch unreachable,
+            .cluster = distributed_module.DistributedCluster.init(cache_alloc, cluster_config),
+            .network_server = networking_module.NetworkServer.init(cache_alloc, server_config),
+            .process_manager = processes_module.ProcessManager.init(cache_alloc, scheduler_config),
+            .memory_allocator = memory_module.MemoryAllocator.init(cache_alloc, memory_allocator_config),
             .trace_manager = trace_manager,
             .audit_manager = audit_manager,
-            .boot_manager = bootloader_module.BootManager.init(allocator, boot_config),
+            .boot_manager = bootloader_module.BootManager.init(cache_alloc, boot_config),
             .observability = observability_mgr,
             .cpu_manager = cpu_mgr,
             .driver_manager = driver_mgr,
             .scheduler = scheduler,
+            .clock = clock,
+            .profiler = profiler,
             .tasks = std.ArrayList(Task){},
             .engagements = std.ArrayList(Engagement){},
         };
@@ -195,6 +211,11 @@ pub const System = struct {
         // clean up scheduler
         var scheduler = self.scheduler;
         scheduler.deinit();
+        // clean up time/profiler
+        var profiler = self.profiler;
+        profiler.deinit();
+        // clean up tiered cache
+        self.tiered_cache.deinit();
         // Clean up tasks
         for (self.tasks.items) |*task| {
             self.allocator.free(task.title);

@@ -19,7 +19,18 @@ zig build test 2>&1 | Select-Object -First 100
 zig build test; $LASTEXITCODE
 grep -E "^test \"" src\tests.zig
 
+sed -n '540,570p' "D:\Users\domni\scoop\persist\vscode\data\user-data\User\globalStorage\ziglang.vscode-zig\zig\x86_64-windows-0.15.2\lib\std/hash_map.zig"
+grep -n "AutoHashMap" -R "D:\Users\domni\scoop\persist\vscode\data\user-data\User\globalStorage\ziglang.vscode-zig\zig\x86_64-windows-0.15.2\lib\std"
+sed -n '120,150p' "D:\Users\domni\scoop\persist\vscode\data\user-data\User\globalStorage\ziglang.vscode-zig\zig\x86_64-windows-0.15.2\lib\std/hash_map.zig"
+grep -n "pub fn HashMap" -R "D:\Users\domni\scoop\persist\vscode\data\user-data\User\globalStorage\ziglang.vscode-zig\zig\x86_64-windows-0.15.2\lib\std"
 
+
+zig build 2>&1 | tail -10
+ls -la zig-cache\bin\ | head -20
+Get-ChildItem zig-cache\bin\
+grep -n "pub fn HashMap" -R "D:\Users\domni\scoop\persist\vscode\data\user-data\User\globalStorage\ziglang.vscode-zig\zig\x86_64-windows-0.15.2\lib\std"
+sed -n '120,150p' "D:\Users\domni\scoop\persist\vscode\data\user-data\User\globalStorage\ziglang.vscode-zig\zig\x86_64-windows-0.15.2\lib\std/hash_map.zig" 
+grep -n "AutoHashMap" -R "D:\Users\domni\scoop\persist\vscode\data\user-data\User\globalStorage\ziglang.vscode-zig\zig\x86_64-windows-0.15.2\lib\std"
 
 # notes
 # * kogi portfolio management app

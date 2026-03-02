@@ -20,6 +20,7 @@ const cpu_module = @import("cpu.zig");
 const drivers_module = @import("device_drivers.zig");
 // portfolio.zig already exists; imported via earlier root exports under workspace
 const calendar_module = @import("calendar.zig");
+const time_module = @import("time.zig");
 const observability_module = @import("observability.zig");
 const processes_module = @import("processes.zig");
 const memory_module = @import("memory.zig");
@@ -231,6 +232,18 @@ pub const CRMManager = directory_module.Directory;
 pub const Asset = vault_module.VaultItem;
 pub const AssetManager = vault_module.Vault;
 pub const AssetType = vault_module.VaultItemType;
+
+// Time & Clock Management
+pub const TimePoint = time_module.TimePoint;
+pub const Duration = time_module.Duration;
+pub const DateTime = time_module.DateTime;
+pub const TimeZone = time_module.TimeZone;
+pub const Clock = time_module.Clock;
+pub const Timer = time_module.Timer;
+pub const Profiler = time_module.Profiler;
+pub const StopWatch = time_module.StopWatch;
+pub const TimeSource = time_module.TimeSource;
+pub const SystemTimeSource = time_module.SystemTimeSource;
 
 pub fn bufferedPrint() !void {
     // Stdout is for the actual output of your application, for example if you
