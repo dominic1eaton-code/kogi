@@ -3,6 +3,29 @@
 
 const std = @import("std");
 
+/// Simple CPU context placeholder for context switching
+pub const CPUContext = struct {
+    registers: [16]usize,
+    stack_ptr: ?*u8,
+    pc: ?usize,
+
+    pub fn init() CPUContext {
+        return CPUContext{ .registers = undefined, .stack_ptr = null, .pc = null };
+    }
+};
+
+/// Save the current CPU context (stub implementation)
+fn saveCurrentContext() CPUContext {
+    // In a real OS this would capture registers/pc/sp
+    return CPUContext.init();
+}
+
+/// Restore a CPU context (stub implementation)
+fn restoreContext(ctx: CPUContext) void {
+    // In a real OS this would load registers/pc/sp
+    _ = ctx;
+}
+
 /// Process state
 pub const ProcessState = enum {
     created,
@@ -58,6 +81,8 @@ pub const Process = struct {
     thread_count: u32 = 0,
     open_file_count: u32 = 0,
     metadata: std.StringHashMap([]const u8),
+    // CPU context (registers, stack pointer etc) used for context switching
+    context: CPUContext,
 };
 
 /// Process lifecycle event
@@ -156,6 +181,7 @@ pub const ProcessManager = struct {
             .created_at = std.time.timestamp(),
             .resources = resources,
             .metadata = std.StringHashMap([]const u8).init(self.allocator),
+            .context = CPUContext.init(),
         };
 
         try self.processes.append(self.allocator, process);
@@ -214,6 +240,31 @@ pub const ProcessManager = struct {
             }
         }
         return error.ProcessNotFound;
+    }
+
+    /// Perform a context switch between two processes
+    pub fn contextSwitch(self: *ProcessManager, from_id: u32, to_id: u32) !void {
+        self.mutex.lock();
+        defer self.mutex.unlock();
+
+        var from_proc: ?*Process = null;
+        var to_proc: ?*Process = null;
+        for (self.processes.items) |*p| {
+            if (p.id == from_id) from_proc = p;
+            if (p.id == to_id) to_proc = p;
+        }
+        if (from_proc == null or to_proc == null) return error.ProcessNotFound;
+
+        // save current process context and set to ready
+        from_proc.*.state = .ready;
+        from_proc.*.context = saveCurrentContext();
+
+        // switch in new process
+        to_proc.*.state = .running;
+        try self.logProcessEvent(from_id, .context_switched, "switched out");
+        try self.logProcessEvent(to_id, .context_switched, "switched in");
+        restoreContext(to_proc.*.context);
+        self.running_process_id = to_id;
     }
 
     /// Terminate a process
@@ -299,6 +350,22 @@ pub const ProcessManager = struct {
             }
         }
 
+        // perform context switch if appropriate
+        if (best_process_id) |next_id| {
+            if (self.running_process_id) |current_id| {
+                if (current_id != next_id) {
+                    _ = self.contextSwitch(current_id, next_id);
+                }
+            } else {
+                // no running process, simply start next
+                self.running_process_id = next_id;
+                for (self.processes.items) |*p| {
+                    if (p.id == next_id) {
+                        p.state = .running;
+                    }
+                }
+            }
+        }
         return best_process_id;
     }
 

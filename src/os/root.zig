@@ -21,6 +21,7 @@ const drivers_module = @import("device_drivers.zig");
 // portfolio.zig already exists; imported via earlier root exports under workspace
 const calendar_module = @import("calendar.zig");
 const time_module = @import("time.zig");
+const scheduler_module = @import("scheduler.zig");
 const observability_module = @import("observability.zig");
 const processes_module = @import("processes.zig");
 const memory_module = @import("memory.zig");
@@ -146,7 +147,7 @@ pub const DriverManager = drivers_module.DriverManager;
 
 // Calendar & Scheduling
 pub const CalendarEvent = calendar_module.CalendarEvent;
-pub const Scheduler = calendar_module.Scheduler;
+pub const CalendarScheduler = calendar_module.Scheduler;
 
 // Observability System
 pub const ObservabilityManager = observability_module.ObservabilityManager;
@@ -165,6 +166,16 @@ pub const ProcessResources = processes_module.ProcessResources;
 pub const ProcessEvent = processes_module.ProcessEvent;
 pub const ProcessEventType = processes_module.ProcessEventType;
 pub const SchedulerConfig = processes_module.SchedulerConfig;
+
+// Scheduling & Dispatch System
+pub const Scheduler = scheduler_module.Scheduler;
+pub const Dispatcher = scheduler_module.Dispatcher;
+pub const TaskQueue = scheduler_module.TaskQueue;
+pub const PriorityQueue = scheduler_module.PriorityQueue;
+pub const DelayedQueue = scheduler_module.DelayedQueue;
+pub const WorkStealingQueue = scheduler_module.WorkStealingQueue;
+pub const TaskPriorityLevel = scheduler_module.TaskPriority;
+pub const TaskState = scheduler_module.TaskState;
 
 // Memory Management System
 pub const MemoryAllocator = memory_module.MemoryAllocator;

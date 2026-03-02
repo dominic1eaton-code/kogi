@@ -1,6 +1,93 @@
-//! KOGI System Module - Core Operating System
-//! The System is the kernel/core of the KOGI OS.
-//! It manages identities, workspaces, tasks, engagements, and coordinates all subsystems.
+    /// Launch a custom application by name
+    pub fn launchApp(self: *System, app_name: []const u8) bool {
+        for (self.custom_apps.items) |app| {
+            if (std.mem.eql(u8, app.name, app_name)) {
+                app.start(self);
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /// Stop a custom application by name
+    pub fn stopApp(self: *System, app_name: []const u8) bool {
+        for (self.custom_apps.items) |app| {
+            if (std.mem.eql(u8, app.name, app_name)) {
+                app.stop(self);
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /// Get status of a custom application by name
+    pub fn appStatus(self: *System, app_name: []const u8) ?[]const u8 {
+        for (self.custom_apps.items) |app| {
+            if (std.mem.eql(u8, app.name, app_name)) {
+                return app.status(self);
+            }
+        }
+        return null;
+    }
+/// Custom application interface
+pub const CustomApplication = struct {
+    name: []const u8,
+    start: *const fn (system: *System) void,
+    stop: *const fn (system: *System) void,
+    status: *const fn (system: *System) []const u8,
+};
+
+const portfolio_app_module = @import("../apps/portfolio_app.zig");
+pub const PortfolioManagementApp = portfolio_app_module.PortfolioManagementApp;
+/// Dashboard manager for OS system dashboard
+pub const DashboardManager = struct {
+    pub fn init(allocator: std.mem.Allocator) DashboardManager {
+        // Initialization logic for dashboard
+        return DashboardManager{};
+    }
+    pub fn deinit(self: *DashboardManager) void {
+        // Cleanup logic for dashboard
+    }
+};
+
+/// UI connector for OS system
+pub const UserMode = enum { user, kernel };
+
+    pub fn init(allocator: std.mem.Allocator) UIConnector {
+        // Initialization logic for UI connector
+        return UIConnector{};
+    }
+    pub fn deinit(self: *UIConnector) void {
+        // Cleanup logic for UI connector
+    }
+};
+
+/// Application management system
+pub const ApplicationManager = struct {
+    pub fn init(allocator: std.mem.Allocator) ApplicationManager {
+        // Initialization logic for application manager
+        return ApplicationManager{};
+    }
+    pub fn deinit(self: *ApplicationManager) void {
+        // Cleanup logic for application manager
+    }
+};
+
+/// Session and session management system
+pub const System = struct {
+    pub fn init(allocator: std.mem.Allocator) SessionManager {
+        // Initialization logic for session manager
+        return SessionManager{};
+    }
+    pub fn deinit(self: *SessionManager) void {
+        // Cleanup logic for session manager
+    }
+};
+//! KOGI System Module - User-Level OS Functionality
+    mode: UserMode,
+    kernel: ?*kernel_module.Kernel,
+//! The System manages UI, application, user-level logic, and supports custom user applications.
+//! It operates in user mode and interfaces with the kernel for core operations.
 
 const std = @import("std");
 const identity_module = @import("identity.zig");
@@ -19,6 +106,8 @@ const cpu_module = @import("cpu.zig");
 const drivers_module = @import("device_drivers.zig");
 const calendar_module = @import("calendar.zig");
 const time_module = @import("time.zig");
+const scheduler_module = @import("scheduler.zig");
+    custom_apps: std.ArrayList(CustomApplication),
 const cache_module = @import("cache.zig");
 const processes_module = @import("processes.zig");
 const memory_module = @import("memory.zig");
@@ -75,13 +164,18 @@ pub const System = struct {
     observability: observability_module.ObservabilityManager,
     cpu_manager: cpu_module.CPUManager,
     driver_manager: drivers_module.DriverManager,
-    scheduler: calendar_module.Scheduler,
+    scheduler: scheduler_module.Scheduler,
+    dispatcher: ?scheduler_module.Dispatcher,
     clock: time_module.Clock,
     profiler: time_module.Profiler,
     tasks: std.ArrayList(Task),
     engagements: std.ArrayList(Engagement),
+    dashboard: ?DashboardManager,
+    ui_connector: ?UIConnector,
+    app_manager: ?ApplicationManager,
+    session_manager: ?SessionManager,
 
-    pub fn init(allocator: std.mem.Allocator) System {
+    pub fn init(allocator: std.mem.Allocator, kernel: ?*kernel_module.Kernel) System {
         // Initialize logger with default config
         var log_outputs = std.ArrayList(logging_module.LogOutput){};
         log_outputs.append(allocator, .stdout) catch {};
@@ -128,13 +222,18 @@ pub const System = struct {
         const cpu_mgr = cpu_module.CPUManager.init(allocator);
         const driver_mgr = drivers_module.DriverManager.init(allocator);
 
-        // initialize scheduler
-        const scheduler = calendar_module.Scheduler.init(allocator);
+        // initialize scheduler from scheduling module
+        const scheduler = scheduler_module.Scheduler.init(allocator);
+        const dispatcher = scheduler_module.Dispatcher.init(allocator, @constCast(&scheduler), 4);
 
         // initialize clock and profiler
         const clock = time_module.Clock.init(allocator);
         const profiler = time_module.Profiler.init(allocator);
 
+        const dashboard = DashboardManager.init(allocator);
+        const ui_connector = UIConnector.init(allocator);
+        const app_manager = ApplicationManager.init(allocator);
+        const session_manager = SessionManager.init(allocator);
         return System{
             .allocator = cache_alloc,
             .tiered_cache = tiered,
@@ -147,7 +246,16 @@ pub const System = struct {
             .event_bus = events_module.EventBus.init(cache_alloc),
             .state_manager = state_module.StateManager.init(cache_alloc, state_config) catch unreachable,
             .cluster = distributed_module.DistributedCluster.init(cache_alloc, cluster_config),
-            .network_server = networking_module.NetworkServer.init(cache_alloc, server_config),
+            var custom_apps = std.ArrayList(CustomApplication){};
+            // Register PortfolioManagementApp as first core app
+            const portfolio_app = CustomApplication{
+                .name = "PortfolioManagementApp",
+                .start = PortfolioManagementApp.start,
+                .stop = PortfolioManagementApp.stop,
+                .status = PortfolioManagementApp.status,
+            };
+            custom_apps.append(allocator, portfolio_app) catch unreachable;
+            return System{
             .process_manager = processes_module.ProcessManager.init(cache_alloc, scheduler_config),
             .memory_allocator = memory_module.MemoryAllocator.init(cache_alloc, memory_allocator_config),
             .trace_manager = trace_manager,
@@ -157,10 +265,17 @@ pub const System = struct {
             .cpu_manager = cpu_mgr,
             .driver_manager = driver_mgr,
             .scheduler = scheduler,
+            .dispatcher = dispatcher,
             .clock = clock,
             .profiler = profiler,
             .tasks = std.ArrayList(Task){},
             .engagements = std.ArrayList(Engagement){},
+            .dashboard = dashboard,
+            .ui_connector = ui_connector,
+            .app_manager = app_manager,
+            .session_manager = session_manager,
+            .mode = .user,
+            .kernel = kernel,
         };
     }
 
@@ -173,6 +288,7 @@ pub const System = struct {
         self.directory.deinit();
         // Clean up vault
         self.vault.deinit();
+                .custom_apps = custom_apps,
         // Clean up security
         self.security_manager.deinit();
         // Clean up logging
@@ -188,6 +304,10 @@ pub const System = struct {
         // Clean up process manager
         var process_manager = self.process_manager;
         process_manager.deinit();
+        if (self.dispatcher) |*d| {
+            d.stop();
+            d.deinit();
+        }
         // Clean up memory allocator
         var memory_allocator = self.memory_allocator;
         memory_allocator.deinit();
@@ -231,6 +351,11 @@ pub const System = struct {
             engagement.completion_date = null;
         }
         self.engagements.deinit(self.allocator);
+            // Clean up dashboard, UI connector, app manager, session manager
+            if (self.dashboard) |*d| d.deinit();
+            if (self.ui_connector) |*u| u.deinit();
+            if (self.app_manager) |*a| a.deinit();
+            if (self.session_manager) |*s| s.deinit();
     }
 
     // ========== Identity Management Delegation ==========

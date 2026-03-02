@@ -6,8 +6,10 @@ pub fn main() !void {
     defer _ = gpa.deinit();
     const allocator = gpa.allocator();
 
+    // Initialize KOGI System (core OS)
     var system = kogi.System.init(allocator);
     defer system.deinit();
 
+    // Start interactive CLI shell
     try kogi.startCLI(allocator, &system);
 }

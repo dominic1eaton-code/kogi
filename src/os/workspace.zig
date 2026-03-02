@@ -1,6 +1,10 @@
+//! KOGI Workspace Module - Personal Work Environment in the KOGI OS
+//! A Workspace is analogous to a user's home directory and file hierarchy.
+//! It organizes all work artifacts, projects, collections, and assets.
+
 const std = @import("std");
 
-/// Expanded entity types to support diverse portfolio contents
+/// Expanded entity types to support diverse workspace contents
 pub const EntityType = enum {
     portfolio,
     program,
@@ -22,7 +26,7 @@ pub const EntityType = enum {
     custom,
 };
 
-/// Entity classes for business domain classification
+/// Entity classifications for workspace domains
 pub const EntityClass = enum {
     strategic,
     operational,
@@ -38,14 +42,14 @@ pub const EntityClass = enum {
     personal,
 };
 
-/// Tag for flexible categorization
+/// Tag for flexible workspace organization
 pub const Tag = struct {
     id: u32,
     name: []const u8,
     category: []const u8,
 };
 
-/// Metadata container for rich entity information
+/// Metadata container for rich workspace item information
 pub const Metadata = struct {
     entity_type: EntityType,
     entity_class: EntityClass,
@@ -58,7 +62,7 @@ pub const Metadata = struct {
     parent_id: ?u32 = null,
 };
 
-/// Index entry for fast lookups
+/// Index entry for fast workspace lookups
 pub const IndexEntry = struct {
     id: u32,
     name: []const u8,
@@ -66,36 +70,36 @@ pub const IndexEntry = struct {
     parent_id: ?u32 = null,
 };
 
-/// Generic item that can represent any type of work/artifact/product
-pub const PortfolioItem = struct {
+/// Generic item that can represent any type of work/artifact/product in workspace
+pub const WorkspaceItem = struct {
     id: u32,
     name: []const u8,
     description: []const u8,
     metadata: Metadata,
 };
 
-/// A generic collection container - can hold any items with a specific purpose
-pub const PortfolioCollection = struct {
+/// A collection container - can hold any items with a specific purpose
+pub const Collection = struct {
     id: u32,
     name: []const u8,
     description: []const u8,
     item_type: EntityType,
-    items: std.ArrayList(PortfolioItem),
+    items: std.ArrayList(WorkspaceItem),
     metadata: Metadata,
 };
 
-/// Portfolio is now a generic top-level container that can hold
-/// any mix of collections and items
-pub const Portfolio = struct {
+/// Workspace is a personal work environment container for independent worker workspaces
+pub const Workspace = struct {
     id: u32,
     name: []const u8,
     description: []const u8,
-    collections: std.ArrayList(PortfolioCollection),
-    items: std.ArrayList(PortfolioItem),
+    collections: std.ArrayList(Collection),
+    items: std.ArrayList(WorkspaceItem),
     metadata: Metadata,
+    // Add APIs for managing independent worker workspaces here
 };
 
-/// Task represents work items (legacy support)
+/// Task represents a work item (legacy support)
 pub const Task = struct {
     id: u32,
     title: []const u8,
@@ -105,35 +109,9 @@ pub const Task = struct {
     metadata: Metadata,
 };
 
-/// Project is a container for tasks with specific objectives (legacy support)
-pub const Project = struct {
-    id: u32,
-    name: []const u8,
-    description: []const u8,
-    tasks: std.ArrayList(Task),
-    metadata: Metadata,
-};
+// Project, Program, and asset logic is now managed by the PortfolioManagementApp in src/apps/portfolio_app.zig
 
-/// Program groups multiple projects with shared goals (legacy support)
-pub const Program = struct {
-    id: u32,
-    name: []const u8,
-    description: []const u8,
-    projects: std.ArrayList(Project),
-    metadata: Metadata,
-};
-
-/// SubPortfolio is a portfolio within a portfolio (legacy support)
-pub const SubPortfolio = struct {
-    id: u32,
-    name: []const u8,
-    description: []const u8,
-    programs: std.ArrayList(Program),
-    projects: std.ArrayList(Project),
-    metadata: Metadata,
-};
-
-/// Search filter criteria
+/// Search filter criteria for workspace
 pub const SearchFilter = struct {
     name_pattern: ?[]const u8 = null,
     entity_type: ?EntityType = null,
@@ -143,35 +121,35 @@ pub const SearchFilter = struct {
     owner_id: ?u32 = null,
 };
 
-/// Portfolio Manager for hierarchical portfolio operations
-pub const PortfolioManager = struct {
+/// Workspace Manager for personal work environment operations
+pub const WorkspaceManager = struct {
     allocator: std.mem.Allocator,
-    portfolio: ?Portfolio = null,
+    workspace: ?Workspace = null,
     index: std.ArrayList(IndexEntry),
     next_id: u32 = 0,
 
-    pub fn init(allocator: std.mem.Allocator) PortfolioManager {
-        return PortfolioManager{
+    pub fn init(allocator: std.mem.Allocator) WorkspaceManager {
+        return WorkspaceManager{
             .allocator = allocator,
             .index = std.ArrayList(IndexEntry){},
         };
     }
 
-    pub fn deinit(self: *PortfolioManager) void {
-        if (self.portfolio) |*portfolio| {
-            self.deinitPortfolio(portfolio);
+    pub fn deinit(self: *WorkspaceManager) void {
+        if (self.workspace) |*workspace| {
+            self.deinitWorkspace(workspace);
         }
         self.deinitIndex();
     }
 
-    fn deinitIndex(self: *PortfolioManager) void {
+    fn deinitIndex(self: *WorkspaceManager) void {
         for (self.index.items) |*entry| {
             self.allocator.free(entry.name);
         }
         self.index.deinit(self.allocator);
     }
 
-    fn deinitMetadata(self: *PortfolioManager, metadata: *Metadata) void {
+    fn deinitMetadata(self: *WorkspaceManager, metadata: *Metadata) void {
         self.allocator.free(metadata.category);
         for (metadata.tags.items) |*tag| {
             self.allocator.free(tag.name);
@@ -186,15 +164,15 @@ pub const PortfolioManager = struct {
         metadata.custom_fields.deinit();
     }
 
-    fn deinitPortfolioItem(self: *PortfolioManager, item: *PortfolioItem) void {
+    fn deinitWorkspaceItem(self: *WorkspaceManager, item: *WorkspaceItem) void {
         self.allocator.free(item.name);
         self.allocator.free(item.description);
         self.deinitMetadata(&item.metadata);
     }
 
-    fn deinitCollection(self: *PortfolioManager, collection: *PortfolioCollection) void {
+    fn deinitCollection(self: *WorkspaceManager, collection: *Collection) void {
         for (collection.items.items) |*item| {
-            self.deinitPortfolioItem(item);
+            self.deinitWorkspaceItem(item);
         }
         collection.items.deinit(self.allocator);
         self.allocator.free(collection.name);
@@ -202,13 +180,13 @@ pub const PortfolioManager = struct {
         self.deinitMetadata(&collection.metadata);
     }
 
-    fn deinitTask(self: *PortfolioManager, task: *Task) void {
+    fn deinitTask(self: *WorkspaceManager, task: *Task) void {
         self.allocator.free(task.title);
         self.allocator.free(task.description);
         self.deinitMetadata(&task.metadata);
     }
 
-    fn deinitProject(self: *PortfolioManager, project: *Project) void {
+    fn deinitProject(self: *WorkspaceManager, project: *Project) void {
         for (project.tasks.items) |*task| {
             self.deinitTask(task);
         }
@@ -218,7 +196,7 @@ pub const PortfolioManager = struct {
         self.deinitMetadata(&project.metadata);
     }
 
-    fn deinitProgram(self: *PortfolioManager, program: *Program) void {
+    fn deinitProgram(self: *WorkspaceManager, program: *Program) void {
         for (program.projects.items) |*project| {
             self.deinitProject(project);
         }
@@ -228,36 +206,36 @@ pub const PortfolioManager = struct {
         self.deinitMetadata(&program.metadata);
     }
 
-    fn deinitSubPortfolio(self: *PortfolioManager, sub_portfolio: *SubPortfolio) void {
-        for (sub_portfolio.programs.items) |*program| {
+    fn deinitSubWorkspace(self: *WorkspaceManager, sub_workspace: *SubWorkspace) void {
+        for (sub_workspace.programs.items) |*program| {
             self.deinitProgram(program);
         }
-        sub_portfolio.programs.deinit(self.allocator);
-        for (sub_portfolio.projects.items) |*project| {
+        sub_workspace.programs.deinit(self.allocator);
+        for (sub_workspace.projects.items) |*project| {
             self.deinitProject(project);
         }
-        sub_portfolio.projects.deinit(self.allocator);
-        self.allocator.free(sub_portfolio.name);
-        self.allocator.free(sub_portfolio.description);
-        self.deinitMetadata(&sub_portfolio.metadata);
+        sub_workspace.projects.deinit(self.allocator);
+        self.allocator.free(sub_workspace.name);
+        self.allocator.free(sub_workspace.description);
+        self.deinitMetadata(&sub_workspace.metadata);
     }
 
-    fn deinitPortfolio(self: *PortfolioManager, portfolio: *Portfolio) void {
-        for (portfolio.collections.items) |*col| {
+    fn deinitWorkspace(self: *WorkspaceManager, workspace: *Workspace) void {
+        for (workspace.collections.items) |*col| {
             self.deinitCollection(col);
         }
-        portfolio.collections.deinit(self.allocator);
-        for (portfolio.items.items) |*item| {
-            self.deinitPortfolioItem(item);
+        workspace.collections.deinit(self.allocator);
+        for (workspace.items.items) |*item| {
+            self.deinitWorkspaceItem(item);
         }
-        portfolio.items.deinit(self.allocator);
-        self.allocator.free(portfolio.name);
-        self.allocator.free(portfolio.description);
-        self.deinitMetadata(&portfolio.metadata);
+        workspace.items.deinit(self.allocator);
+        self.allocator.free(workspace.name);
+        self.allocator.free(workspace.description);
+        self.deinitMetadata(&workspace.metadata);
     }
 
-    /// Create a new portfolio
-    pub fn createPortfolio(self: *PortfolioManager, name: []const u8, description: []const u8, category: []const u8) !void {
+    /// Create a new workspace
+    pub fn createWorkspace(self: *WorkspaceManager, name: []const u8, description: []const u8, category: []const u8) !void {
         const id = self.next_id;
         self.next_id += 1;
 
@@ -271,28 +249,28 @@ pub const PortfolioManager = struct {
             .updated_at = 0,
         };
 
-        const portfolio = Portfolio{
+        const workspace = Workspace{
             .id = id,
             .name = try self.allocator.dupe(u8, name),
             .description = try self.allocator.dupe(u8, description),
-            .collections = std.ArrayList(PortfolioCollection){},
-            .items = std.ArrayList(PortfolioItem){},
+            .collections = std.ArrayList(Collection){},
+            .items = std.ArrayList(WorkspaceItem){},
             .metadata = metadata,
         };
 
-        self.portfolio = portfolio;
+        self.workspace = workspace;
         try self.addToIndex(id, name, .portfolio, null);
     }
 
-    /// Add a generic collection to the portfolio (e.g., music collection, artwork, products, etc)
+    /// Add a collection to the workspace
     pub fn addCollection(
-        self: *PortfolioManager,
+        self: *WorkspaceManager,
         name: []const u8,
         description: []const u8,
         item_type: EntityType,
         category: []const u8,
     ) !u32 {
-        if (self.portfolio == null) return error.PortfolioNotFound;
+        if (self.workspace == null) return error.WorkspaceNotFound;
 
         const id = self.next_id;
         self.next_id += 1;
@@ -305,33 +283,33 @@ pub const PortfolioManager = struct {
             .custom_fields = std.StringHashMap([]const u8).init(self.allocator),
             .created_at = 0,
             .updated_at = 0,
-            .parent_id = self.portfolio.?.id,
+            .parent_id = self.workspace.?.id,
         };
 
-        const collection = PortfolioCollection{
+        const collection = Collection{
             .id = id,
             .name = try self.allocator.dupe(u8, name),
             .description = try self.allocator.dupe(u8, description),
             .item_type = item_type,
-            .items = std.ArrayList(PortfolioItem){},
+            .items = std.ArrayList(WorkspaceItem){},
             .metadata = metadata,
         };
 
-        try self.portfolio.?.collections.append(self.allocator, collection);
-        try self.addToIndex(id, name, item_type, self.portfolio.?.id);
+        try self.workspace.?.collections.append(self.allocator, collection);
+        try self.addToIndex(id, name, item_type, self.workspace.?.id);
         return id;
     }
 
     /// Add an item to a collection
     pub fn addItemToCollection(
-        self: *PortfolioManager,
+        self: *WorkspaceManager,
         collection_id: u32,
         name: []const u8,
         description: []const u8,
     ) !u32 {
-        if (self.portfolio == null) return error.PortfolioNotFound;
+        if (self.workspace == null) return error.WorkspaceNotFound;
 
-        for (self.portfolio.?.collections.items) |*collection| {
+        for (self.workspace.?.collections.items) |*collection| {
             if (collection.id == collection_id) {
                 const id = self.next_id;
                 self.next_id += 1;
@@ -347,7 +325,7 @@ pub const PortfolioManager = struct {
                     .parent_id = collection_id,
                 };
 
-                const item = PortfolioItem{
+                const item = WorkspaceItem{
                     .id = id,
                     .name = try self.allocator.dupe(u8, name),
                     .description = try self.allocator.dupe(u8, description),
@@ -362,15 +340,15 @@ pub const PortfolioManager = struct {
         return error.CollectionNotFound;
     }
 
-    /// Add a top-level item to the portfolio
+    /// Add a top-level item to the workspace
     pub fn addItem(
-        self: *PortfolioManager,
+        self: *WorkspaceManager,
         name: []const u8,
         description: []const u8,
         item_type: EntityType,
         category: []const u8,
     ) !u32 {
-        if (self.portfolio == null) return error.PortfolioNotFound;
+        if (self.workspace == null) return error.WorkspaceNotFound;
 
         const id = self.next_id;
         self.next_id += 1;
@@ -383,85 +361,73 @@ pub const PortfolioManager = struct {
             .custom_fields = std.StringHashMap([]const u8).init(self.allocator),
             .created_at = 0,
             .updated_at = 0,
-            .parent_id = self.portfolio.?.id,
+            .parent_id = self.workspace.?.id,
         };
 
-        const item = PortfolioItem{
+        const item = WorkspaceItem{
             .id = id,
             .name = try self.allocator.dupe(u8, name),
             .description = try self.allocator.dupe(u8, description),
             .metadata = metadata,
         };
 
-        try self.portfolio.?.items.append(self.allocator, item);
-        try self.addToIndex(id, name, item_type, self.portfolio.?.id);
+        try self.workspace.?.items.append(self.allocator, item);
+        try self.addToIndex(id, name, item_type, self.workspace.?.id);
         return id;
     }
 
-    /// Generic getCollectionCount
-    pub fn getCollectionCount(self: *PortfolioManager) u32 {
-        if (self.portfolio) |p| {
-            return @as(u32, @intCast(p.collections.items.len));
+    pub fn getCollectionCount(self: *WorkspaceManager) u32 {
+        if (self.workspace) |w| {
+            return @as(u32, @intCast(w.collections.items.len));
         }
         return 0;
     }
 
-    /// Generic getItemCount for portfolio or collection
-    pub fn getPortfolioItemCount(self: *PortfolioManager) u32 {
-        if (self.portfolio) |p| {
-            return @as(u32, @intCast(p.items.items.len));
+    pub fn getWorkspaceItemCount(self: *WorkspaceManager) u32 {
+        if (self.workspace) |w| {
+            return @as(u32, @intCast(w.items.items.len));
         }
         return 0;
     }
 
-    /// Get collection by ID
-    pub fn getCollectionById(self: *PortfolioManager, collection_id: u32) ?*PortfolioCollection {
-        if (self.portfolio) |*p| {
-            for (p.collections.items) |*col| {
+    pub fn getCollectionById(self: *WorkspaceManager, collection_id: u32) ?*Collection {
+        if (self.workspace) |*w| {
+            for (w.collections.items) |*col| {
                 if (col.id == collection_id) return col;
             }
         }
         return null;
     }
 
-    /// Get collections by item type
-    pub fn getCollectionsByType(self: *PortfolioManager, item_type: EntityType) !std.ArrayList(*PortfolioCollection) {
-        var results = std.ArrayList(*PortfolioCollection){};
-        if (self.portfolio) |*p| {
-            for (p.collections.items) |*col| {
+    pub fn getCollectionsByType(self: *WorkspaceManager, item_type: EntityType, allocator: std.mem.Allocator) !std.ArrayList(*Collection) {
+        var results = std.ArrayList(*Collection){};
+        if (self.workspace) |*w| {
+            for (w.collections.items) |*col| {
                 if (col.item_type == item_type) {
-                    try results.append(&self.allocator, col);
+                    try results.append(&allocator, col);
                 }
             }
         }
         return results;
     }
 
-    /// Add sub-portfolio to main portfolio (legacy support - uses generic addItem)
-    pub fn addSubPortfolio(self: *PortfolioManager, name: []const u8, description: []const u8, category: []const u8) !void {
-        if (self.portfolio == null) return;
-
-        // Store as a collection for now via generic addItem
+    pub fn addSubWorkspace(self: *WorkspaceManager, name: []const u8, description: []const u8, category: []const u8) !void {
+        if (self.workspace == null) return;
         _ = try self.addItem(name, description, .portfolio, category);
     }
 
-    /// Add program to portfolio
-    pub fn addProgram(self: *PortfolioManager, name: []const u8, description: []const u8, category: []const u8) !void {
-        if (self.portfolio == null) return;
+    pub fn addProgram(self: *WorkspaceManager, name: []const u8, description: []const u8, category: []const u8) !void {
+        if (self.workspace == null) return;
         _ = try self.addCollection(name, description, .program, category);
     }
 
-    /// Add project to portfolio
-    pub fn addProject(self: *PortfolioManager, name: []const u8, description: []const u8, category: []const u8) !void {
-        if (self.portfolio == null) return;
+    pub fn addProject(self: *WorkspaceManager, name: []const u8, description: []const u8, category: []const u8) !void {
+        if (self.workspace == null) return;
         _ = try self.addCollection(name, description, .project, category);
     }
 
-    /// Add tag to entity
-    pub fn addTagToEntity(self: *PortfolioManager, entity_id: u32, tag_name: []const u8, tag_category: []const u8) !void {
-        if (self.portfolio == null) return;
-
-        // Search through all entities
+    pub fn addTagToEntity(self: *WorkspaceManager, entity_id: u32, tag_name: []const u8, tag_category: []const u8) !void {
+        if (self.workspace == null) return;
         if (self.findEntityMetadata(entity_id)) |metadata| {
             const tag_id = @as(u32, @intCast(metadata.tags.items.len));
             const tag = Tag{
@@ -473,40 +439,25 @@ pub const PortfolioManager = struct {
         }
     }
 
-    /// Find metadata for entity by ID
-    fn findEntityMetadata(self: *PortfolioManager, entity_id: u32) ?*Metadata {
-        if (self.portfolio) |*portfolio| {
-            if (portfolio.id == entity_id) return &portfolio.metadata;
+    fn findEntityMetadata(self: *WorkspaceManager, entity_id: u32) ?*Metadata {
+        if (self.workspace) |*workspace| {
+            if (workspace.id == entity_id) return &workspace.metadata;
 
-            for (portfolio.sub_portfolios.items) |*sub_portfolio| {
-                if (sub_portfolio.id == entity_id) return &sub_portfolio.metadata;
-                for (sub_portfolio.programs.items) |*program| {
-                    if (program.id == entity_id) return &program.metadata;
+            for (workspace.collections.items) |*col| {
+                if (col.id == entity_id) return &col.metadata;
+                for (col.items.items) |*item| {
+                    if (item.id == entity_id) return &item.metadata;
                 }
             }
 
-            for (portfolio.programs.items) |*program| {
-                if (program.id == entity_id) return &program.metadata;
-                for (program.projects.items) |*project| {
-                    if (project.id == entity_id) return &project.metadata;
-                    for (project.tasks.items) |*task| {
-                        if (task.id == entity_id) return &task.metadata;
-                    }
-                }
-            }
-
-            for (portfolio.projects.items) |*project| {
-                if (project.id == entity_id) return &project.metadata;
-                for (project.tasks.items) |*task| {
-                    if (task.id == entity_id) return &task.metadata;
-                }
+            for (workspace.items.items) |*item| {
+                if (item.id == entity_id) return &item.metadata;
             }
         }
         return null;
     }
 
-    /// Add index entry
-    fn addToIndex(self: *PortfolioManager, id: u32, name: []const u8, entity_type: EntityType, parent_id: ?u32) !void {
+    fn addToIndex(self: *WorkspaceManager, id: u32, name: []const u8, entity_type: EntityType, parent_id: ?u32) !void {
         const entry = IndexEntry{
             .id = id,
             .name = try self.allocator.dupe(u8, name),
@@ -516,8 +467,7 @@ pub const PortfolioManager = struct {
         try self.index.append(self.allocator, entry);
     }
 
-    /// Search entities by filter
-    pub fn search(self: *PortfolioManager, filter: SearchFilter, allocator: std.mem.Allocator) !std.ArrayList(IndexEntry) {
+    pub fn search(self: *WorkspaceManager, filter: SearchFilter, allocator: std.mem.Allocator) !std.ArrayList(IndexEntry) {
         var results = std.ArrayList(IndexEntry){};
 
         for (self.index.items) |entry| {
@@ -549,8 +499,7 @@ pub const PortfolioManager = struct {
         return results;
     }
 
-    /// Get entity by ID from index
-    pub fn getEntityById(self: *PortfolioManager, id: u32) ?IndexEntry {
+    pub fn getEntityById(self: *WorkspaceManager, id: u32) ?IndexEntry {
         for (self.index.items) |entry| {
             if (entry.id == id) {
                 return entry;
@@ -559,8 +508,7 @@ pub const PortfolioManager = struct {
         return null;
     }
 
-    /// Get all entities of a specific type
-    pub fn getEntitiesByType(self: *PortfolioManager, entity_type: EntityType, allocator: std.mem.Allocator) !std.ArrayList(IndexEntry) {
+    pub fn getEntitiesByType(self: *WorkspaceManager, entity_type: EntityType, allocator: std.mem.Allocator) !std.ArrayList(IndexEntry) {
         var results = std.ArrayList(IndexEntry){};
         for (self.index.items) |entry| {
             if (entry.entity_type == entity_type) {
@@ -577,13 +525,9 @@ pub const PortfolioManager = struct {
     }
 };
 
-pub fn portfolioDemo() void {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
-
-    var manager = PortfolioManager.init(allocator);
-    defer manager.deinit();
-
-    std.debug.print("Portfolio Manager initialized\n", .{});
-}
+// // Backward compatibility aliases
+// pub const Portfolio = Workspace;
+// pub const PortfolioManager = WorkspaceManager;
+// pub const PortfolioItem = WorkspaceItem;
+// pub const PortfolioCollection = Collection;
+// pub const SubPortfolio = SubWorkspace;

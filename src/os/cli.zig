@@ -2,6 +2,11 @@ const std = @import("std");
 const system_module = @import("system.zig");
 const identity_module = @import("identity.zig");
 const security_module = @import("security.zig");
+const portfolio_module = @import("portfolio.zig");
+const contract_module = @import("contract.zig");
+const crm_module = @import("crm.zig");
+const assets_module = @import("assets.zig");
+const accounts_module = @import("accounts.zig");
 
 /// Command-line interface for the KOGI Operating System
 pub const CLI = struct {
@@ -235,6 +240,26 @@ pub const CLI = struct {
         }
 
         std.debug.print("\n✓ Security demonstration completed!\n\n", .{});
+
+        // Also exercise standalone demos and subsystems to ensure
+        // the CLI touches as many exported APIs as possible.
+        std.debug.print("\n▶ Running additional module demos...\n", .{});
+        // Portfolio subsystem demo
+        portfolio_module.portfolioDemo();
+
+        // CRM demo
+        crm_module.crmDemo();
+
+        // Assets demo
+        assets_module.assetsDemo();
+
+        // Accounts demo (some modules have lightweight demos)
+        accounts_module.accountsDemo();
+
+        // Contract management (kernel-like) runner
+        _ = contract_module.runContractManagementSystem();
+
+        std.debug.print("✓ Additional module demos executed.\n\n", .{});
     }
 };
 
