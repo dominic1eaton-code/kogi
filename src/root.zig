@@ -6,6 +6,7 @@ const std = @import("std");
 const system_module = @import("system.zig");
 const identity_module = @import("identity.zig");
 const workspace_module = @import("workspace.zig");
+const portfolio_module = @import("portfolio.zig");
 const registry_module = @import("registry.zig");
 const directory_module = @import("directory.zig");
 const vault_module = @import("vault.zig");
@@ -15,6 +16,10 @@ const events_module = @import("events.zig");
 const state_module = @import("state.zig");
 const distributed_module = @import("distributed.zig");
 const networking_module = @import("networking.zig");
+const cpu_module = @import("cpu.zig");
+const drivers_module = @import("device_drivers.zig");
+// portfolio.zig already exists; imported via earlier root exports under workspace
+const calendar_module = @import("calendar.zig");
 const observability_module = @import("observability.zig");
 const processes_module = @import("processes.zig");
 const memory_module = @import("memory.zig");
@@ -128,6 +133,20 @@ pub const Protocol = networking_module.Protocol;
 pub const RequestMethod = networking_module.RequestMethod;
 pub const ResponseStatus = networking_module.ResponseStatus;
 
+// CPU Abstraction
+pub const ICPU = cpu_module.ICPU;
+pub const ICPUStatus = cpu_module.ICPUStatus;
+pub const CPUManager = cpu_module.CPUManager;
+
+// Device Drivers
+pub const IDD = drivers_module.IDD;
+pub const IDDStatus = drivers_module.IDDStatus;
+pub const DriverManager = drivers_module.DriverManager;
+
+// Calendar & Scheduling
+pub const CalendarEvent = calendar_module.CalendarEvent;
+pub const Scheduler = calendar_module.Scheduler;
+
 // Observability System
 pub const ObservabilityManager = observability_module.ObservabilityManager;
 pub const Breakpoint = observability_module.Breakpoint;
@@ -190,14 +209,14 @@ pub const WorkerType = identity_module.IdentityType;
 pub const Job = system_module.Task;
 pub const Contract = system_module.Engagement;
 
-// Portfolio compatibility
-pub const Portfolio = workspace_module.Workspace;
-pub const SubPortfolio = workspace_module.SubWorkspace;
-pub const Program = workspace_module.Program;
-pub const Project = workspace_module.Project;
-pub const PortfolioManager = workspace_module.WorkspaceManager;
-pub const PortfolioItem = workspace_module.WorkspaceItem;
-pub const PortfolioCollection = workspace_module.Collection;
+// Portfolio compatibility (now mapped to portfolio_module)
+pub const Portfolio = portfolio_module.Portfolio;
+pub const SubPortfolio = portfolio_module.SubPortfolio;
+pub const Program = portfolio_module.Program;
+pub const Project = portfolio_module.Project;
+pub const PortfolioManager = portfolio_module.PortfolioManager;
+pub const PortfolioItem = portfolio_module.PortfolioItem;
+pub const PortfolioCollection = portfolio_module.PortfolioCollection;
 
 // Account compatibility
 pub const Account = registry_module.Connection;

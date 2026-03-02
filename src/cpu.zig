@@ -17,7 +17,7 @@ pub const ICPU = struct {
     id: u32,
     name: []const u8,
     email: []const u8,
-    skills: std.ArrayList([]const u8),
+    skills: std.ArrayList([]u8),
     status: ICPUStatus,
     hourly_rate: f32,
 };
@@ -62,7 +62,7 @@ pub const CPUManager = struct {
             .id = id,
             .name = try self.allocator.dupe(u8, name),
             .email = try self.allocator.dupe(u8, email),
-            .skills = std.ArrayList([]const u8){},
+            .skills = std.ArrayList([]u8){},
             .status = .offline,
             .hourly_rate = hourly_rate,
         };

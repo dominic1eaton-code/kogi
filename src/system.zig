@@ -15,6 +15,9 @@ const state_module = @import("state.zig");
 const distributed_module = @import("distributed.zig");
 const networking_module = @import("networking.zig");
 const observability_module = @import("observability.zig");
+const cpu_module = @import("cpu.zig");
+const drivers_module = @import("device_drivers.zig");
+const calendar_module = @import("calendar.zig");
 const processes_module = @import("processes.zig");
 const memory_module = @import("memory.zig");
 const trace_module = @import("trace.zig");
@@ -67,6 +70,9 @@ pub const System = struct {
     audit_manager: trace_module.AuditManager,
     boot_manager: bootloader_module.BootManager,
     observability: observability_module.ObservabilityManager,
+    cpu_manager: cpu_module.CPUManager,
+    driver_manager: drivers_module.DriverManager,
+    scheduler: calendar_module.Scheduler,
     tasks: std.ArrayList(Task),
     engagements: std.ArrayList(Engagement),
 
@@ -109,6 +115,13 @@ pub const System = struct {
         // Initialize observability manager
         const observability_mgr = observability_module.ObservabilityManager.init(allocator);
 
+        // initialize cpu and driver managers
+        const cpu_mgr = cpu_module.CPUManager.init(allocator);
+        const driver_mgr = drivers_module.DriverManager.init(allocator);
+
+        // initialize scheduler
+        const scheduler = calendar_module.Scheduler.init(allocator);
+
         return System{
             .allocator = allocator,
             .identity_manager = identity_module.IdentityManager.init(allocator),
@@ -127,6 +140,9 @@ pub const System = struct {
             .audit_manager = audit_manager,
             .boot_manager = bootloader_module.BootManager.init(allocator, boot_config),
             .observability = observability_mgr,
+            .cpu_manager = cpu_mgr,
+            .driver_manager = driver_mgr,
+            .scheduler = scheduler,
             .tasks = std.ArrayList(Task){},
             .engagements = std.ArrayList(Engagement){},
         };
@@ -171,6 +187,14 @@ pub const System = struct {
         // Clean up observability manager
         var observability_mgr = self.observability;
         observability_mgr.deinit();
+        // clean up cpu & driver managers
+        var cpu_mgr = self.cpu_manager;
+        cpu_mgr.deinit();
+        var driver_mgr = self.driver_manager;
+        driver_mgr.deinit();
+        // clean up scheduler
+        var scheduler = self.scheduler;
+        scheduler.deinit();
         // Clean up tasks
         for (self.tasks.items) |*task| {
             self.allocator.free(task.title);
