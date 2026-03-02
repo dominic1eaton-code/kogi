@@ -8,8 +8,8 @@ Unlike traditional application-based portfolio management, KOGI is architected a
 
 KOGI is an OS (not just an app) that empowers independent workers to:
 - **Boot up** a complete personal work system
-- **Manage identities** - Create and maintain worker profiles across multiple roles, platforms and digital systems
-- **Organize workspaces** - Structure all work artifacts, assets, projects, and deliverables
+- **Manage identities** - Create and maintain worker profiles, accounts and identites across multiple roles, platforms and digital systems
+- **Organize workspaces** - Structure all work artifacts, assets, projects, profiles, accounts, resources, plans and deliverables
 - **Connect globally** - Registry system for managing accounts across platforms
 - **Track relationships** - Directory for contacts, organizations, and business relationships
 - **Value assets** - Vault system for tracking resources, equipment, and capital
