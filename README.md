@@ -9,11 +9,12 @@ Unlike traditional application-based portfolio management, KOGI is architected a
 KOGI is an OS (not just an app) that empowers independent workers to:
 - **Boot up** a complete personal work system
 - **Manage identities** - Create and maintain worker profiles across multiple roles, platforms and digital systems
-- **Organize workspaces** - Structure all work artifacts, projects, and deliverables
+- **Organize workspaces** - Structure all work artifacts, assets, projects, and deliverables
 - **Connect globally** - Registry system for managing accounts across platforms
 - **Track relationships** - Directory for contacts, organizations, and business relationships
 - **Value assets** - Vault system for tracking resources, equipment, and capital
-
+- **Strategic Management** - track, maintain, schedule independent worker strategies, tactics, oeprations, plans, missions, visions, objectives, goals, milestones, roadmaps, schedules, timelines, 
+- **Work Management Management** - track, maintain, schedule independent worker activities, tasks, events, gigs, contracts, jobs, tasks, projects, assets, etc... all within a single portfolio system
 
 ## Core Systems and Subsystems
 
@@ -146,11 +147,16 @@ idea and concept management system, prototyping, testing and testbed system,
 - Per-platform earnings tracking
 - Client and rating tracking
 
-### Artists & Musicians
-- Portfolio of works (music, art, performances)
+### Artists, Musicians & Hobbyists
+- Portfolio of works (music, art, performances, hobby projects, commissions)
 - Client/venue management
 - Project and commission tracking
 - Equipment and asset inventory
+
+### Investors & Entreprenuers
+- portfolio of investments
+- find potential investments, investors, talent, skilled laborers
+- find and put out potential offers, deals, bids, requests, proposals
 
 
 ## 🔮 Future Enhancements
