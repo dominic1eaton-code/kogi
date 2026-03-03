@@ -29,6 +29,7 @@ const trace_module = @import("trace.zig");
 const bootloader_module = @import("bootloader.zig");
 const cli_module = @import("cli.zig");
 
+const kernel_module = @import("kernel.zig");
 // ========== Core KOGI OS Exports ==========
 
 // System (Core OS)
@@ -37,9 +38,7 @@ pub const Task = system_module.Task;
 pub const Engagement = system_module.Engagement;
 pub const EngagementStatus = system_module.EngagementStatus;
 
-// Identity Management
-pub const Identity = identity_module.Identity;
-pub const IdentityManager = identity_module.IdentityManager;
+pub const Kernel = kernel_module.Kernel;
 pub const IdentityType = identity_module.IdentityType;
 
 // Workspace (Personal Work Environment)
@@ -210,7 +209,7 @@ pub const BootSeverity = bootloader_module.BootSeverity;
 // ========== Backward Compatibility Aliases ==========
 
 // System compatibility
-pub const Kernel = system_module.System;
+pub const SystemKernelCompat = system_module.System;
 
 // Worker compatibility
 pub const Worker = identity_module.Identity;

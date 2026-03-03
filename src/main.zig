@@ -6,7 +6,10 @@ pub fn main() !void {
     defer _ = gpa.deinit();
     const allocator = gpa.allocator();
 
-    var system = kogi.System.init(allocator);
+    var kernel = kogi.Kernel.init(allocator);
+    defer kernel.deinit();
+
+    var system = kogi.System.init(allocator, &kernel);
     defer system.deinit();
 
     try kogi.startCLI(allocator, &system);

@@ -7,6 +7,9 @@ const contract_module = @import("contract.zig");
 const crm_module = @import("crm.zig");
 const assets_module = @import("assets.zig");
 const accounts_module = @import("accounts.zig");
+const terminal_module = @import("terminal.zig");
+const shell_module = @import("shell.zig");
+const kernel_module = @import("kernel.zig");
 
 /// Command-line interface for the KOGI Operating System
 pub const CLI = struct {
@@ -18,6 +21,67 @@ pub const CLI = struct {
             .allocator = allocator,
             .system = system,
         };
+    }
+
+    /// Handle a single command line. Returns `true` to continue, `false` to exit.
+    pub fn handleCommand(self: *CLI, input: []const u8) !bool {
+        // Trim leading/trailing whitespace
+        var start: usize = 0;
+        var end: usize = input.len;
+        while (start < end and (input[start] == ' ' or input[start] == '\t')) : (start += 1) {}
+        while (end > start and (input[end - 1] == ' ' or input[end - 1] == '\t')) : (end -= 1) {}
+        if (end <= start) return true; // empty
+
+        const s = input[start..end];
+
+        // Find first whitespace to separate command and args
+        var cmd_end: usize = 0;
+        while (cmd_end < s.len and s[cmd_end] != ' ' and s[cmd_end] != '\t') : (cmd_end += 1) {}
+        const cmd = s[0..cmd_end];
+
+        // Simple command dispatch
+        if (std.mem.eql(u8, cmd, "help")) {
+            std.debug.print("Available commands:\n", .{});
+            std.debug.print("  help             - show this help\n", .{});
+            std.debug.print("  stats            - show system statistics\n", .{});
+            std.debug.print("  list-identities  - list identities\n", .{});
+            std.debug.print("  list-tasks       - list tasks\n", .{});
+            std.debug.print("  demo             - run demo mode\n", .{});
+            std.debug.print("  exit|quit        - exit the shell\n", .{});
+            return true;
+        } else if (std.mem.eql(u8, cmd, "stats") or std.mem.eql(u8, cmd, "view-stats")) {
+            self.handleViewStatistics();
+            return true;
+        } else if (std.mem.eql(u8, cmd, "list-identities")) {
+            self.handleListIdentities();
+            return true;
+        } else if (std.mem.eql(u8, cmd, "list-tasks")) {
+            self.handleListTasks();
+            return true;
+        } else if (std.mem.eql(u8, cmd, "demo")) {
+            try self.runDemo();
+            return true;
+        } else if (std.mem.eql(u8, cmd, "syscalls")) {
+            if (self.system.kernel) |_| {
+                const names = kernel_module.syscallNames();
+                for (names) |n| std.debug.print("{s}\n", .{n});
+            } else {
+                std.debug.print("No kernel linked; syscalls unavailable.\n", .{});
+            }
+            return true;
+        } else if (std.mem.eql(u8, cmd, "shell")) {
+            // Start the more featureful shell
+            const kptr = self.system.kernel;
+            try shell_module.runShell(self.allocator, self.system, kptr);
+            return true;
+        } else if (std.mem.eql(u8, cmd, "exit") or std.mem.eql(u8, cmd, "quit")) {
+            std.debug.print("Goodbye.\n", .{});
+            return false;
+        } else {
+            std.debug.print("Unknown command: {s}\n", .{cmd});
+            std.debug.print("Type 'help' for available commands.\n", .{});
+            return true;
+        }
     }
 
     /// Display system statistics
@@ -266,5 +330,16 @@ pub const CLI = struct {
 /// Start the KOGI OS CLI shell
 pub fn startCLI(allocator: std.mem.Allocator, system: *system_module.System) !void {
     var cli = CLI.init(allocator, system);
-    try cli.runDemo();
+
+    // Interactive shell
+    var term = terminal_module.Terminal.init(allocator, "kogi> ");
+    while (true) {
+        try term.writePrompt();
+        const line = try term.readLine();
+        // handle command
+        const keep = try cli.handleCommand(line);
+        // free the allocated buffer returned by readLine
+        allocator.free(line);
+        if (!keep) break;
+    }
 }

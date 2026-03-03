@@ -1,83 +1,4 @@
-/// Example OS API table (stub implementations)
-pub const default_os_api = OSApi{
-    .get_time = &getTimeImpl,
-    .create_process = &createProcessImpl,
-    .kill_process = &killProcessImpl,
-    .read_memory = &readMemoryImpl,
-    .write_memory = &writeMemoryImpl,
-    .get_system_info = &getSystemInfoImpl,
-    .custom = &customImpl,
-};
-
-fn getTimeImpl() i64 {
-    // stub: return current time
-    return 0;
-}
-fn createProcessImpl(name: []const u8) u32 {
-    // stub: create process
-    return 0;
-}
-fn killProcessImpl(pid: u32) bool {
-    // stub: kill process
-    return false;
-}
-fn readMemoryImpl(addr: usize, size: usize) []u8 {
-    // stub: read memory
-    return &[_]u8{};
-}
-fn writeMemoryImpl(addr: usize, data: []const u8) bool {
-    // stub: write memory
-    return false;
-}
-fn getSystemInfoImpl() []const u8 {
-    // stub: get system info
-    return "KOGI OS";
-}
-fn customImpl(code: u32, args: []const u8) usize {
-    // stub: custom syscall
-    return 0;
-}
-/// Supported syscalls for KOGI OS
-pub const Syscall = enum {
-    GetTime,
-    CreateProcess,
-    KillProcess,
-    ReadMemory,
-    WriteMemory,
-    GetSystemInfo,
-    Custom,
-};
-
-/// OS API function table
-pub const OSApi = struct {
-    get_time: *const fn () i64,
-    create_process: *const fn (name: []const u8) u32,
-    kill_process: *const fn (pid: u32) bool,
-    read_memory: *const fn (addr: usize, size: usize) []u8,
-    write_memory: *const fn (addr: usize, data: []const u8) bool,
-    get_system_info: *const fn () []const u8,
-    custom: *const fn (code: u32, args: []const u8) usize,
-};
-
-/// OS ABI versioning
-pub const OSAbi = struct {
-    version_major: u16,
-    version_minor: u16,
-    compatible: bool,
-};
-
-/// Syscall dispatcher
-pub fn syscall(kernel: *Kernel, call: Syscall, args: anytype) usize {
-    switch (call) {
-        .GetTime => return @intCast(usize, kernel.clock.now().seconds),
-        .CreateProcess => return kernel.process_manager.createProcess(args) catch 0,
-        .KillProcess => return kernel.process_manager.killProcess(args) catch 0,
-        .ReadMemory => return 0, // stub
-        .WriteMemory => return 0, // stub
-        .GetSystemInfo => return 0, // stub
-        .Custom => return 0, // stub
-    }
-}
+// Kernel API and syscall helpers are defined after the Kernel struct
 //! KOGI Kernel Module - Core Kernel Functionality
 //! Handles low-level OS operations, protection, privacy, security, and hardware abstraction.
 
@@ -149,8 +70,95 @@ pub const Kernel = struct {
 };
 
 pub fn enforceModeBarrier(kernel: *Kernel, system: *anyopaque) bool {
+	pub fn enforceModeBarrier(kernel: *Kernel, _system: *anyopaque) bool {
     // Enforce protection/privacy/security between kernel and system
     // Return true if barrier is intact, false if violation detected
     // (Stub: implement real checks)
     return kernel.mode == .kernel;
+}
+
+// --- OS API, syscalls, and helpers (placed after Kernel so Kernel type exists) ---
+/// OS ABI versioning
+pub const OSAbi = struct {
+    version_major: u16,
+    version_minor: u16,
+    compatible: bool,
+};
+
+/// OS API function table
+pub const OSApi = struct {
+    get_time: *const fn () i64,
+    create_process: *const fn (name: []const u8) u32,
+    kill_process: *const fn (pid: u32) bool,
+    read_memory: *const fn (addr: usize, size: usize) []u8,
+    write_memory: *const fn (addr: usize, data: []const u8) bool,
+    get_system_info: *const fn () []const u8,
+    custom: *const fn (code: u32, args: []const u8) usize,
+};
+
+fn getTimeImpl() i64 {
+    return 0;
+}
+fn createProcessImpl(name: []const u8) u32 {
+    fn createProcessImpl(_name: []const u8) u32 {
+    return 0;
+}
+fn killProcessImpl(pid: u32) bool {
+    fn killProcessImpl(_pid: u32) bool {
+    return false;
+}
+fn readMemoryImpl(addr: usize, size: usize) []u8 {
+    fn readMemoryImpl(_addr: usize, _size: usize) []u8 {
+    return &[_]u8{};
+}
+fn writeMemoryImpl(addr: usize, data: []const u8) bool {
+    fn writeMemoryImpl(_addr: usize, _data: []const u8) bool {
+    return false;
+}
+fn getSystemInfoImpl() []const u8 {
+    return "KOGI OS";
+}
+fn customImpl(code: u32, args: []const u8) usize {
+    fn customImpl(_code: u32, _args: []const u8) usize {
+    return 0;
+}
+
+/// Example OS API table (stub implementations)
+pub const default_os_api = OSApi{
+    .get_time = &getTimeImpl,
+    .create_process = &createProcessImpl,
+    .kill_process = &killProcessImpl,
+    .read_memory = &readMemoryImpl,
+    .write_memory = &writeMemoryImpl,
+    .get_system_info = &getSystemInfoImpl,
+    .custom = &customImpl,
+};
+
+/// Supported syscalls for KOGI OS
+pub const Syscall = enum {
+    GetTime,
+    CreateProcess,
+    KillProcess,
+    ReadMemory,
+    WriteMemory,
+    GetSystemInfo,
+    Custom,
+};
+
+/// Return a static list of implemented syscall names.
+pub fn syscallNames() []const []const u8 {
+    return &[_][]const u8{ "GetTime", "CreateProcess", "KillProcess", "ReadMemory", "WriteMemory", "GetSystemInfo", "Custom" };
+}
+
+/// Syscall dispatcher
+pub fn syscall(kernel: *Kernel, call: Syscall, args: anytype) usize {
+    switch (call) {
+        .GetTime => return @intCast(usize, kernel.clock.now().seconds),
+        .CreateProcess => return kernel.process_manager.createProcess(args) catch 0,
+        .KillProcess => return kernel.process_manager.killProcess(args) catch 0,
+        .ReadMemory => return 0,
+        .WriteMemory => return 0,
+        .GetSystemInfo => return 0,
+        .Custom => return 0,
+    }
 }

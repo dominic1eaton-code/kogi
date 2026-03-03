@@ -1,44 +1,10 @@
-    /// Launch a custom application by name
-    pub fn launchApp(self: *System, app_name: []const u8) bool {
-        for (self.custom_apps.items) |app| {
-            if (std.mem.eql(u8, app.name, app_name)) {
-                app.start(self);
-                return true;
-            }
-        }
-        return false;
-    }
-
-    /// Stop a custom application by name
-    pub fn stopApp(self: *System, app_name: []const u8) bool {
-        for (self.custom_apps.items) |app| {
-            if (std.mem.eql(u8, app.name, app_name)) {
-                app.stop(self);
-                return true;
-            }
-        }
-        return false;
-    }
-
-    /// Get status of a custom application by name
-    pub fn appStatus(self: *System, app_name: []const u8) ?[]const u8 {
-        for (self.custom_apps.items) |app| {
-            if (std.mem.eql(u8, app.name, app_name)) {
-                return app.status(self);
-            }
-        }
-        return null;
-    }
-/// Custom application interface
+// Custom application interface
 pub const CustomApplication = struct {
     name: []const u8,
     start: *const fn (system: *System) void,
     stop: *const fn (system: *System) void,
     status: *const fn (system: *System) []const u8,
 };
-
-const portfolio_app_module = @import("../apps/portfolio_app.zig");
-pub const PortfolioManagementApp = portfolio_app_module.PortfolioManagementApp;
 /// Dashboard manager for OS system dashboard
 pub const DashboardManager = struct {
     pub fn init(allocator: std.mem.Allocator) DashboardManager {
@@ -53,6 +19,7 @@ pub const DashboardManager = struct {
 /// UI connector for OS system
 pub const UserMode = enum { user, kernel };
 
+pub const UIConnector = struct {
     pub fn init(allocator: std.mem.Allocator) UIConnector {
         // Initialization logic for UI connector
         return UIConnector{};
@@ -74,7 +41,7 @@ pub const ApplicationManager = struct {
 };
 
 /// Session and session management system
-pub const System = struct {
+pub const SessionManager = struct {
     pub fn init(allocator: std.mem.Allocator) SessionManager {
         // Initialization logic for session manager
         return SessionManager{};
@@ -84,8 +51,6 @@ pub const System = struct {
     }
 };
 //! KOGI System Module - User-Level OS Functionality
-    mode: UserMode,
-    kernel: ?*kernel_module.Kernel,
 //! The System manages UI, application, user-level logic, and supports custom user applications.
 //! It operates in user mode and interfaces with the kernel for core operations.
 
@@ -107,8 +72,9 @@ const drivers_module = @import("device_drivers.zig");
 const calendar_module = @import("calendar.zig");
 const time_module = @import("time.zig");
 const scheduler_module = @import("scheduler.zig");
-    custom_apps: std.ArrayList(CustomApplication),
+const strategy_module = @import("strategy.zig");
 const cache_module = @import("cache.zig");
+const kernel_module = @import("kernel.zig");
 const processes_module = @import("processes.zig");
 const memory_module = @import("memory.zig");
 const trace_module = @import("trace.zig");
@@ -145,6 +111,7 @@ pub const Engagement = struct {
 /// System is the core operating system engine managing all subsystems
 pub const System = struct {
     allocator: std.mem.Allocator,
+        custom_apps: std.ArrayList(CustomApplication),
     tiered_cache: cache_module.TieredAllocator,
     identity_manager: identity_module.IdentityManager,
     workspace_manager: workspace_module.WorkspaceManager,
@@ -158,6 +125,7 @@ pub const System = struct {
     network_server: networking_module.NetworkServer,
     process_manager: processes_module.ProcessManager,
     memory_allocator: memory_module.MemoryAllocator,
+    strategy_manager: ?strategy_module.StrategicManager,
     trace_manager: trace_module.TraceManager,
     audit_manager: trace_module.AuditManager,
     boot_manager: bootloader_module.BootManager,
@@ -168,6 +136,8 @@ pub const System = struct {
     dispatcher: ?scheduler_module.Dispatcher,
     clock: time_module.Clock,
     profiler: time_module.Profiler,
+    mode: UserMode,
+    kernel: ?*kernel_module.Kernel,
     tasks: std.ArrayList(Task),
     engagements: std.ArrayList(Engagement),
     dashboard: ?DashboardManager,
@@ -234,6 +204,9 @@ pub const System = struct {
         const ui_connector = UIConnector.init(allocator);
         const app_manager = ApplicationManager.init(allocator);
         const session_manager = SessionManager.init(allocator);
+
+        var custom_apps = std.ArrayList(CustomApplication){};
+
         return System{
             .allocator = cache_alloc,
             .tiered_cache = tiered,
@@ -246,18 +219,10 @@ pub const System = struct {
             .event_bus = events_module.EventBus.init(cache_alloc),
             .state_manager = state_module.StateManager.init(cache_alloc, state_config) catch unreachable,
             .cluster = distributed_module.DistributedCluster.init(cache_alloc, cluster_config),
-            var custom_apps = std.ArrayList(CustomApplication){};
-            // Register PortfolioManagementApp as first core app
-            const portfolio_app = CustomApplication{
-                .name = "PortfolioManagementApp",
-                .start = PortfolioManagementApp.start,
-                .stop = PortfolioManagementApp.stop,
-                .status = PortfolioManagementApp.status,
-            };
-            custom_apps.append(allocator, portfolio_app) catch unreachable;
-            return System{
+            .network_server = networking_module.NetworkServer.init(cache_alloc, server_config),
             .process_manager = processes_module.ProcessManager.init(cache_alloc, scheduler_config),
             .memory_allocator = memory_module.MemoryAllocator.init(cache_alloc, memory_allocator_config),
+            .strategy_manager = null,
             .trace_manager = trace_manager,
             .audit_manager = audit_manager,
             .boot_manager = bootloader_module.BootManager.init(cache_alloc, boot_config),
@@ -274,68 +239,82 @@ pub const System = struct {
             .ui_connector = ui_connector,
             .app_manager = app_manager,
             .session_manager = session_manager,
+            .custom_apps = custom_apps,
             .mode = .user,
             .kernel = kernel,
         };
     }
 
     pub fn deinit(self: *System) void {
-        // Clean up identities
+        // Clean up system-owned components (always)
         self.identity_manager.deinit();
-        // Clean up workspace
         self.workspace_manager.deinit();
-        // Clean up directory
         self.directory.deinit();
-        // Clean up vault
         self.vault.deinit();
-                .custom_apps = custom_apps,
-        // Clean up security
         self.security_manager.deinit();
-        // Clean up logging
         self.logger.deinit();
-        // Clean up events
         self.event_bus.deinit();
-        // Clean up state
         self.state_manager.deinit();
-        // Clean up cluster
         self.cluster.deinit();
-        // Clean up network server
+
+        // If System was created with an external kernel, the kernel owns
+        // memory/process/CPU/driver/time/scheduler related deinitialization.
+        if (self.kernel) |*k| {
+            // System-specific cleanup only
+            // Clean up tiered cache and system-managed lists
+            self.tiered_cache.deinit();
+
+            for (self.tasks.items) |*task| {
+                self.allocator.free(task.title);
+                self.allocator.free(task.description);
+                for (task.required_skills.items) |skill| {
+                    self.allocator.free(skill);
+                }
+                task.required_skills.deinit(self.allocator);
+            }
+            self.tasks.deinit(self.allocator);
+
+            for (self.engagements.items) |*engagement| {
+                engagement.completion_date = null;
+            }
+            self.engagements.deinit(self.allocator);
+
+            if (self.strategy_manager) |*s| s.deinit();
+            if (self.dashboard) |*d| d.deinit();
+            if (self.ui_connector) |*u| u.deinit();
+            if (self.app_manager) |*a| a.deinit();
+            if (self.session_manager) |*s| s.deinit();
+            return;
+        }
+
+        // Otherwise, System owns and should deinit all subsystems it created
         self.network_server.deinit();
-        // Clean up process manager
         var process_manager = self.process_manager;
         process_manager.deinit();
         if (self.dispatcher) |*d| {
             d.stop();
             d.deinit();
         }
-        // Clean up memory allocator
         var memory_allocator = self.memory_allocator;
         memory_allocator.deinit();
-        // Clean up trace manager
         var trace_manager = self.trace_manager;
         trace_manager.deinit();
-        // Clean up audit manager
         var audit_manager = self.audit_manager;
         audit_manager.deinit();
-        // Clean up boot manager
         var boot_manager = self.boot_manager;
         boot_manager.deinit();
-        // Clean up observability manager
         var observability_mgr = self.observability;
         observability_mgr.deinit();
-        // clean up cpu & driver managers
         var cpu_mgr = self.cpu_manager;
         cpu_mgr.deinit();
         var driver_mgr = self.driver_manager;
         driver_mgr.deinit();
-        // clean up scheduler
         var scheduler = self.scheduler;
         scheduler.deinit();
-        // clean up time/profiler
         var profiler = self.profiler;
         profiler.deinit();
-        // clean up tiered cache
         self.tiered_cache.deinit();
+
         // Clean up tasks
         for (self.tasks.items) |*task| {
             self.allocator.free(task.title);
@@ -346,16 +325,18 @@ pub const System = struct {
             task.required_skills.deinit(self.allocator);
         }
         self.tasks.deinit(self.allocator);
+
         // Clean up engagements
         for (self.engagements.items) |*engagement| {
             engagement.completion_date = null;
         }
         self.engagements.deinit(self.allocator);
-            // Clean up dashboard, UI connector, app manager, session manager
-            if (self.dashboard) |*d| d.deinit();
-            if (self.ui_connector) |*u| u.deinit();
-            if (self.app_manager) |*a| a.deinit();
-            if (self.session_manager) |*s| s.deinit();
+
+        if (self.strategy_manager) |*s| s.deinit();
+        if (self.dashboard) |*d| d.deinit();
+        if (self.ui_connector) |*u| u.deinit();
+        if (self.app_manager) |*a| a.deinit();
+        if (self.session_manager) |*s| s.deinit();
     }
 
     // ========== Identity Management Delegation ==========
