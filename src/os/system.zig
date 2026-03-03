@@ -58,6 +58,9 @@ const providers_module = @import("providers.zig");
 const account_management_module = @import("accounts.zig");
 const profile_management_module = @import("profile.zig");
 const contacts_module = @import("contacts.zig");
+const content_module = @import("content.zig");
+const design_module = @import("design.zig");
+const directory_book_module = @import("directory_book.zig");
 const workspace_module = @import("workspace.zig");
 const registry_module = @import("registry.zig");
 const directory_module = @import("directory.zig");
@@ -117,6 +120,9 @@ pub const System = struct {
     tiered_cache: cache_module.TieredAllocator,
     user_manager: users_module.UserManager,
     workspace_manager: workspace_module.WorkspaceManager,
+    content_manager: content_module.ContentManager,
+    design_manager: design_module.DesignManager,
+    directory_book_manager: directory_book_module.DirectoryBookManager,
     directory: directory_module.Directory,
     vault: vault_module.Vault,
     security_manager: security_module.SecurityManager,
@@ -214,6 +220,9 @@ pub const System = struct {
             .tiered_cache = tiered,
             .user_manager = users_module.UserManager.init(cache_alloc),
             .workspace_manager = workspace_module.WorkspaceManager.init(cache_alloc),
+            .content_manager = content_module.ContentManager.init(cache_alloc),
+            .design_manager = design_module.DesignManager.init(cache_alloc),
+            .directory_book_manager = directory_book_module.DirectoryBookManager.init(cache_alloc),
             .directory = directory_module.Directory.init(cache_alloc),
             .vault = vault_module.Vault.init(cache_alloc),
             .security_manager = security_module.SecurityManager.init(cache_alloc),
@@ -251,6 +260,9 @@ pub const System = struct {
         // Clean up system-owned components (always)
         self.user_manager.deinit();
         self.workspace_manager.deinit();
+        self.content_manager.deinit();
+        self.design_manager.deinit();
+        self.directory_book_manager.deinit();
         self.directory.deinit();
         self.vault.deinit();
         self.security_manager.deinit();
@@ -576,6 +588,126 @@ pub const System = struct {
         return self.user_manager.getPersonas();
     }
 
+    pub fn issueUserAuthToken(
+        self: *System,
+        user_id: u32,
+        label: []const u8,
+        kind: users_module.AuthTokenKind,
+        ttl_seconds: i64,
+    ) !users_module.IssuedToken {
+        return try self.user_manager.issueAuthToken(user_id, label, kind, ttl_seconds);
+    }
+
+    pub fn freeUserIssuedToken(self: *System, token: users_module.IssuedToken) void {
+        self.user_manager.freeIssuedToken(token);
+    }
+
+    pub fn authenticateUserToken(self: *System, token_value: []const u8) !u32 {
+        return try self.user_manager.authenticateToken(token_value);
+    }
+
+    pub fn revokeUserAuthToken(self: *System, token_id: u32) !void {
+        try self.user_manager.revokeAuthToken(token_id);
+    }
+
+    pub fn getUserAuthTokens(self: *System) []users_module.AuthToken {
+        return self.user_manager.getAuthTokens();
+    }
+
+    pub fn addUserKey(
+        self: *System,
+        user_id: u32,
+        label: []const u8,
+        kind: users_module.KeyKind,
+        key_material: []const u8,
+        public_material: []const u8,
+    ) !u32 {
+        return try self.user_manager.addKey(user_id, label, kind, key_material, public_material);
+    }
+
+    pub fn verifyUserKey(self: *System, user_id: u32, key_material: []const u8) !bool {
+        return try self.user_manager.verifyKey(user_id, key_material);
+    }
+
+    pub fn disableUserKey(self: *System, key_id: u32) !void {
+        try self.user_manager.disableKey(key_id);
+    }
+
+    pub fn getUserKeys(self: *System) []users_module.UserKey {
+        return self.user_manager.getKeys();
+    }
+
+    pub fn addUserCertificate(
+        self: *System,
+        user_id: u32,
+        label: []const u8,
+        subject: []const u8,
+        issuer: []const u8,
+        serial_number: []const u8,
+        pem_data: []const u8,
+        valid_from: i64,
+        valid_to: i64,
+    ) !u32 {
+        return try self.user_manager.addCertificate(
+            user_id,
+            label,
+            subject,
+            issuer,
+            serial_number,
+            pem_data,
+            valid_from,
+            valid_to,
+        );
+    }
+
+    pub fn revokeUserCertificate(self: *System, certificate_id: u32) !void {
+        try self.user_manager.revokeCertificate(certificate_id);
+    }
+
+    pub fn validateUserCertificate(self: *System, certificate_id: u32) !bool {
+        return try self.user_manager.validateCertificate(certificate_id);
+    }
+
+    pub fn getUserCertificates(self: *System) []users_module.UserCertificate {
+        return self.user_manager.getCertificates();
+    }
+
+    pub fn grantUserPermission(self: *System, user_id: u32, permission: users_module.Permission) !void {
+        try self.user_manager.grantPermission(user_id, permission);
+    }
+
+    pub fn revokeUserPermission(self: *System, user_id: u32, permission: users_module.Permission) !void {
+        try self.user_manager.revokePermission(user_id, permission);
+    }
+
+    pub fn userHasPermission(self: *System, user_id: u32, permission: users_module.Permission) bool {
+        return self.user_manager.hasPermission(user_id, permission);
+    }
+
+    pub fn grantUserPrivilege(self: *System, user_id: u32, privilege: users_module.Privilege) !void {
+        try self.user_manager.grantPrivilege(user_id, privilege);
+    }
+
+    pub fn revokeUserPrivilege(self: *System, user_id: u32, privilege: users_module.Privilege) !void {
+        try self.user_manager.revokePrivilege(user_id, privilege);
+    }
+
+    pub fn userHasPrivilege(self: *System, user_id: u32, privilege: users_module.Privilege) bool {
+        return self.user_manager.hasPrivilege(user_id, privilege);
+    }
+
+    pub fn encryptForUser(self: *System, user_id: u32, plaintext: []const u8) !users_module.EncryptedPayload {
+        return try self.user_manager.encryptForUser(user_id, plaintext);
+    }
+
+    pub fn decryptForUser(self: *System, user_id: u32, payload: users_module.EncryptedPayload) ![]u8 {
+        return try self.user_manager.decryptForUser(user_id, payload);
+    }
+
+    pub fn freeUserEncryptedPayload(self: *System, payload: users_module.EncryptedPayload) void {
+        self.user_manager.freeEncryptedPayload(payload);
+    }
+
     // ========== Provider Management ==========
 
     pub fn addProvider(
@@ -858,6 +990,399 @@ pub const System = struct {
 
     pub fn getEngagements(self: *System) []Engagement {
         return self.engagements.items;
+    }
+
+    // ========== Content Management ==========
+
+    pub fn createContent(
+        self: *System,
+        owner_user_id: ?u32,
+        profile_id: ?u32,
+        parent_id: ?u32,
+        kind: content_module.ContentKind,
+        title: []const u8,
+        body: []const u8,
+    ) !u32 {
+        return try self.content_manager.createContent(owner_user_id, profile_id, parent_id, kind, title, body);
+    }
+
+    pub fn createFile(
+        self: *System,
+        owner_user_id: ?u32,
+        profile_id: ?u32,
+        parent_id: ?u32,
+        title: []const u8,
+        body: []const u8,
+    ) !u32 {
+        return try self.content_manager.createFile(owner_user_id, profile_id, parent_id, title, body);
+    }
+
+    pub fn createDirectory(
+        self: *System,
+        owner_user_id: ?u32,
+        profile_id: ?u32,
+        parent_id: ?u32,
+        title: []const u8,
+    ) !u32 {
+        return try self.content_manager.createDirectory(owner_user_id, profile_id, parent_id, title);
+    }
+
+    pub fn createFolder(
+        self: *System,
+        owner_user_id: ?u32,
+        profile_id: ?u32,
+        parent_id: ?u32,
+        title: []const u8,
+    ) !u32 {
+        return try self.content_manager.createFolder(owner_user_id, profile_id, parent_id, title);
+    }
+
+    pub fn createData(
+        self: *System,
+        owner_user_id: ?u32,
+        profile_id: ?u32,
+        parent_id: ?u32,
+        title: []const u8,
+        body: []const u8,
+    ) !u32 {
+        return try self.content_manager.createData(owner_user_id, profile_id, parent_id, title, body);
+    }
+
+    pub fn createInfo(
+        self: *System,
+        owner_user_id: ?u32,
+        profile_id: ?u32,
+        parent_id: ?u32,
+        title: []const u8,
+        body: []const u8,
+    ) !u32 {
+        return try self.content_manager.createInfo(owner_user_id, profile_id, parent_id, title, body);
+    }
+
+    pub fn createKnowledge(
+        self: *System,
+        owner_user_id: ?u32,
+        profile_id: ?u32,
+        parent_id: ?u32,
+        title: []const u8,
+        body: []const u8,
+    ) !u32 {
+        return try self.content_manager.createKnowledge(owner_user_id, profile_id, parent_id, title, body);
+    }
+
+    pub fn createWisdom(
+        self: *System,
+        owner_user_id: ?u32,
+        profile_id: ?u32,
+        parent_id: ?u32,
+        title: []const u8,
+        body: []const u8,
+    ) !u32 {
+        return try self.content_manager.createWisdom(owner_user_id, profile_id, parent_id, title, body);
+    }
+
+    pub fn createArtifact(
+        self: *System,
+        owner_user_id: ?u32,
+        profile_id: ?u32,
+        parent_id: ?u32,
+        title: []const u8,
+        body: []const u8,
+    ) !u32 {
+        return try self.content_manager.createArtifact(owner_user_id, profile_id, parent_id, title, body);
+    }
+
+    pub fn createAsset(
+        self: *System,
+        owner_user_id: ?u32,
+        profile_id: ?u32,
+        parent_id: ?u32,
+        title: []const u8,
+        body: []const u8,
+    ) !u32 {
+        return try self.content_manager.createAsset(owner_user_id, profile_id, parent_id, title, body);
+    }
+
+    pub fn updateContentBody(self: *System, content_id: u32, body: []const u8) !void {
+        try self.content_manager.updateBody(content_id, body);
+    }
+
+    pub fn renameContent(self: *System, content_id: u32, title: []const u8) !void {
+        try self.content_manager.rename(content_id, title);
+    }
+
+    pub fn moveContent(self: *System, content_id: u32, new_parent_id: ?u32) !void {
+        try self.content_manager.moveContent(content_id, new_parent_id);
+    }
+
+    pub fn addContentTag(self: *System, content_id: u32, tag: []const u8) !void {
+        try self.content_manager.addTag(content_id, tag);
+    }
+
+    pub fn setContentMetadata(self: *System, content_id: u32, key: []const u8, value: []const u8) !void {
+        try self.content_manager.setMetadata(content_id, key, value);
+    }
+
+    pub fn deactivateContent(self: *System, content_id: u32) !void {
+        try self.content_manager.deactivateContent(content_id);
+    }
+
+    pub fn getContentById(self: *System, content_id: u32) !content_module.ContentItem {
+        return try self.content_manager.getContentById(content_id);
+    }
+
+    pub fn getContentItems(self: *System) []content_module.ContentItem {
+        return self.content_manager.getItems();
+    }
+
+    pub fn countContentByKind(self: *System, kind: content_module.ContentKind) u32 {
+        return self.content_manager.countByKind(kind);
+    }
+
+    pub fn createNote(
+        self: *System,
+        owner_user_id: ?u32,
+        profile_id: ?u32,
+        linked_content_id: ?u32,
+        title: []const u8,
+        body: []const u8,
+        importance: content_module.NoteImportance,
+    ) !u32 {
+        return try self.content_manager.createNote(owner_user_id, profile_id, linked_content_id, title, body, importance);
+    }
+
+    pub fn updateNote(
+        self: *System,
+        note_id: u32,
+        title: []const u8,
+        body: []const u8,
+        importance: content_module.NoteImportance,
+    ) !void {
+        try self.content_manager.updateNote(note_id, title, body, importance);
+    }
+
+    pub fn addNoteTag(self: *System, note_id: u32, tag: []const u8) !void {
+        try self.content_manager.addNoteTag(note_id, tag);
+    }
+
+    pub fn pinNote(self: *System, note_id: u32) !void {
+        try self.content_manager.pinNote(note_id);
+    }
+
+    pub fn unpinNote(self: *System, note_id: u32) !void {
+        try self.content_manager.unpinNote(note_id);
+    }
+
+    pub fn archiveNote(self: *System, note_id: u32) !void {
+        try self.content_manager.archiveNote(note_id);
+    }
+
+    pub fn unarchiveNote(self: *System, note_id: u32) !void {
+        try self.content_manager.unarchiveNote(note_id);
+    }
+
+    pub fn setNoteLinkedContent(self: *System, note_id: u32, linked_content_id: ?u32) !void {
+        try self.content_manager.setNoteLinkedContent(note_id, linked_content_id);
+    }
+
+    pub fn getNoteById(self: *System, note_id: u32) !content_module.Note {
+        return try self.content_manager.getNoteById(note_id);
+    }
+
+    pub fn getNotes(self: *System) []content_module.Note {
+        return self.content_manager.getNotes();
+    }
+
+    // ========== Directory Book Management ==========
+
+    pub fn createDirectoryBookEntry(
+        self: *System,
+        owner_user_id: u32,
+        profile_id: ?u32,
+        kind: directory_book_module.DirectoryEntityKind,
+        display_name: []const u8,
+        headline: []const u8,
+        notes: []const u8,
+    ) !u32 {
+        if (owner_user_id >= @as(u32, @intCast(self.user_manager.getUsers().len))) return users_module.UserError.UserNotFound;
+        if (profile_id) |pid| {
+            const profile = try self.user_manager.getProfileById(pid);
+            if (profile.owner_user_id != owner_user_id) return users_module.UserError.ProfileOwnershipMismatch;
+        }
+        return try self.directory_book_manager.createEntry(owner_user_id, profile_id, kind, display_name, headline, notes);
+    }
+
+    pub fn updateDirectoryBookEntry(self: *System, entry_id: u32, display_name: []const u8, headline: []const u8, notes: []const u8) !void {
+        try self.directory_book_manager.updateEntry(entry_id, display_name, headline, notes);
+    }
+
+    pub fn setDirectoryBookEntryStatus(self: *System, entry_id: u32, status: directory_book_module.RelationshipStatus) !void {
+        try self.directory_book_manager.setEntryStatus(entry_id, status);
+    }
+
+    pub fn addDirectoryBookTag(self: *System, entry_id: u32, tag: []const u8) !void {
+        try self.directory_book_manager.addTag(entry_id, tag);
+    }
+
+    pub fn linkDirectoryBookPersona(self: *System, entry_id: u32, owner_user_id: u32, persona_id: ?u32) !void {
+        if (persona_id) |pid| {
+            var owned = false;
+            for (self.user_manager.getPersonas()) |persona| {
+                if (persona.id == pid and persona.user_id == owner_user_id) {
+                    owned = true;
+                    break;
+                }
+            }
+            if (!owned) return users_module.UserError.PersonaOwnershipMismatch;
+        }
+        try self.directory_book_manager.associatePersona(entry_id, persona_id);
+    }
+
+    pub fn linkDirectoryBookManagedContact(self: *System, entry_id: u32, managed_contact_id: ?u32) !void {
+        if (managed_contact_id) |cid| {
+            _ = try self.user_manager.getContactById(cid);
+        }
+        try self.directory_book_manager.linkManagedContact(entry_id, managed_contact_id);
+    }
+
+    pub fn linkDirectoryBookNote(self: *System, entry_id: u32, note_id: u32) !void {
+        _ = try self.content_manager.getNoteById(note_id);
+        try self.directory_book_manager.linkNote(entry_id, note_id);
+    }
+
+    pub fn unlinkDirectoryBookNote(self: *System, entry_id: u32, note_id: u32) !void {
+        try self.directory_book_manager.unlinkNote(entry_id, note_id);
+    }
+
+    pub fn addDirectoryBookRelationship(
+        self: *System,
+        entry_id: u32,
+        target_entry_id: u32,
+        relation_kind: directory_book_module.DirectoryEntityKind,
+        status: directory_book_module.RelationshipStatus,
+        strength: directory_book_module.RelationshipStrength,
+    ) !void {
+        try self.directory_book_manager.addRelationship(entry_id, target_entry_id, relation_kind, status, strength);
+    }
+
+    pub fn createDirectoryBookOrganization(
+        self: *System,
+        owner_user_id: u32,
+        name: []const u8,
+        industry: []const u8,
+        notes: []const u8,
+    ) !u32 {
+        if (owner_user_id >= @as(u32, @intCast(self.user_manager.getUsers().len))) return users_module.UserError.UserNotFound;
+        return try self.directory_book_manager.createOrganization(owner_user_id, name, industry, notes);
+    }
+
+    pub fn assignDirectoryBookEntryToOrganization(self: *System, entry_id: u32, organization_id: ?u32) !void {
+        try self.directory_book_manager.assignEntryToOrganization(entry_id, organization_id);
+    }
+
+    pub fn deactivateDirectoryBookEntry(self: *System, entry_id: u32) !void {
+        try self.directory_book_manager.deactivateEntry(entry_id);
+    }
+
+    pub fn getDirectoryBookEntryById(self: *System, entry_id: u32) !directory_book_module.DirectoryEntry {
+        return try self.directory_book_manager.getEntryById(entry_id);
+    }
+
+    pub fn getDirectoryBookEntries(self: *System) []directory_book_module.DirectoryEntry {
+        return self.directory_book_manager.getEntries();
+    }
+
+    pub fn getDirectoryBookOrganizationById(self: *System, organization_id: u32) !directory_book_module.DirectoryOrganization {
+        return try self.directory_book_manager.getOrganizationById(organization_id);
+    }
+
+    pub fn getDirectoryBookOrganizations(self: *System) []directory_book_module.DirectoryOrganization {
+        return self.directory_book_manager.getOrganizations();
+    }
+
+    // ========== Design Management ==========
+
+    pub fn createDesign(
+        self: *System,
+        owner_user_id: ?u32,
+        profile_id: ?u32,
+        linked_content_id: ?u32,
+        kind: design_module.DesignKind,
+        title: []const u8,
+        description: []const u8,
+        initial_revision_summary: []const u8,
+        initial_revision_content: []const u8,
+        created_by_user_id: ?u32,
+    ) !u32 {
+        return try self.design_manager.createDesign(
+            owner_user_id,
+            profile_id,
+            linked_content_id,
+            kind,
+            title,
+            description,
+            initial_revision_summary,
+            initial_revision_content,
+            created_by_user_id,
+        );
+    }
+
+    pub fn addDesignRevision(
+        self: *System,
+        design_id: u32,
+        summary: []const u8,
+        content: []const u8,
+        created_by_user_id: ?u32,
+    ) !u32 {
+        return try self.design_manager.addRevision(design_id, summary, content, created_by_user_id);
+    }
+
+    pub fn setDesignStatus(self: *System, design_id: u32, status: design_module.DesignStatus) !void {
+        try self.design_manager.setStatus(design_id, status);
+    }
+
+    pub fn renameDesign(self: *System, design_id: u32, title: []const u8) !void {
+        try self.design_manager.rename(design_id, title);
+    }
+
+    pub fn updateDesignDescription(self: *System, design_id: u32, description: []const u8) !void {
+        try self.design_manager.updateDescription(design_id, description);
+    }
+
+    pub fn setDesignLinkedContent(self: *System, design_id: u32, linked_content_id: ?u32) !void {
+        try self.design_manager.setLinkedContent(design_id, linked_content_id);
+    }
+
+    pub fn addDesignTag(self: *System, design_id: u32, tag: []const u8) !void {
+        try self.design_manager.addTag(design_id, tag);
+    }
+
+    pub fn setDesignMetadata(self: *System, design_id: u32, key: []const u8, value: []const u8) !void {
+        try self.design_manager.setMetadata(design_id, key, value);
+    }
+
+    pub fn deactivateDesign(self: *System, design_id: u32) !void {
+        try self.design_manager.deactivateDesign(design_id);
+    }
+
+    pub fn getDesignById(self: *System, design_id: u32) !design_module.DesignItem {
+        return try self.design_manager.getDesignById(design_id);
+    }
+
+    pub fn getDesigns(self: *System) []design_module.DesignItem {
+        return self.design_manager.getDesigns();
+    }
+
+    pub fn getDesignRevisionById(self: *System, revision_id: u32) !design_module.DesignRevision {
+        return try self.design_manager.getRevisionById(revision_id);
+    }
+
+    pub fn getDesignLatestRevision(self: *System, design_id: u32) !design_module.DesignRevision {
+        return try self.design_manager.getLatestRevision(design_id);
+    }
+
+    pub fn countDesignByKind(self: *System, kind: design_module.DesignKind) u32 {
+        return self.design_manager.countByKind(kind);
     }
 };
 

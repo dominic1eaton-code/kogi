@@ -34,6 +34,10 @@ grep -n "AutoHashMap" -R "D:\Users\domni\scoop\persist\vscode\data\user-data\Use
 
 if (Test-Path -Path .zig-cache) { Remove-Item -Recurse -Force .zig-cache } ; zig build
 
+
+$files = Get-ChildItem -Path src/os -Filter *.zig -File; $total = 0; foreach ($f in $files) { $total += (Get-Content $f.FullName | Measure-Object -Line).Lines }; "files=$($files.Count) total_lines=$total"
+
+
 # notes
 # * kogi portfolio management app
 # * kogi app should support a wide variety of independent workers, for example: contractors, consultants, freelancers, gig workers, people working on projects, artists, musicians, software developers, gamers, and anyone wanting to organize all of their work, projects, etc... into a single cohesize, indexable, filterable, searchable, manageable portfolio
