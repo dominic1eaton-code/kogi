@@ -21,7 +21,7 @@ pub const Shell = struct {
         self.history.deinit();
     }
 
-    pub fn run(self: *Shell, system: *system_module.System, _kernel: ?*kernel_module.Kernel) !void {
+    pub fn run(self: *Shell, _system: *system_module.System, _kernel: ?*kernel_module.Kernel) !void {
         try self.term.writePrompt();
         while (true) {
             try self.term.writePrompt();
@@ -38,7 +38,7 @@ pub const Shell = struct {
                 self.allocator.free(line);
                 break;
             } else if (std.mem.eql(u8, line, "syscalls")) {
-                if (kernel) |_| {
+                if (_kernel) |_| {
                     const names = kernel_module.syscallNames();
                     for (names) |n| {
                         std.debug.print("{s}\n", .{n});

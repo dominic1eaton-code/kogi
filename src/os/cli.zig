@@ -1,6 +1,8 @@
 const std = @import("std");
 const system_module = @import("system.zig");
 const identity_module = @import("identity.zig");
+const users_module = @import("users.zig");
+const providers_module = @import("providers.zig");
 const security_module = @import("security.zig");
 const portfolio_module = @import("portfolio.zig");
 const contract_module = @import("contract.zig");
@@ -46,6 +48,8 @@ pub const CLI = struct {
             std.debug.print("  stats            - show system statistics\n", .{});
             std.debug.print("  list-identities  - list identities\n", .{});
             std.debug.print("  list-tasks       - list tasks\n", .{});
+            std.debug.print("  user ...         - user management\n", .{});
+            std.debug.print("  provider ...     - provider management\n", .{});
             std.debug.print("  demo             - run demo mode\n", .{});
             std.debug.print("  exit|quit        - exit the shell\n", .{});
             return true;
@@ -74,6 +78,14 @@ pub const CLI = struct {
             const kptr = self.system.kernel;
             try shell_module.runShell(self.allocator, self.system, kptr);
             return true;
+        } else if (std.mem.eql(u8, cmd, "user")) {
+            const args = if (cmd_end < s.len) s[cmd_end + 1 ..] else "";
+            try self.handleUserCommand(args);
+            return true;
+        } else if (std.mem.eql(u8, cmd, "provider")) {
+            const args = if (cmd_end < s.len) s[cmd_end + 1 ..] else "";
+            try self.handleProviderCommand(args);
+            return true;
         } else if (std.mem.eql(u8, cmd, "exit") or std.mem.eql(u8, cmd, "quit")) {
             std.debug.print("Goodbye.\n", .{});
             return false;
@@ -81,6 +93,755 @@ pub const CLI = struct {
             std.debug.print("Unknown command: {s}\n", .{cmd});
             std.debug.print("Type 'help' for available commands.\n", .{});
             return true;
+        }
+    }
+
+    fn handleProviderCommand(self: *CLI, args_raw: []const u8) !void {
+        var args_it = std.mem.tokenizeAny(u8, args_raw, " \t");
+        const action = args_it.next() orelse {
+            self.printProviderHelp();
+            return;
+        };
+
+        if (std.mem.eql(u8, action, "add")) {
+            const name = args_it.next() orelse {
+                std.debug.print("Usage: provider add <name> <slug> <social_media|email|code_hosting|productivity|communication|payments|storage|other> <homepage_url> <api_base_url>\n", .{});
+                return;
+            };
+            const slug = args_it.next() orelse {
+                std.debug.print("Usage: provider add <name> <slug> <social_media|email|code_hosting|productivity|communication|payments|storage|other> <homepage_url> <api_base_url>\n", .{});
+                return;
+            };
+            const category_str = args_it.next() orelse {
+                std.debug.print("Usage: provider add <name> <slug> <social_media|email|code_hosting|productivity|communication|payments|storage|other> <homepage_url> <api_base_url>\n", .{});
+                return;
+            };
+            const homepage_url = args_it.next() orelse {
+                std.debug.print("Usage: provider add <name> <slug> <social_media|email|code_hosting|productivity|communication|payments|storage|other> <homepage_url> <api_base_url>\n", .{});
+                return;
+            };
+            const api_base_url = args_it.next() orelse {
+                std.debug.print("Usage: provider add <name> <slug> <social_media|email|code_hosting|productivity|communication|payments|storage|other> <homepage_url> <api_base_url>\n", .{});
+                return;
+            };
+            const category = providers_module.parseProviderCategory(category_str) orelse {
+                std.debug.print("Invalid provider category: {s}\n", .{category_str});
+                return;
+            };
+
+            const provider_id = self.system.addProvider(name, slug, category, homepage_url, api_base_url) catch |err| {
+                self.printProviderError(err);
+                return;
+            };
+            std.debug.print("Provider created: id={} slug={s} category={s}\n", .{ provider_id, slug, @tagName(category) });
+            return;
+        }
+
+        if (std.mem.eql(u8, action, "list")) {
+            const providers = self.system.getProviders();
+            if (providers.len == 0) {
+                std.debug.print("No providers registered.\n", .{});
+                return;
+            }
+            for (providers) |provider| {
+                std.debug.print(
+                    "id={} name={s} slug={s} category={s} status={s}\n",
+                    .{ provider.id, provider.name, provider.slug, @tagName(provider.category), if (provider.active) "active" else "disabled" },
+                );
+            }
+            return;
+        }
+
+        if (std.mem.eql(u8, action, "show")) {
+            const id_str = args_it.next() orelse {
+                std.debug.print("Usage: provider show <provider_id>\n", .{});
+                return;
+            };
+            const provider_id = std.fmt.parseInt(u32, id_str, 10) catch {
+                std.debug.print("Invalid provider id: {s}\n", .{id_str});
+                return;
+            };
+            const provider = self.system.getProvider(provider_id) catch |err| {
+                self.printProviderError(err);
+                return;
+            };
+            std.debug.print("id={} name={s} slug={s} category={s}\n", .{ provider.id, provider.name, provider.slug, @tagName(provider.category) });
+            std.debug.print("homepage={s}\n", .{provider.homepage_url});
+            std.debug.print("api_base={s}\n", .{provider.api_base_url});
+            std.debug.print("status={s}\n", .{if (provider.active) "active" else "disabled"});
+            return;
+        }
+
+        if (std.mem.eql(u8, action, "disable")) {
+            const id_str = args_it.next() orelse {
+                std.debug.print("Usage: provider disable <provider_id>\n", .{});
+                return;
+            };
+            const provider_id = std.fmt.parseInt(u32, id_str, 10) catch {
+                std.debug.print("Invalid provider id: {s}\n", .{id_str});
+                return;
+            };
+            self.system.disableProvider(provider_id) catch |err| {
+                self.printProviderError(err);
+                return;
+            };
+            std.debug.print("Provider {} disabled.\n", .{provider_id});
+            return;
+        }
+
+        if (std.mem.eql(u8, action, "enable")) {
+            const id_str = args_it.next() orelse {
+                std.debug.print("Usage: provider enable <provider_id>\n", .{});
+                return;
+            };
+            const provider_id = std.fmt.parseInt(u32, id_str, 10) catch {
+                std.debug.print("Invalid provider id: {s}\n", .{id_str});
+                return;
+            };
+            self.system.enableProvider(provider_id) catch |err| {
+                self.printProviderError(err);
+                return;
+            };
+            std.debug.print("Provider {} enabled.\n", .{provider_id});
+            return;
+        }
+
+        self.printProviderHelp();
+    }
+
+    fn printProviderHelp(self: *CLI) void {
+        _ = self;
+        std.debug.print("Provider commands:\n", .{});
+        std.debug.print("  provider add <name> <slug> <social_media|email|code_hosting|productivity|communication|payments|storage|other> <homepage_url> <api_base_url>\n", .{});
+        std.debug.print("  provider list\n", .{});
+        std.debug.print("  provider show <provider_id>\n", .{});
+        std.debug.print("  provider disable <provider_id>\n", .{});
+        std.debug.print("  provider enable <provider_id>\n", .{});
+    }
+
+    fn printProviderError(self: *CLI, err: anyerror) void {
+        _ = self;
+        switch (err) {
+            providers_module.ProviderError.ProviderNotFound => std.debug.print("Error: provider not found.\n", .{}),
+            providers_module.ProviderError.ProviderSlugTaken => std.debug.print("Error: provider slug already exists.\n", .{}),
+            else => std.debug.print("Error: {s}\n", .{@errorName(err)}),
+        }
+    }
+
+    fn handleUserCommand(self: *CLI, args_raw: []const u8) !void {
+        var args_it = std.mem.tokenizeAny(u8, args_raw, " \t");
+        const subcmd = args_it.next() orelse {
+            self.printUserHelp();
+            return;
+        };
+
+        if (std.mem.eql(u8, subcmd, "add")) {
+            const username = args_it.next() orelse {
+                std.debug.print("Usage: user add <username> <email> <password> [admin|worker|viewer]\n", .{});
+                return;
+            };
+            const email = args_it.next() orelse {
+                std.debug.print("Usage: user add <username> <email> <password> [admin|worker|viewer]\n", .{});
+                return;
+            };
+            const password = args_it.next() orelse {
+                std.debug.print("Usage: user add <username> <email> <password> [admin|worker|viewer]\n", .{});
+                return;
+            };
+            const role = if (args_it.next()) |role_str|
+                users_module.parseRole(role_str) orelse .worker
+            else
+                users_module.UserRole.worker;
+
+            const user_id = self.system.createUser(username, email, password, role) catch |err| {
+                self.printUserError(err);
+                return;
+            };
+            std.debug.print("User created: id={} username={s} role={s}\n", .{ user_id, username, @tagName(role) });
+            return;
+        }
+
+        if (std.mem.eql(u8, subcmd, "list")) {
+            const users = self.system.getUsers();
+            if (users.len == 0) {
+                std.debug.print("No users created.\n", .{});
+                return;
+            }
+            for (users) |user| {
+                std.debug.print(
+                    "id={} username={s} email={s} role={s} status={s}\n",
+                    .{ user.id, user.username, user.email, @tagName(user.role), if (user.active) "active" else "disabled" },
+                );
+            }
+            return;
+        }
+
+        if (std.mem.eql(u8, subcmd, "disable")) {
+            const id_str = args_it.next() orelse {
+                std.debug.print("Usage: user disable <user_id>\n", .{});
+                return;
+            };
+            const user_id = std.fmt.parseInt(u32, id_str, 10) catch {
+                std.debug.print("Invalid user id: {s}\n", .{id_str});
+                return;
+            };
+            self.system.disableUser(user_id) catch |err| {
+                self.printUserError(err);
+                return;
+            };
+            std.debug.print("User {} disabled.\n", .{user_id});
+            return;
+        }
+
+        if (std.mem.eql(u8, subcmd, "login")) {
+            const username = args_it.next() orelse {
+                std.debug.print("Usage: user login <username> <password>\n", .{});
+                return;
+            };
+            const password = args_it.next() orelse {
+                std.debug.print("Usage: user login <username> <password>\n", .{});
+                return;
+            };
+            const user_id = self.system.loginUser(username, password) catch |err| {
+                self.printUserError(err);
+                return;
+            };
+            std.debug.print("Logged in as {s} (id={}).\n", .{ username, user_id });
+            return;
+        }
+
+        if (std.mem.eql(u8, subcmd, "logout")) {
+            self.system.logoutUser() catch |err| {
+                self.printUserError(err);
+                return;
+            };
+            std.debug.print("Logged out.\n", .{});
+            return;
+        }
+
+        if (std.mem.eql(u8, subcmd, "whoami")) {
+            if (self.system.getCurrentUser()) |user| {
+                std.debug.print(
+                    "Current user: id={} username={s} role={s}\n",
+                    .{ user.id, user.username, @tagName(user.role) },
+                );
+            } else {
+                std.debug.print("No active user session.\n", .{});
+            }
+            return;
+        }
+
+        if (std.mem.eql(u8, subcmd, "creds")) {
+            const action = args_it.next() orelse {
+                std.debug.print("Usage: user creds <add|list|disable|setpass> ...\n", .{});
+                return;
+            };
+
+            if (std.mem.eql(u8, action, "add")) {
+                const user_id = self.parseUserId(args_it.next()) orelse return;
+                const label = args_it.next() orelse {
+                    std.debug.print("Usage: user creds add <user_id> <label> <password|api_token|ssh_key> <secret>\n", .{});
+                    return;
+                };
+                const kind_str = args_it.next() orelse {
+                    std.debug.print("Usage: user creds add <user_id> <label> <password|api_token|ssh_key> <secret>\n", .{});
+                    return;
+                };
+                const secret = args_it.next() orelse {
+                    std.debug.print("Usage: user creds add <user_id> <label> <password|api_token|ssh_key> <secret>\n", .{});
+                    return;
+                };
+                const kind = users_module.parseCredentialKind(kind_str) orelse {
+                    std.debug.print("Invalid credential kind: {s}\n", .{kind_str});
+                    return;
+                };
+                const cred_id = self.system.addUserCredential(user_id, label, kind, secret) catch |err| {
+                    self.printUserError(err);
+                    return;
+                };
+                std.debug.print("Credential added: id={} user={} label={s} kind={s}\n", .{ cred_id, user_id, label, @tagName(kind) });
+                return;
+            }
+
+            if (std.mem.eql(u8, action, "list")) {
+                const user_id = self.parseUserId(args_it.next()) orelse return;
+                const creds = self.system.getUserCredentials();
+                var found = false;
+                for (creds) |cred| {
+                    if (cred.user_id == user_id) {
+                        found = true;
+                        std.debug.print(
+                            "id={} user={} label={s} kind={s} status={s}\n",
+                            .{ cred.id, cred.user_id, cred.label, @tagName(cred.kind), if (cred.active) "active" else "disabled" },
+                        );
+                    }
+                }
+                if (!found) std.debug.print("No credentials found for user {}.\n", .{user_id});
+                return;
+            }
+
+            if (std.mem.eql(u8, action, "disable")) {
+                const cred_id_str = args_it.next() orelse {
+                    std.debug.print("Usage: user creds disable <credential_id>\n", .{});
+                    return;
+                };
+                const cred_id = std.fmt.parseInt(u32, cred_id_str, 10) catch {
+                    std.debug.print("Invalid credential id: {s}\n", .{cred_id_str});
+                    return;
+                };
+                self.system.disableUserCredential(cred_id) catch |err| {
+                    self.printUserError(err);
+                    return;
+                };
+                std.debug.print("Credential {} disabled.\n", .{cred_id});
+                return;
+            }
+
+            if (std.mem.eql(u8, action, "setpass")) {
+                const user_id = self.parseUserId(args_it.next()) orelse return;
+                const password = args_it.next() orelse {
+                    std.debug.print("Usage: user creds setpass <user_id> <password>\n", .{});
+                    return;
+                };
+                self.system.setUserPassword(user_id, password) catch |err| {
+                    self.printUserError(err);
+                    return;
+                };
+                std.debug.print("Password updated for user {}.\n", .{user_id});
+                return;
+            }
+
+            std.debug.print("Usage: user creds <add|list|disable|setpass> ...\n", .{});
+            return;
+        }
+
+        if (std.mem.eql(u8, subcmd, "profile")) {
+            const action = args_it.next() orelse {
+                std.debug.print("Usage: user profile <create|list|activate|show|set|config|pref|account> ...\n", .{});
+                return;
+            };
+
+            if (std.mem.eql(u8, action, "create")) {
+                const user_id = self.parseUserId(args_it.next()) orelse return;
+                const type_str = args_it.next() orelse {
+                    std.debug.print("Usage: user profile create <user_id> <work|personal|custom> <name> <description>\n", .{});
+                    return;
+                };
+                const name = args_it.next() orelse {
+                    std.debug.print("Usage: user profile create <user_id> <work|personal|custom> <name> <description>\n", .{});
+                    return;
+                };
+                const description = args_it.next() orelse {
+                    std.debug.print("Usage: user profile create <user_id> <work|personal|custom> <name> <description>\n", .{});
+                    return;
+                };
+                const ptype = users_module.parseProfileType(type_str) orelse {
+                    std.debug.print("Invalid profile type: {s}\n", .{type_str});
+                    return;
+                };
+                const profile_id = self.system.createUserProfile(user_id, ptype, name, description) catch |err| {
+                    self.printUserError(err);
+                    return;
+                };
+                std.debug.print("Profile created: id={} user={} type={s} name={s}\n", .{ profile_id, user_id, @tagName(ptype), name });
+                return;
+            }
+
+            if (std.mem.eql(u8, action, "list")) {
+                const user_id = self.parseUserId(args_it.next()) orelse return;
+                const profiles = self.system.getUserProfiles();
+                var found = false;
+                for (profiles) |profile| {
+                    if (profile.user_id == user_id) {
+                        found = true;
+                        std.debug.print(
+                            "id={} type={s} name={s} status={s} accounts={}\n",
+                            .{ profile.id, @tagName(profile.profile_type), profile.name, if (profile.active) "active" else "inactive", profile.account_ids.items.len },
+                        );
+                    }
+                }
+                if (!found) std.debug.print("No profiles found for user {}.\n", .{user_id});
+                return;
+            }
+
+            if (std.mem.eql(u8, action, "activate")) {
+                const user_id = self.parseUserId(args_it.next()) orelse return;
+                const profile_id_str = args_it.next() orelse {
+                    std.debug.print("Usage: user profile activate <user_id> <profile_id>\n", .{});
+                    return;
+                };
+                const profile_id = std.fmt.parseInt(u32, profile_id_str, 10) catch {
+                    std.debug.print("Invalid profile id: {s}\n", .{profile_id_str});
+                    return;
+                };
+                self.system.setActiveUserProfile(user_id, profile_id) catch |err| {
+                    self.printUserError(err);
+                    return;
+                };
+                std.debug.print("Profile {} activated for user {}.\n", .{ profile_id, user_id });
+                return;
+            }
+
+            if (std.mem.eql(u8, action, "set")) {
+                const user_id = self.parseUserId(args_it.next()) orelse return;
+                const display_name = args_it.next() orelse {
+                    std.debug.print("Usage: user profile set <user_id> <display_name> <bio> <timezone> <locale> <avatar_url>\n", .{});
+                    return;
+                };
+                const bio = args_it.next() orelse {
+                    std.debug.print("Usage: user profile set <user_id> <display_name> <bio> <timezone> <locale> <avatar_url>\n", .{});
+                    return;
+                };
+                const timezone = args_it.next() orelse {
+                    std.debug.print("Usage: user profile set <user_id> <display_name> <bio> <timezone> <locale> <avatar_url>\n", .{});
+                    return;
+                };
+                const locale = args_it.next() orelse {
+                    std.debug.print("Usage: user profile set <user_id> <display_name> <bio> <timezone> <locale> <avatar_url>\n", .{});
+                    return;
+                };
+                const avatar_url = args_it.next() orelse {
+                    std.debug.print("Usage: user profile set <user_id> <display_name> <bio> <timezone> <locale> <avatar_url>\n", .{});
+                    return;
+                };
+
+                self.system.setUserProfile(user_id, display_name, bio, timezone, locale, avatar_url) catch |err| {
+                    self.printUserError(err);
+                    return;
+                };
+                std.debug.print("Profile updated for user {}.\n", .{user_id});
+                return;
+            }
+
+            if (std.mem.eql(u8, action, "show")) {
+                const user_id = self.parseUserId(args_it.next()) orelse return;
+                const profile = self.system.getUserProfile(user_id) catch |err| {
+                    self.printUserError(err);
+                    return;
+                };
+                std.debug.print("profile={} user={} type={s} name={s}\n", .{ profile.id, profile.user_id, @tagName(profile.profile_type), profile.name });
+                std.debug.print("description={s}\n", .{profile.description});
+                if (profile.configurations.items.len > 0) {
+                    std.debug.print("configurations:\n", .{});
+                    for (profile.configurations.items) |entry| {
+                        std.debug.print("  {s}={s}\n", .{ entry.key, entry.value });
+                    }
+                }
+                if (profile.preferences.items.len > 0) {
+                    std.debug.print("preferences:\n", .{});
+                    for (profile.preferences.items) |entry| {
+                        std.debug.print("  {s}={s}\n", .{ entry.key, entry.value });
+                    }
+                }
+                std.debug.print("linked_accounts={}\n", .{profile.account_ids.items.len});
+                return;
+            }
+
+            if (std.mem.eql(u8, action, "config")) {
+                const op = args_it.next() orelse {
+                    std.debug.print("Usage: user profile config set <profile_id> <key> <value>\n", .{});
+                    return;
+                };
+                if (!std.mem.eql(u8, op, "set")) {
+                    std.debug.print("Usage: user profile config set <profile_id> <key> <value>\n", .{});
+                    return;
+                }
+                const profile_id_str = args_it.next() orelse {
+                    std.debug.print("Usage: user profile config set <profile_id> <key> <value>\n", .{});
+                    return;
+                };
+                const key = args_it.next() orelse {
+                    std.debug.print("Usage: user profile config set <profile_id> <key> <value>\n", .{});
+                    return;
+                };
+                const value = args_it.next() orelse {
+                    std.debug.print("Usage: user profile config set <profile_id> <key> <value>\n", .{});
+                    return;
+                };
+                const profile_id = std.fmt.parseInt(u32, profile_id_str, 10) catch {
+                    std.debug.print("Invalid profile id: {s}\n", .{profile_id_str});
+                    return;
+                };
+                self.system.setUserProfileConfiguration(profile_id, key, value) catch |err| {
+                    self.printUserError(err);
+                    return;
+                };
+                std.debug.print("Profile config set: profile={} {s}={s}\n", .{ profile_id, key, value });
+                return;
+            }
+
+            if (std.mem.eql(u8, action, "pref")) {
+                const op = args_it.next() orelse {
+                    std.debug.print("Usage: user profile pref set <profile_id> <key> <value>\n", .{});
+                    return;
+                };
+                if (!std.mem.eql(u8, op, "set")) {
+                    std.debug.print("Usage: user profile pref set <profile_id> <key> <value>\n", .{});
+                    return;
+                }
+                const profile_id_str = args_it.next() orelse {
+                    std.debug.print("Usage: user profile pref set <profile_id> <key> <value>\n", .{});
+                    return;
+                };
+                const key = args_it.next() orelse {
+                    std.debug.print("Usage: user profile pref set <profile_id> <key> <value>\n", .{});
+                    return;
+                };
+                const value = args_it.next() orelse {
+                    std.debug.print("Usage: user profile pref set <profile_id> <key> <value>\n", .{});
+                    return;
+                };
+                const profile_id = std.fmt.parseInt(u32, profile_id_str, 10) catch {
+                    std.debug.print("Invalid profile id: {s}\n", .{profile_id_str});
+                    return;
+                };
+                self.system.setUserProfilePreference(profile_id, key, value) catch |err| {
+                    self.printUserError(err);
+                    return;
+                };
+                std.debug.print("Profile preference set: profile={} {s}={s}\n", .{ profile_id, key, value });
+                return;
+            }
+
+            if (std.mem.eql(u8, action, "account")) {
+                const op = args_it.next() orelse {
+                    std.debug.print("Usage: user profile account <add|list|disable> ...\n", .{});
+                    return;
+                };
+
+                if (std.mem.eql(u8, op, "add")) {
+                    const profile_id_str = args_it.next() orelse {
+                        std.debug.print("Usage: user profile account add <profile_id> <social_media|work|personal|email|software|other> <username> <provider> <details>\n", .{});
+                        return;
+                    };
+                    const account_type_str = args_it.next() orelse {
+                        std.debug.print("Usage: user profile account add <profile_id> <social_media|work|personal|email|software|other> <username> <provider> <details>\n", .{});
+                        return;
+                    };
+                    const username = args_it.next() orelse {
+                        std.debug.print("Usage: user profile account add <profile_id> <social_media|work|personal|email|software|other> <username> <provider> <details>\n", .{});
+                        return;
+                    };
+                    const provider = args_it.next() orelse {
+                        std.debug.print("Usage: user profile account add <profile_id> <social_media|work|personal|email|software|other> <username> <provider> <details>\n", .{});
+                        return;
+                    };
+                    const details = args_it.next() orelse {
+                        std.debug.print("Usage: user profile account add <profile_id> <social_media|work|personal|email|software|other> <username> <provider> <details>\n", .{});
+                        return;
+                    };
+                    const profile_id = std.fmt.parseInt(u32, profile_id_str, 10) catch {
+                        std.debug.print("Invalid profile id: {s}\n", .{profile_id_str});
+                        return;
+                    };
+                    const account_type = users_module.parseAccountType(account_type_str) orelse {
+                        std.debug.print("Invalid account type: {s}\n", .{account_type_str});
+                        return;
+                    };
+                    const account_id = self.system.addUserProfileAccount(profile_id, account_type, username, provider, details) catch |err| {
+                        self.printUserError(err);
+                        return;
+                    };
+                    std.debug.print(
+                        "Profile account added: id={} profile={} type={s} provider={s}\n",
+                        .{ account_id, profile_id, @tagName(account_type), provider },
+                    );
+                    return;
+                }
+
+                if (std.mem.eql(u8, op, "list")) {
+                    const profile_id_str = args_it.next() orelse {
+                        std.debug.print("Usage: user profile account list <profile_id>\n", .{});
+                        return;
+                    };
+                    const profile_id = std.fmt.parseInt(u32, profile_id_str, 10) catch {
+                        std.debug.print("Invalid profile id: {s}\n", .{profile_id_str});
+                        return;
+                    };
+                    const accounts = self.system.getUserProfileAccounts();
+                    var found = false;
+                    for (accounts) |acct| {
+                        if (acct.profile_id == profile_id) {
+                            found = true;
+                            std.debug.print(
+                                "id={} profile={} type={s} username={s} provider={s} status={s}\n",
+                                .{ acct.id, acct.profile_id, @tagName(acct.account_type), acct.username, acct.provider, if (acct.active) "active" else "disabled" },
+                            );
+                        }
+                    }
+                    if (!found) std.debug.print("No accounts linked to profile {}.\n", .{profile_id});
+                    return;
+                }
+
+                if (std.mem.eql(u8, op, "disable")) {
+                    const account_id_str = args_it.next() orelse {
+                        std.debug.print("Usage: user profile account disable <account_id>\n", .{});
+                        return;
+                    };
+                    const account_id = std.fmt.parseInt(u32, account_id_str, 10) catch {
+                        std.debug.print("Invalid account id: {s}\n", .{account_id_str});
+                        return;
+                    };
+                    self.system.disableUserProfileAccount(account_id) catch |err| {
+                        self.printUserError(err);
+                        return;
+                    };
+                    std.debug.print("Profile account {} disabled.\n", .{account_id});
+                    return;
+                }
+
+                std.debug.print("Usage: user profile account <add|list|disable> ...\n", .{});
+                return;
+            }
+
+            std.debug.print("Usage: user profile <create|list|activate|show|set|config|pref|account> ...\n", .{});
+            return;
+        }
+
+        if (std.mem.eql(u8, subcmd, "persona")) {
+            const action = args_it.next() orelse {
+                std.debug.print("Usage: user persona <add|list|activate|active> ...\n", .{});
+                return;
+            };
+
+            if (std.mem.eql(u8, action, "add")) {
+                const user_id = self.parseUserId(args_it.next()) orelse return;
+                const name = args_it.next() orelse {
+                    std.debug.print("Usage: user persona add <user_id> <name> <focus_area> <tone> <description>\n", .{});
+                    return;
+                };
+                const focus_area = args_it.next() orelse {
+                    std.debug.print("Usage: user persona add <user_id> <name> <focus_area> <tone> <description>\n", .{});
+                    return;
+                };
+                const tone = args_it.next() orelse {
+                    std.debug.print("Usage: user persona add <user_id> <name> <focus_area> <tone> <description>\n", .{});
+                    return;
+                };
+                const description = args_it.next() orelse {
+                    std.debug.print("Usage: user persona add <user_id> <name> <focus_area> <tone> <description>\n", .{});
+                    return;
+                };
+                const persona_id = self.system.addUserPersona(user_id, name, description, focus_area, tone) catch |err| {
+                    self.printUserError(err);
+                    return;
+                };
+                std.debug.print("Persona added: id={} user={} name={s}\n", .{ persona_id, user_id, name });
+                return;
+            }
+
+            if (std.mem.eql(u8, action, "list")) {
+                const user_id = self.parseUserId(args_it.next()) orelse return;
+                const personas = self.system.getUserPersonas();
+                var found = false;
+                for (personas) |persona| {
+                    if (persona.user_id == user_id) {
+                        found = true;
+                        std.debug.print(
+                            "id={} user={} name={s} focus={s} tone={s} status={s}\n",
+                            .{ persona.id, persona.user_id, persona.name, persona.focus_area, persona.tone, if (persona.active) "active" else "inactive" },
+                        );
+                    }
+                }
+                if (!found) std.debug.print("No personas found for user {}.\n", .{user_id});
+                return;
+            }
+
+            if (std.mem.eql(u8, action, "activate")) {
+                const user_id = self.parseUserId(args_it.next()) orelse return;
+                const persona_id_str = args_it.next() orelse {
+                    std.debug.print("Usage: user persona activate <user_id> <persona_id>\n", .{});
+                    return;
+                };
+                const persona_id = std.fmt.parseInt(u32, persona_id_str, 10) catch {
+                    std.debug.print("Invalid persona id: {s}\n", .{persona_id_str});
+                    return;
+                };
+                self.system.activateUserPersona(user_id, persona_id) catch |err| {
+                    self.printUserError(err);
+                    return;
+                };
+                std.debug.print("Persona {} activated for user {}.\n", .{ persona_id, user_id });
+                return;
+            }
+
+            if (std.mem.eql(u8, action, "active")) {
+                const user_id = self.parseUserId(args_it.next()) orelse return;
+                if (self.system.getUserActivePersona(user_id)) |persona| {
+                    std.debug.print(
+                        "Active persona: id={} name={s} focus={s} tone={s}\n",
+                        .{ persona.id, persona.name, persona.focus_area, persona.tone },
+                    );
+                } else {
+                    std.debug.print("No active persona for user {}.\n", .{user_id});
+                }
+                return;
+            }
+
+            std.debug.print("Usage: user persona <add|list|activate|active> ...\n", .{});
+            return;
+        }
+
+        self.printUserHelp();
+    }
+
+    fn printUserHelp(self: *CLI) void {
+        _ = self;
+        std.debug.print("User commands:\n", .{});
+        std.debug.print("  user add <username> <email> <password> [admin|worker|viewer]\n", .{});
+        std.debug.print("  user list\n", .{});
+        std.debug.print("  user disable <user_id>\n", .{});
+        std.debug.print("  user login <username> <password>\n", .{});
+        std.debug.print("  user logout\n", .{});
+        std.debug.print("  user whoami\n", .{});
+        std.debug.print("  user creds add <user_id> <label> <password|api_token|ssh_key> <secret>\n", .{});
+        std.debug.print("  user creds list <user_id>\n", .{});
+        std.debug.print("  user creds disable <credential_id>\n", .{});
+        std.debug.print("  user creds setpass <user_id> <password>\n", .{});
+        std.debug.print("  user profile create <user_id> <work|personal|custom> <name> <description>\n", .{});
+        std.debug.print("  user profile list <user_id>\n", .{});
+        std.debug.print("  user profile activate <user_id> <profile_id>\n", .{});
+        std.debug.print("  user profile set <user_id> <display_name> <bio> <timezone> <locale> <avatar_url>\n", .{});
+        std.debug.print("  user profile show <user_id>\n", .{});
+        std.debug.print("  user profile config set <profile_id> <key> <value>\n", .{});
+        std.debug.print("  user profile pref set <profile_id> <key> <value>\n", .{});
+        std.debug.print("  user profile account add <profile_id> <social_media|work|personal|email|software|other> <username> <provider> <details>\n", .{});
+        std.debug.print("  user profile account list <profile_id>\n", .{});
+        std.debug.print("  user profile account disable <account_id>\n", .{});
+        std.debug.print("  user persona add <user_id> <name> <focus_area> <tone> <description>\n", .{});
+        std.debug.print("  user persona list <user_id>\n", .{});
+        std.debug.print("  user persona activate <user_id> <persona_id>\n", .{});
+        std.debug.print("  user persona active <user_id>\n", .{});
+    }
+
+    fn parseUserId(self: *CLI, id_opt: ?[]const u8) ?u32 {
+        _ = self;
+        const id_str = id_opt orelse {
+            std.debug.print("Missing user id.\n", .{});
+            return null;
+        };
+        return std.fmt.parseInt(u32, id_str, 10) catch {
+            std.debug.print("Invalid user id: {s}\n", .{id_str});
+            return null;
+        };
+    }
+
+    fn printUserError(self: *CLI, err: anyerror) void {
+        _ = self;
+        switch (err) {
+            users_module.UserError.UserNotFound => std.debug.print("Error: user not found.\n", .{}),
+            users_module.UserError.UsernameTaken => std.debug.print("Error: username already exists.\n", .{}),
+            users_module.UserError.InvalidCredentials => std.debug.print("Error: invalid credentials.\n", .{}),
+            users_module.UserError.UserDisabled => std.debug.print("Error: user is disabled.\n", .{}),
+            users_module.UserError.AlreadyLoggedIn => std.debug.print("Error: another user is already logged in.\n", .{}),
+            users_module.UserError.NotLoggedIn => std.debug.print("Error: no active login session.\n", .{}),
+            users_module.UserError.CredentialNotFound => std.debug.print("Error: credential not found.\n", .{}),
+            users_module.UserError.ProfileNotFound => std.debug.print("Error: profile not found.\n", .{}),
+            users_module.UserError.ProfileOwnershipMismatch => std.debug.print("Error: profile does not belong to that user.\n", .{}),
+            users_module.UserError.ProfileAccountNotFound => std.debug.print("Error: profile account not found.\n", .{}),
+            users_module.UserError.PersonaNotFound => std.debug.print("Error: persona not found.\n", .{}),
+            users_module.UserError.PersonaOwnershipMismatch => std.debug.print("Error: persona does not belong to that user.\n", .{}),
+            else => std.debug.print("Error: {s}\n", .{@errorName(err)}),
         }
     }
 

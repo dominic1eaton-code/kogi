@@ -1,9 +1,11 @@
+const std = @import("std");
+
 // Custom application interface
 pub const CustomApplication = struct {
     name: []const u8,
-    start: *const fn (system: *System) void,
-    stop: *const fn (system: *System) void,
-    status: *const fn (system: *System) []const u8,
+    start: *const fn (system: *anyopaque) void,
+    stop: *const fn (system: *anyopaque) void,
+    status: *const fn (system: *anyopaque) []const u8,
 };
 /// Dashboard manager for OS system dashboard
 pub const DashboardManager = struct {
@@ -50,12 +52,12 @@ pub const SessionManager = struct {
         // Cleanup logic for session manager
     }
 };
-//! KOGI System Module - User-Level OS Functionality
-//! The System manages UI, application, user-level logic, and supports custom user applications.
-//! It operates in user mode and interfaces with the kernel for core operations.
-
-const std = @import("std");
 const identity_module = @import("identity.zig");
+const users_module = @import("users.zig");
+const providers_module = @import("providers.zig");
+const account_management_module = @import("accounts.zig");
+const profile_management_module = @import("profile.zig");
+const contacts_module = @import("contacts.zig");
 const workspace_module = @import("workspace.zig");
 const registry_module = @import("registry.zig");
 const directory_module = @import("directory.zig");
@@ -111,9 +113,9 @@ pub const Engagement = struct {
 /// System is the core operating system engine managing all subsystems
 pub const System = struct {
     allocator: std.mem.Allocator,
-        custom_apps: std.ArrayList(CustomApplication),
+    custom_apps: std.ArrayList(CustomApplication),
     tiered_cache: cache_module.TieredAllocator,
-    identity_manager: identity_module.IdentityManager,
+    user_manager: users_module.UserManager,
     workspace_manager: workspace_module.WorkspaceManager,
     directory: directory_module.Directory,
     vault: vault_module.Vault,
@@ -210,7 +212,7 @@ pub const System = struct {
         return System{
             .allocator = cache_alloc,
             .tiered_cache = tiered,
-            .identity_manager = identity_module.IdentityManager.init(cache_alloc),
+            .user_manager = users_module.UserManager.init(cache_alloc),
             .workspace_manager = workspace_module.WorkspaceManager.init(cache_alloc),
             .directory = directory_module.Directory.init(cache_alloc),
             .vault = vault_module.Vault.init(cache_alloc),
@@ -247,7 +249,7 @@ pub const System = struct {
 
     pub fn deinit(self: *System) void {
         // Clean up system-owned components (always)
-        self.identity_manager.deinit();
+        self.user_manager.deinit();
         self.workspace_manager.deinit();
         self.directory.deinit();
         self.vault.deinit();
@@ -349,21 +351,388 @@ pub const System = struct {
         hourly_rate: f32,
         itype: identity_module.IdentityType,
     ) !u32 {
-        return try self.identity_manager.createIdentity(name, email, hourly_rate, itype);
+        return try self.user_manager.createIdentity(name, email, hourly_rate, itype);
     }
 
     /// Add a skill to an identity
     pub fn addIdentitySkill(self: *System, identity_id: u32, skill: []const u8) !void {
-        try self.identity_manager.addSkill(identity_id, skill);
+        try self.user_manager.addIdentitySkill(identity_id, skill);
     }
 
     /// Get count of active identities
     pub fn getActiveIdentitiesCount(self: *System) u32 {
-        return self.identity_manager.getActiveCount();
+        return self.user_manager.getActiveIdentitiesCount();
     }
 
     pub fn getIdentities(self: *System) []identity_module.Identity {
-        return self.identity_manager.identities.items;
+        return self.user_manager.getIdentities();
+    }
+
+    // ========== User Management ==========
+
+    pub fn createUser(
+        self: *System,
+        username: []const u8,
+        email: []const u8,
+        password: []const u8,
+        role: users_module.UserRole,
+    ) !u32 {
+        return try self.user_manager.createUser(username, email, password, role);
+    }
+
+    pub fn getUsers(self: *System) []users_module.User {
+        return self.user_manager.getUsers();
+    }
+
+    pub fn disableUser(self: *System, user_id: u32) !void {
+        try self.user_manager.disableUser(user_id);
+    }
+
+    pub fn loginUser(self: *System, username: []const u8, password: []const u8) !u32 {
+        return try self.user_manager.login(username, password);
+    }
+
+    pub fn logoutUser(self: *System) !void {
+        try self.user_manager.logout();
+    }
+
+    pub fn getCurrentUser(self: *System) ?users_module.User {
+        return self.user_manager.getCurrentUser();
+    }
+
+    pub fn addUserCredential(
+        self: *System,
+        user_id: u32,
+        label: []const u8,
+        kind: users_module.CredentialKind,
+        secret: []const u8,
+    ) !u32 {
+        return try self.user_manager.addCredential(user_id, label, kind, secret);
+    }
+
+    pub fn disableUserCredential(self: *System, credential_id: u32) !void {
+        try self.user_manager.disableCredential(credential_id);
+    }
+
+    pub fn getUserCredentials(self: *System) []users_module.Credential {
+        return self.user_manager.getCredentials();
+    }
+
+    pub fn setUserPassword(self: *System, user_id: u32, password: []const u8) !void {
+        try self.user_manager.setPassword(user_id, password);
+    }
+
+    pub fn setUserProfile(
+        self: *System,
+        user_id: u32,
+        display_name: []const u8,
+        bio: []const u8,
+        timezone: []const u8,
+        locale: []const u8,
+        avatar_url: []const u8,
+    ) !void {
+        try self.user_manager.setProfile(user_id, display_name, bio, timezone, locale, avatar_url);
+    }
+
+    pub fn getUserProfile(self: *System, user_id: u32) !users_module.UserProfile {
+        return try self.user_manager.getProfile(user_id);
+    }
+
+    pub fn getUserProfiles(self: *System) []users_module.UserProfile {
+        return self.user_manager.getProfiles();
+    }
+
+    pub fn createUserProfile(
+        self: *System,
+        user_id: u32,
+        profile_type: users_module.ProfileType,
+        name: []const u8,
+        description: []const u8,
+    ) !u32 {
+        return try self.user_manager.createProfile(user_id, profile_type, name, description);
+    }
+
+    pub fn setActiveUserProfile(self: *System, user_id: u32, profile_id: u32) !void {
+        try self.user_manager.setActiveProfile(user_id, profile_id);
+    }
+
+    pub fn updateUserProfileMetadata(self: *System, profile_id: u32, name: []const u8, description: []const u8) !void {
+        try self.user_manager.updateProfileMetadata(profile_id, name, description);
+    }
+
+    pub fn setUserProfileConfiguration(self: *System, profile_id: u32, key: []const u8, value: []const u8) !void {
+        try self.user_manager.setProfileConfiguration(profile_id, key, value);
+    }
+
+    pub fn setUserProfilePreference(self: *System, profile_id: u32, key: []const u8, value: []const u8) !void {
+        try self.user_manager.setProfilePreference(profile_id, key, value);
+    }
+
+    pub fn getUserProfileById(self: *System, profile_id: u32) !users_module.UserProfile {
+        return try self.user_manager.getProfileById(profile_id);
+    }
+
+    pub fn getUserActiveProfile(self: *System, user_id: u32) ?users_module.UserProfile {
+        return self.user_manager.getActiveProfile(user_id);
+    }
+
+    pub fn addUserProfileAccount(
+        self: *System,
+        profile_id: u32,
+        account_type: users_module.AccountType,
+        username: []const u8,
+        provider: []const u8,
+        details: []const u8,
+    ) !u32 {
+        return try self.user_manager.addProfileAccount(profile_id, account_type, username, provider, details);
+    }
+
+    pub fn disableUserProfileAccount(self: *System, account_id: u32) !void {
+        try self.user_manager.disableProfileAccount(account_id);
+    }
+
+    pub fn getUserProfileAccounts(self: *System) []users_module.ProfileAccount {
+        return self.user_manager.getProfileAccounts();
+    }
+
+    pub fn createUserContact(
+        self: *System,
+        user_id: u32,
+        profile_id: ?u32,
+        kind: users_module.ContactKind,
+        display_name: []const u8,
+        notes: []const u8,
+    ) !u32 {
+        return try self.user_manager.createContact(user_id, profile_id, kind, display_name, notes);
+    }
+
+    pub fn setUserContactProfile(self: *System, user_id: u32, contact_id: u32, profile_id: ?u32) !void {
+        try self.user_manager.setContactProfile(user_id, contact_id, profile_id);
+    }
+
+    pub fn updateUserContact(self: *System, user_id: u32, contact_id: u32, display_name: []const u8, notes: []const u8) !void {
+        try self.user_manager.updateContact(user_id, contact_id, display_name, notes);
+    }
+
+    pub fn addUserContactChannel(
+        self: *System,
+        user_id: u32,
+        contact_id: u32,
+        kind: users_module.ContactChannelKind,
+        label: []const u8,
+        value: []const u8,
+    ) !void {
+        try self.user_manager.addContactChannel(user_id, contact_id, kind, label, value);
+    }
+
+    pub fn verifyUserContactChannel(self: *System, user_id: u32, contact_id: u32, channel_index: usize) !void {
+        try self.user_manager.verifyContactChannel(user_id, contact_id, channel_index);
+    }
+
+    pub fn addUserContactTag(self: *System, user_id: u32, contact_id: u32, tag: []const u8) !void {
+        try self.user_manager.addContactTag(user_id, contact_id, tag);
+    }
+
+    pub fn linkUserContactToAccount(self: *System, user_id: u32, contact_id: u32, account_id: u32) !void {
+        try self.user_manager.linkContactToAccount(user_id, contact_id, account_id);
+    }
+
+    pub fn unlinkUserContactFromAccount(self: *System, user_id: u32, contact_id: u32, account_id: u32) !void {
+        try self.user_manager.unlinkContactFromAccount(user_id, contact_id, account_id);
+    }
+
+    pub fn deactivateUserContact(self: *System, user_id: u32, contact_id: u32) !void {
+        try self.user_manager.deactivateContact(user_id, contact_id);
+    }
+
+    pub fn getUserContacts(self: *System) []users_module.UserContact {
+        return self.user_manager.getContacts();
+    }
+
+    pub fn getUserContactById(self: *System, contact_id: u32) !users_module.UserContact {
+        return try self.user_manager.getContactById(contact_id);
+    }
+
+    pub fn addUserPersona(
+        self: *System,
+        user_id: u32,
+        name: []const u8,
+        description: []const u8,
+        focus_area: []const u8,
+        tone: []const u8,
+    ) !u32 {
+        return try self.user_manager.addPersona(user_id, name, description, focus_area, tone);
+    }
+
+    pub fn activateUserPersona(self: *System, user_id: u32, persona_id: u32) !void {
+        try self.user_manager.activatePersona(user_id, persona_id);
+    }
+
+    pub fn getUserActivePersona(self: *System, user_id: u32) ?users_module.Persona {
+        return self.user_manager.getActivePersona(user_id);
+    }
+
+    pub fn getUserPersonas(self: *System) []users_module.Persona {
+        return self.user_manager.getPersonas();
+    }
+
+    // ========== Provider Management ==========
+
+    pub fn addProvider(
+        self: *System,
+        name: []const u8,
+        slug: []const u8,
+        category: providers_module.ProviderCategory,
+        homepage_url: []const u8,
+        api_base_url: []const u8,
+    ) !u32 {
+        return try self.user_manager.addProvider(name, slug, category, homepage_url, api_base_url);
+    }
+
+    pub fn disableProvider(self: *System, provider_id: u32) !void {
+        try self.user_manager.disableProvider(provider_id);
+    }
+
+    pub fn enableProvider(self: *System, provider_id: u32) !void {
+        try self.user_manager.enableProvider(provider_id);
+    }
+
+    pub fn getProviders(self: *System) []providers_module.Provider {
+        return self.user_manager.getProviders();
+    }
+
+    pub fn getProvider(self: *System, provider_id: u32) !providers_module.Provider {
+        return try self.user_manager.getProvider(provider_id);
+    }
+
+    pub fn findProviderBySlug(self: *System, slug: []const u8) ?providers_module.Provider {
+        return self.user_manager.findProviderBySlug(slug);
+    }
+
+    // ========== Account Management System ==========
+
+    pub fn createManagedAccount(
+        self: *System,
+        owner_user_id: u32,
+        account_type: account_management_module.AccountType,
+        provider_slug: []const u8,
+        account_handle: []const u8,
+        metadata: []const u8,
+    ) !u32 {
+        if (!self.user_manager.provider_manager.isActiveBySlug(provider_slug)) {
+            return providers_module.ProviderError.ProviderNotFound;
+        }
+        return try self.user_manager.account_management.createAccount(
+            owner_user_id,
+            account_type,
+            provider_slug,
+            account_handle,
+            metadata,
+        );
+    }
+
+    pub fn associateManagedAccountToProfile(self: *System, account_id: u32, profile_id: ?u32) !void {
+        try self.user_manager.account_management.associateToProfile(account_id, profile_id);
+        if (profile_id) |pid| {
+            try self.user_manager.profile_management.linkAccount(pid, account_id);
+        }
+    }
+
+    pub fn deactivateManagedAccount(self: *System, account_id: u32) !void {
+        try self.user_manager.account_management.deactivateAccount(account_id);
+    }
+
+    pub fn getManagedAccounts(self: *System) []account_management_module.ManagedAccount {
+        return self.user_manager.account_management.getAccounts();
+    }
+
+    // ========== Profile Management System ==========
+
+    pub fn createManagedProfile(
+        self: *System,
+        owner_user_id: u32,
+        profile_type: profile_management_module.ProfileType,
+        name: []const u8,
+        description: []const u8,
+    ) !u32 {
+        return try self.user_manager.profile_management.createProfile(owner_user_id, profile_type, name, description);
+    }
+
+    pub fn setActiveManagedProfile(self: *System, owner_user_id: u32, profile_id: u32) !void {
+        try self.user_manager.profile_management.setActiveProfile(owner_user_id, profile_id);
+    }
+
+    pub fn setManagedProfileConfiguration(self: *System, profile_id: u32, key: []const u8, value: []const u8) !void {
+        try self.user_manager.profile_management.setConfiguration(profile_id, key, value);
+    }
+
+    pub fn setManagedProfilePreference(self: *System, profile_id: u32, key: []const u8, value: []const u8) !void {
+        try self.user_manager.profile_management.setPreference(profile_id, key, value);
+    }
+
+    pub fn linkManagedAccountToProfile(self: *System, profile_id: u32, account_id: u32) !void {
+        try self.user_manager.profile_management.linkAccount(profile_id, account_id);
+        try self.user_manager.account_management.associateToProfile(account_id, profile_id);
+    }
+
+    pub fn unlinkManagedAccountFromProfile(self: *System, profile_id: u32, account_id: u32) !void {
+        try self.user_manager.profile_management.unlinkAccount(profile_id, account_id);
+        try self.user_manager.account_management.associateToProfile(account_id, null);
+    }
+
+    pub fn getManagedProfiles(self: *System) []profile_management_module.ManagedProfile {
+        return self.user_manager.profile_management.getProfiles();
+    }
+
+    // ========== Contact Management System ==========
+
+    pub fn createManagedContact(
+        self: *System,
+        owner_user_id: u32,
+        profile_id: ?u32,
+        kind: contacts_module.ContactKind,
+        display_name: []const u8,
+        notes: []const u8,
+    ) !u32 {
+        return try self.user_manager.contact_management.createContact(owner_user_id, profile_id, kind, display_name, notes);
+    }
+
+    pub fn setManagedContactProfile(self: *System, contact_id: u32, profile_id: ?u32) !void {
+        try self.user_manager.contact_management.setProfile(contact_id, profile_id);
+    }
+
+    pub fn updateManagedContact(self: *System, contact_id: u32, display_name: []const u8, notes: []const u8) !void {
+        try self.user_manager.contact_management.updateDetails(contact_id, display_name, notes);
+    }
+
+    pub fn addManagedContactChannel(
+        self: *System,
+        contact_id: u32,
+        kind: contacts_module.ContactChannelKind,
+        label: []const u8,
+        value: []const u8,
+    ) !void {
+        try self.user_manager.contact_management.addChannel(contact_id, kind, label, value);
+    }
+
+    pub fn addManagedContactTag(self: *System, contact_id: u32, tag: []const u8) !void {
+        try self.user_manager.contact_management.addTag(contact_id, tag);
+    }
+
+    pub fn linkManagedContactToAccount(self: *System, contact_id: u32, account_id: u32) !void {
+        try self.user_manager.contact_management.linkAccount(contact_id, account_id);
+    }
+
+    pub fn unlinkManagedContactFromAccount(self: *System, contact_id: u32, account_id: u32) !void {
+        try self.user_manager.contact_management.unlinkAccount(contact_id, account_id);
+    }
+
+    pub fn deactivateManagedContact(self: *System, contact_id: u32) !void {
+        try self.user_manager.contact_management.deactivateContact(contact_id);
+    }
+
+    pub fn getManagedContacts(self: *System) []contacts_module.ManagedContact {
+        return self.user_manager.contact_management.getContacts();
     }
 
     /// Connection management delegation: add a connection for an identity
@@ -375,15 +744,15 @@ pub const System = struct {
         provider: []const u8,
         details: []const u8,
     ) !u32 {
-        return try self.identity_manager.addIdentityConnection(identity_id, conn_type, username, provider, details);
+        return try self.user_manager.addIdentityConnection(identity_id, conn_type, username, provider, details);
     }
 
     pub fn deactivateIdentityConnection(self: *System, identity_id: u32, conn_id: u32) !void {
-        try self.identity_manager.deactivateIdentityConnection(identity_id, conn_id);
+        try self.user_manager.deactivateIdentityConnection(identity_id, conn_id);
     }
 
     pub fn getIdentityActiveConnectionCount(self: *System, identity_id: u32) u32 {
-        return self.identity_manager.getIdentityActiveConnectionCount(identity_id);
+        return self.user_manager.getIdentityActiveConnectionCount(identity_id);
     }
 
     // ========== Task Management ==========

@@ -69,14 +69,6 @@ pub const Kernel = struct {
     }
 };
 
-pub fn enforceModeBarrier(kernel: *Kernel, system: *anyopaque) bool {
-	pub fn enforceModeBarrier(kernel: *Kernel, _system: *anyopaque) bool {
-    // Enforce protection/privacy/security between kernel and system
-    // Return true if barrier is intact, false if violation detected
-    // (Stub: implement real checks)
-    return kernel.mode == .kernel;
-}
-
 // --- OS API, syscalls, and helpers (placed after Kernel so Kernel type exists) ---
 /// OS ABI versioning
 pub const OSAbi = struct {
@@ -99,27 +91,22 @@ pub const OSApi = struct {
 fn getTimeImpl() i64 {
     return 0;
 }
-fn createProcessImpl(name: []const u8) u32 {
-    fn createProcessImpl(_name: []const u8) u32 {
+fn createProcessImpl(_: []const u8) u32 {
     return 0;
 }
-fn killProcessImpl(pid: u32) bool {
-    fn killProcessImpl(_pid: u32) bool {
+fn killProcessImpl(_: u32) bool {
     return false;
 }
-fn readMemoryImpl(addr: usize, size: usize) []u8 {
-    fn readMemoryImpl(_addr: usize, _size: usize) []u8 {
+fn readMemoryImpl(_: usize, _: usize) []u8 {
     return &[_]u8{};
 }
-fn writeMemoryImpl(addr: usize, data: []const u8) bool {
-    fn writeMemoryImpl(_addr: usize, _data: []const u8) bool {
+fn writeMemoryImpl(_: usize, _: []const u8) bool {
     return false;
 }
 fn getSystemInfoImpl() []const u8 {
     return "KOGI OS";
 }
-fn customImpl(code: u32, args: []const u8) usize {
-    fn customImpl(_code: u32, _args: []const u8) usize {
+fn customImpl(_: u32, _: []const u8) usize {
     return 0;
 }
 
@@ -150,10 +137,17 @@ pub fn syscallNames() []const []const u8 {
     return &[_][]const u8{ "GetTime", "CreateProcess", "KillProcess", "ReadMemory", "WriteMemory", "GetSystemInfo", "Custom" };
 }
 
+/// Enforce protection/privacy/security between kernel and system
+/// Return true if barrier is intact, false if violation detected
+pub fn enforceModeBarrier(kernel: *Kernel, _: *anyopaque) bool {
+    // Stub: implement real checks
+    return kernel.mode == .kernel;
+}
+
 /// Syscall dispatcher
 pub fn syscall(kernel: *Kernel, call: Syscall, args: anytype) usize {
     switch (call) {
-        .GetTime => return @intCast(usize, kernel.clock.now().seconds),
+        .GetTime => return 0,
         .CreateProcess => return kernel.process_manager.createProcess(args) catch 0,
         .KillProcess => return kernel.process_manager.killProcess(args) catch 0,
         .ReadMemory => return 0,

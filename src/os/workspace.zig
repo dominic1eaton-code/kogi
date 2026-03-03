@@ -111,6 +111,32 @@ pub const Task = struct {
 
 // Project, Program, and asset logic is now managed by the PortfolioManagementApp in src/apps/portfolio_app.zig
 
+/// Placeholder Project/Program/SubWorkspace types for compatibility
+pub const Project = struct {
+    id: u32,
+    name: []const u8,
+    description: []const u8,
+    tasks: std.ArrayList(Task),
+    metadata: Metadata,
+};
+
+pub const Program = struct {
+    id: u32,
+    name: []const u8,
+    description: []const u8,
+    projects: std.ArrayList(Project),
+    metadata: Metadata,
+};
+
+pub const SubWorkspace = struct {
+    id: u32,
+    name: []const u8,
+    description: []const u8,
+    programs: std.ArrayList(Program),
+    projects: std.ArrayList(Project),
+    metadata: Metadata,
+};
+
 /// Search filter criteria for workspace
 pub const SearchFilter = struct {
     name_pattern: ?[]const u8 = null,

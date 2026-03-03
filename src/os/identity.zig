@@ -44,7 +44,7 @@ pub const IdentityManager = struct {
     pub fn init(allocator: std.mem.Allocator) IdentityManager {
         return IdentityManager{
             .allocator = allocator,
-            .identities = std.ArrayList(Identity){},
+            .identities = std.ArrayList(Identity).init(allocator),
         };
     }
 
@@ -54,13 +54,13 @@ pub const IdentityManager = struct {
             for (identity.skills.items) |skill| {
                 self.allocator.free(skill);
             }
-            identity.skills.deinit(self.allocator);
+            identity.skills.deinit();
             self.allocator.free(identity.name);
             self.allocator.free(identity.email);
             // deinit registry
             identity.connection_registry.deinit();
         }
-        self.identities.deinit(self.allocator);
+        self.identities.deinit();
     }
 
     /// Create a new identity in the system
@@ -78,13 +78,13 @@ pub const IdentityManager = struct {
             .name = try self.allocator.dupe(u8, name),
             .email = try self.allocator.dupe(u8, email),
             .identity_type = itype,
-            .skills = std.ArrayList([]const u8){},
+            .skills = std.ArrayList([]const u8).init(self.allocator),
             .hourly_rate = hourly_rate,
             .active = true,
             .connection_registry = registry_module.ConnectionRegistry.init(self.allocator),
         };
 
-        try self.identities.append(self.allocator, identity);
+        try self.identities.append(identity);
         return identity_id;
     }
 
@@ -92,7 +92,7 @@ pub const IdentityManager = struct {
     pub fn addSkill(self: *IdentityManager, identity_id: u32, skill: []const u8) !void {
         if (identity_id < @as(u32, @intCast(self.identities.items.len))) {
             const skill_copy = try self.allocator.dupe(u8, skill);
-            try self.identities.items[identity_id].skills.append(self.allocator, skill_copy);
+            try self.identities.items[identity_id].skills.append(skill_copy);
         }
     }
 
@@ -150,10 +150,10 @@ pub const IdentityManager = struct {
 
     /// Get identities matching a given type
     pub fn getIdentitiesByType(self: *IdentityManager, itype: IdentityType, allocator: std.mem.Allocator) !std.ArrayList(Identity) {
-        var result = std.ArrayList(Identity){};
+        var result = std.ArrayList(Identity).init(allocator);
         for (self.identities.items) |identity| {
             if (identity.identity_type == itype) {
-                try result.append(allocator, identity);
+                try result.append(identity);
             }
         }
         return result;

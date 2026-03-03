@@ -32,7 +32,7 @@ pub const ConnectionRegistry = struct {
     pub fn init(allocator: std.mem.Allocator) ConnectionRegistry {
         return ConnectionRegistry{
             .allocator = allocator,
-            .connections = std.ArrayList(Connection){},
+            .connections = std.ArrayList(Connection).init(allocator),
         };
     }
 
@@ -42,7 +42,7 @@ pub const ConnectionRegistry = struct {
             self.allocator.free(connection.provider);
             self.allocator.free(connection.details);
         }
-        self.connections.deinit(self.allocator);
+        self.connections.deinit();
     }
 
     /// Add a new connection to the registry
@@ -64,7 +64,7 @@ pub const ConnectionRegistry = struct {
             .active = true,
         };
 
-        try self.connections.append(self.allocator, connection);
+        try self.connections.append(connection);
         return connection_id;
     }
 
