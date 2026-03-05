@@ -178,4 +178,11 @@ pub fn build(b: *std.Build) void {
     //
     // Lastly, the Zig build system is relatively simple and self-contained,
     // and reading its source code will allow you to master it.
+
+    // exe.setBuildMode(mode);
+    // b.installArtifact(exe);
+    // const test_exe = b.addExecutable("kogi_test", "src/test.zig");
+    // test_exe.setTarget(target);
+    // test_exe.setBuildMode(mode);
+    // test_exe.install();
 }

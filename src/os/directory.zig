@@ -18,19 +18,19 @@ pub const Organization = struct {
     id: u32,
     name: []const u8,
     industry: []const u8,
-    contacts: std.ArrayList(Contact),
+    contacts: std.array_list.Managed(Contact),
     notes: []const u8,
 };
 
 /// Directory manages all contacts and organizations
 pub const Directory = struct {
     allocator: std.mem.Allocator,
-    organizations: std.ArrayList(Organization),
+    organizations: std.array_list.Managed(Organization),
 
     pub fn init(allocator: std.mem.Allocator) Directory {
         return Directory{
             .allocator = allocator,
-            .organizations = std.ArrayList(Organization){},
+            .organizations = std.array_list.Managed(Organization).init(allocator),
         };
     }
 
@@ -45,9 +45,9 @@ pub const Directory = struct {
                 self.allocator.free(contact.phone);
                 self.allocator.free(contact.notes);
             }
-            org.contacts.deinit(self.allocator);
+            org.contacts.deinit();
         }
-        self.organizations.deinit(self.allocator);
+        self.organizations.deinit();
     }
 
     /// Add an organization to the directory
@@ -63,11 +63,11 @@ pub const Directory = struct {
             .id = org_id,
             .name = try self.allocator.dupe(u8, name),
             .industry = try self.allocator.dupe(u8, industry),
-            .contacts = std.ArrayList(Contact){},
+            .contacts = std.array_list.Managed(Contact).init(self.allocator),
             .notes = try self.allocator.dupe(u8, notes),
         };
 
-        try self.organizations.append(self.allocator, organization);
+        try self.organizations.append(organization);
         return org_id;
     }
 
@@ -94,7 +94,7 @@ pub const Directory = struct {
             .notes = try self.allocator.dupe(u8, notes),
         };
 
-        try self.organizations.items[org_id].contacts.append(self.allocator, contact);
+        try self.organizations.items[org_id].contacts.append(contact);
         return contact_id;
     }
 

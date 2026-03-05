@@ -67,11 +67,15 @@ pub const TieredAllocator = struct {
         return null;
     }
 
-    pub fn free(self: *TieredAllocator, ptr: *u8, _: usize, _: u29) void {
+    pub fn free(self: *TieredAllocator, ptr: *u8, _: usize, alignment: u29) void {
         self.mutex.lock();
         defer self.mutex.unlock();
-        // remove record
-        _ = self.records.remove(ptr);
+        const removed = self.records.fetchRemove(ptr) orelse return;
+        const rec = removed.value;
+        const tier_idx = @as(usize, @intFromEnum(rec.tier));
+        const slice: []u8 = @as([*]u8, @ptrCast(ptr))[0..rec.size];
+        const align_enum = std.mem.Alignment.fromByteUnits(alignment);
+        self.allocators[tier_idx].rawFree(slice, align_enum, @returnAddress());
     }
 
     /// Returns an std.mem.Allocator wrapper for this tiered allocator

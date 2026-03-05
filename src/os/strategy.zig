@@ -41,7 +41,7 @@ pub const Milestone = struct {
 };
 
 pub const Roadmap = struct {
-    milestones: std.ArrayList(Milestone),
+    milestones: std.array_list.Managed(Milestone),
 };
 
 pub const GanttEntry = struct {
@@ -52,7 +52,7 @@ pub const GanttEntry = struct {
 };
 
 pub const GanttChart = struct {
-    entries: std.ArrayList(GanttEntry),
+    entries: std.array_list.Managed(GanttEntry),
 };
 
 pub const TimelineEvent = struct {
@@ -63,7 +63,7 @@ pub const TimelineEvent = struct {
 };
 
 pub const Timeline = struct {
-    events: std.ArrayList(TimelineEvent),
+    events: std.array_list.Managed(TimelineEvent),
 };
 
 pub const Charter = struct {
@@ -80,13 +80,13 @@ pub const Operation = struct {
 
 pub const OperationsManager = struct {
     allocator: std.mem.Allocator,
-    operations: std.ArrayList(Operation),
+    operations: std.array_list.Managed(Operation),
     next_id: u32,
 
     pub fn init(allocator: std.mem.Allocator) OperationsManager {
         return OperationsManager{
             .allocator = allocator,
-            .operations = std.ArrayList(Operation){},
+            .operations = std.array_list.Managed(Operation){},
             .next_id = 1,
         };
     }
@@ -124,14 +124,14 @@ pub const StrategicManager = struct {
     allocator: std.mem.Allocator,
     vision: ?Vision,
     mission: ?Mission,
-    objectives: std.ArrayList(Objective),
-    goals: std.ArrayList(Goal),
-    outcomes: std.ArrayList(Outcome),
-    tactics: std.ArrayList(Tactic),
-    roadmaps: std.ArrayList(Roadmap),
-    gantts: std.ArrayList(GanttChart),
-    timelines: std.ArrayList(Timeline),
-    charters: std.ArrayList(Charter),
+    objectives: std.array_list.Managed(Objective),
+    goals: std.array_list.Managed(Goal),
+    outcomes: std.array_list.Managed(Outcome),
+    tactics: std.array_list.Managed(Tactic),
+    roadmaps: std.array_list.Managed(Roadmap),
+    gantts: std.array_list.Managed(GanttChart),
+    timelines: std.array_list.Managed(Timeline),
+    charters: std.array_list.Managed(Charter),
     operations_mgr: OperationsManager,
     next_id: u32,
 
@@ -140,14 +140,14 @@ pub const StrategicManager = struct {
             .allocator = allocator,
             .vision = null,
             .mission = null,
-            .objectives = std.ArrayList(Objective){},
-            .goals = std.ArrayList(Goal){},
-            .outcomes = std.ArrayList(Outcome){},
-            .tactics = std.ArrayList(Tactic){},
-            .roadmaps = std.ArrayList(Roadmap){},
-            .gantts = std.ArrayList(GanttChart){},
-            .timelines = std.ArrayList(Timeline){},
-            .charters = std.ArrayList(Charter){},
+            .objectives = std.array_list.Managed(Objective){},
+            .goals = std.array_list.Managed(Goal){},
+            .outcomes = std.array_list.Managed(Outcome){},
+            .tactics = std.array_list.Managed(Tactic){},
+            .roadmaps = std.array_list.Managed(Roadmap){},
+            .gantts = std.array_list.Managed(GanttChart){},
+            .timelines = std.array_list.Managed(Timeline){},
+            .charters = std.array_list.Managed(Charter){},
             .operations_mgr = OperationsManager.init(allocator),
             .next_id = 1,
         };
@@ -256,7 +256,7 @@ pub const StrategicManager = struct {
     pub fn createRoadmap(self: *StrategicManager) !u32 {
         const id = self.next_id;
         self.next_id += 1;
-        var r = Roadmap{ .milestones = std.ArrayList(Milestone){} };
+        var r = Roadmap{ .milestones = std.array_list.Managed(Milestone){} };
         try r.milestones.append(self.allocator, Milestone{ .id = 0, .title = "", .due_date = 0, .completed = false }) catch {}; // keep list initialized
         // remove placeholder
         r.milestones.pop() catch {};
@@ -265,7 +265,7 @@ pub const StrategicManager = struct {
     }
 
     pub fn addMilestoneToRoadmap(self: *StrategicManager, roadmap_index: usize, title: []const u8, due_date: i64) !u32 {
-        if (roadmap_index >= self.roadmaps.items.len) return unreachable; // simple bounds check
+        if (roadmap_index >= self.roadmaps.items.len) return error.IndexOutOfBounds;
         const id = self.next_id;
         self.next_id += 1;
         const tlen = std.mem.len(title);
@@ -279,7 +279,7 @@ pub const StrategicManager = struct {
     pub fn createGantt(self: *StrategicManager) !u32 {
         const id = self.next_id;
         self.next_id += 1;
-        var g = GanttChart{ .entries = std.ArrayList(GanttEntry){} };
+        var g = GanttChart{ .entries = std.array_list.Managed(GanttEntry){} };
         try g.entries.append(self.allocator, GanttEntry{ .id = 0, .title = "", .start_ts = 0, .end_ts = 0 }) catch {};
         g.entries.pop() catch {};
         try self.gantts.append(self.allocator, g);
@@ -287,7 +287,7 @@ pub const StrategicManager = struct {
     }
 
     pub fn addGanttEntry(self: *StrategicManager, gantt_index: usize, title: []const u8, start_ts: i64, end_ts: i64) !u32 {
-        if (gantt_index >= self.gantts.items.len) return unreachable;
+        if (gantt_index >= self.gantts.items.len) return error.IndexOutOfBounds;
         const id = self.next_id;
         self.next_id += 1;
         const tlen = std.mem.len(title);
@@ -301,7 +301,7 @@ pub const StrategicManager = struct {
     pub fn createTimeline(self: *StrategicManager) !u32 {
         const id = self.next_id;
         self.next_id += 1;
-        var t = Timeline{ .events = std.ArrayList(TimelineEvent){} };
+        var t = Timeline{ .events = std.array_list.Managed(TimelineEvent){} };
         try t.events.append(self.allocator, TimelineEvent{ .id = 0, .title = "", .ts = 0, .note = "" }) catch {};
         t.events.pop() catch {};
         try self.timelines.append(self.allocator, t);
@@ -309,7 +309,7 @@ pub const StrategicManager = struct {
     }
 
     pub fn addTimelineEvent(self: *StrategicManager, timeline_index: usize, title: []const u8, ts: i64, note: []const u8) !u32 {
-        if (timeline_index >= self.timelines.items.len) return unreachable;
+        if (timeline_index >= self.timelines.items.len) return error.IndexOutOfBounds;
         const id = self.next_id;
         self.next_id += 1;
         const tlen = std.mem.len(title);
@@ -346,6 +346,6 @@ pub const StrategicManager = struct {
             if (g.completed) done += 1;
         }
         if (total == 0) return 0.0;
-        return @floatCast(f32, done) / @floatCast(f32, total);
+        return @as(f32, @floatFromInt(done)) / @as(f32, @floatFromInt(total));
     }
 };

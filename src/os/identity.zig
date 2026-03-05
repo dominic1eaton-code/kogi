@@ -30,7 +30,7 @@ pub const Identity = struct {
     name: []const u8,
     email: []const u8,
     identity_type: IdentityType,
-    skills: std.ArrayList([]const u8),
+    skills: std.array_list.Managed([]const u8),
     hourly_rate: f32,
     active: bool,
     connection_registry: registry_module.ConnectionRegistry,
@@ -39,12 +39,12 @@ pub const Identity = struct {
 /// IdentityManager manages all identities in the KOGI system
 pub const IdentityManager = struct {
     allocator: std.mem.Allocator,
-    identities: std.ArrayList(Identity),
+    identities: std.array_list.Managed(Identity),
 
     pub fn init(allocator: std.mem.Allocator) IdentityManager {
         return IdentityManager{
             .allocator = allocator,
-            .identities = std.ArrayList(Identity).init(allocator),
+            .identities = std.array_list.Managed(Identity).init(allocator),
         };
     }
 
@@ -78,7 +78,7 @@ pub const IdentityManager = struct {
             .name = try self.allocator.dupe(u8, name),
             .email = try self.allocator.dupe(u8, email),
             .identity_type = itype,
-            .skills = std.ArrayList([]const u8).init(self.allocator),
+            .skills = std.array_list.Managed([]const u8).init(self.allocator),
             .hourly_rate = hourly_rate,
             .active = true,
             .connection_registry = registry_module.ConnectionRegistry.init(self.allocator),
@@ -149,8 +149,8 @@ pub const IdentityManager = struct {
     }
 
     /// Get identities matching a given type
-    pub fn getIdentitiesByType(self: *IdentityManager, itype: IdentityType, allocator: std.mem.Allocator) !std.ArrayList(Identity) {
-        var result = std.ArrayList(Identity).init(allocator);
+    pub fn getIdentitiesByType(self: *IdentityManager, itype: IdentityType, allocator: std.mem.Allocator) !std.array_list.Managed(Identity) {
+        var result = std.array_list.Managed(Identity).init(allocator);
         for (self.identities.items) |identity| {
             if (identity.identity_type == itype) {
                 try result.append(identity);

@@ -119,8 +119,8 @@ pub const SchedulerConfig = struct {
 /// Process manager
 pub const ProcessManager = struct {
     allocator: std.mem.Allocator,
-    processes: std.ArrayList(Process),
-    process_events: std.ArrayList(ProcessEvent),
+    processes: std.array_list.Managed(Process),
+    process_events: std.array_list.Managed(ProcessEvent),
     next_process_id: u32 = 1,
     next_event_id: u32 = 0,
     running_process_id: ?u32 = null,
@@ -130,8 +130,8 @@ pub const ProcessManager = struct {
     pub fn init(allocator: std.mem.Allocator, config: SchedulerConfig) ProcessManager {
         return ProcessManager{
             .allocator = allocator,
-            .processes = std.ArrayList(Process){},
-            .process_events = std.ArrayList(ProcessEvent){},
+            .processes = std.array_list.Managed(Process).init(allocator),
+            .process_events = std.array_list.Managed(ProcessEvent).init(allocator),
             .scheduler_config = config,
         };
     }
@@ -147,12 +147,12 @@ pub const ProcessManager = struct {
             }
             metadata.deinit();
         }
-        self.processes.deinit(self.allocator);
+        self.processes.deinit();
 
         for (self.process_events.items) |event| {
             self.allocator.free(event.details);
         }
-        self.process_events.deinit(self.allocator);
+        self.process_events.deinit();
     }
 
     /// Create a new process
@@ -184,7 +184,7 @@ pub const ProcessManager = struct {
             .context = CPUContext.init(),
         };
 
-        try self.processes.append(self.allocator, process);
+        try self.processes.append(process);
         try self.logProcessEvent(process_id, .created, "Process created");
 
         return process_id;
@@ -295,11 +295,11 @@ pub const ProcessManager = struct {
     }
 
     /// Get all running processes
-    pub fn getRunningProcesses(self: *ProcessManager, allocator: std.mem.Allocator) !std.ArrayList(Process) {
-        var running = std.ArrayList(Process){};
+    pub fn getRunningProcesses(self: *ProcessManager, allocator: std.mem.Allocator) !std.array_list.Managed(Process) {
+        var running = std.array_list.Managed(Process).init(allocator);
         for (self.processes.items) |proc| {
             if (proc.state == .running or proc.state == .ready or proc.state == .waiting) {
-                try running.append(allocator, proc);
+                try running.append(proc);
             }
         }
         return running;
@@ -375,11 +375,11 @@ pub const ProcessManager = struct {
     }
 
     /// Get process events for specific process
-    pub fn getProcessEventsByID(self: *ProcessManager, process_id: u32, allocator: std.mem.Allocator) !std.ArrayList(ProcessEvent) {
-        var events = std.ArrayList(ProcessEvent){};
+    pub fn getProcessEventsByID(self: *ProcessManager, process_id: u32, allocator: std.mem.Allocator) !std.array_list.Managed(ProcessEvent) {
+        var events = std.array_list.Managed(ProcessEvent).init(allocator);
         for (self.process_events.items) |event| {
             if (event.process_id == process_id) {
-                try events.append(allocator, event);
+                try events.append(event);
             }
         }
         return events;
@@ -400,7 +400,7 @@ pub const ProcessManager = struct {
             .details = try self.allocator.dupe(u8, details),
         };
 
-        try self.process_events.append(self.allocator, event);
+        try self.process_events.append(event);
         self.next_event_id += 1;
     }
 

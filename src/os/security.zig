@@ -112,7 +112,7 @@ pub const Permission = enum {
 /// Role-based permission mapping
 pub const RolePermissions = struct {
     role: Role,
-    permissions: std.ArrayList(Permission),
+    permissions: std.array_list.Managed(Permission),
 };
 
 /// Assignment of a role to an identity
@@ -122,7 +122,7 @@ pub const RoleAssignment = struct {
     assigned_at: i64,
     assigned_by: u32,
     expires_at: ?i64 = null,
-    custom_permissions: ?std.ArrayList(Permission) = null,
+    custom_permissions: ?std.array_list.Managed(Permission) = null,
 };
 
 // ========== Access Control ==========
@@ -141,7 +141,7 @@ pub const AccessControlEntry = struct {
     resource_type: []const u8,
     owner_id: u32,
     access_level: AccessLevel,
-    granted_to: std.ArrayList(u32), // Identity IDs with access
+    granted_to: std.array_list.Managed(u32), // Identity IDs with access
     created_at: i64,
     updated_at: i64,
 };
@@ -202,7 +202,7 @@ pub const MFAConfig = struct {
     method: MFAMethod,
     enabled: bool,
     secret: ?[]const u8 = null, // For TOTP
-    backup_codes: std.ArrayList([]const u8),
+    backup_codes: std.array_list.Managed([]const u8),
     created_at: i64,
 };
 
@@ -211,13 +211,13 @@ pub const MFAConfig = struct {
 /// Security manager for the KOGI OS
 pub const SecurityManager = struct {
     allocator: std.mem.Allocator,
-    credentials: std.ArrayList(Credential),
-    sessions: std.ArrayList(Session),
-    role_assignments: std.ArrayList(RoleAssignment),
-    role_permissions: std.ArrayList(RolePermissions),
-    access_controls: std.ArrayList(AccessControlEntry),
-    audit_log: std.ArrayList(AuditLogEntry),
-    mfa_configs: std.ArrayList(MFAConfig),
+    credentials: std.array_list.Managed(Credential),
+    sessions: std.array_list.Managed(Session),
+    role_assignments: std.array_list.Managed(RoleAssignment),
+    role_permissions: std.array_list.Managed(RolePermissions),
+    access_controls: std.array_list.Managed(AccessControlEntry),
+    audit_log: std.array_list.Managed(AuditLogEntry),
+    mfa_configs: std.array_list.Managed(MFAConfig),
     next_session_id: u32 = 0,
     next_audit_id: u32 = 0,
     session_timeout_seconds: i64 = 3600, // 1 hour default
@@ -225,13 +225,13 @@ pub const SecurityManager = struct {
     pub fn init(allocator: std.mem.Allocator) SecurityManager {
         return SecurityManager{
             .allocator = allocator,
-            .credentials = std.ArrayList(Credential){},
-            .sessions = std.ArrayList(Session){},
-            .role_assignments = std.ArrayList(RoleAssignment){},
-            .role_permissions = std.ArrayList(RolePermissions){},
-            .access_controls = std.ArrayList(AccessControlEntry){},
-            .audit_log = std.ArrayList(AuditLogEntry){},
-            .mfa_configs = std.ArrayList(MFAConfig){},
+            .credentials = std.array_list.Managed(Credential).init(allocator),
+            .sessions = std.array_list.Managed(Session).init(allocator),
+            .role_assignments = std.array_list.Managed(RoleAssignment).init(allocator),
+            .role_permissions = std.array_list.Managed(RolePermissions).init(allocator),
+            .access_controls = std.array_list.Managed(AccessControlEntry).init(allocator),
+            .audit_log = std.array_list.Managed(AuditLogEntry).init(allocator),
+            .mfa_configs = std.array_list.Managed(MFAConfig).init(allocator),
         };
     }
 
@@ -240,7 +240,7 @@ pub const SecurityManager = struct {
             self.allocator.free(cred.password_hash);
             self.allocator.free(cred.salt);
         }
-        self.credentials.deinit(self.allocator);
+        self.credentials.deinit();
 
         for (self.sessions.items) |session| {
             self.allocator.free(session.token);
@@ -249,27 +249,27 @@ pub const SecurityManager = struct {
                 self.allocator.free(fp);
             }
         }
-        self.sessions.deinit(self.allocator);
+        self.sessions.deinit();
 
         for (self.role_assignments.items) |*ra| {
             if (ra.custom_permissions) |*perms| {
-                perms.deinit(self.allocator);
+                perms.deinit();
             }
         }
-        self.role_assignments.deinit(self.allocator);
+        self.role_assignments.deinit();
 
         for (self.role_permissions.items) |rp| {
             var perms = rp.permissions;
-            perms.deinit(self.allocator);
+            perms.deinit();
         }
-        self.role_permissions.deinit(self.allocator);
+        self.role_permissions.deinit();
 
         for (self.access_controls.items) |ac| {
             self.allocator.free(ac.resource_type);
             var granted = ac.granted_to;
-            granted.deinit(self.allocator);
+            granted.deinit();
         }
-        self.access_controls.deinit(self.allocator);
+        self.access_controls.deinit();
 
         for (self.audit_log.items) |entry| {
             self.allocator.free(entry.action);
@@ -279,7 +279,7 @@ pub const SecurityManager = struct {
                 self.allocator.free(rt);
             }
         }
-        self.audit_log.deinit(self.allocator);
+        self.audit_log.deinit();
 
         for (self.mfa_configs.items) |*mfa| {
             if (mfa.secret) |secret| {
@@ -288,9 +288,9 @@ pub const SecurityManager = struct {
             for (mfa.backup_codes.items) |code| {
                 self.allocator.free(code);
             }
-            mfa.backup_codes.deinit(self.allocator);
+            mfa.backup_codes.deinit();
         }
-        self.mfa_configs.deinit(self.allocator);
+        self.mfa_configs.deinit();
     }
 
     // ========== Credential Management ==========
@@ -313,7 +313,7 @@ pub const SecurityManager = struct {
             .failed_login_attempts = 0,
             .locked = false,
         };
-        try self.credentials.append(self.allocator, credential);
+        try self.credentials.append(credential);
     }
 
     /// Verify a password against stored hash
@@ -370,7 +370,7 @@ pub const SecurityManager = struct {
             .active = true,
         };
 
-        try self.sessions.append(self.allocator, session);
+        try self.sessions.append(session);
         try self.logAuditEvent(.login_success, identity_id, null, null, "Session created", ip_address, true);
         return session_id;
     }
@@ -419,7 +419,7 @@ pub const SecurityManager = struct {
             .assigned_by = assigned_by,
             .expires_at = expires_at,
         };
-        try self.role_assignments.append(self.allocator, assignment);
+        try self.role_assignments.append(assignment);
         try self.logAuditEvent(.role_assigned, assigned_by, identity_id, null, "Role assigned", "", true);
     }
 
@@ -438,15 +438,15 @@ pub const SecurityManager = struct {
     }
 
     /// Get all permissions for an identity
-    pub fn getIdentityPermissions(self: *SecurityManager, identity_id: u32, allocator: std.mem.Allocator) !std.ArrayList(Permission) {
-        var permissions = std.ArrayList(Permission){};
+    pub fn getIdentityPermissions(self: *SecurityManager, identity_id: u32, allocator: std.mem.Allocator) !std.array_list.Managed(Permission) {
+        var permissions = std.array_list.Managed(Permission).init(allocator);
 
         // Get role-based permissions
         if (self.getIdentityRole(identity_id)) |role| {
             for (self.role_permissions.items) |rp| {
                 if (rp.role == role) {
                     for (rp.permissions.items) |perm| {
-                        try permissions.append(allocator, perm);
+                        try permissions.append(perm);
                     }
                     break;
                 }
@@ -457,7 +457,7 @@ pub const SecurityManager = struct {
         for (self.role_assignments.items) |assignment| {
             if (assignment.identity_id == identity_id and assignment.custom_permissions != null) {
                 for (assignment.custom_permissions.?.items) |perm| {
-                    try permissions.append(allocator, perm);
+                    try permissions.append(perm);
                 }
             }
         }
@@ -470,7 +470,7 @@ pub const SecurityManager = struct {
         var perms = self.getIdentityPermissions(identity_id, self.allocator) catch {
             return false;
         };
-        defer perms.deinit(self.allocator);
+        defer perms.deinit();
 
         for (perms.items) |perm| {
             if (perm == permission) return true;
@@ -494,15 +494,15 @@ pub const SecurityManager = struct {
             .resource_type = try self.allocator.dupe(u8, resource_type),
             .owner_id = owner_id,
             .access_level = access_level,
-            .granted_to = std.ArrayList(u32){},
+            .granted_to = std.array_list.Managed(u32).init(self.allocator),
             .created_at = std.time.timestamp(),
             .updated_at = std.time.timestamp(),
         };
         var ace_mut = ace;
         for (granted_to) |identity_id| {
-            try ace_mut.granted_to.append(self.allocator, identity_id);
+            try ace_mut.granted_to.append(identity_id);
         }
-        try self.access_controls.append(self.allocator, ace_mut);
+        try self.access_controls.append(ace_mut);
     }
 
     /// Check if identity has access to resource
@@ -557,7 +557,7 @@ pub const SecurityManager = struct {
             .timestamp = std.time.timestamp(),
             .success = success,
         };
-        try self.audit_log.append(self.allocator, entry);
+        try self.audit_log.append(entry);
         self.next_audit_id += 1;
     }
 
@@ -567,11 +567,11 @@ pub const SecurityManager = struct {
     }
 
     /// Get audit log entries for identity
-    pub fn getIdentityAuditLog(self: *SecurityManager, identity_id: u32, allocator: std.mem.Allocator) !std.ArrayList(AuditLogEntry) {
-        var results = std.ArrayList(AuditLogEntry){};
+    pub fn getIdentityAuditLog(self: *SecurityManager, identity_id: u32, allocator: std.mem.Allocator) !std.array_list.Managed(AuditLogEntry) {
+        var results = std.array_list.Managed(AuditLogEntry).init(allocator);
         for (self.audit_log.items) |entry| {
             if (entry.identity_id == identity_id) {
-                try results.append(allocator, entry);
+                try results.append(entry);
             }
         }
         return results;
@@ -586,10 +586,10 @@ pub const SecurityManager = struct {
             .method = method,
             .enabled = true,
             .secret = if (secret) |s| try self.allocator.dupe(u8, s) else null,
-            .backup_codes = std.ArrayList([]const u8){},
+            .backup_codes = std.array_list.Managed([]const u8).init(self.allocator),
             .created_at = std.time.timestamp(),
         };
-        try self.mfa_configs.append(self.allocator, mfa);
+        try self.mfa_configs.append(mfa);
         try self.logAuditEvent(.multi_factor_auth_enabled, identity_id, null, null, "MFA enabled", "", true);
     }
 
@@ -617,63 +617,63 @@ pub const SecurityManager = struct {
 
 // ========== Default Role Permissions ==========
 
-pub fn initializeDefaultRoles(allocator: std.mem.Allocator) !std.ArrayList(RolePermissions) {
-    var roles = std.ArrayList(RolePermissions){};
+pub fn initializeDefaultRoles(allocator: std.mem.Allocator) !std.array_list.Managed(RolePermissions) {
+    var roles = std.array_list.Managed(RolePermissions).init(allocator);
 
     // Admin role - full access
-    var admin_perms = std.ArrayList(Permission){};
-    try admin_perms.append(allocator, .create_identity);
-    try admin_perms.append(allocator, .read_identity);
-    try admin_perms.append(allocator, .update_identity);
-    try admin_perms.append(allocator, .delete_identity);
-    try admin_perms.append(allocator, .manage_roles);
-    try admin_perms.append(allocator, .manage_credentials);
-    try admin_perms.append(allocator, .create_workspace);
-    try admin_perms.append(allocator, .read_workspace);
-    try admin_perms.append(allocator, .update_workspace);
-    try admin_perms.append(allocator, .delete_workspace);
-    try admin_perms.append(allocator, .manage_users);
-    try admin_perms.append(allocator, .view_audit_log);
-    try admin_perms.append(allocator, .system_configuration);
-    try roles.append(allocator, RolePermissions{ .role = .admin, .permissions = admin_perms });
+    var admin_perms = std.array_list.Managed(Permission).init(allocator);
+    try admin_perms.append(.create_identity);
+    try admin_perms.append(.read_identity);
+    try admin_perms.append(.update_identity);
+    try admin_perms.append(.delete_identity);
+    try admin_perms.append(.manage_roles);
+    try admin_perms.append(.manage_credentials);
+    try admin_perms.append(.create_workspace);
+    try admin_perms.append(.read_workspace);
+    try admin_perms.append(.update_workspace);
+    try admin_perms.append(.delete_workspace);
+    try admin_perms.append(.manage_users);
+    try admin_perms.append(.view_audit_log);
+    try admin_perms.append(.system_configuration);
+    try roles.append(RolePermissions{ .role = .admin, .permissions = admin_perms });
 
     // Worker role - standard access
-    var worker_perms = std.ArrayList(Permission){};
-    try worker_perms.append(allocator, .read_identity);
-    try worker_perms.append(allocator, .update_identity);
-    try worker_perms.append(allocator, .manage_credentials);
-    try worker_perms.append(allocator, .create_workspace);
-    try worker_perms.append(allocator, .read_workspace);
-    try worker_perms.append(allocator, .update_workspace);
-    try worker_perms.append(allocator, .create_task);
-    try worker_perms.append(allocator, .read_task);
-    try worker_perms.append(allocator, .update_task);
-    try worker_perms.append(allocator, .create_engagement);
-    try worker_perms.append(allocator, .read_engagement);
-    try worker_perms.append(allocator, .create_organization);
-    try worker_perms.append(allocator, .read_organization);
-    try worker_perms.append(allocator, .manage_connections);
-    try worker_perms.append(allocator, .export_data);
-    try roles.append(allocator, RolePermissions{ .role = .worker, .permissions = worker_perms });
+    var worker_perms = std.array_list.Managed(Permission).init(allocator);
+    try worker_perms.append(.read_identity);
+    try worker_perms.append(.update_identity);
+    try worker_perms.append(.manage_credentials);
+    try worker_perms.append(.create_workspace);
+    try worker_perms.append(.read_workspace);
+    try worker_perms.append(.update_workspace);
+    try worker_perms.append(.create_task);
+    try worker_perms.append(.read_task);
+    try worker_perms.append(.update_task);
+    try worker_perms.append(.create_engagement);
+    try worker_perms.append(.read_engagement);
+    try worker_perms.append(.create_organization);
+    try worker_perms.append(.read_organization);
+    try worker_perms.append(.manage_connections);
+    try worker_perms.append(.export_data);
+    try roles.append(RolePermissions{ .role = .worker, .permissions = worker_perms });
 
     // Contractor role - limited access
-    var contractor_perms = std.ArrayList(Permission){};
-    try contractor_perms.append(allocator, .read_identity);
-    try contractor_perms.append(allocator, .update_identity);
-    try contractor_perms.append(allocator, .read_workspace);
-    try contractor_perms.append(allocator, .read_task);
-    try contractor_perms.append(allocator, .read_engagement);
-    try contractor_perms.append(allocator, .read_organization);
-    try contractor_perms.append(allocator, .view_connections);
-    try roles.append(allocator, RolePermissions{ .role = .contractor, .permissions = contractor_perms });
+    var contractor_perms = std.array_list.Managed(Permission).init(allocator);
+    try contractor_perms.append(.read_identity);
+    try contractor_perms.append(.update_identity);
+    try contractor_perms.append(.read_workspace);
+    try contractor_perms.append(.read_task);
+    try contractor_perms.append(.read_engagement);
+    try contractor_perms.append(.read_organization);
+    try contractor_perms.append(.view_connections);
+    try roles.append(RolePermissions{ .role = .contractor, .permissions = contractor_perms });
 
     // Guest role - read-only
-    var guest_perms = std.ArrayList(Permission){};
-    try guest_perms.append(allocator, .read_identity);
-    try guest_perms.append(allocator, .read_workspace);
-    try guest_perms.append(allocator, .read_task);
-    try guest_perms.append(allocator, .read_organization);
-    try roles.append(allocator, RolePermissions{ .role = .guest, .permissions = guest_perms });
+    var guest_perms = std.array_list.Managed(Permission).init(allocator);
+    try guest_perms.append(.read_identity);
+    try guest_perms.append(.read_workspace);
+    try guest_perms.append(.read_task);
+    try guest_perms.append(.read_organization);
+    try roles.append(RolePermissions{ .role = .guest, .permissions = guest_perms });
 
     return roles;
 }

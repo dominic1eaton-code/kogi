@@ -15,20 +15,20 @@ pub const Client = struct {
     id: u32,
     name: []const u8,
     industry: []const u8,
-    contacts: std.ArrayList(Contact),
+    contacts: std.array_list.Managed(Contact),
     notes: ?[]const u8,
 };
 
 /// Simple CRM manager to track clients and contacts
 pub const CRMManager = struct {
     allocator: std.mem.Allocator,
-    clients: std.ArrayList(Client),
+    clients: std.array_list.Managed(Client),
     next_id: u32,
 
     pub fn init(allocator: std.mem.Allocator) CRMManager {
         return CRMManager{
             .allocator = allocator,
-            .clients = std.ArrayList(Client){},
+            .clients = std.array_list.Managed(Client).init(allocator),
             .next_id = 0,
         };
     }
@@ -37,7 +37,7 @@ pub const CRMManager = struct {
         for (self.clients.items) |*client| {
             self.deinitClient(client);
         }
-        self.clients.deinit(self.allocator);
+        self.clients.deinit();
     }
 
     fn deinitClient(self: *CRMManager, client: *Client) void {
@@ -47,7 +47,7 @@ pub const CRMManager = struct {
             if (c.phone) |p| self.allocator.free(p);
             if (c.notes) |n| self.allocator.free(n);
         }
-        client.contacts.deinit(self.allocator);
+        client.contacts.deinit();
         self.allocator.free(client.name);
         self.allocator.free(client.industry);
         if (client.notes) |n| self.allocator.free(n);
@@ -60,10 +60,10 @@ pub const CRMManager = struct {
             .id = id,
             .name = try self.allocator.dupe(u8, name),
             .industry = try self.allocator.dupe(u8, industry),
-            .contacts = std.ArrayList(Contact){},
+            .contacts = std.array_list.Managed(Contact).init(self.allocator),
             .notes = if (notes) |n| try self.allocator.dupe(u8, n) else null,
         };
-        try self.clients.append(self.allocator, client);
+        try self.clients.append(client);
         return id;
     }
 
@@ -87,7 +87,7 @@ pub const CRMManager = struct {
             .phone = if (phone) |p| try self.allocator.dupe(u8, p) else null,
             .notes = if (notes) |n| try self.allocator.dupe(u8, n) else null,
         };
-        try client.contacts.append(self.allocator, contact);
+        try client.contacts.append(contact);
         return id;
     }
 
@@ -103,7 +103,7 @@ pub const CRMManager = struct {
     }
 };
 
-pub fn crmDemo() void {
+pub fn crmDemo() !void {
     var gpa = std.heap.GeneralPurposeAllocator(.{}){};
     defer _ = gpa.deinit();
     const allocator = gpa.allocator();

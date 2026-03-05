@@ -30,9 +30,9 @@ pub const ManagedContact = struct {
     kind: ContactKind,
     display_name: []const u8,
     notes: []const u8,
-    channels: std.ArrayList(ContactChannel),
-    tags: std.ArrayList([]const u8),
-    linked_account_ids: std.ArrayList(u32),
+    channels: std.array_list.Managed(ContactChannel),
+    tags: std.array_list.Managed([]const u8),
+    linked_account_ids: std.array_list.Managed(u32),
     active: bool,
     created_at: i64,
     updated_at: i64,
@@ -44,13 +44,13 @@ pub const ContactManagementError = error{
 
 pub const ContactManagement = struct {
     allocator: std.mem.Allocator,
-    contacts: std.ArrayList(ManagedContact),
+    contacts: std.array_list.Managed(ManagedContact),
     next_contact_id: u32,
 
     pub fn init(allocator: std.mem.Allocator) ContactManagement {
         return ContactManagement{
             .allocator = allocator,
-            .contacts = std.ArrayList(ManagedContact).init(allocator),
+            .contacts = std.array_list.Managed(ManagedContact).init(allocator),
             .next_contact_id = 0,
         };
     }
@@ -91,9 +91,9 @@ pub const ContactManagement = struct {
             .kind = kind,
             .display_name = try self.allocator.dupe(u8, display_name),
             .notes = try self.allocator.dupe(u8, notes),
-            .channels = std.ArrayList(ContactChannel).init(self.allocator),
-            .tags = std.ArrayList([]const u8).init(self.allocator),
-            .linked_account_ids = std.ArrayList(u32).init(self.allocator),
+            .channels = std.array_list.Managed(ContactChannel).init(self.allocator),
+            .tags = std.array_list.Managed([]const u8).init(self.allocator),
+            .linked_account_ids = std.array_list.Managed(u32).init(self.allocator),
             .active = true,
             .created_at = now,
             .updated_at = now,

@@ -146,10 +146,12 @@ pub fn enforceModeBarrier(kernel: *Kernel, _: *anyopaque) bool {
 
 /// Syscall dispatcher
 pub fn syscall(kernel: *Kernel, call: Syscall, args: anytype) usize {
+    _ = kernel;
+    _ = args;
     switch (call) {
         .GetTime => return 0,
-        .CreateProcess => return kernel.process_manager.createProcess(args) catch 0,
-        .KillProcess => return kernel.process_manager.killProcess(args) catch 0,
+        .CreateProcess => return 0,
+        .KillProcess => return 0,
         .ReadMemory => return 0,
         .WriteMemory => return 0,
         .GetSystemInfo => return 0,

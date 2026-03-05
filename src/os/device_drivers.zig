@@ -21,14 +21,14 @@ pub const IDD = struct {
 /// Manager for IDDs
 pub const DriverManager = struct {
     allocator: std.mem.Allocator,
-    drivers: std.ArrayList(IDD),
+    drivers: std.array_list.Managed(IDD),
     next_id: u32,
     mutex: std.Thread.Mutex = .{},
 
     pub fn init(allocator: std.mem.Allocator) DriverManager {
         return DriverManager{
             .allocator = allocator,
-            .drivers = std.ArrayList(IDD){},
+            .drivers = std.array_list.Managed(IDD).init(allocator),
             .next_id = 1,
         };
     }
@@ -38,7 +38,7 @@ pub const DriverManager = struct {
             self.allocator.free(drv.name);
             self.allocator.free(drv.driver_type);
         }
-        self.drivers.deinit(self.allocator);
+        self.drivers.deinit();
     }
 
     pub fn registerDriver(
@@ -56,7 +56,7 @@ pub const DriverManager = struct {
             .driver_type = try self.allocator.dupe(u8, driver_type),
             .status = .inactive,
         };
-        try self.drivers.append(self.allocator, drv);
+        try self.drivers.append(drv);
         return id;
     }
 

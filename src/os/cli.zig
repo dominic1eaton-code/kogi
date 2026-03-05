@@ -9,7 +9,6 @@ const contract_module = @import("contract.zig");
 const crm_module = @import("crm.zig");
 const assets_module = @import("assets.zig");
 const accounts_module = @import("accounts.zig");
-const terminal_module = @import("terminal.zig");
 const shell_module = @import("shell.zig");
 const kernel_module = @import("kernel.zig");
 
@@ -23,6 +22,19 @@ pub const CLI = struct {
             .allocator = allocator,
             .system = system,
         };
+    }
+
+    fn shellDispatch(context: *anyopaque, line: []const u8) anyerror!bool {
+        const cli: *CLI = @ptrCast(@alignCast(context));
+        return cli.handleCommand(line);
+    }
+
+    pub fn runInteractiveShell(self: *CLI) !void {
+        const dispatcher = shell_module.CommandDispatcher{
+            .context = @ptrCast(self),
+            .dispatch = CLI.shellDispatch,
+        };
+        try shell_module.runShell(self.allocator, self.system, self.system.kernel, dispatcher);
     }
 
     /// Handle a single command line. Returns `true` to continue, `false` to exit.
@@ -75,8 +87,7 @@ pub const CLI = struct {
             return true;
         } else if (std.mem.eql(u8, cmd, "shell")) {
             // Start the more featureful shell
-            const kptr = self.system.kernel;
-            try shell_module.runShell(self.allocator, self.system, kptr);
+            try self.runInteractiveShell();
             return true;
         } else if (std.mem.eql(u8, cmd, "user")) {
             const args = if (cmd_end < s.len) s[cmd_end + 1 ..] else "";
@@ -452,7 +463,7 @@ pub const CLI = struct {
                 const profiles = self.system.getUserProfiles();
                 var found = false;
                 for (profiles) |profile| {
-                    if (profile.user_id == user_id) {
+                    if (profile.owner_user_id == user_id) {
                         found = true;
                         std.debug.print(
                             "id={} type={s} name={s} status={s} accounts={}\n",
@@ -519,7 +530,7 @@ pub const CLI = struct {
                     self.printUserError(err);
                     return;
                 };
-                std.debug.print("profile={} user={} type={s} name={s}\n", .{ profile.id, profile.user_id, @tagName(profile.profile_type), profile.name });
+                std.debug.print("profile={} user={} type={s} name={s}\n", .{ profile.id, profile.owner_user_id, @tagName(profile.profile_type), profile.name });
                 std.debug.print("description={s}\n", .{profile.description});
                 if (profile.configurations.items.len > 0) {
                     std.debug.print("configurations:\n", .{});
@@ -661,11 +672,11 @@ pub const CLI = struct {
                     const accounts = self.system.getUserProfileAccounts();
                     var found = false;
                     for (accounts) |acct| {
-                        if (acct.profile_id == profile_id) {
+                        if (acct.profile_id != null and acct.profile_id.? == profile_id) {
                             found = true;
                             std.debug.print(
                                 "id={} profile={} type={s} username={s} provider={s} status={s}\n",
-                                .{ acct.id, acct.profile_id, @tagName(acct.account_type), acct.username, acct.provider, if (acct.active) "active" else "disabled" },
+                                .{ acct.id, acct.profile_id.?, @tagName(acct.account_type), acct.account_handle, acct.provider_slug, if (acct.active) "active" else "disabled" },
                             );
                         }
                     }
@@ -1024,9 +1035,9 @@ pub const CLI = struct {
         defer {
             for (default_roles.items) |role| {
                 var perms = role.permissions;
-                perms.deinit(self.allocator);
+                perms.deinit();
             }
-            default_roles.deinit(self.allocator);
+            default_roles.deinit();
         }
 
         // Assign roles to identities
@@ -1073,16 +1084,16 @@ pub const CLI = struct {
         portfolio_module.portfolioDemo();
 
         // CRM demo
-        crm_module.crmDemo();
+        try crm_module.crmDemo();
 
         // Assets demo
-        assets_module.assetsDemo();
+        try assets_module.assetsDemo();
 
         // Accounts demo (some modules have lightweight demos)
-        accounts_module.accountsDemo();
+        try accounts_module.accountsDemo();
 
         // Contract management (kernel-like) runner
-        _ = contract_module.runContractManagementSystem();
+        try contract_module.runContractManagementSystem();
 
         std.debug.print("✓ Additional module demos executed.\n\n", .{});
     }
@@ -1091,16 +1102,5 @@ pub const CLI = struct {
 /// Start the KOGI OS CLI shell
 pub fn startCLI(allocator: std.mem.Allocator, system: *system_module.System) !void {
     var cli = CLI.init(allocator, system);
-
-    // Interactive shell
-    var term = terminal_module.Terminal.init(allocator, "kogi> ");
-    while (true) {
-        try term.writePrompt();
-        const line = try term.readLine();
-        // handle command
-        const keep = try cli.handleCommand(line);
-        // free the allocated buffer returned by readLine
-        allocator.free(line);
-        if (!keep) break;
-    }
+    try cli.runInteractiveShell();
 }

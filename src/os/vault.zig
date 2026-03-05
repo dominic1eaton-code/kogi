@@ -27,12 +27,12 @@ pub const VaultItem = struct {
 /// Vault manages all assets and resources
 pub const Vault = struct {
     allocator: std.mem.Allocator,
-    items: std.ArrayList(VaultItem),
+    items: std.array_list.Managed(VaultItem),
 
     pub fn init(allocator: std.mem.Allocator) Vault {
         return Vault{
             .allocator = allocator,
-            .items = std.ArrayList(VaultItem){},
+            .items = std.array_list.Managed(VaultItem).init(allocator),
         };
     }
 
@@ -41,7 +41,7 @@ pub const Vault = struct {
             self.allocator.free(item.name);
             self.allocator.free(item.description);
         }
-        self.items.deinit(self.allocator);
+        self.items.deinit();
     }
 
     /// Add an asset to the vault
@@ -64,7 +64,7 @@ pub const Vault = struct {
             .acquired_date = acquired_date,
         };
 
-        try self.items.append(self.allocator, item);
+        try self.items.append(item);
         return item_id;
     }
 

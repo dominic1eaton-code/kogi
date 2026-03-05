@@ -83,9 +83,9 @@ pub const EventHandler = struct {
 /// Event bus for publishing and subscribing to events
 pub const EventBus = struct {
     allocator: std.mem.Allocator,
-    events: std.ArrayList(Event),
-    handlers: std.ArrayList(EventHandler),
-    subscribers: std.StringHashMap(std.ArrayList(EventHandler)),
+    events: std.array_list.Managed(Event),
+    handlers: std.array_list.Managed(EventHandler),
+    subscribers: std.StringHashMap(std.array_list.Managed(EventHandler)),
     next_event_id: u32 = 0,
     next_handler_id: u32 = 0,
     mutex: std.Thread.Mutex = .{},
@@ -94,9 +94,9 @@ pub const EventBus = struct {
     pub fn init(allocator: std.mem.Allocator) EventBus {
         return EventBus{
             .allocator = allocator,
-            .events = std.ArrayList(Event){},
-            .handlers = std.ArrayList(EventHandler){},
-            .subscribers = std.StringHashMap(std.ArrayList(EventHandler)).init(allocator),
+            .events = std.array_list.Managed(Event).init(allocator),
+            .handlers = std.array_list.Managed(EventHandler).init(allocator),
+            .subscribers = std.StringHashMap(std.array_list.Managed(EventHandler)).init(allocator),
         };
     }
 
@@ -122,13 +122,13 @@ pub const EventBus = struct {
                 self.allocator.free(et);
             }
         }
-        self.events.deinit(self.allocator);
-        self.handlers.deinit(self.allocator);
+        self.events.deinit();
+        self.handlers.deinit();
 
         var iter = self.subscribers.iterator();
         while (iter.next()) |kv| {
             self.allocator.free(kv.key_ptr.*);
-            kv.value_ptr.deinit(self.allocator);
+            kv.value_ptr.deinit();
         }
         self.subscribers.deinit();
     }
@@ -151,7 +151,7 @@ pub const EventBus = struct {
             .callback = callback,
         };
 
-        try self.handlers.append(self.allocator, handler);
+        try self.handlers.append(handler);
         return handler_id;
     }
 
@@ -193,7 +193,7 @@ pub const EventBus = struct {
             }
         }
 
-        try self.events.append(self.allocator, event_mut);
+        try self.events.append(event_mut);
 
         // Call handlers
         for (self.handlers.items) |handler| {
@@ -213,11 +213,11 @@ pub const EventBus = struct {
     }
 
     /// Get events by type
-    pub fn getEventsByType(self: *EventBus, event_type: EventType, allocator: std.mem.Allocator) !std.ArrayList(Event) {
-        var results = std.ArrayList(Event){};
+    pub fn getEventsByType(self: *EventBus, event_type: EventType, allocator: std.mem.Allocator) !std.array_list.Managed(Event) {
+        var results = std.array_list.Managed(Event).init(allocator);
         for (self.events.items) |event| {
             if (event.event_type == event_type) {
-                try results.append(allocator, event);
+                try results.append(event);
             }
         }
         return results;

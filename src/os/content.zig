@@ -33,7 +33,7 @@ pub const Note = struct {
     title: []const u8,
     body: []const u8,
     importance: NoteImportance,
-    tags: std.ArrayList([]const u8),
+    tags: std.array_list.Managed([]const u8),
     pinned: bool,
     archived: bool,
     created_at: i64,
@@ -48,8 +48,8 @@ pub const ContentItem = struct {
     kind: ContentKind,
     title: []const u8,
     body: []const u8,
-    tags: std.ArrayList([]const u8),
-    metadata: std.ArrayList(ContentMetadata),
+    tags: std.array_list.Managed([]const u8),
+    metadata: std.array_list.Managed(ContentMetadata),
     active: bool,
     created_at: i64,
     updated_at: i64,
@@ -64,16 +64,16 @@ pub const ContentError = error{
 
 pub const ContentManager = struct {
     allocator: std.mem.Allocator,
-    items: std.ArrayList(ContentItem),
-    notes: std.ArrayList(Note),
+    items: std.array_list.Managed(ContentItem),
+    notes: std.array_list.Managed(Note),
     next_id: u32,
     next_note_id: u32,
 
     pub fn init(allocator: std.mem.Allocator) ContentManager {
         return ContentManager{
             .allocator = allocator,
-            .items = std.ArrayList(ContentItem).init(allocator),
-            .notes = std.ArrayList(Note).init(allocator),
+            .items = std.array_list.Managed(ContentItem).init(allocator),
+            .notes = std.array_list.Managed(Note).init(allocator),
             .next_id = 0,
             .next_note_id = 0,
         };
@@ -127,8 +127,8 @@ pub const ContentManager = struct {
             .kind = kind,
             .title = try self.allocator.dupe(u8, title),
             .body = try self.allocator.dupe(u8, body),
-            .tags = std.ArrayList([]const u8).init(self.allocator),
-            .metadata = std.ArrayList(ContentMetadata).init(self.allocator),
+            .tags = std.array_list.Managed([]const u8).init(self.allocator),
+            .metadata = std.array_list.Managed(ContentMetadata).init(self.allocator),
             .active = true,
             .created_at = now,
             .updated_at = now,
@@ -267,7 +267,7 @@ pub const ContentManager = struct {
             .title = try self.allocator.dupe(u8, title),
             .body = try self.allocator.dupe(u8, body),
             .importance = importance,
-            .tags = std.ArrayList([]const u8).init(self.allocator),
+            .tags = std.array_list.Managed([]const u8).init(self.allocator),
             .pinned = false,
             .archived = false,
             .created_at = now,
@@ -345,9 +345,9 @@ pub const ContentManager = struct {
         return self.notes.items;
     }
 
-    pub fn getNotesForContent(self: *ContentManager, content_id: u32, allocator: std.mem.Allocator) !std.ArrayList(Note) {
+    pub fn getNotesForContent(self: *ContentManager, content_id: u32, allocator: std.mem.Allocator) !std.array_list.Managed(Note) {
         _ = try self.getContentById(content_id);
-        var results = std.ArrayList(Note).init(allocator);
+        var results = std.array_list.Managed(Note).init(allocator);
         for (self.notes.items) |note| {
             if (note.linked_content_id != null and note.linked_content_id.? == content_id and !note.archived) {
                 try results.append(note);
@@ -422,8 +422,8 @@ pub const ContentManager = struct {
         return self.items.items;
     }
 
-    pub fn getChildren(self: *ContentManager, parent_id: u32, allocator: std.mem.Allocator) !std.ArrayList(ContentItem) {
-        var results = std.ArrayList(ContentItem).init(allocator);
+    pub fn getChildren(self: *ContentManager, parent_id: u32, allocator: std.mem.Allocator) !std.array_list.Managed(ContentItem) {
+        var results = std.array_list.Managed(ContentItem).init(allocator);
         for (self.items.items) |item| {
             if (item.parent_id != null and item.parent_id.? == parent_id) {
                 try results.append(item);

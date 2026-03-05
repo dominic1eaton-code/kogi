@@ -26,7 +26,7 @@ pub const Worker = struct {
     name: []const u8,
     email: []const u8,
     worker_type: WorkerType,
-    skills: std.ArrayList([]const u8),
+    skills: std.array_list.Managed([]const u8),
     hourly_rate: f32,
     active: bool,
     account_manager: accounts_module.AccountManager,
@@ -35,12 +35,12 @@ pub const Worker = struct {
 /// WorkerManager handles all worker-related operations
 pub const WorkerManager = struct {
     allocator: std.mem.Allocator,
-    workers: std.ArrayList(Worker),
+    workers: std.array_list.Managed(Worker),
 
     pub fn init(allocator: std.mem.Allocator) WorkerManager {
         return WorkerManager{
             .allocator = allocator,
-            .workers = std.ArrayList(Worker){},
+            .workers = std.array_list.Managed(Worker).init(allocator),
         };
     }
 
@@ -50,13 +50,13 @@ pub const WorkerManager = struct {
             for (worker.skills.items) |skill| {
                 self.allocator.free(skill);
             }
-            worker.skills.deinit(self.allocator);
+            worker.skills.deinit();
             self.allocator.free(worker.name);
             self.allocator.free(worker.email);
             // deinit accounts
             worker.account_manager.deinit();
         }
-        self.workers.deinit(self.allocator);
+        self.workers.deinit();
     }
 
     /// Register a new worker in the system
@@ -74,13 +74,13 @@ pub const WorkerManager = struct {
             .name = try self.allocator.dupe(u8, name),
             .email = try self.allocator.dupe(u8, email),
             .worker_type = wtype,
-            .skills = std.ArrayList([]const u8){},
+            .skills = std.array_list.Managed([]const u8).init(self.allocator),
             .hourly_rate = hourly_rate,
             .active = true,
             .account_manager = accounts_module.AccountManager.init(self.allocator),
         };
 
-        try self.workers.append(self.allocator, worker);
+        try self.workers.append(worker);
         return worker_id;
     }
 
@@ -88,7 +88,7 @@ pub const WorkerManager = struct {
     pub fn addSkill(self: *WorkerManager, worker_id: u32, skill: []const u8) !void {
         if (worker_id < @as(u32, @intCast(self.workers.items.len))) {
             const skill_copy = try self.allocator.dupe(u8, skill);
-            try self.workers.items[worker_id].skills.append(self.allocator, skill_copy);
+            try self.workers.items[worker_id].skills.append(skill_copy);
         }
     }
 
@@ -145,11 +145,11 @@ pub const WorkerManager = struct {
     }
 
     /// Return a list of workers matching a given type.
-    pub fn getWorkersByType(self: *WorkerManager, wtype: WorkerType, allocator: std.mem.Allocator) !std.ArrayList(Worker) {
-        var result = std.ArrayList(Worker){};
+    pub fn getWorkersByType(self: *WorkerManager, wtype: WorkerType, allocator: std.mem.Allocator) !std.array_list.Managed(Worker) {
+        var result = std.array_list.Managed(Worker).init(allocator);
         for (self.workers.items) |worker| {
             if (worker.worker_type == wtype) {
-                try result.append(allocator, worker);
+                try result.append(worker);
             }
         }
         return result;

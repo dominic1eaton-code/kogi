@@ -20,12 +20,12 @@ pub const Asset = struct {
 
 pub const AssetManager = struct {
     allocator: std.mem.Allocator,
-    assets: std.ArrayList(Asset),
+    assets: std.array_list.Managed(Asset),
 
     pub fn init(allocator: std.mem.Allocator) AssetManager {
         return AssetManager{
             .allocator = allocator,
-            .assets = std.ArrayList(Asset){},
+            .assets = std.array_list.Managed(Asset).init(allocator),
         };
     }
 
@@ -34,7 +34,7 @@ pub const AssetManager = struct {
             self.allocator.free(a.name);
             self.allocator.free(a.description);
         }
-        self.assets.deinit(self.allocator);
+        self.assets.deinit();
     }
 
     pub fn addAsset(
@@ -54,7 +54,7 @@ pub const AssetManager = struct {
             .value = value,
             .acquired_date = acquired_date,
         };
-        try self.assets.append(self.allocator, asset);
+        try self.assets.append(asset);
         return id;
     }
 
@@ -67,7 +67,7 @@ pub const AssetManager = struct {
     }
 };
 
-pub fn assetsDemo() void {
+pub fn assetsDemo() !void {
     var gpa = std.heap.GeneralPurposeAllocator(.{}){};
     defer _ = gpa.deinit();
     const allocator = gpa.allocator();
@@ -77,5 +77,5 @@ pub fn assetsDemo() void {
 
     _ = try mgr.addAsset("Laptop", "Development laptop", AssetType.equipment, 1500.0, 1672531200);
     _ = try mgr.addAsset("Domain", "kogi.app", AssetType.intellectual_property, 200.0, 1672617600);
-    std.debug.print("Total asset value: ${.2}\n", .{mgr.getTotalValue()});
+    std.debug.print("Total asset value: ${:.2}\n", .{mgr.getTotalValue()});
 }

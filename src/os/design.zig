@@ -51,8 +51,8 @@ pub const DesignItem = struct {
     status: DesignStatus,
     title: []const u8,
     description: []const u8,
-    tags: std.ArrayList([]const u8),
-    metadata: std.ArrayList(DesignMetadata),
+    tags: std.array_list.Managed([]const u8),
+    metadata: std.array_list.Managed(DesignMetadata),
     current_revision_id: ?u32,
     active: bool,
     created_at: i64,
@@ -66,16 +66,16 @@ pub const DesignError = error{
 
 pub const DesignManager = struct {
     allocator: std.mem.Allocator,
-    designs: std.ArrayList(DesignItem),
-    revisions: std.ArrayList(DesignRevision),
+    designs: std.array_list.Managed(DesignItem),
+    revisions: std.array_list.Managed(DesignRevision),
     next_design_id: u32,
     next_revision_id: u32,
 
     pub fn init(allocator: std.mem.Allocator) DesignManager {
         return DesignManager{
             .allocator = allocator,
-            .designs = std.ArrayList(DesignItem).init(allocator),
-            .revisions = std.ArrayList(DesignRevision).init(allocator),
+            .designs = std.array_list.Managed(DesignItem).init(allocator),
+            .revisions = std.array_list.Managed(DesignRevision).init(allocator),
             .next_design_id = 0,
             .next_revision_id = 0,
         };
@@ -127,8 +127,8 @@ pub const DesignManager = struct {
             .status = .draft,
             .title = try self.allocator.dupe(u8, title),
             .description = try self.allocator.dupe(u8, description),
-            .tags = std.ArrayList([]const u8).init(self.allocator),
-            .metadata = std.ArrayList(DesignMetadata).init(self.allocator),
+            .tags = std.array_list.Managed([]const u8).init(self.allocator),
+            .metadata = std.array_list.Managed(DesignMetadata).init(self.allocator),
             .current_revision_id = null,
             .active = true,
             .created_at = now,
@@ -267,9 +267,9 @@ pub const DesignManager = struct {
         return latest orelse DesignError.RevisionNotFound;
     }
 
-    pub fn getRevisionsForDesign(self: *DesignManager, design_id: u32, allocator: std.mem.Allocator) !std.ArrayList(DesignRevision) {
+    pub fn getRevisionsForDesign(self: *DesignManager, design_id: u32, allocator: std.mem.Allocator) !std.array_list.Managed(DesignRevision) {
         _ = self.findDesignIndexById(design_id) orelse return DesignError.DesignNotFound;
-        var results = std.ArrayList(DesignRevision).init(allocator);
+        var results = std.array_list.Managed(DesignRevision).init(allocator);
         for (self.revisions.items) |rev| {
             if (rev.design_id == design_id) {
                 try results.append(rev);

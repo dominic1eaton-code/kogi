@@ -85,8 +85,8 @@ pub const ClusterConfig = struct {
 pub const DistributedCluster = struct {
     allocator: std.mem.Allocator,
     config: ClusterConfig,
-    nodes: std.ArrayList(Node),
-    replications: std.ArrayList(ReplicationState),
+    nodes: std.array_list.Managed(Node),
+    replications: std.array_list.Managed(ReplicationState),
     local_node_id: u32,
     sequence_number: u64 = 0,
     mutex: std.Thread.Mutex = .{},
@@ -97,8 +97,8 @@ pub const DistributedCluster = struct {
         return DistributedCluster{
             .allocator = allocator,
             .config = config,
-            .nodes = std.ArrayList(Node){},
-            .replications = std.ArrayList(ReplicationState){},
+            .nodes = std.array_list.Managed(Node).init(allocator),
+            .replications = std.array_list.Managed(ReplicationState).init(allocator),
             .local_node_id = config.node_id,
         };
     }
@@ -116,8 +116,8 @@ pub const DistributedCluster = struct {
             }
             metadata.deinit();
         }
-        self.nodes.deinit(self.allocator);
-        self.replications.deinit(self.allocator);
+        self.nodes.deinit();
+        self.replications.deinit();
     }
 
     /// Add a node to the cluster
@@ -158,10 +158,10 @@ pub const DistributedCluster = struct {
                 .disk_usage = 0,
                 .error_count = 0,
             },
-            .metadata = std.StringHashMap([]const u8){},
+            .metadata = std.StringHashMap([]const u8).init(self.allocator),
         };
 
-        try self.nodes.append(self.allocator, node);
+        try self.nodes.append(node);
         return node_id;
     }
 
@@ -217,14 +217,14 @@ pub const DistributedCluster = struct {
     }
 
     /// Get all online nodes
-    pub fn getOnlineNodes(self: *DistributedCluster, allocator: std.mem.Allocator) !std.ArrayList(*Node) {
+    pub fn getOnlineNodes(self: *DistributedCluster, allocator: std.mem.Allocator) !std.array_list.Managed(*Node) {
         self.mutex.lock();
         defer self.mutex.unlock();
 
-        var online_nodes = std.ArrayList(*Node){};
+        var online_nodes = std.array_list.Managed(*Node).init(allocator);
         for (self.nodes.items) |*node| {
             if (node.status == .online or node.status == .degraded) {
-                try online_nodes.append(allocator, node);
+                try online_nodes.append(node);
             }
         }
         return online_nodes;
@@ -236,13 +236,13 @@ pub const DistributedCluster = struct {
         defer self.mutex.unlock();
 
         // Get online nodes
-        var online_nodes = std.ArrayList(usize){};
+        var online_nodes = std.array_list.Managed(usize).init(self.allocator);
         for (self.nodes.items, 0..) |node, idx| {
             if (node.status == .online or node.status == .degraded) {
-                try online_nodes.append(self.allocator, idx);
+                try online_nodes.append(idx);
             }
         }
-        defer online_nodes.deinit(self.allocator);
+        defer online_nodes.deinit();
 
         if (online_nodes.items.len == 0) {
             return error.NoOnlineNodes;
@@ -283,7 +283,7 @@ pub const DistributedCluster = struct {
             .replication_lag_ms = 0,
         };
 
-        try self.replications.append(self.allocator, replication);
+        try self.replications.append(replication);
     }
 
     /// Get replication state between nodes

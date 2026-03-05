@@ -23,12 +23,12 @@ pub const Account = struct {
 
 pub const AccountManager = struct {
     allocator: std.mem.Allocator,
-    accounts: std.ArrayList(Account),
+    accounts: std.array_list.Managed(Account),
 
     pub fn init(allocator: std.mem.Allocator) AccountManager {
         return AccountManager{
             .allocator = allocator,
-            .accounts = std.ArrayList(Account).init(allocator),
+            .accounts = std.array_list.Managed(Account).init(allocator),
         };
     }
 
@@ -104,13 +104,13 @@ pub const AccountManagementError = error{
 
 pub const AccountManagement = struct {
     allocator: std.mem.Allocator,
-    accounts: std.ArrayList(ManagedAccount),
+    accounts: std.array_list.Managed(ManagedAccount),
     next_account_id: u32,
 
     pub fn init(allocator: std.mem.Allocator) AccountManagement {
         return AccountManagement{
             .allocator = allocator,
-            .accounts = std.ArrayList(ManagedAccount).init(allocator),
+            .accounts = std.array_list.Managed(ManagedAccount).init(allocator),
             .next_account_id = 0,
         };
     }

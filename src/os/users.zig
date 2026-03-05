@@ -180,14 +180,14 @@ pub const UserError = error{
 
 pub const UserManager = struct {
     allocator: std.mem.Allocator,
-    users: std.ArrayList(User),
-    credentials: std.ArrayList(Credential),
-    personas: std.ArrayList(Persona),
-    auth_tokens: std.ArrayList(AuthToken),
-    keys: std.ArrayList(UserKey),
-    certificates: std.ArrayList(UserCertificate),
-    permission_overrides: std.ArrayList(UserPermissionGrant),
-    privilege_overrides: std.ArrayList(UserPrivilegeGrant),
+    users: std.array_list.Managed(User),
+    credentials: std.array_list.Managed(Credential),
+    personas: std.array_list.Managed(Persona),
+    auth_tokens: std.array_list.Managed(AuthToken),
+    keys: std.array_list.Managed(UserKey),
+    certificates: std.array_list.Managed(UserCertificate),
+    permission_overrides: std.array_list.Managed(UserPermissionGrant),
+    privilege_overrides: std.array_list.Managed(UserPrivilegeGrant),
     identity_manager: identity_module.IdentityManager,
     profile_management: profile_module.ProfileManagement,
     account_management: accounts_module.AccountManagement,
@@ -206,14 +206,14 @@ pub const UserManager = struct {
         std.crypto.random.bytes(&master_key);
         return UserManager{
             .allocator = allocator,
-            .users = std.ArrayList(User).init(allocator),
-            .credentials = std.ArrayList(Credential).init(allocator),
-            .personas = std.ArrayList(Persona).init(allocator),
-            .auth_tokens = std.ArrayList(AuthToken).init(allocator),
-            .keys = std.ArrayList(UserKey).init(allocator),
-            .certificates = std.ArrayList(UserCertificate).init(allocator),
-            .permission_overrides = std.ArrayList(UserPermissionGrant).init(allocator),
-            .privilege_overrides = std.ArrayList(UserPrivilegeGrant).init(allocator),
+            .users = std.array_list.Managed(User).init(allocator),
+            .credentials = std.array_list.Managed(Credential).init(allocator),
+            .personas = std.array_list.Managed(Persona).init(allocator),
+            .auth_tokens = std.array_list.Managed(AuthToken).init(allocator),
+            .keys = std.array_list.Managed(UserKey).init(allocator),
+            .certificates = std.array_list.Managed(UserCertificate).init(allocator),
+            .permission_overrides = std.array_list.Managed(UserPermissionGrant).init(allocator),
+            .privilege_overrides = std.array_list.Managed(UserPrivilegeGrant).init(allocator),
             .identity_manager = identity_module.IdentityManager.init(allocator),
             .profile_management = profile_module.ProfileManagement.init(allocator),
             .account_management = accounts_module.AccountManagement.init(allocator),
@@ -1235,8 +1235,7 @@ fn hashSecret(allocator: std.mem.Allocator, secret: []const u8) ![]u8 {
     var digest: [32]u8 = undefined;
     std.crypto.hash.sha2.Sha256.hash(secret, &digest, .{});
 
-    var hex_buf: [64]u8 = undefined;
-    _ = try std.fmt.bufPrint(&hex_buf, "{}", .{std.fmt.fmtSliceHexLower(&digest)});
+    const hex_buf = std.fmt.bytesToHex(digest, .lower);
     return allocator.dupe(u8, &hex_buf);
 }
 

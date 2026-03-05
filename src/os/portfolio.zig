@@ -50,7 +50,7 @@ pub const Metadata = struct {
     entity_type: EntityType,
     entity_class: EntityClass,
     category: []const u8,
-    tags: std.ArrayList(Tag),
+    tags: std.array_list.Managed(Tag),
     custom_fields: std.StringHashMap([]const u8),
     created_at: i64,
     updated_at: i64,
@@ -80,7 +80,7 @@ pub const PortfolioCollection = struct {
     name: []const u8,
     description: []const u8,
     item_type: EntityType,
-    items: std.ArrayList(PortfolioItem),
+    items: std.array_list.Managed(PortfolioItem),
     metadata: Metadata,
 };
 
@@ -90,8 +90,8 @@ pub const Portfolio = struct {
     id: u32,
     name: []const u8,
     description: []const u8,
-    collections: std.ArrayList(PortfolioCollection),
-    items: std.ArrayList(PortfolioItem),
+    collections: std.array_list.Managed(PortfolioCollection),
+    items: std.array_list.Managed(PortfolioItem),
     metadata: Metadata,
 };
 
@@ -114,7 +114,7 @@ pub const SearchFilter = struct {
     entity_type: ?EntityType = null,
     entity_class: ?EntityClass = null,
     category: ?[]const u8 = null,
-    tag_names: ?std.ArrayList([]const u8) = null,
+    tag_names: ?std.array_list.Managed([]const u8) = null,
     owner_id: ?u32 = null,
 };
 
@@ -122,13 +122,13 @@ pub const SearchFilter = struct {
 pub const PortfolioManager = struct {
     allocator: std.mem.Allocator,
     portfolio: ?Portfolio = null,
-    index: std.ArrayList(IndexEntry),
+    index: std.array_list.Managed(IndexEntry),
     next_id: u32 = 0,
 
     pub fn init(allocator: std.mem.Allocator) PortfolioManager {
         return PortfolioManager{
             .allocator = allocator,
-            .index = std.ArrayList(IndexEntry){},
+            .index = std.array_list.Managed(IndexEntry).init(allocator),
         };
     }
 
@@ -143,7 +143,7 @@ pub const PortfolioManager = struct {
         for (self.index.items) |*entry| {
             self.allocator.free(entry.name);
         }
-        self.index.deinit(self.allocator);
+        self.index.deinit();
     }
 
     fn deinitMetadata(self: *PortfolioManager, metadata: *Metadata) void {
@@ -152,7 +152,7 @@ pub const PortfolioManager = struct {
             self.allocator.free(tag.name);
             self.allocator.free(tag.category);
         }
-        metadata.tags.deinit(self.allocator);
+        metadata.tags.deinit();
         var iter = metadata.custom_fields.iterator();
         while (iter.next()) |entry| {
             self.allocator.free(entry.key_ptr.*);
@@ -171,7 +171,7 @@ pub const PortfolioManager = struct {
         for (collection.items.items) |*item| {
             self.deinitPortfolioItem(item);
         }
-        collection.items.deinit(self.allocator);
+        collection.items.deinit();
         self.allocator.free(collection.name);
         self.allocator.free(collection.description);
         self.deinitMetadata(&collection.metadata);
@@ -190,11 +190,11 @@ pub const PortfolioManager = struct {
         for (portfolio.collections.items) |*col| {
             self.deinitCollection(col);
         }
-        portfolio.collections.deinit(self.allocator);
+        portfolio.collections.deinit();
         for (portfolio.items.items) |*item| {
             self.deinitPortfolioItem(item);
         }
-        portfolio.items.deinit(self.allocator);
+        portfolio.items.deinit();
         self.allocator.free(portfolio.name);
         self.allocator.free(portfolio.description);
         self.deinitMetadata(&portfolio.metadata);
@@ -209,7 +209,7 @@ pub const PortfolioManager = struct {
             .entity_type = .portfolio,
             .entity_class = .strategic,
             .category = try self.allocator.dupe(u8, category),
-            .tags = std.ArrayList(Tag){},
+            .tags = std.array_list.Managed(Tag).init(self.allocator),
             .custom_fields = std.StringHashMap([]const u8).init(self.allocator),
             .created_at = 0,
             .updated_at = 0,
@@ -219,8 +219,8 @@ pub const PortfolioManager = struct {
             .id = id,
             .name = try self.allocator.dupe(u8, name),
             .description = try self.allocator.dupe(u8, description),
-            .collections = std.ArrayList(PortfolioCollection){},
-            .items = std.ArrayList(PortfolioItem){},
+            .collections = std.array_list.Managed(PortfolioCollection).init(self.allocator),
+            .items = std.array_list.Managed(PortfolioItem).init(self.allocator),
             .metadata = metadata,
         };
 
@@ -245,7 +245,7 @@ pub const PortfolioManager = struct {
             .entity_type = item_type,
             .entity_class = .personal,
             .category = try self.allocator.dupe(u8, category),
-            .tags = std.ArrayList(Tag){},
+            .tags = std.array_list.Managed(Tag).init(self.allocator),
             .custom_fields = std.StringHashMap([]const u8).init(self.allocator),
             .created_at = 0,
             .updated_at = 0,
@@ -257,11 +257,11 @@ pub const PortfolioManager = struct {
             .name = try self.allocator.dupe(u8, name),
             .description = try self.allocator.dupe(u8, description),
             .item_type = item_type,
-            .items = std.ArrayList(PortfolioItem){},
+            .items = std.array_list.Managed(PortfolioItem).init(self.allocator),
             .metadata = metadata,
         };
 
-        try self.portfolio.?.collections.append(self.allocator, collection);
+        try self.portfolio.?.collections.append(collection);
         try self.addToIndex(id, name, item_type, self.portfolio.?.id);
         return id;
     }
@@ -284,7 +284,7 @@ pub const PortfolioManager = struct {
                     .entity_type = collection.item_type,
                     .entity_class = .personal,
                     .category = try self.allocator.dupe(u8, collection.metadata.category),
-                    .tags = std.ArrayList(Tag){},
+                    .tags = std.array_list.Managed(Tag).init(self.allocator),
                     .custom_fields = std.StringHashMap([]const u8).init(self.allocator),
                     .created_at = 0,
                     .updated_at = 0,
@@ -298,7 +298,7 @@ pub const PortfolioManager = struct {
                     .metadata = metadata,
                 };
 
-                try collection.items.append(self.allocator, item);
+                try collection.items.append(item);
                 try self.addToIndex(id, name, collection.item_type, collection_id);
                 return id;
             }
@@ -323,7 +323,7 @@ pub const PortfolioManager = struct {
             .entity_type = item_type,
             .entity_class = .personal,
             .category = try self.allocator.dupe(u8, category),
-            .tags = std.ArrayList(Tag){},
+            .tags = std.array_list.Managed(Tag).init(self.allocator),
             .custom_fields = std.StringHashMap([]const u8).init(self.allocator),
             .created_at = 0,
             .updated_at = 0,
@@ -337,7 +337,7 @@ pub const PortfolioManager = struct {
             .metadata = metadata,
         };
 
-        try self.portfolio.?.items.append(self.allocator, item);
+        try self.portfolio.?.items.append(item);
         try self.addToIndex(id, name, item_type, self.portfolio.?.id);
         return id;
     }
@@ -369,12 +369,12 @@ pub const PortfolioManager = struct {
     }
 
     /// Get collections by item type
-    pub fn getCollectionsByType(self: *PortfolioManager, item_type: EntityType) !std.ArrayList(*PortfolioCollection) {
-        var results = std.ArrayList(*PortfolioCollection){};
+    pub fn getCollectionsByType(self: *PortfolioManager, item_type: EntityType) !std.array_list.Managed(*PortfolioCollection) {
+        var results = std.array_list.Managed(*PortfolioCollection).init(self.allocator);
         if (self.portfolio) |*p| {
             for (p.collections.items) |*col| {
                 if (col.item_type == item_type) {
-                    try results.append(&self.allocator, col);
+                    try results.append(col);
                 }
             }
         }
@@ -413,7 +413,7 @@ pub const PortfolioManager = struct {
                 .name = try self.allocator.dupe(u8, tag_name),
                 .category = try self.allocator.dupe(u8, tag_category),
             };
-            try metadata.tags.append(self.allocator, tag);
+            try metadata.tags.append(tag);
         }
     }
 
@@ -447,12 +447,12 @@ pub const PortfolioManager = struct {
             .entity_type = entity_type,
             .parent_id = parent_id,
         };
-        try self.index.append(self.allocator, entry);
+        try self.index.append(entry);
     }
 
     /// Search entities by filter
-    pub fn search(self: *PortfolioManager, filter: SearchFilter, allocator: std.mem.Allocator) !std.ArrayList(IndexEntry) {
-        var results = std.ArrayList(IndexEntry){};
+    pub fn search(self: *PortfolioManager, filter: SearchFilter, allocator: std.mem.Allocator) !std.array_list.Managed(IndexEntry) {
+        var results = std.array_list.Managed(IndexEntry).init(allocator);
 
         for (self.index.items) |entry| {
             var matches = true;
@@ -476,7 +476,7 @@ pub const PortfolioManager = struct {
                     .entity_type = entry.entity_type,
                     .parent_id = entry.parent_id,
                 };
-                try results.append(allocator, entry_copy);
+                try results.append(entry_copy);
             }
         }
 
@@ -494,8 +494,8 @@ pub const PortfolioManager = struct {
     }
 
     /// Get all entities of a specific type
-    pub fn getEntitiesByType(self: *PortfolioManager, entity_type: EntityType, allocator: std.mem.Allocator) !std.ArrayList(IndexEntry) {
-        var results = std.ArrayList(IndexEntry){};
+    pub fn getEntitiesByType(self: *PortfolioManager, entity_type: EntityType, allocator: std.mem.Allocator) !std.array_list.Managed(IndexEntry) {
+        var results = std.array_list.Managed(IndexEntry).init(allocator);
         for (self.index.items) |entry| {
             if (entry.entity_type == entity_type) {
                 const entry_copy = IndexEntry{
@@ -504,7 +504,7 @@ pub const PortfolioManager = struct {
                     .entity_type = entry.entity_type,
                     .parent_id = entry.parent_id,
                 };
-                try results.append(allocator, entry_copy);
+                try results.append(entry_copy);
             }
         }
         return results;

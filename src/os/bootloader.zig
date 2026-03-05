@@ -52,7 +52,7 @@ pub const KernelModule = struct {
     initialized: bool = false,
     load_address: u64 = 0,
     size_bytes: u32 = 0,
-    dependencies: std.ArrayList(u32),
+    dependencies: std.array_list.Managed(u32),
 };
 
 /// Boot statistics
@@ -87,8 +87,8 @@ pub const BootManager = struct {
     allocator: std.mem.Allocator,
     boot_config: BootConfig,
     current_phase: BootPhase = .firmware,
-    modules: std.ArrayList(KernelModule),
-    boot_events: std.ArrayList(BootEvent),
+    modules: std.array_list.Managed(KernelModule),
+    boot_events: std.array_list.Managed(BootEvent),
     boot_stats: BootStats,
     next_module_id: u32 = 0,
     next_event_id: u64 = 0,
@@ -99,8 +99,8 @@ pub const BootManager = struct {
         return BootManager{
             .allocator = allocator,
             .boot_config = config,
-            .modules = std.ArrayList(KernelModule){},
-            .boot_events = std.ArrayList(BootEvent){},
+            .modules = std.array_list.Managed(KernelModule).init(allocator),
+            .boot_events = std.array_list.Managed(BootEvent).init(allocator),
             .boot_stats = BootStats{
                 .boot_start_time = std.time.timestamp(),
                 .phase_times = std.StringHashMap(u64).init(allocator),
@@ -113,14 +113,14 @@ pub const BootManager = struct {
             self.allocator.free(module.name);
             self.allocator.free(module.version);
             var deps = module.dependencies;
-            deps.deinit(self.allocator);
+            deps.deinit();
         }
-        self.modules.deinit(self.allocator);
+        self.modules.deinit();
 
         for (self.boot_events.items) |event| {
             self.allocator.free(event.message);
         }
-        self.boot_events.deinit(self.allocator);
+        self.boot_events.deinit();
 
         var phase_times = self.boot_stats.phase_times;
         phase_times.deinit();
@@ -142,10 +142,10 @@ pub const BootManager = struct {
             .module_id = module_id,
             .name = try self.allocator.dupe(u8, name),
             .version = try self.allocator.dupe(u8, version),
-            .dependencies = std.ArrayList(u32).init(self.allocator),
+            .dependencies = std.array_list.Managed(u32).init(self.allocator),
         };
 
-        try self.modules.append(self.allocator, module);
+        try self.modules.append(module);
         return module_id;
     }
 
@@ -268,7 +268,7 @@ pub const BootManager = struct {
             .severity = severity,
         };
 
-        try self.boot_events.append(self.allocator, event);
+        try self.boot_events.append(event);
 
         if (severity == .@"error" or severity == .critical) {
             self.boot_stats.errors += 1;

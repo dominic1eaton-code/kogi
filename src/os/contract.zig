@@ -8,7 +8,7 @@ pub const Job = struct {
     id: u32,
     title: []const u8,
     description: []const u8,
-    required_skills: std.ArrayList([]const u8),
+    required_skills: std.array_list.Managed([]const u8),
     budget: f32,
     deadline: i64,
     assigned_to: ?u32, // worker_id or null if unassigned
@@ -32,16 +32,16 @@ pub const Kernel = struct {
     allocator: std.mem.Allocator,
     worker_manager: worker_module.WorkerManager,
     portfolio_manager: portfolio_module.PortfolioManager,
-    jobs: std.ArrayList(Job),
-    contracts: std.ArrayList(Contract),
+    jobs: std.array_list.Managed(Job),
+    contracts: std.array_list.Managed(Contract),
 
     pub fn init(allocator: std.mem.Allocator) Kernel {
         return Kernel{
             .allocator = allocator,
             .worker_manager = worker_module.WorkerManager.init(allocator),
             .portfolio_manager = portfolio_module.PortfolioManager.init(allocator),
-            .jobs = std.ArrayList(Job){},
-            .contracts = std.ArrayList(Contract){},
+            .jobs = std.array_list.Managed(Job).init(allocator),
+            .contracts = std.array_list.Managed(Contract).init(allocator),
         };
     }
 
@@ -58,14 +58,14 @@ pub const Kernel = struct {
             for (job.required_skills.items) |skill| {
                 self.allocator.free(skill);
             }
-            job.required_skills.deinit(self.allocator);
+            job.required_skills.deinit();
             self.allocator.free(job.title);
             self.allocator.free(job.description);
         }
-        self.jobs.deinit(self.allocator);
+        self.jobs.deinit();
 
         // Clean up contracts
-        self.contracts.deinit(self.allocator);
+        self.contracts.deinit();
     }
 
     /// ============ Worker Management (delegates to WorkerManager) ============
@@ -113,21 +113,21 @@ pub const Kernel = struct {
             .id = job_id,
             .title = try self.allocator.dupe(u8, title),
             .description = try self.allocator.dupe(u8, description),
-            .required_skills = std.ArrayList([]const u8){},
+            .required_skills = std.array_list.Managed([]const u8).init(self.allocator),
             .budget = budget,
             .deadline = deadline,
             .assigned_to = null,
             .completed = false,
         };
 
-        try self.jobs.append(self.allocator, job);
+        try self.jobs.append(job);
         return job_id;
     }
 
     pub fn addJobSkillRequirement(self: *Kernel, job_id: u32, skill: []const u8) !void {
         if (job_id < @as(u32, @intCast(self.jobs.items.len))) {
             const skill_copy = try self.allocator.dupe(u8, skill);
-            try self.jobs.items[job_id].required_skills.append(self.allocator, skill_copy);
+            try self.jobs.items[job_id].required_skills.append(skill_copy);
         }
     }
 
@@ -156,7 +156,7 @@ pub const Kernel = struct {
             .status = .active,
         };
 
-        try self.contracts.append(self.allocator, contract);
+        try self.contracts.append(contract);
 
         // Mark job as assigned
         if (job_id < @as(u32, @intCast(self.jobs.items.len))) {

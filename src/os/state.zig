@@ -57,9 +57,9 @@ pub const StateManagerConfig = struct {
 pub const StateManager = struct {
     allocator: std.mem.Allocator,
     config: StateManagerConfig,
-    checkpoints: std.ArrayList(Checkpoint),
-    backups: std.ArrayList(Backup),
-    restore_points: std.ArrayList(RestorePoint),
+    checkpoints: std.array_list.Managed(Checkpoint),
+    backups: std.array_list.Managed(Backup),
+    restore_points: std.array_list.Managed(RestorePoint),
     next_checkpoint_id: u32 = 0,
     next_backup_id: u32 = 0,
     next_restore_point_id: u32 = 0,
@@ -71,9 +71,9 @@ pub const StateManager = struct {
         return StateManager{
             .allocator = allocator,
             .config = config,
-            .checkpoints = std.ArrayList(Checkpoint){},
-            .backups = std.ArrayList(Backup){},
-            .restore_points = std.ArrayList(RestorePoint){},
+            .checkpoints = std.array_list.Managed(Checkpoint).init(allocator),
+            .backups = std.array_list.Managed(Backup).init(allocator),
+            .restore_points = std.array_list.Managed(RestorePoint).init(allocator),
         };
     }
 
@@ -89,18 +89,18 @@ pub const StateManager = struct {
             }
             metadata.deinit();
         }
-        self.checkpoints.deinit(self.allocator);
+        self.checkpoints.deinit();
 
         for (self.backups.items) |backup| {
             self.allocator.free(backup.filename);
             self.allocator.free(backup.checksum);
         }
-        self.backups.deinit(self.allocator);
+        self.backups.deinit();
 
         for (self.restore_points.items) |rp| {
             self.allocator.free(rp.description);
         }
-        self.restore_points.deinit(self.allocator);
+        self.restore_points.deinit();
     }
 
     /// Create a checkpoint of current state
@@ -121,7 +121,7 @@ pub const StateManager = struct {
             .state_hash = try self.allocator.dupe(u8, state_hash),
             .checkpoint_data = try self.allocator.dupe(u8, state_data),
             .size_bytes = state_data.len,
-            .metadata = std.StringHashMap([]const u8){},
+            .metadata = std.StringHashMap([]const u8).init(self.allocator),
         };
 
         if (self.checkpoints.items.len >= self.config.max_checkpoints) {
@@ -132,7 +132,7 @@ pub const StateManager = struct {
             metadata.deinit();
         }
 
-        try self.checkpoints.append(self.allocator, checkpoint);
+        try self.checkpoints.append(checkpoint);
         self.last_checkpoint_time = std.time.timestamp();
 
         return checkpoint_id;
@@ -182,7 +182,7 @@ pub const StateManager = struct {
             self.allocator.free(old_backup.checksum);
         }
 
-        try self.backups.append(self.allocator, backup);
+        try self.backups.append(backup);
         self.last_backup_time = std.time.timestamp();
 
         return backup_id;
@@ -210,7 +210,7 @@ pub const StateManager = struct {
             .can_restore = true,
         };
 
-        try self.restore_points.append(self.allocator, restore_point);
+        try self.restore_points.append(restore_point);
 
         return rp_id;
     }

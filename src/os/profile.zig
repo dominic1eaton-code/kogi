@@ -17,9 +17,9 @@ pub const ManagedProfile = struct {
     profile_type: ProfileType,
     name: []const u8,
     description: []const u8,
-    configurations: std.ArrayList(ProfileProperty),
-    preferences: std.ArrayList(ProfileProperty),
-    account_ids: std.ArrayList(u32),
+    configurations: std.array_list.Managed(ProfileProperty),
+    preferences: std.array_list.Managed(ProfileProperty),
+    account_ids: std.array_list.Managed(u32),
     active: bool,
     created_at: i64,
     updated_at: i64,
@@ -32,13 +32,13 @@ pub const ProfileManagementError = error{
 
 pub const ProfileManagement = struct {
     allocator: std.mem.Allocator,
-    profiles: std.ArrayList(ManagedProfile),
+    profiles: std.array_list.Managed(ManagedProfile),
     next_profile_id: u32,
 
     pub fn init(allocator: std.mem.Allocator) ProfileManagement {
         return ProfileManagement{
             .allocator = allocator,
-            .profiles = std.ArrayList(ManagedProfile).init(allocator),
+            .profiles = std.array_list.Managed(ManagedProfile).init(allocator),
             .next_profile_id = 0,
         };
     }
@@ -71,9 +71,9 @@ pub const ProfileManagement = struct {
             .profile_type = profile_type,
             .name = try self.allocator.dupe(u8, name),
             .description = try self.allocator.dupe(u8, description),
-            .configurations = std.ArrayList(ProfileProperty).init(self.allocator),
-            .preferences = std.ArrayList(ProfileProperty).init(self.allocator),
-            .account_ids = std.ArrayList(u32).init(self.allocator),
+            .configurations = std.array_list.Managed(ProfileProperty).init(self.allocator),
+            .preferences = std.array_list.Managed(ProfileProperty).init(self.allocator),
+            .account_ids = std.array_list.Managed(u32).init(self.allocator),
             .active = false,
             .created_at = std.time.timestamp(),
             .updated_at = std.time.timestamp(),
@@ -180,7 +180,7 @@ pub const ProfileManagement = struct {
 
 fn upsertProperty(
     allocator: std.mem.Allocator,
-    list: *std.ArrayList(ProfileProperty),
+    list: *std.array_list.Managed(ProfileProperty),
     key: []const u8,
     value: []const u8,
 ) !void {

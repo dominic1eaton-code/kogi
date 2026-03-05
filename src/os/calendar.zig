@@ -25,14 +25,14 @@ pub const Recurrence = enum {
 /// Scheduler managing events and clock
 pub const Scheduler = struct {
     allocator: std.mem.Allocator,
-    events: std.ArrayList(CalendarEvent),
+    events: std.array_list.Managed(CalendarEvent),
     next_id: u32,
     mutex: std.Thread.Mutex = .{},
 
     pub fn init(allocator: std.mem.Allocator) Scheduler {
         return Scheduler{
             .allocator = allocator,
-            .events = std.ArrayList(CalendarEvent){},
+            .events = std.array_list.Managed(CalendarEvent).init(allocator),
             .next_id = 1,
         };
     }
@@ -42,7 +42,7 @@ pub const Scheduler = struct {
             self.allocator.free(evt.title);
             self.allocator.free(evt.description);
         }
-        self.events.deinit(self.allocator);
+        self.events.deinit();
     }
 
     pub fn addEvent(
@@ -67,7 +67,7 @@ pub const Scheduler = struct {
             .all_day = all_day,
             .owner_id = owner_id,
         };
-        try self.events.append(self.allocator, evt);
+        try self.events.append(evt);
         return id;
     }
 
@@ -75,11 +75,11 @@ pub const Scheduler = struct {
         return self.events.items;
     }
 
-    pub fn getEventsByOwner(self: *Scheduler, owner_id: u32, allocator: std.mem.Allocator) !std.ArrayList(CalendarEvent) {
-        var res = std.ArrayList(CalendarEvent){};
+    pub fn getEventsByOwner(self: *Scheduler, owner_id: u32, allocator: std.mem.Allocator) !std.array_list.Managed(CalendarEvent) {
+        var res = std.array_list.Managed(CalendarEvent).init(allocator);
         for (self.events.items) |evt| {
             if (evt.owner_id == owner_id) {
-                try res.append(allocator, evt);
+                try res.append(evt);
             }
         }
         return res;

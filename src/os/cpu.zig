@@ -17,7 +17,7 @@ pub const ICPU = struct {
     id: u32,
     name: []const u8,
     email: []const u8,
-    skills: std.ArrayList([]u8),
+    skills: std.array_list.Managed([]u8),
     status: ICPUStatus,
     hourly_rate: f32,
 };
@@ -25,14 +25,14 @@ pub const ICPU = struct {
 /// CPU manager storing all ICPUs
 pub const CPUManager = struct {
     allocator: std.mem.Allocator,
-    cpus: std.ArrayList(ICPU),
+    cpus: std.array_list.Managed(ICPU),
     next_id: u32,
     mutex: std.Thread.Mutex = .{},
 
     pub fn init(allocator: std.mem.Allocator) CPUManager {
         return CPUManager{
             .allocator = allocator,
-            .cpus = std.ArrayList(ICPU){},
+            .cpus = std.array_list.Managed(ICPU).init(allocator),
             .next_id = 1,
         };
     }
@@ -44,9 +44,9 @@ pub const CPUManager = struct {
             for (cpu.skills.items) |s| self.allocator.free(s);
             // skills list stored as const in struct, cast to mutable for deinit
             var mutable_skills = cpu.skills;
-            mutable_skills.deinit(self.allocator);
+            mutable_skills.deinit();
         }
-        self.cpus.deinit(self.allocator);
+        self.cpus.deinit();
     }
 
     pub fn createCPU(
@@ -64,11 +64,11 @@ pub const CPUManager = struct {
             .id = id,
             .name = try self.allocator.dupe(u8, name),
             .email = try self.allocator.dupe(u8, email),
-            .skills = std.ArrayList([]u8){},
+            .skills = std.array_list.Managed([]u8).init(self.allocator),
             .status = .offline,
             .hourly_rate = hourly_rate,
         };
-        try self.cpus.append(self.allocator, cpu);
+        try self.cpus.append(cpu);
         return id;
     }
 

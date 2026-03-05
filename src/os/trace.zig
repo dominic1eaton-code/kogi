@@ -100,7 +100,7 @@ pub const PerformanceMetrics = struct {
 /// Trace manager
 pub const TraceManager = struct {
     allocator: std.mem.Allocator,
-    traces: std.ArrayList(TraceEvent),
+    traces: std.array_list.Managed(TraceEvent),
     next_event_id: u64 = 0,
     enabled: bool = true,
     trace_level: TraceLevel = .normal,
@@ -118,7 +118,7 @@ pub const TraceManager = struct {
     pub fn init(allocator: std.mem.Allocator) TraceManager {
         return TraceManager{
             .allocator = allocator,
-            .traces = std.ArrayList(TraceEvent){},
+            .traces = std.array_list.Managed(TraceEvent).init(allocator),
         };
     }
 
@@ -134,7 +134,7 @@ pub const TraceManager = struct {
             }
             metadata.deinit();
         }
-        self.traces.deinit(self.allocator);
+        self.traces.deinit();
     }
 
     /// Record a trace event
@@ -175,7 +175,7 @@ pub const TraceManager = struct {
             metadata.deinit();
         }
 
-        try self.traces.append(self.allocator, event);
+        try self.traces.append(event);
         return event_id;
     }
 
@@ -216,8 +216,8 @@ pub const TraceManager = struct {
 /// Audit manager
 pub const AuditManager = struct {
     allocator: std.mem.Allocator,
-    records: std.ArrayList(AuditRecord),
-    metrics: std.ArrayList(PerformanceMetrics),
+    records: std.array_list.Managed(AuditRecord),
+    metrics: std.array_list.Managed(PerformanceMetrics),
     next_record_id: u64 = 0,
     next_metric_id: u32 = 0,
     enabled: bool = true,
@@ -228,8 +228,8 @@ pub const AuditManager = struct {
     pub fn init(allocator: std.mem.Allocator) AuditManager {
         return AuditManager{
             .allocator = allocator,
-            .records = std.ArrayList(AuditRecord){},
-            .metrics = std.ArrayList(PerformanceMetrics){},
+            .records = std.array_list.Managed(AuditRecord).init(allocator),
+            .metrics = std.array_list.Managed(PerformanceMetrics).init(allocator),
         };
     }
 
@@ -239,8 +239,8 @@ pub const AuditManager = struct {
             self.allocator.free(record.object);
             self.allocator.free(record.details);
         }
-        self.records.deinit(self.allocator);
-        self.metrics.deinit(self.allocator);
+        self.records.deinit();
+        self.metrics.deinit();
     }
 
     /// Log an audit record
@@ -279,7 +279,7 @@ pub const AuditManager = struct {
             self.allocator.free(old_record.details);
         }
 
-        try self.records.append(self.allocator, record);
+        try self.records.append(record);
         return record_id;
     }
 
@@ -312,7 +312,7 @@ pub const AuditManager = struct {
             _ = self.metrics.orderedRemove(0);
         }
 
-        try self.metrics.append(self.allocator, metric);
+        try self.metrics.append(metric);
     }
 
     /// Get audit records
@@ -330,22 +330,22 @@ pub const AuditManager = struct {
         self: *AuditManager,
         action_type: AuditActionType,
         allocator: std.mem.Allocator,
-    ) !std.ArrayList(AuditRecord) {
-        var results = std.ArrayList(AuditRecord){};
+    ) !std.array_list.Managed(AuditRecord) {
+        var results = std.array_list.Managed(AuditRecord).init(allocator);
         for (self.records.items) |record| {
             if (record.action_type == action_type) {
-                try results.append(allocator, record);
+                try results.append(record);
             }
         }
         return results;
     }
 
     /// Get critical/alert records
-    pub fn getSecurityAlerts(self: *AuditManager, allocator: std.mem.Allocator) !std.ArrayList(AuditRecord) {
-        var results = std.ArrayList(AuditRecord){};
+    pub fn getSecurityAlerts(self: *AuditManager, allocator: std.mem.Allocator) !std.array_list.Managed(AuditRecord) {
+        var results = std.array_list.Managed(AuditRecord).init(allocator);
         for (self.records.items) |record| {
             if (record.severity == .critical or record.severity == .alert) {
-                try results.append(allocator, record);
+                try results.append(record);
             }
         }
         return results;

@@ -30,13 +30,13 @@ pub const ProviderError = error{
 
 pub const ProviderManager = struct {
     allocator: std.mem.Allocator,
-    providers: std.ArrayList(Provider),
+    providers: std.array_list.Managed(Provider),
     next_provider_id: u32,
 
     pub fn init(allocator: std.mem.Allocator) ProviderManager {
         return ProviderManager{
             .allocator = allocator,
-            .providers = std.ArrayList(Provider).init(allocator),
+            .providers = std.array_list.Managed(Provider).init(allocator),
             .next_provider_id = 0,
         };
     }

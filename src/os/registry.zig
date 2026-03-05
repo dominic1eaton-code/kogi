@@ -27,12 +27,12 @@ pub const Connection = struct {
 /// ConnectionRegistry manages all external connections for an identity
 pub const ConnectionRegistry = struct {
     allocator: std.mem.Allocator,
-    connections: std.ArrayList(Connection),
+    connections: std.array_list.Managed(Connection),
 
     pub fn init(allocator: std.mem.Allocator) ConnectionRegistry {
         return ConnectionRegistry{
             .allocator = allocator,
-            .connections = std.ArrayList(Connection).init(allocator),
+            .connections = std.array_list.Managed(Connection).init(allocator),
         };
     }
 

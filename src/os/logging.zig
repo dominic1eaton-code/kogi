@@ -57,7 +57,7 @@ pub const LogOutput = enum {
 /// Logger configuration
 pub const LoggerConfig = struct {
     min_level: LogLevel = .info,
-    outputs: std.ArrayList(LogOutput),
+    outputs: std.array_list.Managed(LogOutput),
     file_path: ?[]const u8 = null,
     max_entries: usize = 10000,
     include_timestamp: bool = true,
@@ -72,9 +72,9 @@ pub const LoggerConfig = struct {
 pub const Logger = struct {
     allocator: std.mem.Allocator,
     config: LoggerConfig,
-    entries: std.ArrayList(LogEntry),
+    entries: std.array_list.Managed(LogEntry),
     file_handle: ?std.fs.File = null,
-    buffer: std.ArrayList(u8),
+    buffer: std.array_list.Managed(u8),
     mutex: std.Thread.Mutex = .{},
     current_file_size: u64 = 0,
     rotation_index: u32 = 0,
@@ -83,12 +83,12 @@ pub const Logger = struct {
         var logger = Logger{
             .allocator = allocator,
             .config = config,
-            .entries = std.ArrayList(LogEntry){},
-            .buffer = std.ArrayList(u8){},
+            .entries = std.array_list.Managed(LogEntry).init(allocator),
+            .buffer = std.array_list.Managed(u8).init(allocator),
         };
 
-        try logger.entries.ensureTotalCapacity(allocator, config.max_entries);
-        try logger.buffer.ensureTotalCapacity(allocator, config.buffer_size);
+        try logger.entries.ensureTotalCapacity(config.max_entries);
+        try logger.buffer.ensureTotalCapacity(config.buffer_size);
 
         if (config.file_path) |path| {
             const dir = std.fs.cwd();
@@ -116,8 +116,9 @@ pub const Logger = struct {
             }
             metadata.deinit();
         }
-        self.entries.deinit(self.allocator);
-        self.buffer.deinit(self.allocator);
+        self.entries.deinit();
+        self.buffer.deinit();
+        self.config.outputs.deinit();
 
         if (self.file_handle) |handle| {
             handle.close();
@@ -144,7 +145,7 @@ pub const Logger = struct {
             .module = try self.allocator.dupe(u8, module),
             .message = try self.allocator.dupe(u8, message),
             .context = try self.allocator.dupe(u8, ""),
-            .metadata = std.StringHashMap([]const u8){},
+            .metadata = std.StringHashMap([]const u8).init(self.allocator),
         };
 
         if (self.entries.items.len >= self.config.max_entries) {
@@ -156,7 +157,7 @@ pub const Logger = struct {
             metadata.deinit();
         }
 
-        try self.entries.append(self.allocator, entry);
+        try self.entries.append(entry);
         try self.writeOutput(entry);
     }
 
@@ -181,7 +182,7 @@ pub const Logger = struct {
             .module = try self.allocator.dupe(u8, module),
             .message = try self.allocator.dupe(u8, message),
             .context = try self.allocator.dupe(u8, context),
-            .metadata = std.StringHashMap([]const u8){},
+            .metadata = std.StringHashMap([]const u8).init(self.allocator),
         };
 
         if (self.entries.items.len >= self.config.max_entries) {
@@ -193,7 +194,7 @@ pub const Logger = struct {
             metadata.deinit();
         }
 
-        try self.entries.append(self.allocator, entry);
+        try self.entries.append(entry);
         try self.writeOutput(entry);
     }
 
@@ -219,10 +220,10 @@ pub const Logger = struct {
         for (self.config.outputs.items) |output| {
             switch (output) {
                 .stdout => {
-                    try std.io.getStdOut().writeAll(self.buffer.items);
+                    try std.fs.File.stdout().writeAll(self.buffer.items);
                 },
                 .stderr => {
-                    try std.io.getStdErr().writeAll(self.buffer.items);
+                    try std.fs.File.stderr().writeAll(self.buffer.items);
                 },
                 .file => {
                     if (self.file_handle) |handle| {
@@ -246,10 +247,11 @@ pub const Logger = struct {
 
     /// Rotate the log file when exceeding size limits
     fn rotateFile(self: *Logger) !void {
-        if (self.config.file_path and self.config.max_files > 0) |path| {
+        if (self.config.max_files == 0) return;
+        if (self.config.file_path) |path| {
             // close current handle
             if (self.file_handle) |handle| {
-                try handle.close();
+                handle.close();
             }
 
             // compute rotated name
@@ -260,7 +262,7 @@ pub const Logger = struct {
                 self.rotation_index = 1;
             }
             const suffix = try std.fmt.allocPrint(self.allocator, ".{d}", .{self.rotation_index});
-            const rotated_name = try std.fmt.allocPrint(self.allocator, "{s}.{s}", .{ path, suffix });
+            const rotated_name = try std.fmt.allocPrint(self.allocator, "{s}{s}", .{ path, suffix });
             // rename existing file
             _ = dir.renameFile(path, rotated_name) catch {};
             // open new log file
@@ -272,22 +274,22 @@ pub const Logger = struct {
     }
 
     /// Get log entries filtered by level
-    pub fn getEntriesByLevel(self: *Logger, level: LogLevel, allocator: std.mem.Allocator) !std.ArrayList(LogEntry) {
-        var results = std.ArrayList(LogEntry){};
+    pub fn getEntriesByLevel(self: *Logger, level: LogLevel, allocator: std.mem.Allocator) !std.array_list.Managed(LogEntry) {
+        var results = std.array_list.Managed(LogEntry).init(allocator);
         for (self.entries.items) |entry| {
             if (entry.level == level) {
-                try results.append(allocator, entry);
+                try results.append(entry);
             }
         }
         return results;
     }
 
     /// Get log entries filtered by module
-    pub fn getEntriesByModule(self: *Logger, module: []const u8, allocator: std.mem.Allocator) !std.ArrayList(LogEntry) {
-        var results = std.ArrayList(LogEntry){};
+    pub fn getEntriesByModule(self: *Logger, module: []const u8, allocator: std.mem.Allocator) !std.array_list.Managed(LogEntry) {
+        var results = std.array_list.Managed(LogEntry).init(allocator);
         for (self.entries.items) |entry| {
             if (std.mem.eql(u8, entry.module, module)) {
-                try results.append(allocator, entry);
+                try results.append(entry);
             }
         }
         return results;
@@ -354,7 +356,7 @@ pub fn getGlobalLogger() ?*Logger {
     logger_mutex.lock();
     defer logger_mutex.unlock();
     if (global_logger) |*logger| {
-        return &logger;
+        return logger;
     }
     return null;
 }

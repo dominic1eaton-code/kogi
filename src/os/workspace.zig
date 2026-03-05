@@ -54,7 +54,7 @@ pub const Metadata = struct {
     entity_type: EntityType,
     entity_class: EntityClass,
     category: []const u8,
-    tags: std.ArrayList(Tag),
+    tags: std.array_list.Managed(Tag),
     custom_fields: std.StringHashMap([]const u8),
     created_at: i64,
     updated_at: i64,
@@ -84,7 +84,7 @@ pub const Collection = struct {
     name: []const u8,
     description: []const u8,
     item_type: EntityType,
-    items: std.ArrayList(WorkspaceItem),
+    items: std.array_list.Managed(WorkspaceItem),
     metadata: Metadata,
 };
 
@@ -93,8 +93,8 @@ pub const Workspace = struct {
     id: u32,
     name: []const u8,
     description: []const u8,
-    collections: std.ArrayList(Collection),
-    items: std.ArrayList(WorkspaceItem),
+    collections: std.array_list.Managed(Collection),
+    items: std.array_list.Managed(WorkspaceItem),
     metadata: Metadata,
     // Add APIs for managing independent worker workspaces here
 };
@@ -116,7 +116,7 @@ pub const Project = struct {
     id: u32,
     name: []const u8,
     description: []const u8,
-    tasks: std.ArrayList(Task),
+    tasks: std.array_list.Managed(Task),
     metadata: Metadata,
 };
 
@@ -124,7 +124,7 @@ pub const Program = struct {
     id: u32,
     name: []const u8,
     description: []const u8,
-    projects: std.ArrayList(Project),
+    projects: std.array_list.Managed(Project),
     metadata: Metadata,
 };
 
@@ -132,8 +132,8 @@ pub const SubWorkspace = struct {
     id: u32,
     name: []const u8,
     description: []const u8,
-    programs: std.ArrayList(Program),
-    projects: std.ArrayList(Project),
+    programs: std.array_list.Managed(Program),
+    projects: std.array_list.Managed(Project),
     metadata: Metadata,
 };
 
@@ -143,7 +143,7 @@ pub const SearchFilter = struct {
     entity_type: ?EntityType = null,
     entity_class: ?EntityClass = null,
     category: ?[]const u8 = null,
-    tag_names: ?std.ArrayList([]const u8) = null,
+    tag_names: ?std.array_list.Managed([]const u8) = null,
     owner_id: ?u32 = null,
 };
 
@@ -151,13 +151,13 @@ pub const SearchFilter = struct {
 pub const WorkspaceManager = struct {
     allocator: std.mem.Allocator,
     workspace: ?Workspace = null,
-    index: std.ArrayList(IndexEntry),
+    index: std.array_list.Managed(IndexEntry),
     next_id: u32 = 0,
 
     pub fn init(allocator: std.mem.Allocator) WorkspaceManager {
         return WorkspaceManager{
             .allocator = allocator,
-            .index = std.ArrayList(IndexEntry){},
+            .index = std.array_list.Managed(IndexEntry).init(allocator),
         };
     }
 
@@ -172,7 +172,7 @@ pub const WorkspaceManager = struct {
         for (self.index.items) |*entry| {
             self.allocator.free(entry.name);
         }
-        self.index.deinit(self.allocator);
+        self.index.deinit();
     }
 
     fn deinitMetadata(self: *WorkspaceManager, metadata: *Metadata) void {
@@ -181,7 +181,7 @@ pub const WorkspaceManager = struct {
             self.allocator.free(tag.name);
             self.allocator.free(tag.category);
         }
-        metadata.tags.deinit(self.allocator);
+        metadata.tags.deinit();
         var iter = metadata.custom_fields.iterator();
         while (iter.next()) |entry| {
             self.allocator.free(entry.key_ptr.*);
@@ -200,7 +200,7 @@ pub const WorkspaceManager = struct {
         for (collection.items.items) |*item| {
             self.deinitWorkspaceItem(item);
         }
-        collection.items.deinit(self.allocator);
+        collection.items.deinit();
         self.allocator.free(collection.name);
         self.allocator.free(collection.description);
         self.deinitMetadata(&collection.metadata);
@@ -216,7 +216,7 @@ pub const WorkspaceManager = struct {
         for (project.tasks.items) |*task| {
             self.deinitTask(task);
         }
-        project.tasks.deinit(self.allocator);
+        project.tasks.deinit();
         self.allocator.free(project.name);
         self.allocator.free(project.description);
         self.deinitMetadata(&project.metadata);
@@ -226,7 +226,7 @@ pub const WorkspaceManager = struct {
         for (program.projects.items) |*project| {
             self.deinitProject(project);
         }
-        program.projects.deinit(self.allocator);
+        program.projects.deinit();
         self.allocator.free(program.name);
         self.allocator.free(program.description);
         self.deinitMetadata(&program.metadata);
@@ -236,11 +236,11 @@ pub const WorkspaceManager = struct {
         for (sub_workspace.programs.items) |*program| {
             self.deinitProgram(program);
         }
-        sub_workspace.programs.deinit(self.allocator);
+        sub_workspace.programs.deinit();
         for (sub_workspace.projects.items) |*project| {
             self.deinitProject(project);
         }
-        sub_workspace.projects.deinit(self.allocator);
+        sub_workspace.projects.deinit();
         self.allocator.free(sub_workspace.name);
         self.allocator.free(sub_workspace.description);
         self.deinitMetadata(&sub_workspace.metadata);
@@ -250,11 +250,11 @@ pub const WorkspaceManager = struct {
         for (workspace.collections.items) |*col| {
             self.deinitCollection(col);
         }
-        workspace.collections.deinit(self.allocator);
+        workspace.collections.deinit();
         for (workspace.items.items) |*item| {
             self.deinitWorkspaceItem(item);
         }
-        workspace.items.deinit(self.allocator);
+        workspace.items.deinit();
         self.allocator.free(workspace.name);
         self.allocator.free(workspace.description);
         self.deinitMetadata(&workspace.metadata);
@@ -269,7 +269,7 @@ pub const WorkspaceManager = struct {
             .entity_type = .portfolio,
             .entity_class = .strategic,
             .category = try self.allocator.dupe(u8, category),
-            .tags = std.ArrayList(Tag){},
+            .tags = std.array_list.Managed(Tag).init(self.allocator),
             .custom_fields = std.StringHashMap([]const u8).init(self.allocator),
             .created_at = 0,
             .updated_at = 0,
@@ -279,8 +279,8 @@ pub const WorkspaceManager = struct {
             .id = id,
             .name = try self.allocator.dupe(u8, name),
             .description = try self.allocator.dupe(u8, description),
-            .collections = std.ArrayList(Collection){},
-            .items = std.ArrayList(WorkspaceItem){},
+            .collections = std.array_list.Managed(Collection).init(self.allocator),
+            .items = std.array_list.Managed(WorkspaceItem).init(self.allocator),
             .metadata = metadata,
         };
 
@@ -305,7 +305,7 @@ pub const WorkspaceManager = struct {
             .entity_type = item_type,
             .entity_class = .personal,
             .category = try self.allocator.dupe(u8, category),
-            .tags = std.ArrayList(Tag){},
+            .tags = std.array_list.Managed(Tag).init(self.allocator),
             .custom_fields = std.StringHashMap([]const u8).init(self.allocator),
             .created_at = 0,
             .updated_at = 0,
@@ -317,11 +317,11 @@ pub const WorkspaceManager = struct {
             .name = try self.allocator.dupe(u8, name),
             .description = try self.allocator.dupe(u8, description),
             .item_type = item_type,
-            .items = std.ArrayList(WorkspaceItem){},
+            .items = std.array_list.Managed(WorkspaceItem).init(self.allocator),
             .metadata = metadata,
         };
 
-        try self.workspace.?.collections.append(self.allocator, collection);
+        try self.workspace.?.collections.append(collection);
         try self.addToIndex(id, name, item_type, self.workspace.?.id);
         return id;
     }
@@ -344,7 +344,7 @@ pub const WorkspaceManager = struct {
                     .entity_type = collection.item_type,
                     .entity_class = .personal,
                     .category = try self.allocator.dupe(u8, collection.metadata.category),
-                    .tags = std.ArrayList(Tag){},
+                    .tags = std.array_list.Managed(Tag).init(self.allocator),
                     .custom_fields = std.StringHashMap([]const u8).init(self.allocator),
                     .created_at = 0,
                     .updated_at = 0,
@@ -358,7 +358,7 @@ pub const WorkspaceManager = struct {
                     .metadata = metadata,
                 };
 
-                try collection.items.append(self.allocator, item);
+                try collection.items.append(item);
                 try self.addToIndex(id, name, collection.item_type, collection_id);
                 return id;
             }
@@ -383,7 +383,7 @@ pub const WorkspaceManager = struct {
             .entity_type = item_type,
             .entity_class = .personal,
             .category = try self.allocator.dupe(u8, category),
-            .tags = std.ArrayList(Tag){},
+            .tags = std.array_list.Managed(Tag).init(self.allocator),
             .custom_fields = std.StringHashMap([]const u8).init(self.allocator),
             .created_at = 0,
             .updated_at = 0,
@@ -397,7 +397,7 @@ pub const WorkspaceManager = struct {
             .metadata = metadata,
         };
 
-        try self.workspace.?.items.append(self.allocator, item);
+        try self.workspace.?.items.append(item);
         try self.addToIndex(id, name, item_type, self.workspace.?.id);
         return id;
     }
@@ -425,12 +425,12 @@ pub const WorkspaceManager = struct {
         return null;
     }
 
-    pub fn getCollectionsByType(self: *WorkspaceManager, item_type: EntityType, allocator: std.mem.Allocator) !std.ArrayList(*Collection) {
-        var results = std.ArrayList(*Collection){};
+    pub fn getCollectionsByType(self: *WorkspaceManager, item_type: EntityType, allocator: std.mem.Allocator) !std.array_list.Managed(*Collection) {
+        var results = std.array_list.Managed(*Collection).init(allocator);
         if (self.workspace) |*w| {
             for (w.collections.items) |*col| {
                 if (col.item_type == item_type) {
-                    try results.append(&allocator, col);
+                    try results.append(col);
                 }
             }
         }
@@ -461,7 +461,7 @@ pub const WorkspaceManager = struct {
                 .name = try self.allocator.dupe(u8, tag_name),
                 .category = try self.allocator.dupe(u8, tag_category),
             };
-            try metadata.tags.append(self.allocator, tag);
+            try metadata.tags.append(tag);
         }
     }
 
@@ -490,11 +490,11 @@ pub const WorkspaceManager = struct {
             .entity_type = entity_type,
             .parent_id = parent_id,
         };
-        try self.index.append(self.allocator, entry);
+        try self.index.append(entry);
     }
 
-    pub fn search(self: *WorkspaceManager, filter: SearchFilter, allocator: std.mem.Allocator) !std.ArrayList(IndexEntry) {
-        var results = std.ArrayList(IndexEntry){};
+    pub fn search(self: *WorkspaceManager, filter: SearchFilter, allocator: std.mem.Allocator) !std.array_list.Managed(IndexEntry) {
+        var results = std.array_list.Managed(IndexEntry).init(allocator);
 
         for (self.index.items) |entry| {
             var matches = true;
@@ -518,7 +518,7 @@ pub const WorkspaceManager = struct {
                     .entity_type = entry.entity_type,
                     .parent_id = entry.parent_id,
                 };
-                try results.append(allocator, entry_copy);
+                try results.append(entry_copy);
             }
         }
 
@@ -534,8 +534,8 @@ pub const WorkspaceManager = struct {
         return null;
     }
 
-    pub fn getEntitiesByType(self: *WorkspaceManager, entity_type: EntityType, allocator: std.mem.Allocator) !std.ArrayList(IndexEntry) {
-        var results = std.ArrayList(IndexEntry){};
+    pub fn getEntitiesByType(self: *WorkspaceManager, entity_type: EntityType, allocator: std.mem.Allocator) !std.array_list.Managed(IndexEntry) {
+        var results = std.array_list.Managed(IndexEntry).init(allocator);
         for (self.index.items) |entry| {
             if (entry.entity_type == entity_type) {
                 const entry_copy = IndexEntry{
@@ -544,7 +544,7 @@ pub const WorkspaceManager = struct {
                     .entity_type = entry.entity_type,
                     .parent_id = entry.parent_id,
                 };
-                try results.append(allocator, entry_copy);
+                try results.append(entry_copy);
             }
         }
         return results;

@@ -10,10 +10,12 @@ pub const CustomApplication = struct {
 /// Dashboard manager for OS system dashboard
 pub const DashboardManager = struct {
     pub fn init(allocator: std.mem.Allocator) DashboardManager {
+        _ = allocator;
         // Initialization logic for dashboard
         return DashboardManager{};
     }
     pub fn deinit(self: *DashboardManager) void {
+        _ = self;
         // Cleanup logic for dashboard
     }
 };
@@ -23,10 +25,12 @@ pub const UserMode = enum { user, kernel };
 
 pub const UIConnector = struct {
     pub fn init(allocator: std.mem.Allocator) UIConnector {
+        _ = allocator;
         // Initialization logic for UI connector
         return UIConnector{};
     }
     pub fn deinit(self: *UIConnector) void {
+        _ = self;
         // Cleanup logic for UI connector
     }
 };
@@ -34,10 +38,12 @@ pub const UIConnector = struct {
 /// Application management system
 pub const ApplicationManager = struct {
     pub fn init(allocator: std.mem.Allocator) ApplicationManager {
+        _ = allocator;
         // Initialization logic for application manager
         return ApplicationManager{};
     }
     pub fn deinit(self: *ApplicationManager) void {
+        _ = self;
         // Cleanup logic for application manager
     }
 };
@@ -45,10 +51,12 @@ pub const ApplicationManager = struct {
 /// Session and session management system
 pub const SessionManager = struct {
     pub fn init(allocator: std.mem.Allocator) SessionManager {
+        _ = allocator;
         // Initialization logic for session manager
         return SessionManager{};
     }
     pub fn deinit(self: *SessionManager) void {
+        _ = self;
         // Cleanup logic for session manager
     }
 };
@@ -61,6 +69,7 @@ const contacts_module = @import("contacts.zig");
 const content_module = @import("content.zig");
 const design_module = @import("design.zig");
 const directory_book_module = @import("directory_book.zig");
+const database_module = @import("database.zig");
 const workspace_module = @import("workspace.zig");
 const registry_module = @import("registry.zig");
 const directory_module = @import("directory.zig");
@@ -69,7 +78,7 @@ const security_module = @import("security.zig");
 const logging_module = @import("logging.zig");
 const events_module = @import("events.zig");
 const state_module = @import("state.zig");
-const distributed_module = @import("distributed.zig");
+const distributed_module = @import("node.zig");
 const networking_module = @import("networking.zig");
 const observability_module = @import("observability.zig");
 const cpu_module = @import("cpu.zig");
@@ -90,7 +99,7 @@ pub const Task = struct {
     id: u32,
     title: []const u8,
     description: []const u8,
-    required_skills: std.ArrayList([]const u8),
+    required_skills: std.array_list.Managed([]const u8),
     budget: f32,
     deadline: i64,
     assigned_to: ?u32,
@@ -116,13 +125,14 @@ pub const Engagement = struct {
 /// System is the core operating system engine managing all subsystems
 pub const System = struct {
     allocator: std.mem.Allocator,
-    custom_apps: std.ArrayList(CustomApplication),
+    custom_apps: std.array_list.Managed(CustomApplication),
     tiered_cache: cache_module.TieredAllocator,
     user_manager: users_module.UserManager,
     workspace_manager: workspace_module.WorkspaceManager,
     content_manager: content_module.ContentManager,
     design_manager: design_module.DesignManager,
     directory_book_manager: directory_book_module.DirectoryBookManager,
+    database_manager: database_module.DatabaseManager,
     directory: directory_module.Directory,
     vault: vault_module.Vault,
     security_manager: security_module.SecurityManager,
@@ -146,8 +156,8 @@ pub const System = struct {
     profiler: time_module.Profiler,
     mode: UserMode,
     kernel: ?*kernel_module.Kernel,
-    tasks: std.ArrayList(Task),
-    engagements: std.ArrayList(Engagement),
+    tasks: std.array_list.Managed(Task),
+    engagements: std.array_list.Managed(Engagement),
     dashboard: ?DashboardManager,
     ui_connector: ?UIConnector,
     app_manager: ?ApplicationManager,
@@ -155,8 +165,8 @@ pub const System = struct {
 
     pub fn init(allocator: std.mem.Allocator, kernel: ?*kernel_module.Kernel) System {
         // Initialize logger with default config
-        var log_outputs = std.ArrayList(logging_module.LogOutput){};
-        log_outputs.append(allocator, .stdout) catch {};
+        var log_outputs = std.array_list.Managed(logging_module.LogOutput).init(allocator);
+        log_outputs.append(.stdout) catch {};
         const logger_config = logging_module.LoggerConfig{
             .min_level = .info,
             .outputs = log_outputs,
@@ -202,7 +212,7 @@ pub const System = struct {
 
         // initialize scheduler from scheduling module
         const scheduler = scheduler_module.Scheduler.init(allocator);
-        const dispatcher = scheduler_module.Dispatcher.init(allocator, @constCast(&scheduler), 4);
+        const dispatcher: ?scheduler_module.Dispatcher = null;
 
         // initialize clock and profiler
         const clock = time_module.Clock.init(allocator);
@@ -213,7 +223,7 @@ pub const System = struct {
         const app_manager = ApplicationManager.init(allocator);
         const session_manager = SessionManager.init(allocator);
 
-        var custom_apps = std.ArrayList(CustomApplication){};
+        const custom_apps = std.array_list.Managed(CustomApplication).init(cache_alloc);
 
         return System{
             .allocator = cache_alloc,
@@ -223,6 +233,7 @@ pub const System = struct {
             .content_manager = content_module.ContentManager.init(cache_alloc),
             .design_manager = design_module.DesignManager.init(cache_alloc),
             .directory_book_manager = directory_book_module.DirectoryBookManager.init(cache_alloc),
+            .database_manager = database_module.DatabaseManager.init(cache_alloc),
             .directory = directory_module.Directory.init(cache_alloc),
             .vault = vault_module.Vault.init(cache_alloc),
             .security_manager = security_module.SecurityManager.init(cache_alloc),
@@ -244,8 +255,8 @@ pub const System = struct {
             .dispatcher = dispatcher,
             .clock = clock,
             .profiler = profiler,
-            .tasks = std.ArrayList(Task){},
-            .engagements = std.ArrayList(Engagement){},
+            .tasks = std.array_list.Managed(Task).init(cache_alloc),
+            .engagements = std.array_list.Managed(Engagement).init(cache_alloc),
             .dashboard = dashboard,
             .ui_connector = ui_connector,
             .app_manager = app_manager,
@@ -257,12 +268,33 @@ pub const System = struct {
     }
 
     pub fn deinit(self: *System) void {
+        // Clean up tasks created through System APIs.
+        for (self.tasks.items) |*task| {
+            self.allocator.free(task.title);
+            self.allocator.free(task.description);
+            for (task.required_skills.items) |skill| {
+                self.allocator.free(skill);
+            }
+            task.required_skills.deinit();
+        }
+        self.tasks.deinit();
+
+        // Clean up engagements.
+        for (self.engagements.items) |*engagement| {
+            engagement.completion_date = null;
+        }
+        self.engagements.deinit();
+
+        // Free custom app registry storage.
+        self.custom_apps.deinit();
+
         // Clean up system-owned components (always)
         self.user_manager.deinit();
         self.workspace_manager.deinit();
         self.content_manager.deinit();
         self.design_manager.deinit();
         self.directory_book_manager.deinit();
+        self.database_manager.deinit();
         self.directory.deinit();
         self.vault.deinit();
         self.security_manager.deinit();
@@ -271,37 +303,7 @@ pub const System = struct {
         self.state_manager.deinit();
         self.cluster.deinit();
 
-        // If System was created with an external kernel, the kernel owns
-        // memory/process/CPU/driver/time/scheduler related deinitialization.
-        if (self.kernel) |*k| {
-            // System-specific cleanup only
-            // Clean up tiered cache and system-managed lists
-            self.tiered_cache.deinit();
-
-            for (self.tasks.items) |*task| {
-                self.allocator.free(task.title);
-                self.allocator.free(task.description);
-                for (task.required_skills.items) |skill| {
-                    self.allocator.free(skill);
-                }
-                task.required_skills.deinit(self.allocator);
-            }
-            self.tasks.deinit(self.allocator);
-
-            for (self.engagements.items) |*engagement| {
-                engagement.completion_date = null;
-            }
-            self.engagements.deinit(self.allocator);
-
-            if (self.strategy_manager) |*s| s.deinit();
-            if (self.dashboard) |*d| d.deinit();
-            if (self.ui_connector) |*u| u.deinit();
-            if (self.app_manager) |*a| a.deinit();
-            if (self.session_manager) |*s| s.deinit();
-            return;
-        }
-
-        // Otherwise, System owns and should deinit all subsystems it created
+        // System owns all subsystem instances initialized in `System.init`.
         self.network_server.deinit();
         var process_manager = self.process_manager;
         process_manager.deinit();
@@ -327,30 +329,12 @@ pub const System = struct {
         scheduler.deinit();
         var profiler = self.profiler;
         profiler.deinit();
-        self.tiered_cache.deinit();
 
-        // Clean up tasks
-        for (self.tasks.items) |*task| {
-            self.allocator.free(task.title);
-            self.allocator.free(task.description);
-            for (task.required_skills.items) |skill| {
-                self.allocator.free(skill);
-            }
-            task.required_skills.deinit(self.allocator);
-        }
-        self.tasks.deinit(self.allocator);
-
-        // Clean up engagements
-        for (self.engagements.items) |*engagement| {
-            engagement.completion_date = null;
-        }
-        self.engagements.deinit(self.allocator);
-
-        if (self.strategy_manager) |*s| s.deinit();
         if (self.dashboard) |*d| d.deinit();
         if (self.ui_connector) |*u| u.deinit();
         if (self.app_manager) |*a| a.deinit();
         if (self.session_manager) |*s| s.deinit();
+        self.tiered_cache.deinit();
     }
 
     // ========== Identity Management Delegation ==========
@@ -897,14 +881,14 @@ pub const System = struct {
             .id = task_id,
             .title = try self.allocator.dupe(u8, title),
             .description = try self.allocator.dupe(u8, description),
-            .required_skills = std.ArrayList([]const u8){},
+            .required_skills = std.array_list.Managed([]const u8).init(self.allocator),
             .budget = budget,
             .deadline = deadline,
             .assigned_to = null,
             .completed = false,
         };
 
-        try self.tasks.append(self.allocator, task);
+        try self.tasks.append(task);
         return task_id;
     }
 
@@ -912,7 +896,7 @@ pub const System = struct {
     pub fn addTaskSkillRequirement(self: *System, task_id: u32, skill: []const u8) !void {
         if (task_id < @as(u32, @intCast(self.tasks.items.len))) {
             const skill_copy = try self.allocator.dupe(u8, skill);
-            try self.tasks.items[task_id].required_skills.append(self.allocator, skill_copy);
+            try self.tasks.items[task_id].required_skills.append(skill_copy);
         }
     }
 
@@ -954,7 +938,7 @@ pub const System = struct {
             .status = .active,
         };
 
-        try self.engagements.append(self.allocator, engagement);
+        try self.engagements.append(engagement);
         if (task_id < @as(u32, @intCast(self.tasks.items.len))) {
             self.tasks.items[task_id].assigned_to = identity_id;
         }
@@ -1298,6 +1282,81 @@ pub const System = struct {
 
     pub fn getDirectoryBookOrganizations(self: *System) []directory_book_module.DirectoryOrganization {
         return self.directory_book_manager.getOrganizations();
+    }
+
+    // ========== Database Management ==========
+
+    pub fn createDatabase(self: *System, name: []const u8, description: []const u8) !u32 {
+        return try self.database_manager.createDatabase(name, description);
+    }
+
+    pub fn updateDatabase(self: *System, database_id: u32, name: []const u8, description: []const u8) !void {
+        try self.database_manager.updateDatabase(database_id, name, description);
+    }
+
+    pub fn createTable(self: *System, database_id: u32, name: []const u8, description: []const u8) !u32 {
+        return try self.database_manager.createTable(database_id, name, description);
+    }
+
+    pub fn addTableColumn(
+        self: *System,
+        table_id: u32,
+        name: []const u8,
+        column_type: database_module.ColumnType,
+        nullable: bool,
+        default_value: []const u8,
+    ) !void {
+        try self.database_manager.addTableColumn(table_id, name, column_type, nullable, default_value);
+    }
+
+    pub fn createRecord(self: *System, database_id: u32, table_id: u32) !u32 {
+        return try self.database_manager.createRecord(database_id, table_id);
+    }
+
+    pub fn setRecordField(self: *System, record_id: u32, key: []const u8, value: []const u8) !void {
+        try self.database_manager.setRecordField(record_id, key, value);
+    }
+
+    pub fn deleteRecord(self: *System, record_id: u32) !void {
+        try self.database_manager.deleteRecord(record_id);
+    }
+
+    pub fn getDatabaseById(self: *System, database_id: u32) !database_module.Database {
+        return try self.database_manager.getDatabaseById(database_id);
+    }
+
+    pub fn getTableById(self: *System, table_id: u32) !database_module.Table {
+        return try self.database_manager.getTableById(table_id);
+    }
+
+    pub fn getRecordById(self: *System, record_id: u32) !database_module.Record {
+        return try self.database_manager.getRecordById(record_id);
+    }
+
+    pub fn getDatabases(self: *System) []database_module.Database {
+        return self.database_manager.getDatabases();
+    }
+
+    pub fn getTables(self: *System) []database_module.Table {
+        return self.database_manager.getTables();
+    }
+
+    pub fn getRecords(self: *System) []database_module.Record {
+        return self.database_manager.getRecords();
+    }
+
+    pub fn queryRecordsByField(
+        self: *System,
+        table_id: u32,
+        key: []const u8,
+        value: []const u8,
+        allocator: std.mem.Allocator,
+    ) !std.array_list.Managed(database_module.Record) {
+        return try self.database_manager.queryRecordsByField(table_id, key, value, allocator);
+    }
+
+    pub fn getDatabaseTransactions(self: *System) []database_module.Transaction {
+        return self.database_manager.getTransactions();
     }
 
     // ========== Design Management ==========

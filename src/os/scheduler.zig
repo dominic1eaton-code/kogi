@@ -70,14 +70,14 @@ pub const Task = struct {
 
 /// Task queue for FIFO processing
 pub const TaskQueue = struct {
-    queue: std.ArrayList(Task),
+    queue: std.array_list.Managed(Task),
     allocator: std.mem.Allocator,
     mutex: std.Thread.Mutex = .{},
     not_empty: std.Thread.Condition = .{},
 
     pub fn init(allocator: std.mem.Allocator) TaskQueue {
         return TaskQueue{
-            .queue = std.ArrayList(Task).init(allocator),
+            .queue = std.array_list.Managed(Task).init(allocator),
             .allocator = allocator,
         };
     }
@@ -89,14 +89,14 @@ pub const TaskQueue = struct {
         for (self.queue.items) |*task| {
             task.deinit();
         }
-        self.queue.deinit(self.allocator);
+        self.queue.deinit();
     }
 
     pub fn enqueue(self: *TaskQueue, task: Task) !void {
         self.mutex.lock();
         defer self.mutex.unlock();
 
-        try self.queue.append(self.allocator, task);
+        try self.queue.append(task);
         self.not_empty.signal();
     }
 
@@ -134,13 +134,13 @@ pub const TaskQueue = struct {
 
 /// Priority queue for scheduling
 pub const PriorityQueue = struct {
-    heap: std.ArrayList(Task),
+    heap: std.array_list.Managed(Task),
     allocator: std.mem.Allocator,
     mutex: std.Thread.Mutex = .{},
 
     pub fn init(allocator: std.mem.Allocator) PriorityQueue {
         return PriorityQueue{
-            .heap = std.ArrayList(Task){},
+            .heap = std.array_list.Managed(Task).init(allocator),
             .allocator = allocator,
         };
     }
@@ -152,14 +152,14 @@ pub const PriorityQueue = struct {
         for (self.heap.items) |*task| {
             task.deinit();
         }
-        self.heap.deinit(self.allocator);
+        self.heap.deinit();
     }
 
     pub fn enqueue(self: *PriorityQueue, task: Task) !void {
         self.mutex.lock();
         defer self.mutex.unlock();
 
-        try self.heap.append(self.allocator, task);
+        try self.heap.append(task);
         self.bubbleUp(self.heap.items.len - 1);
     }
 
@@ -232,13 +232,13 @@ pub const PriorityQueue = struct {
 
 /// Delayed task queue for scheduled execution
 pub const DelayedQueue = struct {
-    tasks: std.ArrayList(Task),
+    tasks: std.array_list.Managed(Task),
     allocator: std.mem.Allocator,
     mutex: std.Thread.Mutex = .{},
 
     pub fn init(allocator: std.mem.Allocator) DelayedQueue {
         return DelayedQueue{
-            .tasks = std.ArrayList(Task){},
+            .tasks = std.array_list.Managed(Task).init(allocator),
             .allocator = allocator,
         };
     }
@@ -250,7 +250,7 @@ pub const DelayedQueue = struct {
         for (self.tasks.items) |*task| {
             task.deinit();
         }
-        self.tasks.deinit(self.allocator);
+        self.tasks.deinit();
     }
 
     pub fn scheduleAfter(self: *DelayedQueue, task: Task, delay: time_module.Duration) !void {
@@ -263,7 +263,7 @@ pub const DelayedQueue = struct {
         var modified_task = task;
         modified_task.deadline = time_module.TimePoint.fromNanoseconds(scheduled_time);
 
-        try self.tasks.append(self.allocator, modified_task);
+        try self.tasks.append(modified_task);
         // Keep sorted by deadline
         std.sort.insertion(Task, self.tasks.items, {}, compareByDeadline);
     }
@@ -275,15 +275,15 @@ pub const DelayedQueue = struct {
         var modified_task = task;
         modified_task.deadline = deadline;
 
-        try self.tasks.append(self.allocator, modified_task);
+        try self.tasks.append(modified_task);
         std.sort.insertion(Task, self.tasks.items, {}, compareByDeadline);
     }
 
-    pub fn readyTasks(self: *DelayedQueue) !std.ArrayList(Task) {
+    pub fn readyTasks(self: *DelayedQueue) !std.array_list.Managed(Task) {
         self.mutex.lock();
         defer self.mutex.unlock();
 
-        var ready = std.ArrayList(Task).init(self.allocator);
+        var ready = std.array_list.Managed(Task).init(self.allocator);
         const now = time_module.TimePoint.now();
 
         var i: usize = 0;
@@ -315,8 +315,8 @@ pub const Scheduler = struct {
     next_task_id: u64 = 1,
     ready_queue: PriorityQueue,
     delayed_queue: DelayedQueue,
-    completed_tasks: std.ArrayList(Task),
-    failed_tasks: std.ArrayList(Task),
+    completed_tasks: std.array_list.Managed(Task),
+    failed_tasks: std.array_list.Managed(Task),
     mutex: std.Thread.Mutex = .{},
     running: bool = false,
 
@@ -325,8 +325,8 @@ pub const Scheduler = struct {
             .allocator = allocator,
             .ready_queue = PriorityQueue.init(allocator),
             .delayed_queue = DelayedQueue.init(allocator),
-            .completed_tasks = std.ArrayList(Task){},
-            .failed_tasks = std.ArrayList(Task){},
+            .completed_tasks = std.array_list.Managed(Task).init(allocator),
+            .failed_tasks = std.array_list.Managed(Task).init(allocator),
         };
     }
 
@@ -337,12 +337,12 @@ pub const Scheduler = struct {
         for (self.completed_tasks.items) |*task| {
             task.deinit();
         }
-        self.completed_tasks.deinit(self.allocator);
+        self.completed_tasks.deinit();
 
         for (self.failed_tasks.items) |*task| {
             task.deinit();
         }
-        self.failed_tasks.deinit(self.allocator);
+        self.failed_tasks.deinit();
     }
 
     pub fn createTask(
@@ -409,14 +409,14 @@ pub const Scheduler = struct {
         self.mutex.lock();
         defer self.mutex.unlock();
 
-        try self.completed_tasks.append(self.allocator, task);
+        try self.completed_tasks.append(task);
     }
 
     pub fn recordFailure(self: *Scheduler, task: Task) !void {
         self.mutex.lock();
         defer self.mutex.unlock();
 
-        try self.failed_tasks.append(self.allocator, task);
+        try self.failed_tasks.append(task);
     }
 
     pub fn stats(self: *Scheduler) struct { ready: usize, pending: usize, completed: usize, failed: usize } {
@@ -437,7 +437,7 @@ pub const Dispatcher = struct {
     allocator: std.mem.Allocator,
     scheduler: *Scheduler,
     thread_count: usize,
-    threads: std.ArrayList(std.Thread),
+    threads: std.array_list.Managed(std.Thread),
     running: bool = false,
     mutex: std.Thread.Mutex = .{},
 
@@ -446,7 +446,7 @@ pub const Dispatcher = struct {
             .allocator = allocator,
             .scheduler = scheduler,
             .thread_count = thread_count,
-            .threads = std.ArrayList(std.Thread){},
+            .threads = std.array_list.Managed(std.Thread).init(allocator),
         };
     }
 
@@ -454,7 +454,7 @@ pub const Dispatcher = struct {
         for (self.threads.items) |thread| {
             thread.join();
         }
-        self.threads.deinit(self.allocator);
+        self.threads.deinit();
     }
 
     pub fn start(self: *Dispatcher) !void {
@@ -500,12 +500,12 @@ fn workerThread(dispatcher: *Dispatcher) void {
 
 /// Work stealing queue for load balancing
 pub const WorkStealingQueue = struct {
-    queues: std.ArrayList(TaskQueue),
+    queues: std.array_list.Managed(TaskQueue),
     allocator: std.mem.Allocator,
     mutex: std.Thread.Mutex = .{},
 
     pub fn init(allocator: std.mem.Allocator, worker_count: usize) !WorkStealingQueue {
-        var queues = std.ArrayList(TaskQueue).init(allocator);
+        var queues = std.array_list.Managed(TaskQueue).init(allocator);
 
         for (0..worker_count) |_| {
             try queues.append(TaskQueue.init(allocator));
@@ -521,7 +521,7 @@ pub const WorkStealingQueue = struct {
         for (self.queues.items) |*q| {
             q.deinit();
         }
-        self.queues.deinit(self.allocator);
+        self.queues.deinit();
     }
 
     pub fn submitToQueue(self: *WorkStealingQueue, queue_idx: usize, task: Task) !void {

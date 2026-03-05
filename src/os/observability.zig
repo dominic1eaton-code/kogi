@@ -47,10 +47,10 @@ pub const OptimizationHint = struct {
 /// Observability manager
 pub const ObservabilityManager = struct {
     allocator: std.mem.Allocator,
-    breakpoints: std.ArrayList(Breakpoint),
-    metrics_history: std.ArrayList(SystemMetrics),
-    profiles: std.ArrayList(PerformanceProfile),
-    hints: std.ArrayList(OptimizationHint),
+    breakpoints: std.array_list.Managed(Breakpoint),
+    metrics_history: std.array_list.Managed(SystemMetrics),
+    profiles: std.array_list.Managed(PerformanceProfile),
+    hints: std.array_list.Managed(OptimizationHint),
     next_bp_id: u64,
     next_hint_id: u64,
     mutex: std.Thread.Mutex = .{},
@@ -58,10 +58,10 @@ pub const ObservabilityManager = struct {
     pub fn init(allocator: std.mem.Allocator) ObservabilityManager {
         return ObservabilityManager{
             .allocator = allocator,
-            .breakpoints = std.ArrayList(Breakpoint){},
-            .metrics_history = std.ArrayList(SystemMetrics){},
-            .profiles = std.ArrayList(PerformanceProfile){},
-            .hints = std.ArrayList(OptimizationHint){},
+            .breakpoints = std.array_list.Managed(Breakpoint).init(allocator),
+            .metrics_history = std.array_list.Managed(SystemMetrics).init(allocator),
+            .profiles = std.array_list.Managed(PerformanceProfile).init(allocator),
+            .hints = std.array_list.Managed(OptimizationHint).init(allocator),
             .next_bp_id = 1,
             .next_hint_id = 1,
         };
@@ -72,21 +72,21 @@ pub const ObservabilityManager = struct {
             self.allocator.free(bp.file);
             if (bp.condition) |cond| self.allocator.free(cond);
         }
-        self.breakpoints.deinit(self.allocator);
+        self.breakpoints.deinit();
 
         // metrics_history elements contain primitive fields only; nothing to free
         for (self.metrics_history.items) |_| {}
-        self.metrics_history.deinit(self.allocator);
+        self.metrics_history.deinit();
 
         for (self.profiles.items) |p| {
             self.allocator.free(p.function_name);
         }
-        self.profiles.deinit(self.allocator);
+        self.profiles.deinit();
 
         for (self.hints.items) |h| {
             self.allocator.free(h.message);
         }
-        self.hints.deinit(self.allocator);
+        self.hints.deinit();
     }
 
     /// Add a breakpoint
@@ -111,7 +111,7 @@ pub const ObservabilityManager = struct {
             .enabled = true,
             .condition = if (condition) |c| try self.allocator.dupe(u8, c) else null,
         };
-        try self.breakpoints.append(self.allocator, bp);
+        try self.breakpoints.append(bp);
         return id;
     }
 
@@ -150,7 +150,7 @@ pub const ObservabilityManager = struct {
             .thread_count = thread_count,
             .io_operations = io_ops,
         };
-        try self.metrics_history.append(self.allocator, m);
+        try self.metrics_history.append(m);
     }
 
     pub fn getMetricsHistory(self: *ObservabilityManager) []SystemMetrics {
@@ -179,7 +179,7 @@ pub const ObservabilityManager = struct {
             .call_count = 1,
             .total_time_us = duration_us,
         };
-        try self.profiles.append(self.allocator, prof);
+        try self.profiles.append(prof);
     }
 
     pub fn getProfiles(self: *ObservabilityManager) []PerformanceProfile {
@@ -199,7 +199,7 @@ pub const ObservabilityManager = struct {
             .timestamp = std.time.timestamp(),
             .message = try self.allocator.dupe(u8, message),
         };
-        try self.hints.append(self.allocator, hint);
+        try self.hints.append(hint);
         return id;
     }
 

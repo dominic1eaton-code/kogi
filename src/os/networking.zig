@@ -115,12 +115,12 @@ pub const Endpoint = struct {
 /// API route matcher
 pub const Router = struct {
     allocator: std.mem.Allocator,
-    endpoints: std.ArrayList(Endpoint),
+    endpoints: std.array_list.Managed(Endpoint),
 
     pub fn init(allocator: std.mem.Allocator) Router {
         return Router{
             .allocator = allocator,
-            .endpoints = std.ArrayList(Endpoint){},
+            .endpoints = std.array_list.Managed(Endpoint).init(allocator),
         };
     }
 
@@ -129,7 +129,7 @@ pub const Router = struct {
             self.allocator.free(endpoint.path);
             self.allocator.free(endpoint.description);
         }
-        self.endpoints.deinit(self.allocator);
+        self.endpoints.deinit();
     }
 
     /// Register an endpoint
@@ -148,7 +148,7 @@ pub const Router = struct {
             .require_auth = require_auth,
             .handler = handler,
         };
-        try self.endpoints.append(self.allocator, endpoint);
+        try self.endpoints.append(endpoint);
     }
 
     /// Find matching endpoint
@@ -167,9 +167,9 @@ pub const NetworkServer = struct {
     allocator: std.mem.Allocator,
     config: ServerConfig,
     router: Router,
-    connections: std.ArrayList(Connection),
-    requests: std.ArrayList(NetworkRequest),
-    responses: std.ArrayList(NetworkResponse),
+    connections: std.array_list.Managed(Connection),
+    requests: std.array_list.Managed(NetworkRequest),
+    responses: std.array_list.Managed(NetworkResponse),
     running: bool = false,
     next_conn_id: u32 = 0,
     next_request_id: u32 = 0,
@@ -180,9 +180,9 @@ pub const NetworkServer = struct {
             .allocator = allocator,
             .config = config,
             .router = Router.init(allocator),
-            .connections = std.ArrayList(Connection){},
-            .requests = std.ArrayList(NetworkRequest){},
-            .responses = std.ArrayList(NetworkResponse){},
+            .connections = std.array_list.Managed(Connection).init(allocator),
+            .requests = std.array_list.Managed(NetworkRequest).init(allocator),
+            .responses = std.array_list.Managed(NetworkResponse).init(allocator),
         };
     }
 
@@ -191,7 +191,7 @@ pub const NetworkServer = struct {
             self.allocator.free(conn.remote_addr);
             self.allocator.free(conn.local_addr);
         }
-        self.connections.deinit(self.allocator);
+        self.connections.deinit();
 
         for (self.requests.items) |req| {
             var headers = req.headers;
@@ -207,7 +207,7 @@ pub const NetworkServer = struct {
                 self.allocator.free(body);
             }
         }
-        self.requests.deinit(self.allocator);
+        self.requests.deinit();
 
         for (self.responses.items) |resp| {
             var headers = resp.headers;
@@ -219,7 +219,7 @@ pub const NetworkServer = struct {
             headers.deinit();
             self.allocator.free(resp.body);
         }
-        self.responses.deinit(self.allocator);
+        self.responses.deinit();
 
         self.router.deinit();
     }
@@ -268,7 +268,7 @@ pub const NetworkServer = struct {
             .authenticated = false,
         };
 
-        try self.connections.append(self.allocator, connection);
+        try self.connections.append(connection);
         return conn_id;
     }
 
@@ -286,14 +286,14 @@ pub const NetworkServer = struct {
         var req_mut = req;
         req_mut.request_id = request_id;
 
-        try self.requests.append(self.allocator, req_mut);
+        try self.requests.append(req_mut);
 
         // Find matching endpoint
         if (self.router.findEndpoint(req.path, req.method)) |endpoint| {
             var response = NetworkResponse{
                 .request_id = request_id,
                 .status = .ok,
-                .headers = std.StringHashMap([]const u8){},
+                .headers = std.StringHashMap([]const u8).init(self.allocator),
                 .body = try self.allocator.dupe(u8, ""),
                 .timestamp = std.time.timestamp(),
                 .response_time_ms = 0,
@@ -306,7 +306,7 @@ pub const NetworkServer = struct {
                 _ = e;
             };
 
-            try self.responses.append(self.allocator, response);
+            try self.responses.append(response);
             return response;
         }
 
@@ -314,13 +314,13 @@ pub const NetworkServer = struct {
         const response = NetworkResponse{
             .request_id = request_id,
             .status = .not_found,
-            .headers = std.StringHashMap([]const u8){},
+            .headers = std.StringHashMap([]const u8).init(self.allocator),
             .body = try self.allocator.dupe(u8, "Not Found"),
             .timestamp = std.time.timestamp(),
             .response_time_ms = 0,
         };
 
-        try self.responses.append(self.allocator, response);
+        try self.responses.append(response);
         return response;
     }
 
@@ -400,7 +400,7 @@ pub const NetworkClient = struct {
         const response = NetworkResponse{
             .request_id = request.request_id,
             .status = .ok,
-            .headers = std.StringHashMap([]const u8){},
+            .headers = std.StringHashMap([]const u8).init(self.allocator),
             .body = try self.allocator.dupe(u8, ""),
             .timestamp = std.time.timestamp(),
             .response_time_ms = 0,

@@ -269,6 +269,10 @@ pub const Clock = struct {
             self.paused = false;
         }
     }
+
+    pub fn deinit(self: *Clock) void {
+        _ = self;
+    }
 };
 
 /// Timer for measuring elapsed time
@@ -300,21 +304,21 @@ pub const Timer = struct {
 /// Profiler for performance analysis
 pub const Profiler = struct {
     allocator: std.mem.Allocator,
-    timers: std.StringHashMap(std.ArrayList(Duration)),
+    timers: std.StringHashMap(std.array_list.Managed(Duration)),
     total_samples: u32 = 0,
     mutex: std.Thread.Mutex = .{},
 
     pub fn init(allocator: std.mem.Allocator) Profiler {
         return Profiler{
             .allocator = allocator,
-            .timers = std.StringHashMap(std.ArrayList(Duration)).init(allocator),
+            .timers = std.StringHashMap(std.array_list.Managed(Duration)).init(allocator),
         };
     }
 
     pub fn deinit(self: *Profiler) void {
         var iter = self.timers.iterator();
         while (iter.next()) |entry| {
-            entry.value_ptr.deinit(self.allocator);
+            entry.value_ptr.deinit();
             self.allocator.free(entry.key_ptr.*);
         }
         self.timers.deinit();
@@ -324,13 +328,12 @@ pub const Profiler = struct {
         self.mutex.lock();
         defer self.mutex.unlock();
 
-        const name_dup = try self.allocator.dupe(u8, name);
-
         if (self.timers.getPtr(name)) |list_ptr| {
-            try list_ptr.append(self.allocator, duration);
+            try list_ptr.append(duration);
         } else {
-            var list = std.ArrayList(Duration){};
-            try list.append(self.allocator, duration);
+            const name_dup = try self.allocator.dupe(u8, name);
+            var list = std.array_list.Managed(Duration).init(self.allocator);
+            try list.append(duration);
             try self.timers.put(name_dup, list);
         }
 

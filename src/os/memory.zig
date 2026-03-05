@@ -63,9 +63,9 @@ pub const MemoryStats = struct {
 /// Memory allocator with tracking
 pub const MemoryAllocator = struct {
     allocator: std.mem.Allocator,
-    pages: std.ArrayList(MemoryPage),
-    regions: std.ArrayList(MemoryRegion),
-    allocations: std.ArrayList(Allocation),
+    pages: std.array_list.Managed(MemoryPage),
+    regions: std.array_list.Managed(MemoryRegion),
+    allocations: std.array_list.Managed(Allocation),
     next_page_id: u32 = 0,
     next_region_id: u32 = 0,
     next_address: u64 = 0x1000000,
@@ -90,9 +90,9 @@ pub const MemoryAllocator = struct {
     pub fn init(allocator: std.mem.Allocator, total_memory_mb: u64) MemoryAllocator {
         return MemoryAllocator{
             .allocator = allocator,
-            .pages = std.ArrayList(MemoryPage){},
-            .regions = std.ArrayList(MemoryRegion){},
-            .allocations = std.ArrayList(Allocation){},
+            .pages = std.array_list.Managed(MemoryPage).init(allocator),
+            .regions = std.array_list.Managed(MemoryRegion).init(allocator),
+            .allocations = std.array_list.Managed(Allocation).init(allocator),
             .total_allocated = total_memory_mb * 1024 * 1024,
         };
     }
@@ -101,9 +101,9 @@ pub const MemoryAllocator = struct {
         for (self.regions.items) |region| {
             self.allocator.free(region.name);
         }
-        self.regions.deinit(self.allocator);
-        self.pages.deinit(self.allocator);
-        self.allocations.deinit(self.allocator);
+        self.regions.deinit();
+        self.pages.deinit();
+        self.allocations.deinit();
     }
 
     /// Allocate memory for a process
@@ -129,7 +129,7 @@ pub const MemoryAllocator = struct {
             .allocated_at = std.time.timestamp(),
         };
 
-        try self.allocations.append(self.allocator, allocation);
+        try self.allocations.append(allocation);
 
         // Create pages for allocation
         const num_pages = (size_bytes + 4095) / 4096;
@@ -142,7 +142,7 @@ pub const MemoryAllocator = struct {
                 .permissions = permissions,
                 .created_at = std.time.timestamp(),
             };
-            try self.pages.append(self.allocator, page);
+            try self.pages.append(page);
             self.next_page_id += 1;
         }
 
@@ -200,7 +200,7 @@ pub const MemoryAllocator = struct {
             .permissions = permissions,
         };
 
-        try self.regions.append(self.allocator, region);
+        try self.regions.append(region);
         return region_id;
     }
 
