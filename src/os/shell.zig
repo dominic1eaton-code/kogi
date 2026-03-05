@@ -45,6 +45,7 @@ pub const Shell = struct {
             if (line.len == 0) continue;
 
             const saved = try self.allocator.dupe(u8, line);
+            errdefer self.allocator.free(saved);
             try self.history.append(saved);
 
             if (try self.handleShellCommand(line, system, kernel)) |keep| {
@@ -455,8 +456,8 @@ pub const Shell = struct {
 fn trimWhitespace(input: []const u8) []const u8 {
     var start: usize = 0;
     var end: usize = input.len;
-    while (start < end and (input[start] == ' ' or input[start] == '\t')) : (start += 1) {}
-    while (end > start and (input[end - 1] == ' ' or input[end - 1] == '\t')) : (end -= 1) {}
+    while (start < end and (input[start] == ' ' or input[start] == '\t' or input[start] == '\n' or input[start] == '\r')) : (start += 1) {}
+    while (end > start and (input[end - 1] == ' ' or input[end - 1] == '\t' or input[end - 1] == '\n' or input[end - 1] == '\r')) : (end -= 1) {}
     return input[start..end];
 }
 

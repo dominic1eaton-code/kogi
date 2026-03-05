@@ -17,11 +17,8 @@ pub const Terminal = struct {
     /// Read a line from stdin (allocates with `allocator`). Caller must free.
     pub fn readLine(self: *Terminal) ![]u8 {
         var reader = std.fs.File.stdin().deprecatedReader();
-        // read until newline, limit to 8KiB
-        const buf = try reader.readUntilDelimiterAlloc(self.allocator, '\n', 8192);
-        // Trim trailing CR and LF
-        var end = buf.len;
-        while (end > 0 and (buf[end - 1] == '\n' or buf[end - 1] == '\r')) : (end -= 1) {}
-        return buf[0..end];
+        // read until newline, limit to 8KiB.
+        // Keep the original allocation shape so caller can free the slice safely.
+        return try reader.readUntilDelimiterAlloc(self.allocator, '\n', 8192);
     }
 };
