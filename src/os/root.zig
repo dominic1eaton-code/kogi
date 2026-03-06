@@ -16,7 +16,7 @@ const directory_book_module = @import("directory_book.zig");
 const database_module = @import("database.zig");
 const workspace_module = @import("workspace.zig");
 const portfolio_module = @import("portfolio.zig");
-const ideas_module = @import("ideas.zig");
+const ideas_module = @import("project.zig");
 const registry_module = @import("registry.zig");
 const directory_module = @import("directory.zig");
 const vault_module = @import("vault.zig");
@@ -342,6 +342,12 @@ pub const Project = portfolio_module.Project;
 pub const PortfolioManager = portfolio_module.PortfolioManager;
 pub const PortfolioItem = portfolio_module.PortfolioItem;
 pub const PortfolioCollection = portfolio_module.PortfolioCollection;
+pub const PortfolioDirectory = portfolio_module.PortfolioDirectory;
+pub const DirectoryEntry = portfolio_module.DirectoryEntry;
+pub const PortfolioItemType = portfolio_module.PortfolioItemType;
+pub const ResourceType = portfolio_module.ResourceType;
+pub const ContainerType = portfolio_module.ContainerType;
+pub const ItemContainer = portfolio_module.ItemContainer;
 
 // Account compatibility
 pub const Account = registry_module.Connection;
