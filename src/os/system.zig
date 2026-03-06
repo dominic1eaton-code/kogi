@@ -125,8 +125,9 @@ pub const Engagement = struct {
 /// System is the core operating system engine managing all subsystems
 pub const System = struct {
     allocator: std.mem.Allocator,
+    backing_allocator: std.mem.Allocator,
     custom_apps: std.array_list.Managed(CustomApplication),
-    tiered_cache: cache_module.TieredAllocator,
+    tiered_cache: *cache_module.TieredAllocator,
     user_manager: users_module.UserManager,
     workspace_manager: workspace_module.WorkspaceManager,
     content_manager: content_module.ContentManager,
@@ -199,9 +200,10 @@ pub const System = struct {
         // Initialize boot manager with default config
         const boot_config = bootloader_module.BootConfig{};
 
-        // initialize tiered cache allocator
-        var tiered = cache_module.TieredAllocator.init(allocator) catch unreachable;
-        const cache_alloc = tiered.asAllocator();
+        // initialize tiered cache allocator on heap so allocator pointer remains stable
+        const tiered_ptr = allocator.create(cache_module.TieredAllocator) catch unreachable;
+        tiered_ptr.* = cache_module.TieredAllocator.init(allocator) catch unreachable;
+        const cache_alloc = tiered_ptr.asAllocator();
 
         // Initialize observability manager
         const observability_mgr = observability_module.ObservabilityManager.init(allocator);
@@ -227,7 +229,8 @@ pub const System = struct {
 
         return System{
             .allocator = cache_alloc,
-            .tiered_cache = tiered,
+            .backing_allocator = allocator,
+            .tiered_cache = tiered_ptr,
             .user_manager = users_module.UserManager.init(cache_alloc),
             .workspace_manager = workspace_module.WorkspaceManager.init(cache_alloc),
             .content_manager = content_module.ContentManager.init(cache_alloc),
@@ -327,6 +330,8 @@ pub const System = struct {
         driver_mgr.deinit();
         var scheduler = self.scheduler;
         scheduler.deinit();
+        var clock = self.clock;
+        clock.deinit();
         var profiler = self.profiler;
         profiler.deinit();
 
@@ -335,6 +340,7 @@ pub const System = struct {
         if (self.app_manager) |*a| a.deinit();
         if (self.session_manager) |*s| s.deinit();
         self.tiered_cache.deinit();
+        self.backing_allocator.destroy(self.tiered_cache);
     }
 
     // ========== Identity Management Delegation ==========

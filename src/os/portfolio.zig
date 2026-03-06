@@ -118,16 +118,142 @@ pub const SearchFilter = struct {
     owner_id: ?u32 = null,
 };
 
+/// Idea lifecycle states from capture to retirement.
+pub const IdeaLifecycle = enum {
+    captured,
+    discovered,
+    validated,
+    planned,
+    in_design,
+    in_execution,
+    launched,
+    archived,
+    rejected,
+};
+
+/// Timeline state for idea milestones and deliverables.
+pub const IdeaTimelineStatus = enum {
+    planned,
+    in_progress,
+    completed,
+    blocked,
+    canceled,
+};
+
+/// Version snapshot for an idea.
+pub const IdeaVersion = struct {
+    id: u32,
+    version_number: u32,
+    title: []const u8,
+    summary: []const u8,
+    details: []const u8,
+    created_at: i64,
+};
+
+/// Free-form note attached to an idea.
+pub const IdeaNote = struct {
+    id: u32,
+    title: []const u8,
+    body: []const u8,
+    created_at: i64,
+    updated_at: i64,
+};
+
+/// Design artifact attached to an idea.
+pub const IdeaDesign = struct {
+    id: u32,
+    name: []const u8,
+    description: []const u8,
+    artifact_ref: ?[]const u8 = null,
+    created_at: i64,
+    updated_at: i64,
+};
+
+/// Timeline event for planning and execution visibility.
+pub const IdeaTimelineEvent = struct {
+    id: u32,
+    name: []const u8,
+    description: []const u8,
+    start_at: i64,
+    end_at: ?i64 = null,
+    status: IdeaTimelineStatus,
+    created_at: i64,
+    updated_at: i64,
+};
+
+/// Tracking fields for operational idea management.
+pub const IdeaTracking = struct {
+    priority: u8 = 0,
+    impact_score: f32 = 0.0,
+    effort_score: f32 = 0.0,
+    confidence_score: f32 = 0.0,
+    total_versions: u32 = 0,
+    total_notes: u32 = 0,
+    total_designs: u32 = 0,
+    total_timeline_events: u32 = 0,
+    last_activity_at: i64 = 0,
+    next_review_at: ?i64 = null,
+};
+
+/// Core idea aggregate.
+pub const Idea = struct {
+    id: u32,
+    title: []const u8,
+    summary: []const u8,
+    organization: []const u8,
+    category: []const u8,
+    lifecycle: IdeaLifecycle,
+    owner_id: ?u32 = null,
+    created_at: i64,
+    updated_at: i64,
+    tags: std.array_list.Managed([]const u8),
+    versions: std.array_list.Managed(IdeaVersion),
+    notes: std.array_list.Managed(IdeaNote),
+    designs: std.array_list.Managed(IdeaDesign),
+    timeline: std.array_list.Managed(IdeaTimelineEvent),
+    tracking: IdeaTracking,
+    timebox_start: ?i64 = null,
+    timebox_end: ?i64 = null,
+};
+
+/// Filtering options for idea search and organization.
+pub const IdeaFilter = struct {
+    lifecycle: ?IdeaLifecycle = null,
+    tag_name: ?[]const u8 = null,
+    organization: ?[]const u8 = null,
+    category: ?[]const u8 = null,
+    owner_id: ?u32 = null,
+    query: ?[]const u8 = null,
+    active_at: ?i64 = null,
+    updated_after: ?i64 = null,
+    updated_before: ?i64 = null,
+};
+
+/// Lightweight view for idea search results.
+pub const IdeaSummary = struct {
+    id: u32,
+    title: []const u8,
+    lifecycle: IdeaLifecycle,
+    organization: []const u8,
+    category: []const u8,
+    owner_id: ?u32,
+    updated_at: i64,
+    tag_count: u32,
+    next_review_at: ?i64,
+};
+
 /// Portfolio Manager for hierarchical portfolio operations
 pub const PortfolioManager = struct {
     allocator: std.mem.Allocator,
     portfolio: ?Portfolio = null,
+    ideas: std.array_list.Managed(Idea),
     index: std.array_list.Managed(IndexEntry),
     next_id: u32 = 0,
 
     pub fn init(allocator: std.mem.Allocator) PortfolioManager {
         return PortfolioManager{
             .allocator = allocator,
+            .ideas = std.array_list.Managed(Idea).init(allocator),
             .index = std.array_list.Managed(IndexEntry).init(allocator),
         };
     }
@@ -136,6 +262,7 @@ pub const PortfolioManager = struct {
         if (self.portfolio) |*portfolio| {
             self.deinitPortfolio(portfolio);
         }
+        self.deinitIdeas();
         self.deinitIndex();
     }
 
@@ -181,6 +308,67 @@ pub const PortfolioManager = struct {
         self.allocator.free(task.title);
         self.allocator.free(task.description);
         self.deinitMetadata(&task.metadata);
+    }
+
+    fn deinitIdeaVersion(self: *PortfolioManager, version: *IdeaVersion) void {
+        self.allocator.free(version.title);
+        self.allocator.free(version.summary);
+        self.allocator.free(version.details);
+    }
+
+    fn deinitIdeaNote(self: *PortfolioManager, note: *IdeaNote) void {
+        self.allocator.free(note.title);
+        self.allocator.free(note.body);
+    }
+
+    fn deinitIdeaDesign(self: *PortfolioManager, design: *IdeaDesign) void {
+        self.allocator.free(design.name);
+        self.allocator.free(design.description);
+        if (design.artifact_ref) |artifact| self.allocator.free(artifact);
+    }
+
+    fn deinitIdeaTimelineEvent(self: *PortfolioManager, event: *IdeaTimelineEvent) void {
+        self.allocator.free(event.name);
+        self.allocator.free(event.description);
+    }
+
+    fn deinitIdea(self: *PortfolioManager, idea: *Idea) void {
+        self.allocator.free(idea.title);
+        self.allocator.free(idea.summary);
+        self.allocator.free(idea.organization);
+        self.allocator.free(idea.category);
+
+        for (idea.tags.items) |tag_name| {
+            self.allocator.free(tag_name);
+        }
+        idea.tags.deinit();
+
+        for (idea.versions.items) |*version| {
+            self.deinitIdeaVersion(version);
+        }
+        idea.versions.deinit();
+
+        for (idea.notes.items) |*note| {
+            self.deinitIdeaNote(note);
+        }
+        idea.notes.deinit();
+
+        for (idea.designs.items) |*design| {
+            self.deinitIdeaDesign(design);
+        }
+        idea.designs.deinit();
+
+        for (idea.timeline.items) |*event| {
+            self.deinitIdeaTimelineEvent(event);
+        }
+        idea.timeline.deinit();
+    }
+
+    fn deinitIdeas(self: *PortfolioManager) void {
+        for (self.ideas.items) |*idea| {
+            self.deinitIdea(idea);
+        }
+        self.ideas.deinit();
     }
 
     // Legacy project/program/sub-portfolio cleanup removed in favor
