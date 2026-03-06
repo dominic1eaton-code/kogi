@@ -348,6 +348,13 @@ pub const PortfolioItemType = portfolio_module.PortfolioItemType;
 pub const ResourceType = portfolio_module.ResourceType;
 pub const ContainerType = portfolio_module.ContainerType;
 pub const ItemContainer = portfolio_module.ItemContainer;
+pub const PortfolioProgram = portfolio_module.ItemProgram;
+pub const PortfolioProject = portfolio_module.ProgramProject;
+pub const PortfolioProcess = portfolio_module.ProgramProcess;
+pub const PortfolioOutcome = portfolio_module.ProcessOutcome;
+pub const PortfolioExecutor = portfolio_module.ProcessExecutor;
+pub const PortfolioExecutorType = portfolio_module.ExecutorType;
+pub const PortfolioProcessState = portfolio_module.ProcessState;
 
 // Account compatibility
 pub const Account = registry_module.Connection;

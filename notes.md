@@ -14,3 +14,7 @@ add a porject tracking system
 portfolios contain items. items can be resources and|or programs. programs contain projects, projects contain processes. processes are running executions+actions+transformations which generate "outcomes", executed by "executors". executors can be of different types: agent, human, hybrid, machine, custom
 
 
+all kogi platform users have an intial (root) workspace, portfolio and account. an account contains user profiles+settings+options+parameters+keys+tokens+(sub/linked) accounts. workspaces contain a hub+dashboard+central platform user access point, user tools, user messages+alerts+notifications+communications, user views. User tools include: agile boards, calendars, scheduling tool+timelines+gantts+roadmaps, chat+communciations management system, work+strategy+operations managmenet systme, idea+concept+prototyping+testing studio
+
+
+ social network+connections+community+friends+contact book/directory, marketplace+exchange items+inventory, gigs+tasks+contracts
