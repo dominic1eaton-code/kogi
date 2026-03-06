@@ -22,3 +22,5 @@ portfolios can include:
 
 
  user provisioning system. provision users with acccount+workspace+portfolio, resources, space, memory+storage
+
+each module should have its own set of resources, memory, processes, storage, cli commands, configurations+settings+parameters+opions, services, security, I/O system. the kernel should be the central orchestrator and provisioner of all of these components

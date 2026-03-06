@@ -367,32 +367,216 @@ pub const WorkspaceManager = struct {
         self.deinitMetadata(&workspace.metadata);
     }
 
+    fn appendWorkspaceTool(
+        self: *WorkspaceManager,
+        workspace: *Workspace,
+        tool_type: WorkspaceToolType,
+        name: []const u8,
+        description: []const u8,
+        created_at: i64,
+    ) !void {
+        const tool = WorkspaceTool{
+            .id = @as(u32, @intCast(workspace.tools.items.len)),
+            .tool_type = tool_type,
+            .name = try self.allocator.dupe(u8, name),
+            .description = try self.allocator.dupe(u8, description),
+            .enabled = true,
+            .created_at = created_at,
+            .updated_at = created_at,
+        };
+        errdefer {
+            self.allocator.free(tool.name);
+            self.allocator.free(tool.description);
+        }
+        try workspace.tools.append(tool);
+    }
+
+    fn appendWorkspaceView(
+        self: *WorkspaceManager,
+        workspace: *Workspace,
+        name: []const u8,
+        description: []const u8,
+        route: []const u8,
+        created_at: i64,
+    ) !void {
+        const view = WorkspaceView{
+            .id = @as(u32, @intCast(workspace.views.items.len)),
+            .name = try self.allocator.dupe(u8, name),
+            .description = try self.allocator.dupe(u8, description),
+            .route = try self.allocator.dupe(u8, route),
+            .created_at = created_at,
+            .updated_at = created_at,
+        };
+        errdefer {
+            self.allocator.free(view.name);
+            self.allocator.free(view.description);
+            self.allocator.free(view.route);
+        }
+        try workspace.views.append(view);
+    }
+
     /// Create a new workspace
     pub fn createWorkspace(self: *WorkspaceManager, name: []const u8, description: []const u8, category: []const u8) !void {
+        if (self.workspace) |*existing| {
+            self.deinitWorkspace(existing);
+            self.workspace = null;
+            self.deinitIndex();
+            self.index = std.array_list.Managed(IndexEntry).init(self.allocator);
+        }
+
         const id = self.next_id;
         self.next_id += 1;
+        const now = std.time.timestamp();
 
-        const metadata = Metadata{
+        var metadata = Metadata{
             .entity_type = .portfolio,
             .entity_class = .strategic,
             .category = try self.allocator.dupe(u8, category),
             .tags = std.array_list.Managed(Tag).init(self.allocator),
             .custom_fields = std.StringHashMap([]const u8).init(self.allocator),
-            .created_at = 0,
-            .updated_at = 0,
+            .created_at = now,
+            .updated_at = now,
         };
+        errdefer self.deinitMetadata(&metadata);
 
-        const workspace = Workspace{
+        var workspace = Workspace{
             .id = id,
             .name = try self.allocator.dupe(u8, name),
             .description = try self.allocator.dupe(u8, description),
+            .hub = .{
+                .title = try self.allocator.dupe(u8, "Hub"),
+                .description = try self.allocator.dupe(u8, "Central platform user hub."),
+            },
+            .dashboard = .{
+                .title = try self.allocator.dupe(u8, "Dashboard"),
+                .description = try self.allocator.dupe(u8, "Primary user dashboard."),
+            },
+            .access_point = .{
+                .title = try self.allocator.dupe(u8, "Access Point"),
+                .route = try self.allocator.dupe(u8, "/workspace/root"),
+                .description = try self.allocator.dupe(u8, "Central platform user access point."),
+            },
+            .tools = std.array_list.Managed(WorkspaceTool).init(self.allocator),
+            .communications = std.array_list.Managed(WorkspaceCommunication).init(self.allocator),
+            .views = std.array_list.Managed(WorkspaceView).init(self.allocator),
             .collections = std.array_list.Managed(Collection).init(self.allocator),
             .items = std.array_list.Managed(WorkspaceItem).init(self.allocator),
             .metadata = metadata,
         };
+        errdefer self.deinitWorkspace(&workspace);
+
+        try self.appendWorkspaceTool(
+            &workspace,
+            .agile_boards,
+            "Agile Boards",
+            "Backlogs, boards, and workflow tracking.",
+            now,
+        );
+        try self.appendWorkspaceTool(
+            &workspace,
+            .calendars,
+            "Calendars",
+            "Calendar planning and event management.",
+            now,
+        );
+        try self.appendWorkspaceTool(
+            &workspace,
+            .scheduling_timelines_gantts_roadmaps,
+            "Scheduling, Timelines, Gantt, Roadmaps",
+            "Scheduling with timeline, Gantt, and roadmap support.",
+            now,
+        );
+        try self.appendWorkspaceTool(
+            &workspace,
+            .chat_communications_management_system,
+            "Chat and Communications Management",
+            "Unified chat and communications management system.",
+            now,
+        );
+        try self.appendWorkspaceTool(
+            &workspace,
+            .work_strategy_operations_management_system,
+            "Work Strategy Operations Manager",
+            "Work, strategy, and operations management system.",
+            now,
+        );
+        try self.appendWorkspaceTool(
+            &workspace,
+            .idea_concept_prototyping_testing_studio,
+            "Idea Concept Prototyping Testing Studio",
+            "Studio for ideas, concepts, prototyping, and testing.",
+            now,
+        );
+
+        try self.appendWorkspaceView(&workspace, "Hub", "Workspace hub overview.", "/workspace/hub", now);
+        try self.appendWorkspaceView(&workspace, "Dashboard", "Workspace dashboard.", "/workspace/dashboard", now);
+        try self.appendWorkspaceView(&workspace, "Messages", "Messages and alerts center.", "/workspace/messages", now);
+        try self.appendWorkspaceView(&workspace, "Tools", "Workspace tools catalog.", "/workspace/tools", now);
 
         self.workspace = workspace;
         try self.addToIndex(id, name, .portfolio, null);
+    }
+
+    /// Add a communication item to the workspace.
+    pub fn addCommunication(
+        self: *WorkspaceManager,
+        kind: WorkspaceCommunicationKind,
+        subject: []const u8,
+        body: []const u8,
+        created_at: i64,
+    ) !u32 {
+        if (self.workspace == null) return error.WorkspaceNotFound;
+        const workspace = &self.workspace.?;
+        const id = @as(u32, @intCast(workspace.communications.items.len));
+
+        const communication = WorkspaceCommunication{
+            .id = id,
+            .kind = kind,
+            .subject = try self.allocator.dupe(u8, subject),
+            .body = try self.allocator.dupe(u8, body),
+            .is_read = false,
+            .created_at = created_at,
+            .updated_at = created_at,
+        };
+        errdefer {
+            self.allocator.free(communication.subject);
+            self.allocator.free(communication.body);
+        }
+
+        try workspace.communications.append(communication);
+        workspace.metadata.updated_at = created_at;
+        return id;
+    }
+
+    /// Add a view to the workspace.
+    pub fn addView(
+        self: *WorkspaceManager,
+        name: []const u8,
+        description: []const u8,
+        route: []const u8,
+        created_at: i64,
+    ) !u32 {
+        if (self.workspace == null) return error.WorkspaceNotFound;
+        const workspace = &self.workspace.?;
+        const id = @as(u32, @intCast(workspace.views.items.len));
+
+        const view = WorkspaceView{
+            .id = id,
+            .name = try self.allocator.dupe(u8, name),
+            .description = try self.allocator.dupe(u8, description),
+            .route = try self.allocator.dupe(u8, route),
+            .created_at = created_at,
+            .updated_at = created_at,
+        };
+        errdefer {
+            self.allocator.free(view.name);
+            self.allocator.free(view.description);
+            self.allocator.free(view.route);
+        }
+
+        try workspace.views.append(view);
+        workspace.metadata.updated_at = created_at;
+        return id;
     }
 
     /// Add a collection to the workspace

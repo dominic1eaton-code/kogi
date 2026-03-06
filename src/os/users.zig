@@ -63,6 +63,9 @@ pub const User = struct {
     username: []const u8,
     email: []const u8,
     role: UserRole,
+    root_workspace_id: u32,
+    root_portfolio_id: u32,
+    root_account_id: u32,
     linked_identity_id: ?u32,
     active: bool,
     created_at: i64,
@@ -199,6 +202,8 @@ pub const UserManager = struct {
     next_token_id: u32,
     next_key_id: u32,
     next_certificate_id: u32,
+    next_root_workspace_id: u32,
+    next_root_portfolio_id: u32,
     encryption_master_key: [32]u8,
 
     pub fn init(allocator: std.mem.Allocator) UserManager {
@@ -225,6 +230,8 @@ pub const UserManager = struct {
             .next_token_id = 0,
             .next_key_id = 0,
             .next_certificate_id = 0,
+            .next_root_workspace_id = 0,
+            .next_root_portfolio_id = 0,
             .encryption_master_key = master_key,
         };
     }
@@ -292,6 +299,12 @@ pub const UserManager = struct {
     ) !u32 {
         if (self.findUserIndexByUsername(username) != null) return UserError.UsernameTaken;
 
+        const user_id = @as(u32, @intCast(self.users.items.len));
+        const root_workspace_id = self.next_root_workspace_id;
+        const root_portfolio_id = self.next_root_portfolio_id;
+        self.next_root_workspace_id += 1;
+        self.next_root_portfolio_id += 1;
+
         const identity_id = try self.identity_manager.createIdentity(
             username,
             email,
@@ -299,12 +312,21 @@ pub const UserManager = struct {
             roleToIdentityType(role),
         );
 
-        const user_id = @as(u32, @intCast(self.users.items.len));
+        const root_account_id = try self.provisionRootAccount(
+            user_id,
+            username,
+            root_workspace_id,
+            root_portfolio_id,
+        );
+
         const user = User{
             .id = user_id,
             .username = try self.allocator.dupe(u8, username),
             .email = try self.allocator.dupe(u8, email),
             .role = role,
+            .root_workspace_id = root_workspace_id,
+            .root_portfolio_id = root_portfolio_id,
+            .root_account_id = root_account_id,
             .linked_identity_id = identity_id,
             .active = true,
             .created_at = std.time.timestamp(),
@@ -312,9 +334,46 @@ pub const UserManager = struct {
         };
         try self.users.append(user);
 
-        _ = try self.profile_management.createProfile(user_id, .personal, "default-personal", "");
+        const profile_id = try self.profile_management.createProfile(user_id, .personal, "default-personal", "");
+        try self.account_management.associateToProfile(root_account_id, profile_id);
+        try self.profile_management.linkAccount(profile_id, root_account_id);
         try self.setPassword(user_id, password);
         return user_id;
+    }
+
+    fn provisionRootAccount(
+        self: *UserManager,
+        user_id: u32,
+        username: []const u8,
+        root_workspace_id: u32,
+        root_portfolio_id: u32,
+    ) !u32 {
+        const root_account_id = try self.account_management.createAccount(
+            user_id,
+            .personal,
+            "kogi",
+            username,
+            "root-account",
+        );
+
+        _ = try self.account_management.addProfile(root_account_id, "root", "Root platform account profile.");
+        try self.account_management.setSetting(root_account_id, "workspace.hub", "enabled");
+        try self.account_management.setSetting(root_account_id, "workspace.dashboard", "enabled");
+        try self.account_management.setSetting(root_account_id, "workspace.access_point", "enabled");
+        try self.account_management.setOption(root_account_id, "notifications", "enabled", true);
+        try self.account_management.setOption(root_account_id, "alerts", "enabled", true);
+
+        var ws_buf: [20]u8 = undefined;
+        const ws_text = try std.fmt.bufPrint(&ws_buf, "{d}", .{root_workspace_id});
+        try self.account_management.setParameter(root_account_id, "root_workspace_id", ws_text);
+
+        var portfolio_buf: [20]u8 = undefined;
+        const portfolio_text = try std.fmt.bufPrint(&portfolio_buf, "{d}", .{root_portfolio_id});
+        try self.account_management.setParameter(root_account_id, "root_portfolio_id", portfolio_text);
+
+        _ = try self.account_management.addKey(root_account_id, "bootstrap-key", "pending-bootstrap-key");
+        _ = try self.account_management.addToken(root_account_id, "bootstrap-token", "pending-bootstrap-token", null);
+        return root_account_id;
     }
 
     pub fn disableUser(self: *UserManager, user_id: u32) !void {
@@ -379,6 +438,21 @@ pub const UserManager = struct {
 
     pub fn getUsers(self: *UserManager) []User {
         return self.users.items;
+    }
+
+    pub fn getRootWorkspaceId(self: *UserManager, user_id: u32) !u32 {
+        const idx = self.getUserIndexById(user_id) orelse return UserError.UserNotFound;
+        return self.users.items[idx].root_workspace_id;
+    }
+
+    pub fn getRootPortfolioId(self: *UserManager, user_id: u32) !u32 {
+        const idx = self.getUserIndexById(user_id) orelse return UserError.UserNotFound;
+        return self.users.items[idx].root_portfolio_id;
+    }
+
+    pub fn getRootAccountId(self: *UserManager, user_id: u32) !u32 {
+        const idx = self.getUserIndexById(user_id) orelse return UserError.UserNotFound;
+        return self.users.items[idx].root_account_id;
     }
 
     // ========== Credential Management ==========
@@ -1327,11 +1401,21 @@ test "cohesive user lifecycle with identity/profile/account/provider" {
     _ = try mgr.addProvider("GitHub", "github", .code_hosting, "https://github.com", "https://api.github.com");
     const uid = try mgr.createUser("alice", "alice@example.com", "secret123", .worker);
     try std.testing.expectEqual(@as(u32, 0), uid);
+    try std.testing.expectEqual(@as(u32, 0), try mgr.getRootWorkspaceId(uid));
+    try std.testing.expectEqual(@as(u32, 0), try mgr.getRootPortfolioId(uid));
+    try std.testing.expectEqual(@as(u32, 0), try mgr.getRootAccountId(uid));
+    try std.testing.expectEqual(@as(usize, 1), mgr.getProfileAccounts().len);
+    try std.testing.expectEqual(@as(usize, 1), mgr.getProfileAccounts()[0].profiles.items.len);
+    try std.testing.expectEqual(@as(usize, 3), mgr.getProfileAccounts()[0].settings.items.len);
+    try std.testing.expectEqual(@as(usize, 2), mgr.getProfileAccounts()[0].options.items.len);
+    try std.testing.expectEqual(@as(usize, 2), mgr.getProfileAccounts()[0].parameters.items.len);
+    try std.testing.expectEqual(@as(usize, 1), mgr.getProfileAccounts()[0].keys.items.len);
+    try std.testing.expectEqual(@as(usize, 1), mgr.getProfileAccounts()[0].tokens.items.len);
 
     const p2 = try mgr.createProfile(uid, .work, "work", "work profile");
     try mgr.setProfileConfiguration(p2, "theme", "dark");
     const acct = try mgr.addProfileAccount(p2, .software, "alice-dev", "github", "primary");
-    try std.testing.expectEqual(@as(u32, 0), acct);
+    try std.testing.expectEqual(@as(u32, 1), acct);
     const contact = try mgr.createContact(uid, p2, .person, "Bob Stone", "project lead");
     try mgr.addContactChannel(uid, contact, .email, "work", "bob@example.com");
     try mgr.verifyContactChannel(uid, contact, 0);

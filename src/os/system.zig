@@ -229,6 +229,10 @@ pub const System = struct {
 
         const custom_apps = std.array_list.Managed(CustomApplication).init(cache_alloc);
 
+        if (kernel) |k| {
+            provisionKernelModuleRuntimes(k);
+        }
+
         return System{
             .allocator = cache_alloc,
             .backing_allocator = allocator,
@@ -271,6 +275,27 @@ pub const System = struct {
             .mode = .user,
             .kernel = kernel,
         };
+    }
+
+    fn provisionKernelModuleRuntimes(kernel: *kernel_module.Kernel) void {
+        const module_specs = [_]struct { kind: kernel_module.ModuleKind, name: []const u8, description: []const u8 }{
+            .{ .kind = .system, .name = "core-system", .description = "Core system orchestration runtime." },
+            .{ .kind = .domain, .name = "identity", .description = "Identity lifecycle runtime." },
+            .{ .kind = .domain, .name = "users", .description = "User and account runtime." },
+            .{ .kind = .domain, .name = "workspace", .description = "Workspace and collaboration runtime." },
+            .{ .kind = .domain, .name = "portfolio", .description = "Portfolio and planning runtime." },
+            .{ .kind = .domain, .name = "project-tracking", .description = "Project tracking and execution runtime." },
+            .{ .kind = .platform, .name = "security", .description = "Security and policy runtime." },
+            .{ .kind = .platform, .name = "storage", .description = "Data, vault, and persistence runtime." },
+            .{ .kind = .platform, .name = "scheduling", .description = "Scheduling and process coordination runtime." },
+            .{ .kind = .platform, .name = "observability", .description = "Telemetry and diagnostics runtime." },
+            .{ .kind = .integration, .name = "networking", .description = "Network I/O and communication runtime." },
+            .{ .kind = .integration, .name = "cli", .description = "Command-line interface runtime." },
+        };
+
+        for (module_specs) |spec| {
+            _ = kernel.provisionModuleWithDefaults(spec.kind, spec.name, spec.description) catch {};
+        }
     }
 
     pub fn deinit(self: *System) void {
@@ -388,6 +413,18 @@ pub const System = struct {
 
     pub fn getUsers(self: *System) []users_module.User {
         return self.user_manager.getUsers();
+    }
+
+    pub fn getUserRootWorkspaceId(self: *System, user_id: u32) !u32 {
+        return try self.user_manager.getRootWorkspaceId(user_id);
+    }
+
+    pub fn getUserRootPortfolioId(self: *System, user_id: u32) !u32 {
+        return try self.user_manager.getRootPortfolioId(user_id);
+    }
+
+    pub fn getUserRootAccountId(self: *System, user_id: u32) !u32 {
+        return try self.user_manager.getRootAccountId(user_id);
     }
 
     pub fn disableUser(self: *System, user_id: u32) !void {
