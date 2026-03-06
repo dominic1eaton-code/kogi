@@ -1063,6 +1063,214 @@ pub const System = struct {
         );
     }
 
+    pub fn addTrackedProjectWbs(
+        self: *System,
+        project_id: u32,
+        name: []const u8,
+        description: []const u8,
+        created_at: i64,
+    ) !u32 {
+        return try self.project_tracking.addWorkBreakdownStructure(project_id, name, description, created_at);
+    }
+
+    pub fn addTrackedProjectWorkPackage(
+        self: *System,
+        project_id: u32,
+        wbs_id: u32,
+        name: []const u8,
+        description: []const u8,
+        created_at: i64,
+    ) !u32 {
+        return try self.project_tracking.addWorkPackage(project_id, wbs_id, name, description, created_at);
+    }
+
+    pub fn addTrackedProjectTheme(
+        self: *System,
+        project_id: u32,
+        wbs_id: u32,
+        work_package_id: u32,
+        name: []const u8,
+        description: []const u8,
+        created_at: i64,
+    ) !u32 {
+        return try self.project_tracking.addTheme(project_id, wbs_id, work_package_id, name, description, created_at);
+    }
+
+    pub fn addTrackedProjectInitiative(
+        self: *System,
+        project_id: u32,
+        wbs_id: u32,
+        work_package_id: u32,
+        theme_id: u32,
+        name: []const u8,
+        description: []const u8,
+        priority: ideas_module.ProjectPriority,
+        owner_id: ?u32,
+        created_at: i64,
+    ) !u32 {
+        return try self.project_tracking.addInitiative(
+            project_id,
+            wbs_id,
+            work_package_id,
+            theme_id,
+            name,
+            description,
+            priority,
+            owner_id,
+            created_at,
+        );
+    }
+
+    pub fn addTrackedProjectEpic(
+        self: *System,
+        project_id: u32,
+        wbs_id: u32,
+        work_package_id: u32,
+        theme_id: u32,
+        initiative_id: u32,
+        name: []const u8,
+        description: []const u8,
+        priority: ideas_module.ProjectPriority,
+        owner_id: ?u32,
+        created_at: i64,
+    ) !u32 {
+        return try self.project_tracking.addEpic(
+            project_id,
+            wbs_id,
+            work_package_id,
+            theme_id,
+            initiative_id,
+            name,
+            description,
+            priority,
+            owner_id,
+            created_at,
+        );
+    }
+
+    pub fn addTrackedProjectWbsStory(
+        self: *System,
+        project_id: u32,
+        wbs_id: u32,
+        work_package_id: u32,
+        theme_id: u32,
+        initiative_id: u32,
+        epic_id: u32,
+        title: []const u8,
+        description: []const u8,
+        story_type: ideas_module.StoryType,
+        priority: ideas_module.ProjectPriority,
+        owner_id: ?u32,
+        estimate_points: f32,
+        created_at: i64,
+    ) !u32 {
+        return try self.project_tracking.addWbsStory(
+            project_id,
+            wbs_id,
+            work_package_id,
+            theme_id,
+            initiative_id,
+            epic_id,
+            title,
+            description,
+            story_type,
+            priority,
+            owner_id,
+            estimate_points,
+            created_at,
+        );
+    }
+
+    pub fn addTrackedProjectWbsTask(
+        self: *System,
+        project_id: u32,
+        wbs_id: u32,
+        work_package_id: u32,
+        theme_id: u32,
+        initiative_id: u32,
+        epic_id: u32,
+        story_id: u32,
+        title: []const u8,
+        description: []const u8,
+        assignee_id: ?u32,
+        due_at: ?i64,
+        created_at: i64,
+    ) !u32 {
+        return try self.project_tracking.addWbsTask(
+            project_id,
+            wbs_id,
+            work_package_id,
+            theme_id,
+            initiative_id,
+            epic_id,
+            story_id,
+            title,
+            description,
+            assignee_id,
+            due_at,
+            created_at,
+        );
+    }
+
+    pub fn updateTrackedProjectWbsStoryStatus(
+        self: *System,
+        project_id: u32,
+        wbs_id: u32,
+        work_package_id: u32,
+        theme_id: u32,
+        initiative_id: u32,
+        epic_id: u32,
+        story_id: u32,
+        status: ideas_module.StoryStatus,
+        updated_at: i64,
+    ) !void {
+        try self.project_tracking.setWbsStoryStatus(
+            project_id,
+            wbs_id,
+            work_package_id,
+            theme_id,
+            initiative_id,
+            epic_id,
+            story_id,
+            status,
+            updated_at,
+        );
+    }
+
+    pub fn updateTrackedProjectWbsTaskStatus(
+        self: *System,
+        project_id: u32,
+        wbs_id: u32,
+        work_package_id: u32,
+        theme_id: u32,
+        initiative_id: u32,
+        epic_id: u32,
+        story_id: u32,
+        task_id: u32,
+        status: ideas_module.TaskStatus,
+        updated_at: i64,
+    ) !void {
+        try self.project_tracking.setWbsTaskStatus(
+            project_id,
+            wbs_id,
+            work_package_id,
+            theme_id,
+            initiative_id,
+            epic_id,
+            story_id,
+            task_id,
+            status,
+            updated_at,
+        );
+    }
+
+    pub fn getTrackedProjectWorkBreakdownStructures(
+        self: *System,
+        project_id: u32,
+    ) ![]ideas_module.WorkBreakdownStructure {
+        return try self.project_tracking.getWorkBreakdownStructures(project_id);
+    }
+
     pub fn updateTrackedProjectStoryStatus(
         self: *System,
         project_id: u32,

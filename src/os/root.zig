@@ -161,6 +161,13 @@ pub const StoryStatus = ideas_module.StoryStatus;
 pub const Story = ideas_module.Story;
 pub const StoryFilter = ideas_module.StoryFilter;
 pub const StorySummary = ideas_module.StorySummary;
+pub const WorkBreakdownStructure = ideas_module.WorkBreakdownStructure;
+pub const WorkPackage = ideas_module.WorkPackage;
+pub const WbsTheme = ideas_module.WbsTheme;
+pub const WbsInitiative = ideas_module.WbsInitiative;
+pub const WbsEpic = ideas_module.WbsEpic;
+pub const WbsStory = ideas_module.WbsStory;
+pub const WbsTask = ideas_module.WbsTask;
 
 // Connection Registry
 pub const Connection = registry_module.Connection;
