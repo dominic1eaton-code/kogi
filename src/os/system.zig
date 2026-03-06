@@ -68,6 +68,7 @@ const profile_management_module = @import("profile.zig");
 const contacts_module = @import("contacts.zig");
 const content_module = @import("content.zig");
 const design_module = @import("design.zig");
+const ideas_module = @import("ideas.zig");
 const directory_book_module = @import("directory_book.zig");
 const database_module = @import("database.zig");
 const workspace_module = @import("workspace.zig");
@@ -130,6 +131,7 @@ pub const System = struct {
     tiered_cache: *cache_module.TieredAllocator,
     user_manager: users_module.UserManager,
     workspace_manager: workspace_module.WorkspaceManager,
+    project_tracking: ideas_module.ProjectTrackingManager,
     content_manager: content_module.ContentManager,
     design_manager: design_module.DesignManager,
     directory_book_manager: directory_book_module.DirectoryBookManager,
@@ -233,6 +235,7 @@ pub const System = struct {
             .tiered_cache = tiered_ptr,
             .user_manager = users_module.UserManager.init(cache_alloc),
             .workspace_manager = workspace_module.WorkspaceManager.init(cache_alloc),
+            .project_tracking = ideas_module.ProjectTrackingManager.init(cache_alloc),
             .content_manager = content_module.ContentManager.init(cache_alloc),
             .design_manager = design_module.DesignManager.init(cache_alloc),
             .directory_book_manager = directory_book_module.DirectoryBookManager.init(cache_alloc),
@@ -294,6 +297,7 @@ pub const System = struct {
         // Clean up system-owned components (always)
         self.user_manager.deinit();
         self.workspace_manager.deinit();
+        self.project_tracking.deinit();
         self.content_manager.deinit();
         self.design_manager.deinit();
         self.directory_book_manager.deinit();
@@ -980,6 +984,139 @@ pub const System = struct {
 
     pub fn getEngagements(self: *System) []Engagement {
         return self.engagements.items;
+    }
+
+    // ========== Project Tracking Management ==========
+
+    pub fn createTrackedProject(
+        self: *System,
+        name: []const u8,
+        description: []const u8,
+        owner_id: ?u32,
+        priority: ideas_module.ProjectPriority,
+        start_at: ?i64,
+        target_end_at: ?i64,
+        created_at: i64,
+    ) !u32 {
+        return try self.project_tracking.createProject(
+            name,
+            description,
+            owner_id,
+            priority,
+            start_at,
+            target_end_at,
+            created_at,
+        );
+    }
+
+    pub fn updateTrackedProjectStatus(self: *System, project_id: u32, status: ideas_module.ProjectStatus, updated_at: i64) !void {
+        try self.project_tracking.updateProjectStatus(project_id, status, updated_at);
+    }
+
+    pub fn getTrackedProjects(self: *System) []ideas_module.TrackedProject {
+        return self.project_tracking.listProjects();
+    }
+
+    pub fn addTrackedProjectMilestone(
+        self: *System,
+        project_id: u32,
+        name: []const u8,
+        description: []const u8,
+        due_at: ?i64,
+        created_at: i64,
+    ) !u32 {
+        return try self.project_tracking.addMilestone(project_id, name, description, due_at, created_at);
+    }
+
+    pub fn addTrackedProjectTask(
+        self: *System,
+        project_id: u32,
+        title: []const u8,
+        description: []const u8,
+        assignee_id: ?u32,
+        due_at: ?i64,
+        created_at: i64,
+    ) !u32 {
+        return try self.project_tracking.addTask(project_id, title, description, assignee_id, due_at, created_at);
+    }
+
+    pub fn addTrackedProjectStory(
+        self: *System,
+        project_id: u32,
+        title: []const u8,
+        description: []const u8,
+        story_type: ideas_module.StoryType,
+        priority: ideas_module.ProjectPriority,
+        owner_id: ?u32,
+        estimate_points: f32,
+        created_at: i64,
+    ) !u32 {
+        return try self.project_tracking.addStory(
+            project_id,
+            title,
+            description,
+            story_type,
+            priority,
+            owner_id,
+            estimate_points,
+            created_at,
+        );
+    }
+
+    pub fn updateTrackedProjectStoryStatus(
+        self: *System,
+        project_id: u32,
+        story_id: u32,
+        status: ideas_module.StoryStatus,
+        updated_at: i64,
+    ) !void {
+        try self.project_tracking.setStoryStatus(project_id, story_id, status, updated_at);
+    }
+
+    pub fn updateTrackedProjectStoryType(
+        self: *System,
+        project_id: u32,
+        story_id: u32,
+        story_type: ideas_module.StoryType,
+        updated_at: i64,
+    ) !void {
+        try self.project_tracking.updateStoryType(project_id, story_id, story_type, updated_at);
+    }
+
+    pub fn getTrackedProjectStories(self: *System, project_id: u32) ![]ideas_module.Story {
+        return try self.project_tracking.getStories(project_id);
+    }
+
+    pub fn filterTrackedProjectStories(
+        self: *System,
+        project_id: u32,
+        filter: ideas_module.StoryFilter,
+        allocator: std.mem.Allocator,
+    ) !std.array_list.Managed(ideas_module.StorySummary) {
+        return try self.project_tracking.filterStories(project_id, filter, allocator);
+    }
+
+    pub fn deinitTrackedProjectStorySummaries(
+        self: *System,
+        summaries: *std.array_list.Managed(ideas_module.StorySummary),
+        allocator: std.mem.Allocator,
+    ) void {
+        _ = self;
+        ideas_module.ProjectTrackingManager.deinitStorySummaries(summaries, allocator);
+    }
+
+    pub fn addTrackedProjectNote(
+        self: *System,
+        project_id: u32,
+        title: []const u8,
+        body: []const u8,
+        created_at: i64,
+    ) !u32 {
+        return try self.project_tracking.addNote(project_id, title, body, created_at);
+    }
+
+    pub fn getTrackedProjectProgress(self: *System, project_id: u32) !f32 {
+        return try self.project_tracking.calculateProgress(project_id);
     }
 
     // ========== Content Management ==========

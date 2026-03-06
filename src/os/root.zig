@@ -16,6 +16,7 @@ const directory_book_module = @import("directory_book.zig");
 const database_module = @import("database.zig");
 const workspace_module = @import("workspace.zig");
 const portfolio_module = @import("portfolio.zig");
+const ideas_module = @import("ideas.zig");
 const registry_module = @import("registry.zig");
 const directory_module = @import("directory.zig");
 const vault_module = @import("vault.zig");
@@ -138,6 +139,28 @@ pub const Metadata = workspace_module.Metadata;
 pub const Tag = workspace_module.Tag;
 pub const SearchFilter = workspace_module.SearchFilter;
 pub const IndexEntry = workspace_module.IndexEntry;
+
+// Project Tracking
+pub const ProjectTrackingManager = ideas_module.ProjectTrackingManager;
+pub const TrackedProject = ideas_module.TrackedProject;
+pub const ProjectStatus = ideas_module.ProjectStatus;
+pub const ProjectPriority = ideas_module.ProjectPriority;
+pub const ProjectTaskStatus = ideas_module.TaskStatus;
+pub const ProjectMilestoneStatus = ideas_module.MilestoneStatus;
+pub const ProjectIssueSeverity = ideas_module.IssueSeverity;
+pub const ProjectProgressUpdateType = ideas_module.ProgressUpdateType;
+pub const ProjectTaskItem = ideas_module.ProjectTask;
+pub const ProjectMilestoneItem = ideas_module.ProjectMilestone;
+pub const ProjectIssueItem = ideas_module.ProjectIssue;
+pub const ProjectNoteItem = ideas_module.ProjectNote;
+pub const ProjectProgressUpdate = ideas_module.ProjectProgressUpdate;
+pub const ProjectFilter = ideas_module.ProjectFilter;
+pub const ProjectSummary = ideas_module.ProjectSummary;
+pub const StoryType = ideas_module.StoryType;
+pub const StoryStatus = ideas_module.StoryStatus;
+pub const Story = ideas_module.Story;
+pub const StoryFilter = ideas_module.StoryFilter;
+pub const StorySummary = ideas_module.StorySummary;
 
 // Connection Registry
 pub const Connection = registry_module.Connection;
