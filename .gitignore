@@ -1,0 +1,6 @@
+# @copyright 2024 Kogi Inc. All rights reserved.
+# @license MIT
+# @author Kogi Team <
+.zig-cache/
+zig-out/
+*.o

@@ -4,8 +4,8 @@
 //! @author Wolof.io Software Studios, Inc.
 //! @version 1.0.0
 const std = @import("std");
+const kogi = @import("kogi");
 
 pub fn main() !void {
-    const stdout = std.io.getStdOut().writer();
-    try stdout.print("Hello, World!\n", .{});
+    try kogi.run_system();
 }
