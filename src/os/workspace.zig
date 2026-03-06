@@ -88,11 +88,83 @@ pub const Collection = struct {
     metadata: Metadata,
 };
 
+/// Core workspace hub and access definitions.
+pub const WorkspaceHub = struct {
+    title: []const u8,
+    description: []const u8,
+};
+
+pub const WorkspaceDashboard = struct {
+    title: []const u8,
+    description: []const u8,
+};
+
+pub const WorkspaceAccessPoint = struct {
+    title: []const u8,
+    route: []const u8,
+    description: []const u8,
+};
+
+/// Built-in user tools available in the workspace.
+pub const WorkspaceToolType = enum {
+    agile_boards,
+    calendars,
+    scheduling_timelines_gantts_roadmaps,
+    chat_communications_management_system,
+    work_strategy_operations_management_system,
+    idea_concept_prototyping_testing_studio,
+    custom,
+};
+
+pub const WorkspaceTool = struct {
+    id: u32,
+    tool_type: WorkspaceToolType,
+    name: []const u8,
+    description: []const u8,
+    enabled: bool,
+    created_at: i64,
+    updated_at: i64,
+};
+
+/// Workspace communication channels.
+pub const WorkspaceCommunicationKind = enum {
+    message,
+    alert,
+    notification,
+    communication,
+};
+
+pub const WorkspaceCommunication = struct {
+    id: u32,
+    kind: WorkspaceCommunicationKind,
+    subject: []const u8,
+    body: []const u8,
+    is_read: bool,
+    created_at: i64,
+    updated_at: i64,
+};
+
+/// User-visible workspace views.
+pub const WorkspaceView = struct {
+    id: u32,
+    name: []const u8,
+    description: []const u8,
+    route: []const u8,
+    created_at: i64,
+    updated_at: i64,
+};
+
 /// Workspace is a personal work environment container for independent worker workspaces
 pub const Workspace = struct {
     id: u32,
     name: []const u8,
     description: []const u8,
+    hub: WorkspaceHub,
+    dashboard: WorkspaceDashboard,
+    access_point: WorkspaceAccessPoint,
+    tools: std.array_list.Managed(WorkspaceTool),
+    communications: std.array_list.Managed(WorkspaceCommunication),
+    views: std.array_list.Managed(WorkspaceView),
     collections: std.array_list.Managed(Collection),
     items: std.array_list.Managed(WorkspaceItem),
     metadata: Metadata,
@@ -206,6 +278,22 @@ pub const WorkspaceManager = struct {
         self.deinitMetadata(&collection.metadata);
     }
 
+    fn deinitWorkspaceTool(self: *WorkspaceManager, tool: *WorkspaceTool) void {
+        self.allocator.free(tool.name);
+        self.allocator.free(tool.description);
+    }
+
+    fn deinitWorkspaceCommunication(self: *WorkspaceManager, communication: *WorkspaceCommunication) void {
+        self.allocator.free(communication.subject);
+        self.allocator.free(communication.body);
+    }
+
+    fn deinitWorkspaceView(self: *WorkspaceManager, view: *WorkspaceView) void {
+        self.allocator.free(view.name);
+        self.allocator.free(view.description);
+        self.allocator.free(view.route);
+    }
+
     fn deinitTask(self: *WorkspaceManager, task: *Task) void {
         self.allocator.free(task.title);
         self.allocator.free(task.description);
@@ -251,10 +339,29 @@ pub const WorkspaceManager = struct {
             self.deinitCollection(col);
         }
         workspace.collections.deinit();
+        for (workspace.tools.items) |*tool| {
+            self.deinitWorkspaceTool(tool);
+        }
+        workspace.tools.deinit();
+        for (workspace.communications.items) |*communication| {
+            self.deinitWorkspaceCommunication(communication);
+        }
+        workspace.communications.deinit();
+        for (workspace.views.items) |*view| {
+            self.deinitWorkspaceView(view);
+        }
+        workspace.views.deinit();
         for (workspace.items.items) |*item| {
             self.deinitWorkspaceItem(item);
         }
         workspace.items.deinit();
+        self.allocator.free(workspace.hub.title);
+        self.allocator.free(workspace.hub.description);
+        self.allocator.free(workspace.dashboard.title);
+        self.allocator.free(workspace.dashboard.description);
+        self.allocator.free(workspace.access_point.title);
+        self.allocator.free(workspace.access_point.route);
+        self.allocator.free(workspace.access_point.description);
         self.allocator.free(workspace.name);
         self.allocator.free(workspace.description);
         self.deinitMetadata(&workspace.metadata);

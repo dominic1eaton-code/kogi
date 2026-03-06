@@ -17,4 +17,8 @@ portfolios contain items. items can be resources and|or programs. programs conta
 all kogi platform users have an intial (root) workspace, portfolio and account. an account contains user profiles+settings+options+parameters+keys+tokens+(sub/linked) accounts. workspaces contain a hub+dashboard+central platform user access point, user tools, user messages+alerts+notifications+communications, user views. User tools include: agile boards, calendars, scheduling tool+timelines+gantts+roadmaps, chat+communciations management system, work+strategy+operations managmenet systme, idea+concept+prototyping+testing studio
 
 
- social network+connections+community+friends+contact book/directory, marketplace+exchange items+inventory, gigs+tasks+contracts
+portfolios can include:
+ social network+connections+community+friends+contact book/directory, marketplace+exchange items+inventory, gigs+tasks+contracts+tasks, portfolio of solutions/systems/applications/platforms/services/products/goods, catalogues
+
+
+ user provisioning system. provision users with acccount+workspace+portfolio, resources, space, memory+storage
