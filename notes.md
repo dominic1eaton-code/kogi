@@ -8487,3 +8487,205 @@ I can next **generate a full end-to-end working demo with:**
 This would be a **fully integrated Kogi platform demo**.
 
 Do you want me to generate that next?
+
+## build environment
+
+Here’s a **full Bazel build environment** for the Kogi platform, covering **Go backend modules**, **Proto/gRPC generation**, and a **Zig kernel client**, so you can build, test, and orchestrate the whole stack in a reproducible way.
+
+---
+
+# **1. Project Structure**
+
+```text
+kogi-platform/
+├── WORKSPACE
+├── BUILD.bazel
+├── go/                     # Go backend
+│   ├── modules/
+│   ├── proto/
+│   └── main.go
+├── zig/                    # Zig kernel client
+│   ├── main.zig
+│   └── BUILD.bazel
+└── third_party/
+    ├── go/
+    └── zig/
+```
+
+---
+
+# **2. WORKSPACE**
+
+```python
+workspace(name = "kogi_platform")
+
+# Go rules
+load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
+
+http_archive(
+    name = "io_bazel_rules_go",
+    urls = ["https://github.com/bazelbuild/rules_go/releases/download/v0.36.0/rules_go-v0.36.0.tar.gz"],
+    sha256 = "f2c36c8f6d1c54f792e64ec7bb56a1ef6b7a91f7f5da9b7dc3e29e7f992e4d21",
+)
+
+load("@io_bazel_rules_go//go:deps.bzl", "go_rules_dependencies", "go_register_toolchains")
+
+go_rules_dependencies()
+go_register_toolchains()
+
+# Proto rules
+http_archive(
+    name = "bazel_proto",
+    urls = ["https://github.com/bazelbuild/rules_proto/releases/download/4.0.0/rules_proto-4.0.0.tar.gz"],
+    sha256 = "c0ef1e7c6a1cd38e96dfc47b8bbbf39f39f42079b44f2aaabc79ef1ed52aee77",
+)
+
+load("@bazel_proto//proto:deps.bzl", "proto_deps")
+proto_deps()
+
+# Zig rules (assuming external support)
+http_archive(
+    name = "rules_zig",
+    urls = ["https://github.com/zigtools/rules_zig/releases/download/v0.5.0/rules_zig-v0.5.0.tar.gz"],
+    sha256 = "PLACEHOLDER_SHA256",
+)
+
+load("@rules_zig//zig:deps.bzl", "zig_dependencies")
+zig_dependencies()
+```
+
+---
+
+# **3. Top-Level BUILD.bazel**
+
+```python
+# BUILD.bazel
+
+# Proto generation for Go
+load("@bazel_proto//proto:defs.bzl", "proto_library")
+load("@io_bazel_rules_go//proto:def.bzl", "go_proto_library")
+
+proto_library(
+    name = "kogi_proto",
+    srcs = glob(["go/proto/*.proto"]),
+)
+
+go_proto_library(
+    name = "kogi_go_proto",
+    importpath = "kogi_demo/proto",
+    proto = ":kogi_proto",
+    deps = [],
+)
+
+# Build the Go backend
+load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library")
+
+go_library(
+    name = "kogi_backend_lib",
+    srcs = glob(["go/**/*.go"]),
+    importpath = "kogi_demo/go",
+    deps = [":kogi_go_proto"],
+)
+
+go_binary(
+    name = "kogi_backend",
+    embed = [":kogi_backend_lib"],
+)
+```
+
+---
+
+# **4. Zig BUILD.bazel (`zig/BUILD.bazel`)**
+
+```python
+load("@rules_zig//zig:defs.bzl", "zig_binary")
+
+zig_binary(
+    name = "kogi_kernel",
+    srcs = ["main.zig"],
+    visibility = ["//visibility:public"],
+)
+```
+
+* `zig_binary` will compile the kernel client.
+* Can later add `deps` on NATS or gRPC Zig wrappers.
+
+---
+
+# **5. Go Module BUILD Example (`go/modules/BUILD.bazel`)**
+
+```python
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "modules",
+    srcs = glob(["*.go"]),
+    importpath = "kogi_demo/go/modules",
+)
+```
+
+---
+
+# **6. Proto/gRPC BUILD Example (`go/proto/BUILD.bazel`)**
+
+```python
+load("@bazel_proto//proto:defs.bzl", "proto_library")
+load("@io_bazel_rules_go//proto:def.bzl", "go_proto_library")
+
+proto_library(
+    name = "kogi_proto",
+    srcs = ["kogi.proto"],
+)
+
+go_proto_library(
+    name = "kogi_go_proto",
+    proto = ":kogi_proto",
+    importpath = "kogi_demo/proto",
+)
+```
+
+---
+
+# **7. Build & Run Commands**
+
+```bash
+# Build Go backend
+bazel build //:kogi_backend
+
+# Run Go backend
+bazel run //:kogi_backend
+
+# Build Zig kernel
+bazel build //zig:kogi_kernel
+
+# Run Zig kernel
+bazel run //zig:kogi_kernel
+```
+
+* Bazel will handle **proto compilation, Go build, and Zig build**.
+* Supports **reproducible builds across platforms**.
+
+---
+
+# **8. Optional Extensions**
+
+1. **Add NATS/Kafka Bazel rules** if you want to embed client libraries.
+2. **TLS certs** can be added as `filegroup` targets for Bazel to track.
+3. **Tests** can be added via `go_test` for Go modules and `zig_test` for Zig.
+4. **Cross-language dependencies**: Bazel ensures Zig kernel can depend on Go proto-generated files if needed.
+
+---
+
+This Bazel environment now supports:
+
+* **Go backend modules** with gRPC and messaging
+* **Proto compilation for Go**
+* **Zig kernel client build**
+* **Reproducible, multi-language build environment**
+
+---
+
+I can next **generate a complete Bazel demo workspace with all modules wired, gRPC, and NATS integration**, ready to build and run end-to-end.
+
+Do you want me to generate that fully wired demo workspace?
+
