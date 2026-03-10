@@ -57,7 +57,10 @@ final class TelemetryEngine(
   private var envelopes: Vector[PlatformDataEnvelope] = Vector.empty
   private var ledger: Vector[DataFlowLedgerEntry] = Vector.empty
 
-  def ingestEnvelope(envelope: PlatformDataEnvelope): EngineFlowSnapshot = {
+  def ingestEnvelope(
+      envelope: PlatformDataEnvelope,
+      recommendationEngine: Option[RecommendationEngine] = None
+  ): EngineFlowSnapshot = {
     val normalized = normalizeEnvelope(envelope)
     envelopes = (envelopes :+ normalized).takeRight(maxEnvelopes)
 
@@ -137,6 +140,35 @@ final class TelemetryEngine(
       timestampMs = timestampMs
     )).takeRight(maxLedger)
 
+    // Capture interaction signals for the recommendation feedback loop
+    recommendationEngine.foreach { recEngine =>
+      val userId        = payload.getOrElse("profile_id", payload.getOrElse("user_id", ""))
+      val itemId        = payload.getOrElse("item_id", payload.getOrElse("resource_id", ""))
+      val interactionRaw = payload.getOrElse("interaction_type",
+                            payload.getOrElse("event_type", "view"))
+      if (userId.nonEmpty && itemId.nonEmpty) {
+        val ctx = InteractionContext(
+          device     = payload.getOrElse("device", "unknown"),
+          location   = payload.getOrElse("region", payload.getOrElse("location", "unknown")),
+          timeOfDay  = InteractionContext.fromMs(timestampMs).timeOfDay,
+          referrer   = payload.getOrElse("referrer", ""),
+          metadata   = payload
+        )
+        val interaction = UserInteraction(
+          id              = s"tel-${safeId(normalized.id)}-$timestampMs",
+          userId          = userId,
+          itemId          = itemId,
+          interactionType = InteractionType.fromString(interactionRaw),
+          value           = payload.get("rating").flatMap(v => scala.util.Try(v.toDouble).toOption)
+                              .map(_ / 5.0).getOrElse(1.0),
+          sessionId       = payload.getOrElse("session_id", ""),
+          timestampMs     = timestampMs,
+          context         = ctx
+        )
+        recEngine.recordInteraction(interaction)
+      }
+    }
+
     snapshot(hostId = payload.getOrElse("host_id", "kogi-host-001"))
   }
 
@@ -146,18 +178,15 @@ final class TelemetryEngine(
       source: String,
       target: String,
       flowId: String,
-      timestampMs: Long = System.currentTimeMillis()
+      timestampMs: Long = System.currentTimeMillis(),
+      recommendationEngine: Option[RecommendationEngine] = None
   ): EngineFlowSnapshot = {
     val envelope = PlatformDataEnvelope(
       id = s"env-${safeId(flowId)}-$timestampMs",
-      flowId = flowId,
-      source = source,
-      target = target,
-      topic = topic,
-      payload = payload,
-      timestampMs = timestampMs
+      flowId = flowId, source = source, target = target,
+      topic = topic, payload = payload, timestampMs = timestampMs
     )
-    ingestEnvelope(envelope)
+    ingestEnvelope(envelope, recommendationEngine)
   }
 
   def snapshot(
