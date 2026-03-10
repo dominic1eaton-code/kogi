@@ -7,8 +7,10 @@ import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.GridLayout;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import javax.swing.BorderFactory;
+import javax.swing.BoxLayout;
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
@@ -19,22 +21,30 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTextArea;
+import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingConstants;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 
 public final class DashboardFrame extends JFrame {
-    private static final Color BG = new Color(11, 17, 37);
-    private static final Color PANEL = new Color(17, 28, 59);
-    private static final Color PANEL_ALT = new Color(13, 21, 45);
-    private static final Color FG = new Color(219, 231, 255);
+    private static final Color BG = new Color(7, 11, 22);
+    private static final Color PANEL = new Color(12, 26, 62);
+    private static final Color PANEL_SOFT = new Color(10, 20, 48);
+    private static final Color PANEL_RICH = new Color(15, 42, 94);
+    private static final Color FG = new Color(220, 236, 255);
+    private static final Color MUTED = new Color(148, 181, 236);
+    private static final Color ACCENT = new Color(95, 225, 255);
 
     private final KogiApiClient api;
     private UnifiedScreenCatalog catalog;
     private final List<UnifiedScreenView> officeViews;
+    private List<UnifiedScreenView> currentViews;
 
     private final JComboBox<String> profileSelect;
     private final JComboBox<String> modeSelect;
     private final JComboBox<String> kindSelect;
+    private final JTextField searchField;
     private final DefaultListModel<UnifiedScreenView> navModel;
     private final JList<UnifiedScreenView> navList;
     private final JLabel titleLabel;
@@ -52,6 +62,7 @@ public final class DashboardFrame extends JFrame {
         this.api = api;
         this.catalog = UnifiedScreenCatalog.fallback();
         this.officeViews = buildOfficeViews();
+        this.currentViews = new ArrayList<>(officeViews);
 
         this.profileSelect = new JComboBox<>(new String[] {
             "Personal Profile",
@@ -61,10 +72,11 @@ public final class DashboardFrame extends JFrame {
         });
         this.modeSelect = new JComboBox<>(new String[] {"Office Views", "Unified Views"});
         this.kindSelect = new JComboBox<>(new String[] {"Module Views", "Workflow Views"});
+        this.searchField = new JTextField();
         this.navModel = new DefaultListModel<>();
         this.navList = new JList<>(navModel);
         this.titleLabel = new JLabel("Kogi Office");
-        this.subtitleLabel = new JLabel("Module application and service views");
+        this.subtitleLabel = new JLabel("Modern office control center");
         this.seriesLabel = new JLabel();
         this.versionLabel = new JLabel();
         this.sectionsArea = createReadOnlyArea();
@@ -74,19 +86,20 @@ public final class DashboardFrame extends JFrame {
         this.output = createReadOnlyArea();
 
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setSize(new Dimension(1320, 810));
+        setSize(new Dimension(1380, 860));
         setLocationRelativeTo(null);
 
-        JPanel root = new JPanel(new BorderLayout());
+        JPanel root = new JPanel(new BorderLayout(10, 10));
         root.setBackground(BG);
         root.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+        root.add(buildTopBar(), BorderLayout.NORTH);
 
-        JSplitPane split = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, buildSidebar(), buildMainContent());
-        split.setResizeWeight(0.26);
-        split.setDividerLocation(330);
-        split.setBorder(null);
+        JSplitPane shellSplit = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, buildNavigationShell(), buildMainContent());
+        shellSplit.setDividerLocation(380);
+        shellSplit.setResizeWeight(0.28);
+        shellSplit.setBorder(null);
+        root.add(shellSplit, BorderLayout.CENTER);
 
-        root.add(split, BorderLayout.CENTER);
         setContentPane(root);
 
         modeSelect.addActionListener(e -> {
@@ -103,51 +116,102 @@ public final class DashboardFrame extends JFrame {
                 renderSelectedScreen();
             }
         });
+        searchField.getDocument().addDocumentListener(new DocumentListener() {
+            @Override
+            public void insertUpdate(DocumentEvent e) {
+                applyNavFilter();
+            }
+
+            @Override
+            public void removeUpdate(DocumentEvent e) {
+                applyNavFilter();
+            }
+
+            @Override
+            public void changedUpdate(DocumentEvent e) {
+                applyNavFilter();
+            }
+        });
 
         reloadNavigation("dashboard");
-        append("SYSTEM", "Desktop UI initialized in Office mode with unified fallback catalog available.");
+        append("SYSTEM", "Desktop UI initialized with modern office shell and live module diagnostics.");
         fetchActiveOfficeView();
     }
 
-    private JPanel buildSidebar() {
-        JPanel sidebar = new JPanel(new BorderLayout(8, 8));
-        sidebar.setBackground(PANEL_ALT);
-        sidebar.setBorder(BorderFactory.createCompoundBorder(
-            BorderFactory.createLineBorder(new Color(40, 62, 110)),
-            BorderFactory.createEmptyBorder(12, 12, 12, 12)
+    private JPanel buildTopBar() {
+        JPanel top = new JPanel(new BorderLayout(10, 10));
+        top.setBackground(PANEL_SOFT);
+        top.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createLineBorder(new Color(53, 98, 182)),
+            BorderFactory.createEmptyBorder(10, 12, 10, 12)
         ));
 
-        JLabel brand = new JLabel("KOGI", SwingConstants.LEFT);
-        brand.setForeground(new Color(123, 167, 255));
-        brand.setFont(new Font("Serif", Font.BOLD, 28));
+        JLabel brand = new JLabel("KOGI OS", SwingConstants.LEFT);
+        brand.setForeground(ACCENT);
+        brand.setFont(new Font("SansSerif", Font.BOLD, 24));
 
-        JPanel controls = new JPanel(new GridLayout(0, 1, 0, 6));
+        styleSearchField(searchField);
+        searchField.setToolTipText("Filter modules/workflows");
+        searchField.setText("");
+
+        JPanel right = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 0));
+        right.setOpaque(false);
+        JButton refresh = actionButton("Refresh", this::refreshActiveMode);
+        styleCombo(profileSelect);
+        right.add(refresh);
+        right.add(profileSelect);
+
+        top.add(brand, BorderLayout.WEST);
+        top.add(searchField, BorderLayout.CENTER);
+        top.add(right, BorderLayout.EAST);
+        return top;
+    }
+
+    private JPanel buildNavigationShell() {
+        JPanel shell = new JPanel(new BorderLayout(8, 8));
+        shell.setOpaque(false);
+
+        JPanel rail = new JPanel(new GridLayout(0, 1, 0, 8));
+        rail.setPreferredSize(new Dimension(58, 0));
+        rail.setBackground(PANEL_SOFT);
+        rail.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createLineBorder(new Color(43, 83, 156)),
+            BorderFactory.createEmptyBorder(10, 8, 10, 8)
+        ));
+        rail.add(iconButton("◎"));
+        rail.add(iconButton("▦"));
+        rail.add(iconButton("↺"));
+        rail.add(iconButton("⚙"));
+
+        JPanel sidebar = new JPanel(new BorderLayout(8, 8));
+        sidebar.setBackground(PANEL_SOFT);
+        sidebar.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createLineBorder(new Color(43, 83, 156)),
+            BorderFactory.createEmptyBorder(10, 10, 10, 10)
+        ));
+
+        JPanel controls = new JPanel(new GridLayout(0, 1, 0, 8));
         controls.setOpaque(false);
-        controls.add(label("Identity Profile"));
-        controls.add(profileSelect);
         controls.add(label("Application Mode"));
+        styleCombo(modeSelect);
         controls.add(modeSelect);
         controls.add(label("Unified Kind"));
+        styleCombo(kindSelect);
         controls.add(kindSelect);
 
-        JButton refresh = new JButton("Refresh Active View");
-        refresh.addActionListener(e -> refreshActiveMode());
-        controls.add(refresh);
-
         navList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        navList.setBackground(new Color(12, 20, 43));
+        navList.setBackground(new Color(8, 19, 46));
         navList.setForeground(FG);
-        navList.setSelectionBackground(new Color(35, 64, 128));
-        navList.setFixedCellHeight(28);
+        navList.setSelectionBackground(new Color(37, 88, 173));
+        navList.setFixedCellHeight(30);
+        navList.setBorder(BorderFactory.createEmptyBorder(6, 6, 6, 6));
 
-        JPanel top = new JPanel(new BorderLayout(0, 10));
-        top.setOpaque(false);
-        top.add(brand, BorderLayout.NORTH);
-        top.add(controls, BorderLayout.CENTER);
-
-        sidebar.add(top, BorderLayout.NORTH);
+        sidebar.add(controls, BorderLayout.NORTH);
         sidebar.add(new JScrollPane(navList), BorderLayout.CENTER);
-        return sidebar;
+
+        shell.add(rail, BorderLayout.WEST);
+        shell.add(sidebar, BorderLayout.CENTER);
+        return shell;
     }
 
     private JPanel buildMainContent() {
@@ -155,25 +219,25 @@ public final class DashboardFrame extends JFrame {
         content.setBackground(BG);
 
         JPanel header = new JPanel(new BorderLayout(8, 8));
-        header.setBackground(PANEL);
+        header.setBackground(PANEL_RICH);
         header.setBorder(BorderFactory.createCompoundBorder(
-            BorderFactory.createLineBorder(new Color(39, 60, 108)),
+            BorderFactory.createLineBorder(new Color(51, 92, 168)),
             BorderFactory.createEmptyBorder(12, 14, 12, 14)
         ));
 
         titleLabel.setForeground(FG);
-        titleLabel.setFont(new Font("Serif", Font.BOLD, 30));
-        subtitleLabel.setForeground(new Color(170, 191, 239));
+        titleLabel.setFont(new Font("SansSerif", Font.BOLD, 30));
+        subtitleLabel.setForeground(MUTED);
 
-        JPanel headerText = new JPanel(new BorderLayout());
+        JPanel headerText = new JPanel(new GridLayout(0, 1));
         headerText.setOpaque(false);
-        headerText.add(titleLabel, BorderLayout.NORTH);
-        headerText.add(subtitleLabel, BorderLayout.CENTER);
+        headerText.add(titleLabel);
+        headerText.add(subtitleLabel);
 
         JPanel meta = new JPanel(new GridLayout(0, 1, 0, 4));
         meta.setOpaque(false);
-        seriesLabel.setForeground(new Color(150, 199, 255));
-        versionLabel.setForeground(new Color(150, 199, 255));
+        seriesLabel.setForeground(ACCENT);
+        versionLabel.setForeground(ACCENT);
         meta.add(seriesLabel);
         meta.add(versionLabel);
 
@@ -184,27 +248,27 @@ public final class DashboardFrame extends JFrame {
         cards.setOpaque(false);
         cards.add(panelCard("Sections", sectionsArea));
         cards.add(panelCard("Flows", stepsArea));
-        cards.add(panelCard("Tags and Integrations", tagsArea));
+        cards.add(panelCard("Integrations and Tags", tagsArea));
         cards.add(panelCard("Sources and Links", sourcesArea));
 
-        JPanel dataControls = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 0));
-        dataControls.setOpaque(false);
-        dataControls.add(button("Health", () -> api.health(), "HEALTH"));
-        dataControls.add(button("System", () -> api.systemSummary(), "SYSTEM"));
-        dataControls.add(button("Modules", () -> api.modules(), "MODULES"));
-        dataControls.add(button("IMS Identities", () -> api.identities(), "IMS_IDENTITIES"));
-        dataControls.add(button("IMS Profiles", () -> api.profiles(), "IMS_PROFILES"));
-        dataControls.add(button("Isolation", () -> api.moduleIsolation(), "ISOLATION"));
-        dataControls.add(button("Office Overview", () -> api.officeOverview(), "OFFICE_OVERVIEW"));
-        dataControls.add(button("Office View", this::activeOfficeViewPayload, "OFFICE_VIEW"));
+        JPanel toolRow = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 0));
+        toolRow.setOpaque(false);
+        toolRow.add(actionButton("Health", () -> runCall("HEALTH", api::health)));
+        toolRow.add(actionButton("System", () -> runCall("SYSTEM", api::systemSummary)));
+        toolRow.add(actionButton("Modules", () -> runCall("MODULES", api::modules)));
+        toolRow.add(actionButton("IMS Identities", () -> runCall("IMS_IDENTITIES", api::identities)));
+        toolRow.add(actionButton("IMS Profiles", () -> runCall("IMS_PROFILES", api::profiles)));
+        toolRow.add(actionButton("Isolation", () -> runCall("ISOLATION", api::moduleIsolation)));
+        toolRow.add(actionButton("Office Overview", () -> runCall("OFFICE_OVERVIEW", api::officeOverview)));
+        toolRow.add(actionButton("Office View", this::fetchActiveOfficeView));
 
-        JPanel outputPanel = panelCard("Diagnostics", output);
-        outputPanel.setPreferredSize(new Dimension(0, 220));
+        JPanel outputPanel = panelCard("Realtime Diagnostics", output);
+        outputPanel.setPreferredSize(new Dimension(0, 250));
 
         JPanel center = new JPanel(new BorderLayout(10, 10));
         center.setOpaque(false);
+        center.add(toolRow, BorderLayout.NORTH);
         center.add(cards, BorderLayout.CENTER);
-        center.add(dataControls, BorderLayout.NORTH);
 
         content.add(header, BorderLayout.NORTH);
         content.add(center, BorderLayout.CENTER);
@@ -213,32 +277,44 @@ public final class DashboardFrame extends JFrame {
     }
 
     private JPanel panelCard(String title, JTextArea body) {
-        JPanel panel = new JPanel(new BorderLayout());
+        JPanel panel = new JPanel(new BorderLayout(8, 8));
         panel.setBackground(PANEL);
         panel.setBorder(BorderFactory.createCompoundBorder(
-            BorderFactory.createLineBorder(new Color(39, 60, 108)),
+            BorderFactory.createLineBorder(new Color(45, 84, 156)),
             BorderFactory.createEmptyBorder(10, 10, 10, 10)
         ));
 
-        JLabel header = new JLabel(title);
-        header.setForeground(new Color(187, 209, 255));
-        header.setFont(header.getFont().deriveFont(Font.BOLD));
-
-        panel.add(header, BorderLayout.NORTH);
+        JLabel heading = new JLabel(title);
+        heading.setForeground(new Color(186, 215, 255));
+        heading.setFont(new Font("SansSerif", Font.BOLD, 13));
+        panel.add(heading, BorderLayout.NORTH);
         panel.add(new JScrollPane(body), BorderLayout.CENTER);
         return panel;
     }
 
-    private JButton button(String label, ApiCall call, String context) {
-        JButton button = new JButton(label);
-        button.addActionListener(e -> runCall(context, call));
+    private JButton actionButton(String text, Runnable action) {
+        JButton button = new JButton(text);
+        button.setBackground(new Color(16, 42, 91));
+        button.setForeground(new Color(198, 222, 255));
+        button.setFocusPainted(false);
+        button.setBorder(BorderFactory.createLineBorder(new Color(66, 110, 189)));
+        button.addActionListener(e -> action.run());
+        return button;
+    }
+
+    private JButton iconButton(String icon) {
+        JButton button = new JButton(icon);
+        button.setBackground(new Color(16, 40, 82));
+        button.setForeground(new Color(144, 199, 255));
+        button.setFocusPainted(false);
+        button.setBorder(BorderFactory.createLineBorder(new Color(59, 100, 177)));
         return button;
     }
 
     private JLabel label(String text) {
         JLabel label = new JLabel(text);
-        label.setForeground(new Color(163, 189, 246));
-        label.setFont(label.getFont().deriveFont(Font.BOLD, 11f));
+        label.setForeground(MUTED);
+        label.setFont(new Font("SansSerif", Font.BOLD, 11));
         return label;
     }
 
@@ -247,10 +323,25 @@ public final class DashboardFrame extends JFrame {
         area.setEditable(false);
         area.setLineWrap(true);
         area.setWrapStyleWord(true);
-        area.setBackground(new Color(8, 14, 32));
+        area.setBackground(new Color(7, 16, 37));
         area.setForeground(FG);
         area.setFont(new Font("Monospaced", Font.PLAIN, 12));
         return area;
+    }
+
+    private void styleCombo(JComboBox<String> combo) {
+        combo.setBackground(new Color(9, 28, 63));
+        combo.setForeground(FG);
+    }
+
+    private void styleSearchField(JTextField field) {
+        field.setBackground(new Color(8, 20, 48));
+        field.setForeground(FG);
+        field.setCaretColor(FG);
+        field.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createLineBorder(new Color(65, 105, 178)),
+            BorderFactory.createEmptyBorder(8, 10, 8, 10)
+        ));
     }
 
     private boolean isOfficeMode() {
@@ -267,13 +358,27 @@ public final class DashboardFrame extends JFrame {
     }
 
     private void reloadNavigation(String preserveId) {
-        navModel.clear();
-        List<UnifiedScreenView> screens = isOfficeMode()
+        List<UnifiedScreenView> views = isOfficeMode()
             ? officeViews
             : catalog.screensForKind(selectedUnifiedKind());
+        currentViews = new ArrayList<>(views);
+        applyNavFilter(preserveId);
+    }
 
-        for (UnifiedScreenView screen : screens) {
-            navModel.addElement(screen);
+    private void applyNavFilter() {
+        applyNavFilter(currentSelectionId());
+    }
+
+    private void applyNavFilter(String preserveId) {
+        String query = searchField.getText() == null ? "" : searchField.getText().trim().toLowerCase();
+
+        navModel.clear();
+        List<UnifiedScreenView> filtered = new ArrayList<>();
+        for (UnifiedScreenView view : currentViews) {
+            if (query.isEmpty() || view.title().toLowerCase().contains(query)) {
+                filtered.add(view);
+                navModel.addElement(view);
+            }
         }
 
         if (!preserveId.isBlank()) {
@@ -285,7 +390,7 @@ public final class DashboardFrame extends JFrame {
             }
         }
 
-        if (!navModel.isEmpty()) {
+        if (!filtered.isEmpty()) {
             navList.setSelectedIndex(0);
         } else {
             renderEmpty();
@@ -303,7 +408,7 @@ public final class DashboardFrame extends JFrame {
         if (isOfficeMode()) {
             subtitleLabel.setText("Kogi Office application view from module service payload.");
             seriesLabel.setText("Series: kogi-office-application");
-            versionLabel.setText("Version: v0.1.0");
+            versionLabel.setText("Version: v0.2.0");
             sourcesArea.setText(officeSources(selected.id()));
             fetchActiveOfficeView();
         } else if ("workflow".equals(selected.kind())) {
@@ -312,7 +417,7 @@ public final class DashboardFrame extends JFrame {
             versionLabel.setText("Version: " + catalog.version());
             sourcesArea.setText(lines(catalog.sources(), "(no source files)"));
         } else {
-            subtitleLabel.setText("Unified module view reconciled from screen-flow documents");
+            subtitleLabel.setText("Unified module view reconciled from screen-flow documents.");
             seriesLabel.setText("Series: " + catalog.series());
             versionLabel.setText("Version: " + catalog.version());
             sourcesArea.setText(lines(catalog.sources(), "(no source files)"));

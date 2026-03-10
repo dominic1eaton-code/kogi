@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="kogiBackground">#070B17</color>
+    <color name="kogiPanel">#0B1B42</color>
+    <color name="kogiPanelSoft">#102A66</color>
+    <color name="kogiAccent">#66E6FF</color>
+    <color name="kogiText">#E5EFFF</color>
+    <color name="kogiTextMuted">#9DB7DF</color>
+</resources>

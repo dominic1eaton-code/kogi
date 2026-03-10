@@ -157,163 +157,435 @@ function isOfficeViewId(value: string): value is OfficeViewId {
   imports: [CommonModule, HttpClientModule],
   providers: [ApiService],
   template: `
-    <main class="app-shell">
-      <aside class="sidebar">
-        <div class="brand">KOGI</div>
-
-        <label class="field-label">Identity Profile</label>
-        <select [value]="activeProfile()" (change)="setProfile(($any($event.target)).value)">
-          <option *ngFor="let profile of identityProfiles" [value]="profile.id">{{ profile.name }}</option>
-        </select>
-
-        <div class="sidebar-section">
-          <button class="seg" [class.active]="appMode() === 'office'" (click)="setAppMode('office')">Office App</button>
-          <button class="seg" [class.active]="appMode() === 'unified'" (click)="setAppMode('unified')">Unified Series</button>
-        </div>
-
-        <div class="sidebar-section" *ngIf="appMode() === 'unified'">
-          <button class="seg" [class.active]="viewKind() === 'module'" (click)="setViewKind('module')">Module Views</button>
-          <button class="seg" [class.active]="viewKind() === 'workflow'" (click)="setViewKind('workflow')">Workflow Views</button>
-        </div>
-
-        <div class="nav-list">
-          <button
-            *ngFor="let item of navItems()"
-            class="nav-item"
-            [class.active]="isActiveNav(item.id)"
-            (click)="selectNav(item.id)">
-            {{ item.title }}
-          </button>
-        </div>
-      </aside>
-
-      <section class="content">
-        <header class="content-header">
-          <div>
-            <h1>{{ activeTitle() }}</h1>
-            <p>{{ activeSubtitle() }}</p>
-          </div>
-          <button class="refresh" (click)="refreshActive()">Refresh</button>
-        </header>
-
-        <section class="meta-row">
-          <article class="metric">
-            <span>Mode</span>
-            <strong>{{ appMode() === 'office' ? 'Office App' : 'Unified' }}</strong>
-          </article>
-          <article class="metric">
-            <span>Series</span>
-            <strong>{{ catalog().series }}</strong>
-          </article>
-          <article class="metric">
-            <span>Version</span>
-            <strong>{{ catalog().version }}</strong>
-          </article>
-          <article class="metric">
-            <span>Total Views</span>
-            <strong>{{ navItems().length }}</strong>
-          </article>
-        </section>
-
-        <section class="panel-grid">
-          <article class="panel">
-            <h2>{{ appMode() === 'office' ? 'Office Sections' : 'Sections' }}</h2>
-            <div class="chips">
-              <span class="chip" *ngFor="let section of displaySections()">{{ section }}</span>
-            </div>
-          </article>
-
-          <article class="panel">
-            <h2>{{ appMode() === 'office' ? 'Core Flows' : 'Workflow Steps' }}</h2>
-            <ol>
-              <li *ngFor="let step of displayFlows()">{{ step }}</li>
-            </ol>
-          </article>
-
-          <article class="panel">
-            <h2>{{ appMode() === 'office' ? 'Integrations' : 'Tags' }}</h2>
-            <div class="chips">
-              <span class="chip secondary" *ngFor="let tag of displayTags()">{{ tag }}</span>
-            </div>
-          </article>
-
-          <article class="panel">
-            <h2>{{ appMode() === 'office' ? 'Quick Links' : 'Source Files' }}</h2>
-            <ul>
-              <li *ngFor="let link of displayLinks()">{{ link }}</li>
-            </ul>
-          </article>
-        </section>
-
-        <section class="data-tools">
-          <button (click)="loadSystem()">System</button>
-          <button (click)="loadIdentities()">IMS Identities</button>
-          <button (click)="loadProfiles()">IMS Profiles</button>
-          <button (click)="loadIsolation()">Module Isolation</button>
-          <button (click)="loadOfficeOverview()">Office Overview</button>
-          <button (click)="refreshActive()">Active View Data</button>
-        </section>
-
-        <section class="office-actions" *ngIf="appMode() === 'office'">
+    <main class="app-root">
+      <header class="topbar">
+        <div class="brand">KOGI<span>OS</span></div>
+        <label class="search">
           <input
-            [value]="officeActionDraft()"
-            (input)="setOfficeActionDraft(($any($event.target)).value)"
-            placeholder="Action input (id, name, or topic)" />
-          <button (click)="ackOfficeNotification()">Ack Notification</button>
-          <button (click)="createOfficePortfolioItem()">Add Portfolio Item</button>
-          <button (click)="createOfficeTimelineEvent()">Add Timeline Event</button>
-          <button (click)="createOfficeWorkspaceStory()">Add Workspace Story</button>
-          <button (click)="subscribeOfficeAssistant()">Subscribe Assistant</button>
+            [value]="navQuery()"
+            (input)="setNavQuery(($any($event.target)).value)"
+            placeholder="Search modules, flows, integrations" />
+        </label>
+        <div class="top-actions">
+          <button class="ghost" (click)="refreshActive()">Refresh</button>
+          <select [value]="activeProfile()" (change)="setProfile(($any($event.target)).value)">
+            <option *ngFor="let profile of identityProfiles" [value]="profile.id">{{ profile.name }}</option>
+          </select>
+        </div>
+      </header>
+
+      <section class="workspace-shell">
+        <aside class="icon-rail">
+          <button class="rail-btn active">◎</button>
+          <button class="rail-btn">▦</button>
+          <button class="rail-btn">↺</button>
+          <button class="rail-btn">⚙</button>
+        </aside>
+
+        <aside class="navigator">
+          <div class="mode-row">
+            <button class="mode-btn" [class.active]="appMode() === 'office'" (click)="setAppMode('office')">Office</button>
+            <button class="mode-btn" [class.active]="appMode() === 'unified'" (click)="setAppMode('unified')">Unified</button>
+          </div>
+
+          <div class="mode-row" *ngIf="appMode() === 'unified'">
+            <button class="mode-btn" [class.active]="viewKind() === 'module'" (click)="setViewKind('module')">Modules</button>
+            <button class="mode-btn" [class.active]="viewKind() === 'workflow'" (click)="setViewKind('workflow')">Workflows</button>
+          </div>
+
+          <p class="label">Views</p>
+          <div class="nav-list">
+            <button
+              *ngFor="let item of navItems()"
+              class="nav-item"
+              [class.active]="isActiveNav(item.id)"
+              (click)="selectNav(item.id)">
+              <span>{{ item.title }}</span>
+            </button>
+          </div>
+        </aside>
+
+        <section class="main-stage">
+          <article class="hero">
+            <div>
+              <h1>{{ activeTitle() }}</h1>
+              <p>{{ activeSubtitle() }}</p>
+            </div>
+            <div class="hero-chip">
+              <span>{{ appMode() === 'office' ? 'Office Runtime' : 'Unified Runtime' }}</span>
+            </div>
+          </article>
+
+          <section class="meta-row">
+            <article class="metric">
+              <span>Series</span>
+              <strong>{{ catalog().series }}</strong>
+            </article>
+            <article class="metric">
+              <span>Version</span>
+              <strong>{{ catalog().version }}</strong>
+            </article>
+            <article class="metric">
+              <span>Visible Views</span>
+              <strong>{{ navItems().length }}</strong>
+            </article>
+            <article class="metric">
+              <span>Active Profile</span>
+              <strong>{{ activeProfile() }}</strong>
+            </article>
+          </section>
+
+          <section class="panel-grid">
+            <article class="panel">
+              <h2>Sections</h2>
+              <div class="chips">
+                <span class="chip" *ngFor="let section of displaySections()">{{ section }}</span>
+              </div>
+            </article>
+
+            <article class="panel">
+              <h2>Flows</h2>
+              <ol>
+                <li *ngFor="let step of displayFlows()">{{ step }}</li>
+              </ol>
+            </article>
+
+            <article class="panel">
+              <h2>{{ appMode() === 'office' ? 'Integrations' : 'Tags' }}</h2>
+              <div class="chips">
+                <span class="chip chip-alt" *ngFor="let tag of displayTags()">{{ tag }}</span>
+              </div>
+            </article>
+
+            <article class="panel">
+              <h2>{{ appMode() === 'office' ? 'Quick Links' : 'Source Files' }}</h2>
+              <ul>
+                <li *ngFor="let link of displayLinks()">{{ link }}</li>
+              </ul>
+            </article>
+          </section>
+
+          <section class="tool-row">
+            <button (click)="loadSystem()">System</button>
+            <button (click)="loadIdentities()">IMS Identities</button>
+            <button (click)="loadProfiles()">IMS Profiles</button>
+            <button (click)="loadIsolation()">Module Isolation</button>
+            <button (click)="loadOfficeOverview()">Office Overview</button>
+          </section>
+
+          <section class="office-actions" *ngIf="appMode() === 'office'">
+            <input
+              [value]="officeActionDraft()"
+              (input)="setOfficeActionDraft(($any($event.target)).value)"
+              placeholder="Action input (id, name, topic)" />
+            <button (click)="ackOfficeNotification()">Ack</button>
+            <button (click)="createOfficePortfolioItem()">Portfolio+</button>
+            <button (click)="createOfficeTimelineEvent()">Timeline+</button>
+            <button (click)="createOfficeWorkspaceStory()">Story+</button>
+            <button (click)="subscribeOfficeAssistant()">Subscribe+</button>
+          </section>
         </section>
 
-        <pre>{{ payload() }}</pre>
+        <aside class="insights">
+          <h3>Realtime Payload</h3>
+          <pre>{{ payload() }}</pre>
+        </aside>
       </section>
     </main>
   `,
   styles: [
     `
-    .app-shell { display: grid; grid-template-columns: 260px 1fr; min-height: 100vh; background: #070b1d; color: #dce4ff; }
-    .sidebar { border-right: 1px solid #1a2345; padding: 14px; background: #0a0f28; display: flex; flex-direction: column; gap: 12px; }
-    .brand { font-size: 1.6rem; font-weight: 800; letter-spacing: .2rem; color: #7fa5ff; }
-    .field-label { font-size: .76rem; text-transform: uppercase; opacity: .7; }
-    select { background: #101735; color: #dce4ff; border: 1px solid #203061; border-radius: 8px; padding: 8px; }
-    .sidebar-section { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-    .seg { background: #121937; color: #89a2ff; border: 1px solid #283a72; border-radius: 8px; padding: 8px; cursor: pointer; }
-    .seg.active { background: #1b2550; color: #fff; }
-    .nav-list { display: flex; flex-direction: column; gap: 6px; overflow: auto; max-height: calc(100vh - 220px); }
-    .nav-item { text-align: left; background: #0f1632; color: #a8bcff; border: 1px solid #233569; border-radius: 8px; padding: 9px; cursor: pointer; }
-    .nav-item.active { background: linear-gradient(90deg, #1f2d63, #203a6a); color: #fff; }
+    :host { display: block; min-height: 100vh; }
+    * { box-sizing: border-box; }
+    .app-root {
+      min-height: 100vh;
+      color: #e4eeff;
+      background:
+        radial-gradient(1200px 500px at 10% -10%, rgba(61, 130, 255, .28), transparent 60%),
+        radial-gradient(1000px 700px at 95% 10%, rgba(23, 214, 255, .18), transparent 60%),
+        #070b17;
+      font-family: "Manrope", "Segoe UI", sans-serif;
+      padding: 16px;
+    }
+    .topbar {
+      display: grid;
+      grid-template-columns: 170px 1fr auto;
+      gap: 14px;
+      align-items: center;
+      background: linear-gradient(90deg, rgba(9, 22, 58, .88), rgba(8, 17, 42, .88));
+      border: 1px solid rgba(98, 144, 255, .3);
+      border-radius: 16px;
+      padding: 12px;
+      margin-bottom: 14px;
+      backdrop-filter: blur(6px);
+    }
+    .brand {
+      font-size: 1.34rem;
+      font-weight: 800;
+      letter-spacing: .12rem;
+      color: #91c5ff;
+    }
+    .brand span {
+      color: #49e2ff;
+      margin-left: 4px;
+    }
+    .search input {
+      width: 100%;
+      border: 1px solid rgba(115, 151, 245, .35);
+      border-radius: 10px;
+      background: rgba(6, 16, 41, .78);
+      color: #dbe9ff;
+      padding: 11px 12px;
+      outline: none;
+    }
+    .top-actions {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+    .ghost {
+      border: 1px solid rgba(106, 146, 255, .42);
+      color: #b5d8ff;
+      background: rgba(14, 30, 73, .6);
+      border-radius: 10px;
+      padding: 9px 12px;
+      cursor: pointer;
+    }
+    select {
+      border: 1px solid rgba(115, 151, 245, .35);
+      border-radius: 10px;
+      background: rgba(6, 16, 41, .78);
+      color: #dbe9ff;
+      padding: 9px 10px;
+    }
+    .workspace-shell {
+      display: grid;
+      grid-template-columns: 58px 250px 1fr 330px;
+      gap: 12px;
+      min-height: calc(100vh - 102px);
+    }
+    .icon-rail, .navigator, .main-stage, .insights {
+      border: 1px solid rgba(87, 123, 210, .35);
+      background: linear-gradient(160deg, rgba(11, 24, 60, .82), rgba(7, 16, 40, .92));
+      border-radius: 14px;
+      backdrop-filter: blur(4px);
+    }
+    .icon-rail {
+      padding: 10px 8px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .rail-btn {
+      border: 1px solid rgba(117, 155, 252, .26);
+      background: rgba(20, 40, 86, .55);
+      color: #91b8ff;
+      border-radius: 10px;
+      height: 42px;
+      cursor: pointer;
+      font-size: 1.02rem;
+    }
+    .rail-btn.active { color: #1f1010; background: linear-gradient(135deg, #5be5ff, #5cb4ff); }
 
-    .content { padding: 18px; display: flex; flex-direction: column; gap: 14px; }
-    .content-header { display: flex; justify-content: space-between; gap: 12px; align-items: start; }
-    h1 { margin: 0; font-size: 2rem; font-family: "Alegreya", Georgia, serif; }
-    .content-header p { margin: 4px 0 0; opacity: .8; }
-    .refresh { background: #1b8cff; border: 0; color: #fff; border-radius: 8px; padding: 9px 12px; cursor: pointer; }
+    .navigator {
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .mode-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+    .mode-btn {
+      border: 1px solid rgba(123, 157, 243, .28);
+      background: rgba(13, 27, 68, .7);
+      color: #a7c7ff;
+      border-radius: 10px;
+      padding: 8px;
+      cursor: pointer;
+    }
+    .mode-btn.active {
+      color: #041223;
+      font-weight: 700;
+      background: linear-gradient(135deg, #6deaff, #70bdff);
+    }
+    .label {
+      margin: 2px 0 0;
+      text-transform: uppercase;
+      letter-spacing: .08rem;
+      font-size: .72rem;
+      color: #82b3ff;
+    }
+    .nav-list {
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+      overflow: auto;
+      padding-right: 3px;
+    }
+    .nav-item {
+      border: 1px solid rgba(114, 145, 235, .24);
+      background: rgba(13, 27, 68, .7);
+      color: #c6dcff;
+      border-radius: 10px;
+      padding: 9px;
+      text-align: left;
+      cursor: pointer;
+      font-size: .9rem;
+    }
+    .nav-item.active {
+      border-color: rgba(82, 229, 255, .6);
+      box-shadow: inset 0 0 0 1px rgba(45, 226, 255, .44);
+      background: linear-gradient(135deg, rgba(22, 53, 120, .85), rgba(21, 77, 137, .85));
+    }
 
-    .meta-row { display: grid; gap: 10px; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); }
-    .metric { background: #101937; border: 1px solid #223564; border-radius: 12px; padding: 10px; }
-    .metric span { display: block; font-size: .73rem; opacity: .7; }
-    .metric strong { font-size: 1.1rem; color: #5de0ff; }
+    .main-stage {
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      overflow: auto;
+    }
+    .hero {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: center;
+      border: 1px solid rgba(116, 154, 248, .24);
+      border-radius: 14px;
+      background: linear-gradient(140deg, rgba(12, 32, 82, .86), rgba(10, 50, 96, .86));
+      padding: 14px;
+    }
+    .hero h1 { margin: 0; font-size: 1.9rem; font-weight: 700; letter-spacing: .01rem; }
+    .hero p { margin: 5px 0 0; color: #b3cbf7; }
+    .hero-chip {
+      border: 1px solid rgba(80, 232, 255, .42);
+      border-radius: 999px;
+      padding: 7px 12px;
+      color: #79eaff;
+      background: rgba(15, 69, 120, .55);
+      font-size: .82rem;
+      white-space: nowrap;
+    }
+    .meta-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 10px;
+    }
+    .metric {
+      border: 1px solid rgba(112, 145, 235, .22);
+      border-radius: 12px;
+      background: rgba(11, 24, 58, .8);
+      padding: 10px;
+    }
+    .metric span { display: block; font-size: .75rem; color: #8eb4ee; }
+    .metric strong { display: block; margin-top: 4px; color: #8ef0ff; font-size: 1.04rem; font-weight: 600; }
+    .panel-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 10px;
+    }
+    .panel {
+      border: 1px solid rgba(111, 143, 232, .22);
+      border-radius: 12px;
+      background: rgba(11, 24, 58, .82);
+      padding: 12px;
+    }
+    .panel h2 {
+      margin: 0 0 9px;
+      font-size: .95rem;
+      letter-spacing: .02rem;
+      color: #d5e6ff;
+    }
+    .chips {
+      display: flex;
+      gap: 7px;
+      flex-wrap: wrap;
+    }
+    .chip {
+      border: 1px solid rgba(105, 148, 243, .28);
+      border-radius: 999px;
+      padding: 4px 10px;
+      font-size: .78rem;
+      color: #b7d6ff;
+      background: rgba(18, 55, 109, .6);
+    }
+    .chip-alt {
+      color: #85f2ff;
+      border-color: rgba(72, 214, 255, .4);
+      background: rgba(8, 83, 123, .5);
+    }
+    ol, ul {
+      margin: 0;
+      padding-left: 17px;
+      color: #c3dafd;
+    }
+    li + li { margin-top: 3px; }
+    .tool-row, .office-actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .tool-row button, .office-actions button {
+      border: 1px solid rgba(112, 146, 240, .32);
+      border-radius: 10px;
+      background: rgba(17, 37, 82, .8);
+      color: #c3ddff;
+      padding: 8px 11px;
+      cursor: pointer;
+    }
+    .office-actions input {
+      min-width: 230px;
+      border: 1px solid rgba(112, 146, 240, .32);
+      border-radius: 10px;
+      background: rgba(9, 22, 52, .88);
+      color: #dbe9ff;
+      padding: 8px 10px;
+      outline: none;
+    }
+    .insights {
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      overflow: hidden;
+    }
+    .insights h3 {
+      margin: 0;
+      color: #b8d4ff;
+      font-size: .95rem;
+      letter-spacing: .03rem;
+    }
+    pre {
+      margin: 0;
+      flex: 1;
+      min-height: 180px;
+      overflow: auto;
+      border-radius: 10px;
+      border: 1px solid rgba(113, 147, 237, .3);
+      background: rgba(6, 14, 35, .95);
+      color: #cde1ff;
+      padding: 11px;
+      white-space: pre-wrap;
+      font-size: .79rem;
+      line-height: 1.35;
+      font-family: "JetBrains Mono", "Cascadia Code", monospace;
+    }
 
-    .panel-grid { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
-    .panel { background: #0d1430; border: 1px solid #203263; border-radius: 12px; padding: 12px; }
-    .panel h2 { margin-top: 0; font-size: 1rem; }
-    .chips { display: flex; flex-wrap: wrap; gap: 6px; }
-    .chip { background: #173058; color: #8bc6ff; border: 1px solid #2b558f; border-radius: 999px; padding: 4px 10px; font-size: .8rem; }
-    .chip.secondary { background: #2c214f; color: #c9a9ff; border-color: #5d44a3; }
-    ol, ul { margin: 0; padding-left: 18px; }
-
-    .data-tools { display: flex; flex-wrap: wrap; gap: 8px; }
-    .data-tools button { background: #121b3d; border: 1px solid #2a3d72; color: #a8bdff; border-radius: 8px; padding: 7px 11px; cursor: pointer; }
-    .office-actions { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
-    .office-actions input { min-width: 260px; background: #101735; color: #dce4ff; border: 1px solid #2a3d72; border-radius: 8px; padding: 8px; }
-    .office-actions button { background: #152149; border: 1px solid #314782; color: #bfd1ff; border-radius: 8px; padding: 8px 11px; cursor: pointer; }
-    pre { margin: 0; background: #070e25; border: 1px solid #1d2d59; color: #d4e2ff; border-radius: 10px; padding: 12px; min-height: 120px; white-space: pre-wrap; }
-
+    @media (max-width: 1320px) {
+      .workspace-shell { grid-template-columns: 54px 220px 1fr; }
+      .insights { grid-column: 1 / -1; min-height: 230px; }
+    }
     @media (max-width: 980px) {
-      .app-shell { grid-template-columns: 1fr; }
-      .sidebar { border-right: 0; border-bottom: 1px solid #1a2345; }
-      .nav-list { max-height: 220px; }
+      .topbar { grid-template-columns: 1fr; }
+      .workspace-shell { grid-template-columns: 1fr; }
+      .icon-rail {
+        flex-direction: row;
+        justify-content: center;
+      }
+      .navigator { max-height: 300px; }
     }
     `,
   ],
@@ -336,6 +608,7 @@ export class AppComponent {
   readonly activeProfile = signal('work');
   readonly payload = signal('Select a view from the left sidebar.');
   readonly officeActionDraft = signal('');
+  readonly navQuery = signal('');
 
   readonly activeUnifiedItems = computed(() =>
     this.viewKind() === 'module' ? this.catalog().modules : this.catalog().workflows,
@@ -350,10 +623,15 @@ export class AppComponent {
   );
 
   readonly navItems = computed<NavItem[]>(() => {
-    if (this.appMode() === 'office') {
-      return officeViewSpecs.map((x) => ({ id: x.id, title: x.title }));
+    const raw = this.appMode() === 'office'
+      ? officeViewSpecs.map((x) => ({ id: x.id, title: x.title }))
+      : this.activeUnifiedItems().map((x) => ({ id: x.id, title: x.title }));
+
+    const query = this.navQuery().trim().toLowerCase();
+    if (!query) {
+      return raw;
     }
-    return this.activeUnifiedItems().map((x) => ({ id: x.id, title: x.title }));
+    return raw.filter((x) => x.title.toLowerCase().includes(query));
   });
 
   readonly activeTitle = computed(() => {
@@ -378,6 +656,10 @@ export class AppComponent {
 
   setProfile(profileId: string): void {
     this.activeProfile.set(profileId);
+  }
+
+  setNavQuery(value: string): void {
+    this.navQuery.set(value);
   }
 
   setOfficeActionDraft(value: string): void {
