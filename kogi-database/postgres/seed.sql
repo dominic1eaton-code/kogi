@@ -76,6 +76,16 @@ VALUES
     'active'
   ),
   (
+    '77777777-7777-7777-7777-777777777773',
+    '66666666-6666-6666-6666-666666666666',
+    'business',
+    'Professional Profile',
+    '{"fiscal_year_start":"2026-01-01"}'::jsonb,
+    '{"automated_distributions":true}'::jsonb,
+    '{"approval_threshold":0.66}'::jsonb,
+    'active'
+  ),
+  (
     '77777777-7777-7777-7777-777777777774',
     '66666666-6666-6666-6666-666666666666',
     'community',
