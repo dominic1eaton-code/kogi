@@ -2224,6 +2224,7 @@ impl PortfolioSystem {
             .map(|a| a.consumed)
             .sum()
     }
+}
 
 // ── Plugin registration ───────────────────────────────────────────────────────
 
