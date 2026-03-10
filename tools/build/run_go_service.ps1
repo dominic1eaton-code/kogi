@@ -1,6 +1,6 @@
 param(
     [Parameter(Mandatory = $false)]
-    [ValidateSet('gateway','auth','portfolio','exchange','ims','office')]
+    [ValidateSet('gateway','auth','portfolio','exchange','ims','office','bank','marketplace','studio','community','developer','profile','organizations','engine','database')]
     [string]$Service = 'gateway',
     [Parameter(Mandatory = $false)]
     [string]$Port
@@ -21,6 +21,15 @@ $target = switch ($Service) {
     'exchange'  { './kogi-services/go/services/exchange' }
     'ims'       { './kogi-services/go/services/ims' }
     'office'    { './kogi-services/go/services/office' }
+    'bank'      { './kogi-services/go/services/bank' }
+    'marketplace' { './kogi-services/go/services/marketplace' }
+    'studio'    { './kogi-services/go/services/studio' }
+    'community' { './kogi-services/go/services/community' }
+    'developer' { './kogi-services/go/services/developer' }
+    'profile'   { './kogi-services/go/services/profile' }
+    'organizations' { './kogi-services/go/services/organizations' }
+    'engine'    { './kogi-services/go/services/engine' }
+    'database'  { './kogi-services/go/services/database' }
 }
 
 if ($Port) {

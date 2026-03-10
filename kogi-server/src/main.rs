@@ -16,7 +16,13 @@ fn main() {
         }
     };
 
-    let state = Arc::new(Mutex::new(ServerState::mvp()));
+    let state = match ServerState::bootstrap() {
+        Ok(state) => Arc::new(Mutex::new(state)),
+        Err(err) => {
+            eprintln!("failed to bootstrap host runtime: {err}");
+            std::process::exit(1);
+        }
+    };
     println!("kogi-server listening on http://127.0.0.1:8080");
 
     for stream in listener.incoming() {
@@ -131,6 +137,16 @@ fn route(
         );
     }
 
+    if first_line.starts_with("GET /api/v1/host/components") {
+        let s = state.lock().expect("state lock poisoned");
+        return ("200 OK", "application/json", s.host_components_json());
+    }
+
+    if first_line.starts_with("GET /api/v1/host") {
+        let s = state.lock().expect("state lock poisoned");
+        return ("200 OK", "application/json", s.host_summary_json());
+    }
+
     if first_line.starts_with("GET /api/v1/modules") {
         let s = state.lock().expect("state lock poisoned");
         return ("200 OK", "application/json", s.modules_json());
@@ -144,6 +160,73 @@ fn route(
     if first_line.starts_with("GET /api/v1/engine/system") {
         let s = state.lock().expect("state lock poisoned");
         return ("200 OK", "application/json", s.engine_overview_json());
+    }
+
+    if first_line.starts_with("GET /api/v1/engine/runtime") {
+        let s = state.lock().expect("state lock poisoned");
+        return match s.engine_service_runtime() {
+            Ok(body) => ("200 OK", "application/json", body),
+            Err(err) => (
+                "502 Bad Gateway",
+                "application/json",
+                format!("{{\"error\":\"{}\"}}", escape_json(&err.to_string())),
+            ),
+        };
+    }
+
+    if first_line.starts_with("POST /api/v1/engine/control") {
+        let action = json_string(request_body, "action").unwrap_or_else(|| "start".to_string());
+        let s = state.lock().expect("state lock poisoned");
+        return match s.engine_control(&action) {
+            Ok(body) => ("200 OK", "application/json", body),
+            Err(err) => (
+                "502 Bad Gateway",
+                "application/json",
+                format!("{{\"error\":\"{}\"}}", escape_json(&err.to_string())),
+            ),
+        };
+    }
+
+    if first_line.starts_with("POST /api/v1/engine/ingest") {
+        let payload = if request_body.trim().is_empty() {
+            "{}".to_string()
+        } else {
+            request_body.to_string()
+        };
+        let s = state.lock().expect("state lock poisoned");
+        return match s.engine_ingest(&payload) {
+            Ok(body) => ("200 OK", "application/json", body),
+            Err(err) => (
+                "502 Bad Gateway",
+                "application/json",
+                format!("{{\"error\":\"{}\"}}", escape_json(&err.to_string())),
+            ),
+        };
+    }
+
+    if first_line.starts_with("GET /api/v1/database/runtime") {
+        let s = state.lock().expect("state lock poisoned");
+        return match s.database_service_runtime() {
+            Ok(body) => ("200 OK", "application/json", body),
+            Err(err) => (
+                "502 Bad Gateway",
+                "application/json",
+                format!("{{\"error\":\"{}\"}}", escape_json(&err.to_string())),
+            ),
+        };
+    }
+
+    if first_line.starts_with("POST /api/v1/database/query") {
+        let sql = json_string(request_body, "sql").unwrap_or_else(|| "select 1".to_string());
+        let s = state.lock().expect("state lock poisoned");
+        return match s.database_query(&sql) {
+            Ok(body) => ("200 OK", "application/json", body),
+            Err(err) => (
+                "502 Bad Gateway",
+                "application/json",
+                format!("{{\"error\":\"{}\"}}", escape_json(&err.to_string())),
+            ),
+        };
     }
 
     if first_line.starts_with("GET /api/v1/ims/identities") {
@@ -227,4 +310,13 @@ fn json_i32(body: &str, key: &str) -> Option<i32> {
     }
     let parsed: Value = serde_json::from_str(body).ok()?;
     parsed.get(key)?.as_i64().and_then(|x| i32::try_from(x).ok())
+}
+
+fn escape_json(value: &str) -> String {
+    value
+        .replace('\\', "\\\\")
+        .replace('"', "\\\"")
+        .replace('\n', "\\n")
+        .replace('\r', "\\r")
+        .replace('\t', "\\t")
 }

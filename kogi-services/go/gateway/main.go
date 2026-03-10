@@ -72,7 +72,22 @@ func main() {
 		writeJSON(w, http.StatusOK, gatewayInfo{
 			Name:           "kogi-go-gateway",
 			Version:        "0.2.0",
-			Services:       []string{"auth", "portfolio", "exchange", "ims", "office"},
+			Services: []string{
+				"auth",
+				"portfolio",
+				"exchange",
+				"ims",
+				"office",
+				"bank",
+				"marketplace",
+				"studio",
+				"community",
+				"developer",
+				"profile",
+				"organizations",
+				"engine",
+				"database",
+			},
 			ComponentCount: len(registry.Components()),
 			TopicCounts:    bus.TopicStats(),
 			Timestamp:      time.Now().UTC().Format(time.RFC3339),
@@ -83,11 +98,20 @@ func main() {
 		writeJSON(w, http.StatusOK, map[string]interface{}{
 			"gateway": "kogi-go-gateway",
 			"routes": map[string]string{
-				"auth":      "/services/auth",
-				"portfolio": "/services/portfolio",
-				"exchange":  "/services/exchange",
-				"ims":       "/services/ims",
-				"office":    "/services/office",
+				"auth":          "/services/auth",
+				"portfolio":     "/services/portfolio",
+				"exchange":      "/services/exchange",
+				"ims":           "/services/ims",
+				"office":        "/services/office",
+				"bank":          "/services/bank",
+				"marketplace":   "/services/marketplace",
+				"studio":        "/services/studio",
+				"community":     "/services/community",
+				"developer":     "/services/developer",
+				"profile":       "/services/profile",
+				"organizations": "/services/organizations",
+				"engine":        "/services/engine",
+				"database":      "/services/database",
 			},
 			"topic_routes": registry.TopicRoutes(),
 			"discovery":    "kogi gateway now manages pub/sub + component communications + engine ingest routing",
@@ -311,6 +335,69 @@ func seedRegistry(registry *mesh.Registry) {
 		NetworkManager: "kogi-go-network",
 		Status:         "active",
 	})
+	registry.Register(mesh.Component{
+		ID:             "kogi.services.bank",
+		Kind:           "service",
+		Endpoint:       "http://127.0.0.1:9007",
+		NetworkManager: "kogi-go-network",
+		Status:         "active",
+	})
+	registry.Register(mesh.Component{
+		ID:             "kogi.services.marketplace",
+		Kind:           "service",
+		Endpoint:       "http://127.0.0.1:9008",
+		NetworkManager: "kogi-go-network",
+		Status:         "active",
+	})
+	registry.Register(mesh.Component{
+		ID:             "kogi.services.studio",
+		Kind:           "service",
+		Endpoint:       "http://127.0.0.1:9009",
+		NetworkManager: "kogi-go-network",
+		Status:         "active",
+	})
+	registry.Register(mesh.Component{
+		ID:             "kogi.services.community",
+		Kind:           "service",
+		Endpoint:       "http://127.0.0.1:9010",
+		NetworkManager: "kogi-go-network",
+		Status:         "active",
+	})
+	registry.Register(mesh.Component{
+		ID:             "kogi.services.developer",
+		Kind:           "service",
+		Endpoint:       "http://127.0.0.1:9011",
+		NetworkManager: "kogi-go-network",
+		Status:         "active",
+	})
+	registry.Register(mesh.Component{
+		ID:             "kogi.services.profile",
+		Kind:           "service",
+		Endpoint:       "http://127.0.0.1:9012",
+		NetworkManager: "kogi-go-network",
+		Status:         "active",
+	})
+	registry.Register(mesh.Component{
+		ID:             "kogi.services.organizations",
+		Kind:           "service",
+		Endpoint:       "http://127.0.0.1:9013",
+		NetworkManager: "kogi-go-network",
+		Status:         "active",
+	})
+	registry.Register(mesh.Component{
+		ID:             "kogi.services.engine",
+		Kind:           "service",
+		Endpoint:       "http://127.0.0.1:9014",
+		NetworkManager: "kogi-go-network",
+		Status:         "active",
+	})
+	registry.Register(mesh.Component{
+		ID:             "kogi.services.database",
+		Kind:           "service",
+		Endpoint:       "http://127.0.0.1:9015",
+		NetworkManager: "kogi-go-network",
+		Status:         "active",
+	})
 
 	registry.SetTopicRoute("ims.identity.created", "kogi.services.ims")
 	registry.SetTopicRoute("ims.profile.updated", "kogi.services.ims")
@@ -318,6 +405,30 @@ func seedRegistry(registry *mesh.Registry) {
 	registry.SetTopicRoute("portfolio.item.created", "kogi.services.portfolio")
 	registry.SetTopicRoute("exchange.order.created", "kogi.services.exchange")
 	registry.SetTopicRoute("auth.login.request", "kogi.services.auth")
+	registry.SetTopicRoute("bank.wallet.updated", "kogi.services.bank")
+	registry.SetTopicRoute("bank.ledger.posted", "kogi.services.bank")
+	registry.SetTopicRoute("marketplace.listing.created", "kogi.services.marketplace")
+	registry.SetTopicRoute("marketplace.match.found", "kogi.services.marketplace")
+	registry.SetTopicRoute("studio.idea.created", "kogi.services.studio")
+	registry.SetTopicRoute("studio.prototype.updated", "kogi.services.studio")
+	registry.SetTopicRoute("community.room.updated", "kogi.services.community")
+	registry.SetTopicRoute("community.message.posted", "kogi.services.community")
+	registry.SetTopicRoute("developer.sdk.published", "kogi.services.developer")
+	registry.SetTopicRoute("developer.extension.updated", "kogi.services.developer")
+	registry.SetTopicRoute("profile.settings.updated", "kogi.services.profile")
+	registry.SetTopicRoute("profile.persona.updated", "kogi.services.profile")
+	registry.SetTopicRoute("organizations.role.updated", "kogi.services.organizations")
+	registry.SetTopicRoute("organizations.proposal.created", "kogi.services.organizations")
+	registry.SetTopicRoute("engine.control.requested", "kogi.services.engine")
+	registry.SetTopicRoute("database.query.executed", "kogi.services.database")
+	registry.SetTopicRoute("database.snapshot.created", "kogi.services.database")
+	registry.SetTopicRoute("database.checkpoint.created", "kogi.services.database")
+	registry.SetTopicRoute("database.backup.completed", "kogi.services.database")
+	registry.SetTopicRoute("database.restore.completed", "kogi.services.database")
+	registry.SetTopicRoute("database.scale.updated", "kogi.services.database")
+	registry.SetTopicRoute("database.optimize.completed", "kogi.services.database")
+	registry.SetTopicRoute("database.access.updated", "kogi.services.database")
+	registry.SetTopicRoute("database.concurrency.updated", "kogi.services.database")
 }
 
 func mirrorToEngine(bus *eventbus.Bus, registry *mesh.Registry, origin eventbus.Event) mesh.RoutedMessage {
@@ -370,6 +481,24 @@ func inferModule(topic, target string) string {
 		return "portfolio"
 	case strings.Contains(normalized, "exchange"):
 		return "exchange"
+	case strings.Contains(normalized, "bank"):
+		return "bank"
+	case strings.Contains(normalized, "marketplace"):
+		return "marketplace"
+	case strings.Contains(normalized, "studio"):
+		return "studio"
+	case strings.Contains(normalized, "community"):
+		return "community"
+	case strings.Contains(normalized, "developer"):
+		return "developer"
+	case strings.Contains(normalized, "profile"):
+		return "profile"
+	case strings.Contains(normalized, "organizations"):
+		return "organizations"
+	case strings.Contains(normalized, "database"):
+		return "database"
+	case strings.Contains(normalized, "engine"):
+		return "engine"
 	case strings.Contains(normalized, "auth"):
 		return "auth"
 	case strings.Contains(normalized, "kernel"):

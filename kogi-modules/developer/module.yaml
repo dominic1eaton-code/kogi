@@ -2,8 +2,8 @@ id: kogi.developer
 name: Kogi Developer
 kind: developer
 version: 0.1.0
-language: rust
-entrypoint: kogi-server
+language: go
+entrypoint: kogi-services/go/services/developer
 status: active
 capabilities: "Developer tools, API SDK, integrations, extensions."
 integrations: "github,gitlab,openapi,webhooks"

@@ -7,6 +7,7 @@ Scala data/data-processing engine for Kogi platform-wide flows.
 - Ingests stream events from kernel, host, server, services, modules, and clients.
 - Processes realtime analytics, recommendations, discovery, and exploration.
 - Produces host/module/system snapshots used by orchestration and UIs.
+- Exposed to the host via the `kogi-services/go/services/engine` control + ingest facade.
 
 ## Engines
 - `PortfolioHealthPipeline`: weighted health scoring for productivity/cashflow/collaboration/risk signals.
@@ -24,6 +25,13 @@ sbt compile
 ```powershell
 cd kogi-engine
 sbt "runMain kogi.engine.Main"
+```
+
+## Engine Service (Host Control Plane)
+The host calls the engine service for control + ingest. Run it from the Go services workspace:
+
+```powershell
+go run ./kogi-services/go/services/engine
 ```
 
 ## Core APIs

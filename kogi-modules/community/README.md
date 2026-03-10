@@ -1,8 +1,8 @@
 # Kogi Community
 
-- Module ID: $(System.Collections.Hashtable.Id)
-- Runtime language: $(System.Collections.Hashtable.Language)
-- Host entrypoint: $(System.Collections.Hashtable.Entrypoint)
+- Module ID: kogi.community
+- Runtime language: go
+- Host entrypoint: `kogi-services/go/services/community`
 
 ## Scope
 Feeds, spaces, rooms, chats, messaging and community graph.

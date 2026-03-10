@@ -9,6 +9,15 @@ Go networking, pub/sub, message-gateway, and component communication infrastruct
 - `services/exchange` (port 9004)
 - `services/ims` (port 9005)
 - `services/office` (port 9006)
+- `services/bank` (port 9007)
+- `services/marketplace` (port 9008)
+- `services/studio` (port 9009)
+- `services/community` (port 9010)
+- `services/developer` (port 9011)
+- `services/profile` (port 9012)
+- `services/organizations` (port 9013)
+- `services/engine` (port 9014): control + ingest facade for the Scala engine.
+- `services/database` (port 9015): PostgreSQL interaction facade. Calls the Rust `DatabaseSystem` (`kogi-modules/database`) for CRUD/query/snapshot/backup operations.
 
 ## Libraries
 - `lib/eventbus`: in-memory pub/sub bus with history, topic stats, wildcard subscriptions, and source/target metadata.
@@ -35,4 +44,16 @@ go build ./kogi-services/go/...
 go run ./kogi-services/go/gateway
 go run ./kogi-services/go/services/auth
 go run ./kogi-services/go/services/office
+go run ./kogi-services/go/services/engine
+go run ./kogi-services/go/services/database
+```
+
+Module services (bank, marketplace, studio, community, developer, profile, organizations) run the same way.
+
+## Database System Integration
+The database service expects a `kogi-database-system` binary. Build and point to it if needed:
+
+```powershell
+cargo build --manifest-path kogi-modules/database/Cargo.toml
+$env:KOGI_DATABASE_SYSTEM_BIN = \"C:\\path\\to\\kogi-database-system.exe\"
 ```

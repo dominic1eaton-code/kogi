@@ -9,6 +9,10 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "92ecc6618181def0457392ccd0ee51198e065e016d1d527a7ac1b6dc7c1f09d2"
 
 [[package]]
+name = "kogi-host"
+version = "0.1.0"
+
+[[package]]
 name = "kogi-office-module"
 version = "0.1.0"
 dependencies = [
@@ -20,6 +24,7 @@ dependencies = [
 name = "kogi-server"
 version = "0.1.0"
 dependencies = [
+ "kogi-host",
  "kogi-office-module",
  "serde_json",
 ]

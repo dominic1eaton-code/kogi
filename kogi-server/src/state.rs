@@ -1,14 +1,9 @@
+use kogi_host::executive::HostError;
+use kogi_host::runtime::HostRuntime;
 use kogi_office_module::{
     to_json, NewAssistantSubscription, NewPortfolioItem, NewTimelineEvent, NewWorkspaceStory,
     OfficeModule,
 };
-
-#[derive(Clone, Debug)]
-pub struct ModuleStatus {
-    pub id: &'static str,
-    pub state: &'static str,
-    pub language: &'static str,
-}
 
 #[derive(Clone, Debug)]
 pub struct WorkerIdentity {
@@ -38,55 +33,20 @@ pub struct IdentityProfile {
 }
 
 #[derive(Clone, Debug)]
-pub struct ModuleIsolation {
-    pub module_id: &'static str,
-    pub memory_limit_mb: u64,
-    pub memory_used_mb: u64,
-    pub process_limit: u32,
-    pub process_count: u32,
-    pub file_limit: u32,
-    pub file_count: u32,
-    pub resource_limit: u32,
-    pub resource_used: u32,
-    pub network_manager: &'static str,
-}
-
-#[derive(Clone, Debug)]
 pub struct ServerState {
     pub kernel_mode: &'static str,
-    pub modules: Vec<ModuleStatus>,
+    pub host: HostRuntime,
     pub identities: Vec<WorkerIdentity>,
     pub profiles: Vec<IdentityProfile>,
-    pub module_isolation: Vec<ModuleIsolation>,
     pub office_module: OfficeModule,
 }
 
 impl ServerState {
-    pub fn mvp() -> Self {
-        Self {
+    pub fn bootstrap() -> Result<Self, HostError> {
+        let host = HostRuntime::bootstrap()?;
+        Ok(Self {
             kernel_mode: "user",
-            modules: vec![
-                ModuleStatus {
-                    id: "kogi.office",
-                    state: "active",
-                    language: "hybrid-rust-go",
-                },
-                ModuleStatus {
-                    id: "kogi.bank",
-                    state: "active",
-                    language: "go",
-                },
-                ModuleStatus {
-                    id: "kogi.exchange",
-                    state: "active",
-                    language: "go",
-                },
-                ModuleStatus {
-                    id: "kogi.community",
-                    state: "active",
-                    language: "go",
-                },
-            ],
+            host,
             identities: vec![WorkerIdentity {
                 id: "ident-001",
                 display_name: "Dominic Worker",
@@ -156,63 +116,34 @@ impl ServerState {
                     portfolios: &["portfolio-open-source"],
                     integrations: &["slack", "zoom", "youtube"],
                     tools: &["community-room", "polls", "events"],
-                    projects: &["co-op-launch", "member-onboarding"],
+                    projects: &["co-op-launch"],
                     programs: &["mutual-aid-network"],
                     settings_json: "{\"visibility\":\"public\",\"moderation\":\"team\"}",
                     options_json: "{\"allow_dm\":true,\"event_reminders\":true}",
                     parameters_json: "{\"weekly_events\":3,\"message_retention_days\":90}",
                 },
             ],
-            module_isolation: vec![
-                ModuleIsolation {
-                    module_id: "kogi.office",
-                    memory_limit_mb: 768,
-                    memory_used_mb: 142,
-                    process_limit: 96,
-                    process_count: 12,
-                    file_limit: 6000,
-                    file_count: 382,
-                    resource_limit: 14000,
-                    resource_used: 1602,
-                    network_manager: "kogi-go-network",
-                },
-                ModuleIsolation {
-                    module_id: "kogi.exchange",
-                    memory_limit_mb: 768,
-                    memory_used_mb: 210,
-                    process_limit: 120,
-                    process_count: 16,
-                    file_limit: 8000,
-                    file_count: 524,
-                    resource_limit: 18000,
-                    resource_used: 2500,
-                    network_manager: "kogi-go-network",
-                },
-                ModuleIsolation {
-                    module_id: "kogi.community",
-                    memory_limit_mb: 512,
-                    memory_used_mb: 98,
-                    process_limit: 96,
-                    process_count: 10,
-                    file_limit: 6000,
-                    file_count: 291,
-                    resource_limit: 12000,
-                    resource_used: 1310,
-                    network_manager: "kogi-go-network",
-                },
-            ],
             office_module: OfficeModule::mvp(),
-        }
+        })
     }
 
     pub fn modules_json(&self) -> String {
-        let module_json = self
-            .modules
+        let modules = self.host.modules();
+        let module_json = modules
             .iter()
             .map(|m| {
                 format!(
-                    "{{\"id\":\"{}\",\"state\":\"{}\",\"language\":\"{}\"}}",
-                    m.id, m.state, m.language
+                    "{{\"id\":\"{}\",\"name\":\"{}\",\"kind\":\"{}\",\"version\":\"{}\",\"state\":\"{}\",\"language\":\"{}\",\"entrypoint\":\"{}\",\"network_manager\":\"{}\",\"capabilities\":{},\"integrations\":{}}}",
+                    escape_json(&m.id),
+                    escape_json(&m.name),
+                    escape_json(&m.kind),
+                    escape_json(&m.version),
+                    if m.active { "active" } else { "disabled" },
+                    escape_json(&m.language),
+                    escape_json(&m.entrypoint),
+                    escape_json(&m.network_manager),
+                    json_str_array_owned(&m.capabilities),
+                    json_str_array_owned(&m.integrations),
                 )
             })
             .collect::<Vec<_>>()
@@ -221,11 +152,48 @@ impl ServerState {
         format!("{{\"modules\":[{module_json}]}}")
     }
 
+    pub fn host_summary_json(&self) -> String {
+        format!(
+            "{{\"host_id\":\"kogi-host-001\",\"booted\":{},\"module_count\":{},\"component_count\":{},\"kernel_mode\":\"{}\",\"engine_service\":\"kogi-services/go/services/engine\",\"database_service\":\"kogi-services/go/services/database\"}}",
+            self.host.booted(),
+            self.host.module_count(),
+            self.host.component_count(),
+            self.kernel_mode
+        )
+    }
+
+    pub fn host_components_json(&self) -> String {
+        let components = self.host.components();
+        let component_json = components
+            .iter()
+            .map(|c| {
+                format!(
+                    "{{\"id\":\"{}\",\"group\":\"{}\",\"managed_by_kernel\":{},\"active\":{},\"endpoint\":\"{}\",\"network_manager\":\"{}\",\"limits\":{{\"memory_limit_mb\":{},\"max_processes\":{},\"max_files\":{},\"max_resources\":{}}}}}",
+                    escape_json(&c.id),
+                    c.group.as_str(),
+                    c.managed_by_kernel,
+                    c.active,
+                    escape_json(&c.endpoint),
+                    escape_json(&c.network_manager),
+                    c.limits.memory_limit_mb,
+                    c.limits.max_processes,
+                    c.limits.max_files,
+                    c.limits.max_resources,
+                )
+            })
+            .collect::<Vec<_>>()
+            .join(",");
+
+        format!("{{\"components\":[{component_json}]}}")
+    }
+
     pub fn summary_json(&self) -> String {
         format!(
-            "{{\"kernel_mode\":\"{}\",\"module_count\":{},\"identity_count\":{},\"profile_count\":{},\"office_views\":5,\"office_service\":\"kogi-services/go/services/office\",\"engine\":\"kogi-engine\",\"data_flow\":\"all component events route through kogi-services gateway and kogi-engine ingest\"}}",
+            "{{\"kernel_mode\":\"{}\",\"host_booted\":{},\"module_count\":{},\"component_count\":{},\"identity_count\":{},\"profile_count\":{},\"office_views\":5,\"office_service\":\"kogi-services/go/services/office\",\"engine_service\":\"kogi-services/go/services/engine\",\"database_service\":\"kogi-services/go/services/database\",\"data_flow\":\"clients->server->host->services/modules/kernel->engine\"}}",
             self.kernel_mode,
-            self.modules.len(),
+            self.host.booted(),
+            self.host.module_count(),
+            self.host.component_count(),
             self.identities.len(),
             self.profiles.len(),
         )
@@ -281,13 +249,13 @@ impl ServerState {
     }
 
     pub fn module_isolation_json(&self) -> String {
-        let isolation_json = self
-            .module_isolation
+        let isolation = self.host.module_isolation_snapshot();
+        let isolation_json = isolation
             .iter()
             .map(|module| {
                 format!(
                     "{{\"module_id\":\"{}\",\"memory_limit_mb\":{},\"memory_used_mb\":{},\"process_limit\":{},\"process_count\":{},\"file_limit\":{},\"file_count\":{},\"resource_limit\":{},\"resource_used\":{},\"network_manager\":\"{}\"}}",
-                    module.module_id,
+                    escape_json(&module.module_id),
                     module.memory_limit_mb,
                     module.memory_used_mb,
                     module.process_limit,
@@ -296,7 +264,7 @@ impl ServerState {
                     module.file_count,
                     module.resource_limit,
                     module.resource_used,
-                    module.network_manager,
+                    escape_json(&module.network_manager),
                 )
             })
             .collect::<Vec<_>>()
@@ -383,66 +351,104 @@ impl ServerState {
     }
 
     pub fn engine_overview_json(&self) -> String {
-        "{\"engine\":\"kogi-engine\",\"status\":\"active\",\"ingest_topic\":\"engine.ingest\",\"flow\":\"kernel->host->server->gateway->services/modules->engine\",\"components\":[\"kogi.kernel\",\"kogi.host\",\"kogi.server\",\"kogi.services.gateway\",\"kogi.services.auth\",\"kogi.services.portfolio\",\"kogi.services.exchange\",\"kogi.services.ims\",\"kogi.services.office\",\"kogi.office\",\"kogi.exchange\",\"kogi.community\"],\"capabilities\":[\"analytics\",\"recommendations\",\"discover\",\"explore\",\"realtime snapshots\"]}".to_string()
+        let component_ids = self
+            .host
+            .components()
+            .into_iter()
+            .map(|component| component.id)
+            .collect::<Vec<_>>();
+        let engine_service = match self.host.fetch_service_runtime("kogi.services.engine") {
+            Ok(payload) => payload,
+            Err(err) => format!(
+                "{{\"status\":\"unreachable\",\"error\":\"{}\"}}",
+                escape_json(&err.to_string())
+            ),
+        };
+
+        format!(
+            "{{\"engine\":\"kogi-engine\",\"status\":\"active\",\"ingest_topic\":\"engine.ingest\",\"flow\":\"clients->server->host->services/modules/kernel->engine\",\"components\":{},\"engine_service\":{engine_service},\"capabilities\":[\"analytics\",\"recommendations\",\"discover\",\"explore\",\"realtime snapshots\"]}}",
+            json_str_array_owned(&component_ids),
+        )
+    }
+
+    pub fn engine_service_runtime(&self) -> Result<String, HostError> {
+        self.host.fetch_service_runtime("kogi.services.engine")
+    }
+
+    pub fn database_service_runtime(&self) -> Result<String, HostError> {
+        self.host.fetch_service_runtime("kogi.services.database")
+    }
+
+    pub fn engine_control(&self, action: &str) -> Result<String, HostError> {
+        self.host.engine_control(action)
+    }
+
+    pub fn engine_ingest(&self, payload: &str) -> Result<String, HostError> {
+        self.host.engine_ingest(payload)
+    }
+
+    pub fn database_query(&self, sql: &str) -> Result<String, HostError> {
+        self.host.database_query(sql)
     }
 
     pub fn unified_screens_json(&self) -> String {
         r#"{
-  "series":"kogi-unified-screen-system",
-  "version":"v3-reconciled",
-  "sources":[
-    "Kogi_Screen_Flows_v2.pdf",
-    "Kogi_Screen_Flows (2).pdf",
-    "Kogi Platform - Screen Flows v2.pdf",
-    "Kogi Platform - Screen Flows v3.pdf"
+  \"series\":\"kogi-unified-screen-system\",
+  \"version\":\"v3-reconciled\",
+  \"sources\":[
+    \"Kogi_Screen_Flows_v2.pdf\",
+    \"Kogi_Screen_Flows (2).pdf\",
+    \"Kogi Platform - Screen Flows v2.pdf\",
+    \"Kogi Platform - Screen Flows v3.pdf\"
   ],
-  "modules":[
-    {"id":"dashboard","title":"Dashboard","sections":["Portfolio Health","Active Projects","Net Revenue","AI Credits","Quick Access Modules","Recent Activity"],"tags":["overview","activity","ai"]},
-    {"id":"office","title":"Office","sections":["Programs and Projects","Milestones Due","Team Capacity","Portfolio Assets","3rd Party Integrations"],"tags":["projects","programs","portfolio"]},
-    {"id":"workspace","title":"Workspace","sections":["Kanban Board","Open Tasks","Sprints Active","Blocked Work","Calendar","Gantt Timeline"],"tags":["tasks","kanban","sprints"]},
-    {"id":"timeline","title":"Timeline","sections":["Master Timeline","Scheduled Events","Milestones","Roadmap Progress","Deadlines"],"tags":["calendar","roadmap","gantt"]},
-    {"id":"portfolio","title":"Portfolio","sections":["Portfolio Grid","Projects","Programs","Assets","Solutions","Artifacts","Linked Platforms"],"tags":["assets","solutions","artifacts"]},
-    {"id":"strategy","title":"Strategy","sections":["Strategic OKRs","Tactical Initiatives","Operations Processes","Governance","KR Progress"],"tags":["strategy","tactics","governance"]},
-    {"id":"studio","title":"Studio","sections":["Ideas and Concepts","Prototypes","Testing and Testbeds","Toolsets and Toolkits","Files and Notes"],"tags":["ideas","prototypes","tools"]},
-    {"id":"community","title":"Community","sections":["Feeds and Timelines","Spaces and Rooms","Direct Messages","Linked Platforms"],"tags":["feeds","spaces","messages"]},
-    {"id":"developer","title":"Developer","sections":["API Reference","Active Keys","Webhooks","Extensions and Integrations","SDKs"],"tags":["api","sdk","integrations"]},
-    {"id":"profile","title":"Profile","sections":["Personas and Roles","Settings and Configuration","Activity Stats","Reputation"],"tags":["personas","settings","config"]},
-    {"id":"organizations","title":"Organizations","sections":["Organizations Grid","Governance and Proposals","Roles","Cap Tables"],"tags":["coops","collectives","teams"]},
-    {"id":"legal","title":"Legal","sections":["IP and Trademarks","Contracts and Agreements","Compliance and Audit","Upcoming Obligations"],"tags":["ip","contracts","compliance"]},
-    {"id":"marketplace","title":"Marketplace","sections":["Marketplace Grid","Buy/Sell/Barter","Orders","Linked Platforms"],"tags":["buy","sell","barter"]},
-    {"id":"bank","title":"Bank","sections":["Wallet Types","Finance Overview","Fundraising and Capital","Tax Summary","Transactions"],"tags":["wallets","finance","fundraising"]},
-    {"id":"exchange","title":"Exchange","sections":["Bids and Offers","Deal Pipeline","Requests","Linked Platforms"],"tags":["bids","deals","due-diligence"]}
+  \"modules\":[
+    {\"id\":\"dashboard\",\"title\":\"Dashboard\",\"sections\":[\"Portfolio Health\",\"Active Projects\",\"Net Revenue\",\"AI Credits\",\"Quick Access Modules\",\"Recent Activity\"],\"tags\":[\"overview\",\"activity\",\"ai\"]},
+    {\"id\":\"office\",\"title\":\"Office\",\"sections\":[\"Programs and Projects\",\"Milestones Due\",\"Team Capacity\",\"Portfolio Assets\",\"3rd Party Integrations\"],\"tags\":[\"projects\",\"programs\",\"portfolio\"]},
+    {\"id\":\"workspace\",\"title\":\"Workspace\",\"sections\":[\"Kanban Board\",\"Open Tasks\",\"Sprints Active\",\"Blocked Work\",\"Calendar\",\"Gantt Timeline\"],\"tags\":[\"tasks\",\"kanban\",\"sprints\"]},
+    {\"id\":\"timeline\",\"title\":\"Timeline\",\"sections\":[\"Master Timeline\",\"Scheduled Events\",\"Milestones\",\"Roadmap Progress\",\"Deadlines\"],\"tags\":[\"calendar\",\"roadmap\",\"gantt\"]},
+    {\"id\":\"portfolio\",\"title\":\"Portfolio\",\"sections\":[\"Portfolio Grid\",\"Projects\",\"Programs\",\"Assets\",\"Solutions\",\"Artifacts\",\"Linked Platforms\"],\"tags\":[\"assets\",\"solutions\",\"artifacts\"]},
+    {\"id\":\"strategy\",\"title\":\"Strategy\",\"sections\":[\"Strategic OKRs\",\"Tactical Initiatives\",\"Operations Processes\",\"Governance\",\"KR Progress\"],\"tags\":[\"strategy\",\"tactics\",\"governance\"]},
+    {\"id\":\"studio\",\"title\":\"Studio\",\"sections\":[\"Ideas and Concepts\",\"Prototypes\",\"Testing and Testbeds\",\"Toolsets and Toolkits\",\"Files and Notes\"],\"tags\":[\"ideas\",\"prototypes\",\"tools\"]},
+    {\"id\":\"community\",\"title\":\"Community\",\"sections\":[\"Feeds and Timelines\",\"Spaces and Rooms\",\"Direct Messages\",\"Linked Platforms\"],\"tags\":[\"feeds\",\"spaces\",\"messages\"]},
+    {\"id\":\"developer\",\"title\":\"Developer\",\"sections\":[\"API Reference\",\"Active Keys\",\"Webhooks\",\"Extensions and Integrations\",\"SDKs\"],\"tags\":[\"api\",\"sdk\",\"integrations\"]},
+    {\"id\":\"profile\",\"title\":\"Profile\",\"sections\":[\"Personas and Roles\",\"Settings and Configuration\",\"Activity Stats\",\"Reputation\"],\"tags\":[\"personas\",\"settings\",\"config\"]},
+    {\"id\":\"organizations\",\"title\":\"Organizations\",\"sections\":[\"Organizations Grid\",\"Governance and Proposals\",\"Roles\",\"Cap Tables\"],\"tags\":[\"coops\",\"collectives\",\"teams\"]},
+    {\"id\":\"legal\",\"title\":\"Legal\",\"sections\":[\"IP and Trademarks\",\"Contracts and Agreements\",\"Compliance and Audit\",\"Upcoming Obligations\"],\"tags\":[\"ip\",\"contracts\",\"compliance\"]},
+    {\"id\":\"marketplace\",\"title\":\"Marketplace\",\"sections\":[\"Marketplace Grid\",\"Buy/Sell/Barter\",\"Orders\",\"Linked Platforms\"],\"tags\":[\"buy\",\"sell\",\"barter\"]},
+    {\"id\":\"bank\",\"title\":\"Bank\",\"sections\":[\"Wallet Types\",\"Finance Overview\",\"Fundraising and Capital\",\"Tax Summary\",\"Transactions\"],\"tags\":[\"wallets\",\"finance\",\"fundraising\"]},
+    {\"id\":\"exchange\",\"title\":\"Exchange\",\"sections\":[\"Bids and Offers\",\"Deal Pipeline\",\"Requests\",\"Linked Platforms\"],\"tags\":[\"bids\",\"deals\",\"due-diligence\"]}
   ],
-  "workflows":[
-    {"id":"asset-transfer","title":"Asset Transfer","module":"exchange","steps":["Select asset","Create transfer terms","Assign parties","Set escrow controls","Finalize settlement"],"tags":["transfer","escrow"]},
-    {"id":"capital-exchange","title":"Capital Exchange","module":"bank","steps":["Open capital request","Match contributors","Apply governance checks","Distribute capital"],"tags":["capital","governance"]},
-    {"id":"community-showcase","title":"Community Showcase","module":"community","steps":["Create showcase post","Attach artifacts","Publish to spaces","Track engagement"],"tags":["community","showcase"]},
-    {"id":"coop-governance","title":"Cooperative Governance","module":"organizations","steps":["Draft proposal","Open vote","Reach quorum","Record outcome"],"tags":["cooperative","voting"]},
-    {"id":"idea-to-outcome","title":"Idea to Outcome","module":"studio","steps":["Capture idea","Prototype","Validate","Promote to project","Track outcome"],"tags":["idea","outcome"]},
-    {"id":"idea-tracker","title":"Idea Tracker","module":"studio","steps":["Capture","Score","Prioritize","Assign owner"],"tags":["ideas","tracker"]},
-    {"id":"investor-outreach","title":"Investor Outreach","module":"bank","steps":["Build investor list","Create pitch flow","Schedule outreach","Log responses"],"tags":["investor","outreach"]},
-    {"id":"labor-market","title":"Labor Market","module":"marketplace","steps":["Publish need","Match workers","Negotiate terms","Create engagement"],"tags":["labor","matching"]},
-    {"id":"marketplace-exchange","title":"Marketplace Exchange","module":"marketplace","steps":["Create listing","Receive offers","Open deal","Route to exchange settlement"],"tags":["marketplace","exchange"]},
-    {"id":"note-creation","title":"Note Creation","module":"studio","steps":["Create note","Tag context","Link profile/project","Share"],"tags":["notes","knowledge"]},
-    {"id":"portfolio-governance","title":"Portfolio Governance","module":"portfolio","steps":["Review portfolio item","Open governance check","Approve/reject","Log decision"],"tags":["portfolio","governance"]},
-    {"id":"program-pipeline","title":"Program Pipeline","module":"office","steps":["Define program","Create project lanes","Track progress","Report status"],"tags":["program","pipeline"]},
-    {"id":"project-spotlight","title":"Project Spotlight","module":"office","steps":["Select project","Assemble metrics","Publish summary"],"tags":["project","spotlight"]},
-    {"id":"project-workflow","title":"Project Workflow","module":"workspace","steps":["Backlog","In Progress","Review","Done"],"tags":["workflow","kanban"]},
-    {"id":"prototype-lifecycle","title":"Prototype Lifecycle","module":"studio","steps":["Prototype","Test","Iterate","Release"],"tags":["prototype","lifecycle"]},
-    {"id":"resource-exchange","title":"Resource Exchange","module":"exchange","steps":["Offer resource","Request match","Validate terms","Exchange"],"tags":["resource","exchange"]},
-    {"id":"resource-finder","title":"Resource Finder","module":"marketplace","steps":["Set criteria","Search","Compare","Select"],"tags":["resource","discovery"]},
-    {"id":"strategy-board","title":"Strategy Board","module":"strategy","steps":["Set objectives","Map tactics","Assign owners","Track KRs"],"tags":["strategy","okr"]},
-    {"id":"team-coordination","title":"Team Coordination","module":"office","steps":["Create team plan","Assign roles","Sync cadence","Resolve blockers"],"tags":["team","coordination"]},
-    {"id":"tool-builder","title":"Tool Builder","module":"developer","steps":["Define tool spec","Build extension","Test integration","Publish"],"tags":["tooling","builder"]},
-    {"id":"toolchain","title":"Toolchain","module":"developer","steps":["Select stack","Configure pipeline","Validate workflow"],"tags":["toolchain","pipeline"]},
-    {"id":"tool-integration","title":"Tool Integration","module":"developer","steps":["Authorize provider","Map data","Set webhook","Verify sync"],"tags":["integration","api"]}
+  \"workflows\":[
+    {\"id\":\"asset-transfer\",\"title\":\"Asset Transfer\",\"module\":\"exchange\",\"steps\":[\"Select asset\",\"Create transfer terms\",\"Assign parties\",\"Set escrow controls\",\"Finalize settlement\"],\"tags\":[\"transfer\",\"escrow\"]},
+    {\"id\":\"capital-exchange\",\"title\":\"Capital Exchange\",\"module\":\"bank\",\"steps\":[\"Open capital request\",\"Match contributors\",\"Apply governance checks\",\"Distribute capital\"],\"tags\":[\"capital\",\"governance\"]},
+    {\"id\":\"community-showcase\",\"title\":\"Community Showcase\",\"module\":\"community\",\"steps\":[\"Create showcase post\",\"Attach artifacts\",\"Publish to spaces\",\"Track engagement\"],\"tags\":[\"community\",\"showcase\"]},
+    {\"id\":\"coop-governance\",\"title\":\"Cooperative Governance\",\"module\":\"organizations\",\"steps\":[\"Draft proposal\",\"Open vote\",\"Reach quorum\",\"Record outcome\"],\"tags\":[\"cooperative\",\"voting\"]},
+    {\"id\":\"idea-to-outcome\",\"title\":\"Idea to Outcome\",\"module\":\"studio\",\"steps\":[\"Capture idea\",\"Prototype\",\"Validate\",\"Promote to project\",\"Track outcome\"],\"tags\":[\"idea\",\"outcome\"]},
+    {\"id\":\"idea-tracker\",\"title\":\"Idea Tracker\",\"module\":\"studio\",\"steps\":[\"Capture\",\"Score\",\"Prioritize\",\"Assign owner\"],\"tags\":[\"ideas\",\"tracker\"]},
+    {\"id\":\"investor-outreach\",\"title\":\"Investor Outreach\",\"module\":\"bank\",\"steps\":[\"Build investor list\",\"Create pitch flow\",\"Schedule outreach\",\"Log responses\"],\"tags\":[\"investor\",\"outreach\"]},
+    {\"id\":\"labor-market\",\"title\":\"Labor Market\",\"module\":\"marketplace\",\"steps\":[\"Publish need\",\"Match workers\",\"Negotiate terms\",\"Create engagement\"],\"tags\":[\"labor\",\"matching\"]},
+    {\"id\":\"marketplace-exchange\",\"title\":\"Marketplace Exchange\",\"module\":\"marketplace\",\"steps\":[\"Create listing\",\"Receive offers\",\"Open deal\",\"Route to exchange settlement\"],\"tags\":[\"marketplace\",\"exchange\"]},
+    {\"id\":\"note-creation\",\"title\":\"Note Creation\",\"module\":\"studio\",\"steps\":[\"Create note\",\"Tag context\",\"Link profile/project\",\"Share\"],\"tags\":[\"notes\",\"knowledge\"]},
+    {\"id\":\"portfolio-governance\",\"title\":\"Portfolio Governance\",\"module\":\"portfolio\",\"steps\":[\"Review portfolio item\",\"Open governance check\",\"Approve/reject\",\"Log decision\"],\"tags\":[\"portfolio\",\"governance\"]},
+    {\"id\":\"program-pipeline\",\"title\":\"Program Pipeline\",\"module\":\"office\",\"steps\":[\"Define program\",\"Create project lanes\",\"Track progress\",\"Report status\"],\"tags\":[\"program\",\"pipeline\"]},
+    {\"id\":\"project-spotlight\",\"title\":\"Project Spotlight\",\"module\":\"office\",\"steps\":[\"Select project\",\"Assemble metrics\",\"Publish summary\"],\"tags\":[\"project\",\"spotlight\"]},
+    {\"id\":\"project-workflow\",\"title\":\"Project Workflow\",\"module\":\"workspace\",\"steps\":[\"Backlog\",\"In Progress\",\"Review\",\"Done\"],\"tags\":[\"workflow\",\"kanban\"]},
+    {\"id\":\"prototype-lifecycle\",\"title\":\"Prototype Lifecycle\",\"module\":\"studio\",\"steps\":[\"Prototype\",\"Test\",\"Iterate\",\"Release\"],\"tags\":[\"prototype\",\"lifecycle\"]},
+    {\"id\":\"resource-exchange\",\"title\":\"Resource Exchange\",\"module\":\"exchange\",\"steps\":[\"Offer resource\",\"Request match\",\"Validate terms\",\"Exchange\"],\"tags\":[\"resource\",\"exchange\"]},
+    {\"id\":\"resource-finder\",\"title\":\"Resource Finder\",\"module\":\"marketplace\",\"steps\":[\"Set criteria\",\"Search\",\"Compare\",\"Select\"],\"tags\":[\"resource\",\"discovery\"]},
+    {\"id\":\"strategy-board\",\"title\":\"Strategy Board\",\"module\":\"strategy\",\"steps\":[\"Set objectives\",\"Map tactics\",\"Assign owners\",\"Track KRs\"],\"tags\":[\"strategy\",\"okr\"]},
+    {\"id\":\"team-coordination\",\"title\":\"Team Coordination\",\"module\":\"office\",\"steps\":[\"Create team plan\",\"Assign roles\",\"Sync cadence\",\"Resolve blockers\"],\"tags\":[\"team\",\"coordination\"]},
+    {\"id\":\"tool-builder\",\"title\":\"Tool Builder\",\"module\":\"developer\",\"steps\":[\"Define tool spec\",\"Build extension\",\"Test integration\",\"Publish\"],\"tags\":[\"tooling\",\"builder\"]},
+    {\"id\":\"toolchain\",\"title\":\"Toolchain\",\"module\":\"developer\",\"steps\":[\"Select stack\",\"Configure pipeline\",\"Validate workflow\"],\"tags\":[\"toolchain\",\"pipeline\"]},
+    {\"id\":\"tool-integration\",\"title\":\"Tool Integration\",\"module\":\"developer\",\"steps\":[\"Authorize provider\",\"Map data\",\"Set webhook\",\"Verify sync\"],\"tags\":[\"integration\",\"api\"]}
   ]
 }"#
         .to_string()
     }
 
     pub fn unified_screens_flat(&self) -> String {
-        "module|dashboard|Dashboard\nmodule|office|Office\nmodule|workspace|Workspace\nmodule|timeline|Timeline\nmodule|portfolio|Portfolio\nmodule|strategy|Strategy\nmodule|studio|Studio\nmodule|community|Community\nmodule|developer|Developer\nmodule|profile|Profile\nmodule|organizations|Organizations\nmodule|legal|Legal\nmodule|marketplace|Marketplace\nmodule|bank|Bank\nmodule|exchange|Exchange\nworkflow|asset-transfer|Asset Transfer\nworkflow|capital-exchange|Capital Exchange\nworkflow|community-showcase|Community Showcase\nworkflow|coop-governance|Cooperative Governance\nworkflow|idea-to-outcome|Idea to Outcome\nworkflow|idea-tracker|Idea Tracker\nworkflow|investor-outreach|Investor Outreach\nworkflow|labor-market|Labor Market\nworkflow|marketplace-exchange|Marketplace Exchange\nworkflow|note-creation|Note Creation\nworkflow|portfolio-governance|Portfolio Governance\nworkflow|program-pipeline|Program Pipeline\nworkflow|project-spotlight|Project Spotlight\nworkflow|project-workflow|Project Workflow\nworkflow|prototype-lifecycle|Prototype Lifecycle\nworkflow|resource-exchange|Resource Exchange\nworkflow|resource-finder|Resource Finder\nworkflow|strategy-board|Strategy Board\nworkflow|team-coordination|Team Coordination\nworkflow|tool-builder|Tool Builder\nworkflow|toolchain|Toolchain\nworkflow|tool-integration|Tool Integration\n".to_string()
+        "module|dashboard|Dashboard\nmodule|office|Office\nmodule|workspace|Workspace\nmodule|timeline|Timeline\nmodule|portfolio|Portfolio\nmodule|strategy|Strategy\nmodule|studio|Studio\nmodule|community|Community\nmodule|developer|Developer\nmodule|profile|Profile\nmodule|organizations|Organizations\nmodule|legal|Legal\nmodule|marketplace|Marketplace\nmodule|bank|Bank\nmodule|exchange|Exchange\nworkflow|asset-transfer|Asset Transfer\nworkflow|capital-exchange|Capital Exchange\nworkflow|community-showcase|Community Showcase\nworkflow|coop-governance|Cooperative Governance\nworkflow|idea-to-outcome|Idea to Outcome\nworkflow|idea-tracker|Idea Tracker\nworkflow|investor-outreach|Investor Outreach\nworkflow|labor-market|Labor Market\nworkflow|marketplace-exchange|Marketplace Exchange\nworkflow|note-creation|Note Creation\nworkflow|portfolio-governance|Portfolio Governance\nworkflow|program-pipeline|Program Pipeline\nworkflow|project-spotlight|Project Spotlight\nworkflow|project-workflow|Project Workflow\nworkflow|prototype-lifecycle|Prototype Lifecycle\nworkflow|resource-exchange|Resource Exchange\nworkflow|resource-finder|Resource Finder\nworkflow|strategy-board|Strategy Board\nworkflow|team-coordination|Team Coordination\nworkflow|tool-builder|Tool Builder\nworkflow|toolchain|Toolchain\nworkflow|tool-integration|Tool Integration\n"
+            .to_string()
     }
 }
 
@@ -453,4 +459,22 @@ fn json_str_array(values: &[&str]) -> String {
         .collect::<Vec<_>>()
         .join(",");
     format!("[{}]", values)
+}
+
+fn json_str_array_owned(values: &[String]) -> String {
+    let values = values
+        .iter()
+        .map(|v| format!("\"{}\"", escape_json(v)))
+        .collect::<Vec<_>>()
+        .join(",");
+    format!("[{}]", values)
+}
+
+fn escape_json(value: &str) -> String {
+    value
+        .replace('\\', "\\\\")
+        .replace('"', "\\\"")
+        .replace('\n', "\\n")
+        .replace('\r', "\\r")
+        .replace('\t', "\\t")
 }

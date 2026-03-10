@@ -8,6 +8,21 @@ PostgreSQL schema for Kogi MVP.
 \i kogi-database/postgres/seed.sql
 ```
 
+## Database Service
+The host reaches PostgreSQL via the database service facade:
+
+```powershell
+go run ./kogi-services/go/services/database
+```
+
+The database service delegates CRUD/query/snapshot/backup logic to the Rust `DatabaseSystem` module in `kogi-modules/database`.
+Build it and set the binary path if needed:
+
+```powershell
+cargo build --manifest-path kogi-modules/database/Cargo.toml
+$env:KOGI_DATABASE_SYSTEM_BIN = \"C:\\path\\to\\kogi-database-system.exe\"
+```
+
 ## Included domains
 - auth and sessions
 - IMS identities, personas, roles, worker types, and multi-profile configuration

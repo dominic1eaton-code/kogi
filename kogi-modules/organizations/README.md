@@ -1,8 +1,8 @@
 # Kogi Organizations
 
-- Module ID: $(System.Collections.Hashtable.Id)
-- Runtime language: $(System.Collections.Hashtable.Language)
-- Host entrypoint: $(System.Collections.Hashtable.Entrypoint)
+- Module ID: kogi.organizations
+- Runtime language: go
+- Host entrypoint: `kogi-services/go/services/organizations`
 
 ## Scope
 Collectives, cooperatives, autonomous organizations, and team management.

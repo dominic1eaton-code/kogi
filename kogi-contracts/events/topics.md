@@ -28,18 +28,32 @@
 - `portfolio.item.created`
 - `wbs.story.created`
 - `wbs.story.blocked`
+- `studio.idea.created`
+- `studio.prototype.updated`
+- `profile.settings.updated`
+- `profile.persona.updated`
 
 ## Market and Exchange
 - `market.listing.created`
 - `market.order.created`
 - `exchange.escrow.funded`
 - `exchange.ledger.entry.created`
+- `bank.wallet.updated`
+- `bank.ledger.posted`
+- `marketplace.listing.created`
+- `marketplace.match.found`
 
 ## Community and Governance
 - `community.space.created`
 - `community.message.created`
 - `ao.proposal.submitted`
 - `ao.vote.recorded`
+- `community.room.updated`
+- `community.message.posted`
+- `organizations.role.updated`
+- `organizations.proposal.created`
+- `developer.sdk.published`
+- `developer.extension.updated`
 
 ## AI and Analytics
 - `ai.agent.action.logged`
@@ -47,6 +61,17 @@
 - `engine.ingest`
 - `engine.flow.processed`
 - `engine.snapshot.generated`
+- `engine.control.requested`
+- `database.query.executed`
+- `database.ledger.updated`
+- `database.snapshot.created`
+- `database.checkpoint.created`
+- `database.backup.completed`
+- `database.restore.completed`
+- `database.scale.updated`
+- `database.optimize.completed`
+- `database.access.updated`
+- `database.concurrency.updated`
 
 ## Gateway and Networking
 - `gateway.component.registered`

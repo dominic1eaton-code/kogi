@@ -1,8 +1,8 @@
 # Kogi Bank
 
-- Module ID: $(System.Collections.Hashtable.Id)
-- Runtime language: $(System.Collections.Hashtable.Language)
-- Host entrypoint: $(System.Collections.Hashtable.Entrypoint)
+- Module ID: kogi.bank
+- Runtime language: go
+- Host entrypoint: `kogi-services/go/services/bank`
 
 ## Scope
 Wallets, capital, fundraising, taxes, account management.

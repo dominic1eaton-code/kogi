@@ -19,6 +19,7 @@ func main() {
 		writeJSON(w, http.StatusOK, map[string]interface{}{
 			"service":         "office-service",
 			"component_id":    "kogi.services.office",
+			"module_id":       "kogi.office",
 			"gateway":         "http://127.0.0.1:8090",
 			"network_manager": "kogi-go-network",
 			"publishes": []string{

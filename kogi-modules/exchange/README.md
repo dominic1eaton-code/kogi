@@ -1,8 +1,8 @@
 # Kogi Exchange
 
-- Module ID: $(System.Collections.Hashtable.Id)
-- Runtime language: $(System.Collections.Hashtable.Language)
-- Host entrypoint: $(System.Collections.Hashtable.Entrypoint)
+- Module ID: kogi.exchange
+- Runtime language: go
+- Host entrypoint: `kogi-services/go/services/exchange`
 
 ## Scope
 Bids, offers, deals, proposals, due diligence, trading.

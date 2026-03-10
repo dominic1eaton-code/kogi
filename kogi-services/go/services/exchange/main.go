@@ -19,6 +19,7 @@ func main() {
 		writeJSON(w, http.StatusOK, map[string]interface{}{
 			"service":         "exchange-service",
 			"component_id":    "kogi.services.exchange",
+			"module_id":       "kogi.exchange",
 			"gateway":         "http://127.0.0.1:8090",
 			"network_manager": "kogi-go-network",
 			"publishes": []string{

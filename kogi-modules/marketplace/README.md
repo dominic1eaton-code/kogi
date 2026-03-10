@@ -1,8 +1,8 @@
 # Kogi Marketplace
 
-- Module ID: $(System.Collections.Hashtable.Id)
-- Runtime language: $(System.Collections.Hashtable.Language)
-- Host entrypoint: $(System.Collections.Hashtable.Entrypoint)
+- Module ID: kogi.marketplace
+- Runtime language: go
+- Host entrypoint: `kogi-services/go/services/marketplace`
 
 ## Scope
 Barter and marketplace for items, skills, labor, assets.

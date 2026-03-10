@@ -3,7 +3,7 @@ name: Kogi Marketplace
 kind: marketplace
 version: 0.1.0
 language: go
-entrypoint: kogi-services/go/services/portfolio
+entrypoint: kogi-services/go/services/marketplace
 status: active
 capabilities: "Barter and marketplace for items, skills, labor, assets."
 integrations: "behance,upwork,fiverr"

@@ -1,8 +1,8 @@
 # Kogi Profile
 
-- Module ID: $(System.Collections.Hashtable.Id)
-- Runtime language: $(System.Collections.Hashtable.Language)
-- Host entrypoint: $(System.Collections.Hashtable.Entrypoint)
+- Module ID: kogi.profile
+- Runtime language: go
+- Host entrypoint: `kogi-services/go/services/profile`
 
 ## Scope
 Profiles, personas, settings, preferences and configuration.

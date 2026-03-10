@@ -1,8 +1,8 @@
 # Kogi Developer
 
-- Module ID: $(System.Collections.Hashtable.Id)
-- Runtime language: $(System.Collections.Hashtable.Language)
-- Host entrypoint: $(System.Collections.Hashtable.Entrypoint)
+- Module ID: kogi.developer
+- Runtime language: go
+- Host entrypoint: `kogi-services/go/services/developer`
 
 ## Scope
 Developer tools, API SDK, integrations, extensions.

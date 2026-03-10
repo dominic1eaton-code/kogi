@@ -1,16 +1,23 @@
 # kogi-server
 
-Rust backend platform server for Kogi MVP.
+Rust backend platform server that boots `kogi-host` and exposes the host system to clients.
 
 ## Endpoints
 - `GET /health`
 - `GET /api/v1/system`
+- `GET /api/v1/host`
+- `GET /api/v1/host/components`
 - `GET /api/v1/engine/system`
+- `GET /api/v1/engine/runtime`
+- `POST /api/v1/engine/control`
+- `POST /api/v1/engine/ingest`
 - `GET /api/v1/modules`
 - `GET /api/v1/ims/identities`
 - `GET /api/v1/ims/profiles`
 - `GET /api/v1/autonomy/capabilities`
 - `GET /api/v1/kernel/modules/isolation`
+- `GET /api/v1/database/runtime`
+- `POST /api/v1/database/query`
 - `GET /api/v1/office`
 - `GET /api/v1/office/dashboard`
 - `GET /api/v1/office/portfolio`

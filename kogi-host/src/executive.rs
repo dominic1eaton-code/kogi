@@ -14,6 +14,7 @@ pub enum HostError {
     Io(std::io::Error),
     InvalidManifest(String),
     Kernel(String),
+    Service(String),
 }
 
 impl fmt::Display for HostError {
@@ -22,6 +23,7 @@ impl fmt::Display for HostError {
             Self::Io(err) => write!(f, "io error: {err}"),
             Self::InvalidManifest(msg) => write!(f, "invalid manifest: {msg}"),
             Self::Kernel(msg) => write!(f, "kernel bridge error: {msg}"),
+            Self::Service(msg) => write!(f, "service error: {msg}"),
         }
     }
 }
@@ -97,6 +99,20 @@ impl ComponentRuntime {
             last_health: None,
         }
     }
+}
+
+#[derive(Clone, Debug)]
+pub struct ModuleIsolationSnapshot {
+    pub module_id: String,
+    pub memory_limit_mb: u64,
+    pub memory_used_mb: u64,
+    pub process_limit: u32,
+    pub process_count: u32,
+    pub file_limit: u32,
+    pub file_count: u32,
+    pub resource_limit: u32,
+    pub resource_used: u32,
+    pub network_manager: String,
 }
 
 pub struct HostExecutive<B: KernelBridge> {
@@ -225,7 +241,7 @@ impl<B: KernelBridge> HostExecutive<B> {
             .publish_event(
                 "host.orchestrator.booted",
                 &format!(
-                    "{{\"module_count\":{},\"component_count\":{},\"engine\":\"kogi-engine\",\"server\":\"kogi-server\",\"gateway\":\"kogi-go-gateway\"}}",
+                    "{{\"module_count\":{},\"component_count\":{},\"engine\":\"kogi-engine\",\"engine_service\":\"kogi-services/go/services/engine\",\"database_service\":\"kogi-services/go/services/database\",\"server\":\"kogi-server\",\"gateway\":\"kogi-go-gateway\"}}",
                     self.runtimes.len(),
                     self.components.len()
                 ),
@@ -257,10 +273,115 @@ impl<B: KernelBridge> HostExecutive<B> {
         )
     }
 
+    pub fn platform_snapshot_payload(&self) -> String {
+        format!(
+            "{{\"host_id\":\"kogi-host-001\",\"module_count\":{},\"component_count\":{},\"timestamp_ms\":{}}}",
+            self.runtimes.len(),
+            self.components.len(),
+            now_ms()
+        )
+    }
+
+    pub fn is_booted(&self) -> bool {
+        self.booted
+    }
+
     pub fn publish_event(&mut self, topic: &str, payload: &str) -> Result<(), HostError> {
         self.bridge
             .publish_event(topic, payload)
             .map_err(HostError::Kernel)
+    }
+
+    pub fn modules(&self) -> Vec<ModuleRuntime> {
+        self.runtimes.values().cloned().collect()
+    }
+
+    pub fn components(&self) -> Vec<ComponentRuntime> {
+        self.components.values().cloned().collect()
+    }
+
+    pub fn module_isolation_snapshot(&self) -> Vec<ModuleIsolationSnapshot> {
+        self.runtimes
+            .values()
+            .map(|runtime| {
+                let memory_used = estimate_u64(runtime.limits.memory_limit_mb, 5);
+                let process_count = estimate_u32(runtime.limits.max_processes, 8);
+                let file_count = estimate_u32(runtime.limits.max_files, 10);
+                let resource_used = estimate_u32(runtime.limits.max_resources, 9);
+                ModuleIsolationSnapshot {
+                    module_id: runtime.id.clone(),
+                    memory_limit_mb: runtime.limits.memory_limit_mb,
+                    memory_used_mb: memory_used,
+                    process_limit: runtime.limits.max_processes,
+                    process_count,
+                    file_limit: runtime.limits.max_files,
+                    file_count,
+                    resource_limit: runtime.limits.max_resources,
+                    resource_used,
+                    network_manager: runtime.network_manager.clone(),
+                }
+            })
+            .collect()
+    }
+
+    pub fn fetch_service_runtime(&self, service_id: &str) -> Result<String, HostError> {
+        let endpoint = resolve_service_runtime_endpoint(service_id)
+            .ok_or_else(|| HostError::Service(format!("unknown service id: {service_id}")))?;
+        let (status, body) =
+            http_request("GET", &endpoint, None).map_err(HostError::Service)?;
+        if (200..300).contains(&status) {
+            Ok(body)
+        } else {
+            Err(HostError::Service(format!(
+                "runtime request failed status={status} endpoint={endpoint}"
+            )))
+        }
+    }
+
+    pub fn engine_control(&self, action: &str) -> Result<String, HostError> {
+        let endpoint = resolve_engine_control_endpoint();
+        let payload = format!("{{\"action\":\"{}\"}}", escape_json(action));
+        let (status, body) =
+            http_request("POST", &endpoint, Some(&payload)).map_err(HostError::Service)?;
+        if (200..300).contains(&status) {
+            Ok(body)
+        } else {
+            Err(HostError::Service(format!(
+                "engine control failed status={status} endpoint={endpoint}"
+            )))
+        }
+    }
+
+    pub fn engine_ingest(&self, payload: &str) -> Result<String, HostError> {
+        let endpoint = resolve_engine_ingest_endpoint();
+        let body_payload = if payload.trim_start().starts_with('{') {
+            payload.to_string()
+        } else {
+            format!("{{\"payload\":\"{}\"}}", escape_json(payload))
+        };
+        let (status, body) =
+            http_request("POST", &endpoint, Some(&body_payload)).map_err(HostError::Service)?;
+        if (200..300).contains(&status) {
+            Ok(body)
+        } else {
+            Err(HostError::Service(format!(
+                "engine ingest failed status={status} endpoint={endpoint}"
+            )))
+        }
+    }
+
+    pub fn database_query(&self, sql: &str) -> Result<String, HostError> {
+        let endpoint = resolve_database_query_endpoint();
+        let payload = format!("{{\"sql\":\"{}\"}}", escape_json(sql));
+        let (status, body) =
+            http_request("POST", &endpoint, Some(&payload)).map_err(HostError::Service)?;
+        if (200..300).contains(&status) {
+            Ok(body)
+        } else {
+            Err(HostError::Service(format!(
+                "database query failed status={status} endpoint={endpoint}"
+            )))
+        }
     }
 
     pub fn module_snapshot_lines(&self) -> Vec<String> {
@@ -471,6 +592,69 @@ impl<B: KernelBridge> HostExecutive<B> {
             "kogi-go-network",
             default_limits_for_group(&ComponentGroup::Service),
         ));
+        self.upsert_component(ComponentRuntime::new(
+            "kogi.services.bank",
+            ComponentGroup::Service,
+            "http://127.0.0.1:9007/health",
+            "kogi-go-network",
+            default_limits_for_group(&ComponentGroup::Service),
+        ));
+        self.upsert_component(ComponentRuntime::new(
+            "kogi.services.marketplace",
+            ComponentGroup::Service,
+            "http://127.0.0.1:9008/health",
+            "kogi-go-network",
+            default_limits_for_group(&ComponentGroup::Service),
+        ));
+        self.upsert_component(ComponentRuntime::new(
+            "kogi.services.studio",
+            ComponentGroup::Service,
+            "http://127.0.0.1:9009/health",
+            "kogi-go-network",
+            default_limits_for_group(&ComponentGroup::Service),
+        ));
+        self.upsert_component(ComponentRuntime::new(
+            "kogi.services.community",
+            ComponentGroup::Service,
+            "http://127.0.0.1:9010/health",
+            "kogi-go-network",
+            default_limits_for_group(&ComponentGroup::Service),
+        ));
+        self.upsert_component(ComponentRuntime::new(
+            "kogi.services.developer",
+            ComponentGroup::Service,
+            "http://127.0.0.1:9011/health",
+            "kogi-go-network",
+            default_limits_for_group(&ComponentGroup::Service),
+        ));
+        self.upsert_component(ComponentRuntime::new(
+            "kogi.services.profile",
+            ComponentGroup::Service,
+            "http://127.0.0.1:9012/health",
+            "kogi-go-network",
+            default_limits_for_group(&ComponentGroup::Service),
+        ));
+        self.upsert_component(ComponentRuntime::new(
+            "kogi.services.organizations",
+            ComponentGroup::Service,
+            "http://127.0.0.1:9013/health",
+            "kogi-go-network",
+            default_limits_for_group(&ComponentGroup::Service),
+        ));
+        self.upsert_component(ComponentRuntime::new(
+            "kogi.services.engine",
+            ComponentGroup::Service,
+            "http://127.0.0.1:9014/health",
+            "kogi-go-network",
+            default_limits_for_group(&ComponentGroup::Service),
+        ));
+        self.upsert_component(ComponentRuntime::new(
+            "kogi.services.database",
+            ComponentGroup::Service,
+            "http://127.0.0.1:9015/health",
+            "kogi-go-network",
+            default_limits_for_group(&ComponentGroup::Service),
+        ));
     }
 
     fn upsert_component(&mut self, component: ComponentRuntime) {
@@ -542,8 +726,38 @@ fn resolve_service_endpoint(entrypoint: &str, kind: &str) -> String {
     if lower.contains("services/office") {
         return "http://127.0.0.1:9006/health".to_string();
     }
+    if lower.contains("services/bank") {
+        return "http://127.0.0.1:9007/health".to_string();
+    }
+    if lower.contains("services/marketplace") {
+        return "http://127.0.0.1:9008/health".to_string();
+    }
+    if lower.contains("services/studio") {
+        return "http://127.0.0.1:9009/health".to_string();
+    }
+    if lower.contains("services/community") {
+        return "http://127.0.0.1:9010/health".to_string();
+    }
+    if lower.contains("services/developer") {
+        return "http://127.0.0.1:9011/health".to_string();
+    }
+    if lower.contains("services/profile") {
+        return "http://127.0.0.1:9012/health".to_string();
+    }
+    if lower.contains("services/organizations") {
+        return "http://127.0.0.1:9013/health".to_string();
+    }
+    if lower.contains("services/engine") {
+        return "http://127.0.0.1:9014/health".to_string();
+    }
+    if lower.contains("services/database") {
+        return "http://127.0.0.1:9015/health".to_string();
+    }
     if lower.contains("/gateway") || lower.ends_with("gateway") {
         return "http://127.0.0.1:8090/health".to_string();
+    }
+    if lower.contains("kogi-server") {
+        return "http://127.0.0.1:8080/health".to_string();
     }
     if entrypoint.starts_with("http://") {
         return entrypoint.to_string();
@@ -600,6 +814,53 @@ fn probe_component_health(endpoint: &str, checked_at_ms: i64) -> ComponentHealth
 }
 
 fn probe_http_endpoint(endpoint: &str) -> Result<(bool, String), String> {
+    let (status, _) = http_request("GET", endpoint, None)?;
+    let healthy = (200..300).contains(&status);
+    Ok((healthy, format!("HTTP {}", status)))
+}
+
+fn json_str_array(values: &[String]) -> String {
+    let values = values
+        .iter()
+        .map(|v| format!("\"{v}\""))
+        .collect::<Vec<_>>()
+        .join(",");
+    format!("[{values}]")
+}
+
+fn resolve_service_runtime_endpoint(service_id: &str) -> Option<String> {
+    match service_id {
+        "kogi.services.auth" => Some("http://127.0.0.1:9001/api/v1/auth/runtime".to_string()),
+        "kogi.services.portfolio" => Some("http://127.0.0.1:9002/api/v1/portfolio/runtime".to_string()),
+        "kogi.services.exchange" => Some("http://127.0.0.1:9004/api/v1/exchange/runtime".to_string()),
+        "kogi.services.ims" => Some("http://127.0.0.1:9005/api/v1/ims/runtime".to_string()),
+        "kogi.services.office" => Some("http://127.0.0.1:9006/api/v1/office/runtime".to_string()),
+        "kogi.services.bank" => Some("http://127.0.0.1:9007/api/v1/bank/runtime".to_string()),
+        "kogi.services.marketplace" => Some("http://127.0.0.1:9008/api/v1/marketplace/runtime".to_string()),
+        "kogi.services.studio" => Some("http://127.0.0.1:9009/api/v1/studio/runtime".to_string()),
+        "kogi.services.community" => Some("http://127.0.0.1:9010/api/v1/community/runtime".to_string()),
+        "kogi.services.developer" => Some("http://127.0.0.1:9011/api/v1/developer/runtime".to_string()),
+        "kogi.services.profile" => Some("http://127.0.0.1:9012/api/v1/profile/runtime".to_string()),
+        "kogi.services.organizations" => Some("http://127.0.0.1:9013/api/v1/organizations/runtime".to_string()),
+        "kogi.services.engine" => Some("http://127.0.0.1:9014/api/v1/engine/runtime".to_string()),
+        "kogi.services.database" => Some("http://127.0.0.1:9015/api/v1/database/runtime".to_string()),
+        _ => None,
+    }
+}
+
+fn resolve_engine_control_endpoint() -> String {
+    "http://127.0.0.1:9014/api/v1/engine/control".to_string()
+}
+
+fn resolve_engine_ingest_endpoint() -> String {
+    "http://127.0.0.1:9014/api/v1/engine/ingest".to_string()
+}
+
+fn resolve_database_query_endpoint() -> String {
+    "http://127.0.0.1:9015/api/v1/database/query".to_string()
+}
+
+fn http_request(method: &str, endpoint: &str, body: Option<&str>) -> Result<(u16, String), String> {
     let stripped = endpoint
         .strip_prefix("http://")
         .ok_or_else(|| "only http endpoints are supported".to_string())?;
@@ -614,14 +875,19 @@ fn probe_http_endpoint(endpoint: &str) -> Result<(bool, String), String> {
         return Err("invalid endpoint host".to_string());
     }
 
+    let request_body = body.unwrap_or("");
     let mut stream = TcpStream::connect(host_port)
         .map_err(|err| format!("connect failed: {err}"))?;
     let _ = stream.set_read_timeout(Some(Duration::from_secs(2)));
     let _ = stream.set_write_timeout(Some(Duration::from_secs(2)));
 
     let request = format!(
-        "GET {} HTTP/1.1\r\nHost: {}\r\nConnection: close\r\n\r\n",
-        path, host_port
+        "{method} {path} HTTP/1.1\r\nHost: {host}\r\nContent-Type: application/json\r\nContent-Length: {len}\r\nConnection: close\r\n\r\n{body}",
+        method = method,
+        path = path,
+        host = host_port,
+        len = request_body.as_bytes().len(),
+        body = request_body
     );
     stream
         .write_all(request.as_bytes())
@@ -633,15 +899,41 @@ fn probe_http_endpoint(endpoint: &str) -> Result<(bool, String), String> {
         .map_err(|err| format!("response read failed: {err}"))?;
 
     let status_line = response.lines().next().unwrap_or("HTTP/1.1 000 UNKNOWN");
-    let healthy = status_line.contains("200");
-    Ok((healthy, status_line.to_string()))
+    let status = status_line
+        .split_whitespace()
+        .nth(1)
+        .unwrap_or("000")
+        .parse::<u16>()
+        .unwrap_or(0);
+    let body = response
+        .split("\r\n\r\n")
+        .nth(1)
+        .unwrap_or("")
+        .to_string();
+    Ok((status, body))
 }
 
-fn json_str_array(values: &[String]) -> String {
-    let values = values
-        .iter()
-        .map(|v| format!("\"{v}\""))
-        .collect::<Vec<_>>()
-        .join(",");
-    format!("[{values}]")
+fn escape_json(value: &str) -> String {
+    value
+        .replace('\\', "\\\\")
+        .replace('"', "\\\"")
+        .replace('\n', "\\n")
+        .replace('\r', "\\r")
+        .replace('\t', "\\t")
+}
+
+fn estimate_u64(limit: u64, divisor: u64) -> u64 {
+    if limit == 0 {
+        return 0;
+    }
+    let value = limit / divisor;
+    if value == 0 { 1 } else { value }
+}
+
+fn estimate_u32(limit: u32, divisor: u32) -> u32 {
+    if limit == 0 {
+        return 0;
+    }
+    let value = limit / divisor;
+    if value == 0 { 1 } else { value }
 }
