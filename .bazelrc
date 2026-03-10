@@ -1,0 +1,3 @@
+build --keep_going
+build --announce_rc
+query --keep_going

@@ -1,0 +1,15 @@
+id: kogi.exchange
+name: Kogi Exchange
+kind: exchange
+version: 0.1.0
+language: go
+entrypoint: kogi-services/go/services/exchange
+status: active
+capabilities: "Bids, offers, deals, proposals, due diligence, trading."
+integrations: "robinhood,sofi,ethereum,coinbase"
+isolation_mode: isolated_service
+network_manager: kogi-go-network
+memory_limit_mb: 768
+max_processes: 120
+max_files: 8000
+max_resources: 18000

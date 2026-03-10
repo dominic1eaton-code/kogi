@@ -1,3 +1,18 @@
+# @copyright 2024 Kogi Inc. All rights reserved.
+# @license MIT
+# @author Kogi Team <
 .zig-cache/
 zig-out/
 *.o
+node_modules/
+dist/
+.angular/
+.gradle/
+**/target/
+*.class
+*.jar
+bazel-*
+.metals/
+.bloop/
+MODULE.bazel.lock
+.cache/

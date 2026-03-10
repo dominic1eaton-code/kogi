@@ -1,0 +1,14 @@
+id: kogi.database
+name: Kogi Database
+kind: database
+version: 0.1.0
+entrypoint: kogi-services/go/services/database
+status: active
+language: hybrid-rust-go
+network_manager: kogi-go-network
+capabilities: crud,query,retrieval,access_control,concurrency,snapshots,checkpoints,backups,restores,scaling,optimization,storage,data_management
+integrations: postgres
+memory_limit_mb: 768
+max_processes: 96
+max_files: 8000
+max_resources: 16000

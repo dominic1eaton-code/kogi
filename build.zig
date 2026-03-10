@@ -35,7 +35,7 @@ pub fn build(b: *std.Build) void {
         // intend to expose to consumers that were defined in other files part
         // of this module, you will have to make sure to re-export them from
         // the root file.
-        .root_source_file = b.path("src/root.zig"),
+        .root_source_file = b.path("src/os/root.zig"),
         // Later on we'll use this module as the root module of a test executable
         // which requires us to specify a target.
         .target = target,
@@ -83,11 +83,29 @@ pub fn build(b: *std.Build) void {
         }),
     });
 
+    // Also build an OS-targeted executable that uses the `src/os/main.zig` entry
+    // This lets you run the OS flavor directly when desired (e.g. for testing
+    // the in-repo OS entrypoint).
+    const exe_os = b.addExecutable(.{
+        .name = "kogi-os",
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/os/main.zig"),
+            .target = target,
+            .optimize = optimize,
+            .imports = &.{
+                .{ .name = "kogi", .module = mod },
+            },
+        }),
+    });
+
     // This declares intent for the executable to be installed into the
     // install prefix when running `zig build` (i.e. when executing the default
     // step). By default the install prefix is `zig-out/` but can be overridden
     // by passing `--prefix` or `-p`.
     b.installArtifact(exe);
+
+    // Also install the OS-flavored executable
+    b.installArtifact(exe_os);
 
     // This creates a top level step. Top level steps have a name and can be
     // invoked by name when running `zig build` (e.g. `zig build run`).
@@ -114,6 +132,13 @@ pub fn build(b: *std.Build) void {
     if (b.args) |args| {
         run_cmd.addArgs(args);
     }
+
+    // Run step for OS executable
+    const run_os_step = b.step("run-os", "Run the OS entrypoint");
+    const run_cmd_os = b.addRunArtifact(exe_os);
+    run_os_step.dependOn(&run_cmd_os.step);
+    run_cmd_os.step.dependOn(b.getInstallStep());
+    if (b.args) |args2| run_cmd_os.addArgs(args2);
 
     // Creates an executable that will run `test` blocks from the provided module.
     // Here `mod` needs to define a target, which is why earlier we made sure to
@@ -153,4 +178,11 @@ pub fn build(b: *std.Build) void {
     //
     // Lastly, the Zig build system is relatively simple and self-contained,
     // and reading its source code will allow you to master it.
+
+    // exe.setBuildMode(mode);
+    // b.installArtifact(exe);
+    // const test_exe = b.addExecutable("kogi_test", "src/test.zig");
+    // test_exe.setTarget(target);
+    // test_exe.setBuildMode(mode);
+    // test_exe.install();
 }

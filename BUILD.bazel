@@ -1,0 +1,78 @@
+package(default_visibility = ["//visibility:public"])
+
+filegroup(
+    name = "kernel",
+    srcs = ["//kogi-kernel:all_srcs"],
+)
+
+filegroup(
+    name = "host",
+    srcs = ["//kogi-host:all_srcs"],
+)
+
+filegroup(
+    name = "server",
+    srcs = ["//kogi-server:all_srcs"],
+)
+
+filegroup(
+    name = "go_services",
+    srcs = ["//kogi-services/go:all_srcs"],
+)
+
+filegroup(
+    name = "engine",
+    srcs = ["//kogi-engine:all_srcs"],
+)
+
+filegroup(
+    name = "scala_analytics",
+    srcs = [":engine"],
+)
+
+filegroup(
+    name = "desktop_client",
+    srcs = ["//kogi-desktop-client:all_srcs"],
+)
+
+filegroup(
+    name = "web_client",
+    srcs = ["//kogi-web-client:all_srcs"],
+)
+
+filegroup(
+    name = "mobile_client",
+    srcs = ["//kogi-mobile:all_srcs"],
+)
+
+filegroup(
+    name = "database",
+    srcs = ["//kogi-database:all_srcs"],
+)
+
+filegroup(
+    name = "modules",
+    srcs = ["//kogi-modules:all_srcs"],
+)
+
+filegroup(
+    name = "contracts",
+    srcs = ["//kogi-contracts:all_srcs"],
+)
+
+filegroup(
+    name = "kogi_mvp",
+    srcs = [
+        ":kernel",
+        ":host",
+        ":server",
+        ":go_services",
+        ":engine",
+        ":desktop_client",
+        ":web_client",
+        ":mobile_client",
+        ":database",
+        ":modules",
+        ":contracts",
+    ],
+)

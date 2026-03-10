@@ -1,0 +1,15 @@
+id: kogi.community
+name: Kogi Community
+kind: community
+version: 0.1.0
+language: go
+entrypoint: kogi-services/go/services/community
+status: active
+capabilities: "Feeds, spaces, rooms, chats, messaging and community graph."
+integrations: "facebook,whatsapp,instagram,youtube,slack,zoom,onlyfans"
+isolation_mode: isolated_service
+network_manager: kogi-go-network
+memory_limit_mb: 512
+max_processes: 96
+max_files: 6000
+max_resources: 12000
