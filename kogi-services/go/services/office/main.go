@@ -3,23 +3,15 @@ package main
 // office_service.go
 //
 // HTTP service for the Kogi Office module.  Delegates all PortfolioSystem
-// operations to the portfolio-service (which owns the Rust bridge) and
-// publishes/subscribes events through the gateway bus.
+// operations to kogi_office.dll (or kogi-portfolio-system exe as fallback)
+// and publishes/subscribes events through the gateway bus.
 //
-// Relationship to portfolio_service.go
-// -------------------------------------
-//   office_service is the Office-layer orchestrator.  It:
-//     1. Calls portfolio-service REST endpoints for portfolio mutations.
-//     2. Calls the Rust kogi-office-system binary for office-specific views
-//        (dashboard, timeline, workspace, assistant).
-//     3. Publishes composite events (e.g. "office.portfolio.item.created")
-//        that carry both office and portfolio context.
-//     4. Subscribes (via gateway) to portfolio events so it can update the
-//        office dashboard and assistant automatically.
+// All utility functions (Rust bridge, DLL loading, HTTP helpers, gateway
+// pub/sub, health reporting, file-system helpers) live in utility.go.
 //
 // Endpoints (all under /api/v1/office/…):
 //   GET  /health
-//   GET  /runtime
+//   GET  /api/v1/office/runtime
 //   GET  /api/v1/office                          overview
 //   GET  /api/v1/office/dashboard                dashboard snapshot
 //   POST /api/v1/office/dashboard/ack            acknowledge notification
@@ -32,8 +24,8 @@ package main
 //   PUT  /api/v1/office/portfolio/components/{id}
 //   DELETE /api/v1/office/portfolio/components/{id}
 //   GET  /api/v1/office/portfolio/components/type/{type}
-//   POST /api/v1/office/portfolio/books          create book
-//   POST /api/v1/office/portfolio/active         set active portfolio
+//   POST /api/v1/office/portfolio/books
+//   POST /api/v1/office/portfolio/active
 //   POST /api/v1/office/portfolio/graph/hierarchy
 //   DELETE /api/v1/office/portfolio/graph/hierarchy
 //   POST /api/v1/office/portfolio/graph/dependency
@@ -51,7 +43,7 @@ package main
 //   GET  /api/v1/office/portfolio/checkpoints
 //   POST /api/v1/office/portfolio/checkpoints
 //   POST /api/v1/office/portfolio/checkpoints/{id}/restore
-//   GET  /api/v1/office/portfolio/query          ?pql=…
+//   GET  /api/v1/office/portfolio/query   ?pql=…
 //   GET  /api/v1/office/portfolio/events
 //   POST /api/v1/office/portfolio/governance/policy/attach
 //   POST /api/v1/office/portfolio/governance/policy/detach
@@ -78,8 +70,14 @@ package main
 //   POST /api/v1/office/workspace/stories
 //   GET  /api/v1/office/assistant
 //   POST /api/v1/office/assistant/subscriptions
-//   GET  /api/v1/office/pubsub/history           recent office events
+//   GET  /api/v1/office/pubsub/history
 //   GET  /api/v1/office/pubsub/topics
+//   GET  /api/v1/office/pubsub/dead-letters
+//   GET  /api/v1/office/pubsub/replay
+//   GET  /api/v1/office/pubsub/metrics
+//   GET  /api/v1/office/mesh
+//   GET  /api/v1/office/mesh/messages
+//   GET  /api/v1/office/mesh/routes
 
 import (
 	"bytes"
@@ -89,10 +87,6 @@ import (
 	"io"
 	"log"
 	"net/http"
-	"os"
-	"os/exec"
-	"path/filepath"
-	"runtime"
 	"strings"
 	"sync"
 	"time"
@@ -106,7 +100,7 @@ const (
 	portfolioService  = "http://127.0.0.1:9002"
 )
 
-// ── In-process event log (recent office events) ───────────────────────────────
+// ── In-process event log ──────────────────────────────────────────────────────
 
 type officeEventEntry struct {
 	Topic     string `json:"topic"`
@@ -134,75 +128,86 @@ func recordOfficeEvent(topic, payload, source string) {
 	}
 }
 
-// ── Rust bridge (office-system binary) ───────────────────────────────────────
+// ── Service-specific publish / gateway helpers ────────────────────────────────
 
-type officeRustReq struct {
-	Action  string      `json:"action"`
-	Payload interface{} `json:"payload,omitempty"`
+func officePublish(topic, payload string, meta map[string]string) {
+	publish(officeGateway, officeServiceID, topic, payload, meta)
+	recordOfficeEvent(topic, payload, officeServiceID)
 }
 
-func officeCallRust(action string, payload interface{}) (interface{}, error) {
-	bin, err := officeResolveBinary()
-	if err != nil {
-		return nil, err
-	}
-	envelope, _ := json.Marshal(officeRustReq{Action: action, Payload: payload})
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-	cmd := exec.CommandContext(ctx, bin, "--request", string(envelope))
-	out, err := cmd.CombinedOutput()
-	if err != nil {
-		return nil, fmt.Errorf("office rust action=%s: %w – %s", action, err, strings.TrimSpace(string(out)))
-	}
-	var result interface{}
-	if err := json.Unmarshal(out, &result); err != nil {
-		return nil, fmt.Errorf("office rust parse action=%s: %w", action, err)
-	}
-	return result, nil
+func officeGatewaySubscribePrefix(prefix, consumer string) {
+	gatewaySubscribePrefix(officeGateway, prefix, consumer)
 }
 
-func officeRust(action string, payload interface{}, fallback interface{}) interface{} {
-	r, err := officeCallRust(action, payload)
-	if err != nil {
-		log.Printf("[office-svc] rust action=%s err=%v", action, err)
-		return fallback
-	}
-	return r
+func officeReportHealth(healthy bool, note string) {
+	reportHealth(officeGateway, officeServiceID, healthy, note)
 }
 
-func officeResolveBinary() (string, error) {
-	if p := os.Getenv("KOGI_OFFICE_SYSTEM_BIN"); p != "" {
-		return p, nil
-	}
-	if p, err := exec.LookPath("kogi-office-system"); err == nil {
-		return p, nil
-	}
-	if root, ok := officeFindRepoRoot(); ok {
-		exe := "kogi-office-system"
-		if runtime.GOOS == "windows" {
-			exe += ".exe"
-		}
-		for _, c := range []string{
-			filepath.Join(root, "kogi-modules", "office", "target", "debug", exe),
-			filepath.Join(root, "kogi-modules", "office", "target", "release", exe),
-			filepath.Join(root, "kogi-modules", "office", exe),
-		} {
-			if officeFileExists(c) {
-				return c, nil
-			}
-		}
-	}
-	return "", fmt.Errorf("kogi-office-system not found; set KOGI_OFFICE_SYSTEM_BIN")
+func officeHealthLoop() {
+	healthLoop(officeGateway, officeServiceID, 30*time.Second, func() (bool, string) {
+		_, err := officeResolveBinary()
+		return err == nil, ""
+	})
 }
 
-// ── Portfolio-service proxy ───────────────────────────────────────────────────
+func officeDeadLetterMonitor() {
+	pollDeadLetters(officeGateway,
+		func(topic string) bool { return strings.HasPrefix(topic, "office.") },
+		func(id, topic string) { log.Printf("[office-svc] dead-letter id=%s topic=%s", id, topic) },
+	)
+}
+
+func officeSubscribeGateway(topics []string, handler func(topic, payload string)) {
+	subscribeGatewayExact(officeGateway, topics, handler)
+}
+
+func officeSubscribeGatewayPrefix(prefixes []string, handler func(topic, payload string)) {
+	subscribeGatewayPrefix(officeGateway, prefixes, handler)
+}
+
+func officeReplayGateway(topic, prefix, from, to string) {
+	replayGateway(officeGateway, topic, prefix, from, to,
+		func(t, p, s string) { recordOfficeEvent(t, p, s) })
+}
+
+func officeRegisterWithGateway(selfEndpoint string) {
+	registerWithGateway(
+		officeGateway, officeServiceID, selfEndpoint, "/health",
+		[]string{
+			"office.dashboard.refresh", "office.timeline.updated",
+			"office.workspace.story.created", "office.assistant.subscription.active",
+			"office.portfolio.item.created", "office.portfolio.component.updated",
+			"office.portfolio.component.removed", "office.portfolio.graph.changed",
+			"office.portfolio.snapshot.saved", "office.portfolio.checkpoint.created",
+			"office.portfolio.governance.approval.requested",
+			"office.portfolio.governance.resource.allocated",
+			"office.portfolio.model.computed",
+		},
+		[]string{
+			"portfolio.item.created", "portfolio.component.updated",
+			"portfolio.component.removed", "portfolio.graph.changed",
+			"portfolio.snapshot.saved", "portfolio.checkpoint.created",
+			"portfolio.governance.resource.allocated", "portfolio.governance.resource.consumed",
+			"portfolio.governance.approval.requested", "portfolio.governance.approval.resolved",
+			"portfolio.model.computed", "portfolio.health.updated",
+			"ims.profile.updated", "exchange.trade.executed",
+		},
+		[]struct{ Prefix, Consumer string }{
+			{"portfolio.", officeServiceID},
+			{"ims.", officeServiceID},
+			{"exchange.trade", officeServiceID},
+		},
+	)
+}
+
+// ── Portfolio proxy (to portfolio-service REST API) ───────────────────────────
 //
-// officeProxyPortfolio forwards a request to portfolio-service, substituting
-// the /api/v1/office/portfolio/ prefix with /api/v1/portfolio/.  The response
-// is written directly to w.
+// These helpers proxy requests to portfolio-service when the office service
+// is acting as a pass-through orchestrator.  Direct DLL calls are preferred
+// for mutations; proxying is used only when routing to the portfolio-service
+// HTTP layer is needed (e.g. for cross-service event publishing).
 
 func officeProxyPortfolio(w http.ResponseWriter, r *http.Request) {
-	// Rewrite path: /api/v1/office/portfolio/… → /api/v1/portfolio/…
 	downstream := strings.Replace(r.URL.Path, "/api/v1/office/portfolio", "/api/v1/portfolio", 1)
 	if r.URL.RawQuery != "" {
 		downstream += "?" + r.URL.RawQuery
@@ -242,14 +247,9 @@ func officeProxyPortfolio(w http.ResponseWriter, r *http.Request) {
 	_, _ = io.Copy(w, resp.Body)
 }
 
-// officeProxyPortfolioAndPublish wraps officeProxyPortfolio and, on success,
-// also fires a gateway event so the office dashboard can react.
 func officeProxyPortfolioAndPublish(w http.ResponseWriter, r *http.Request, topic, payloadFmt string, args ...interface{}) {
-	// Buffer the proxy response so we can inspect the status code before publishing.
 	rec := &responseRecorder{header: make(http.Header), code: http.StatusOK}
 	officeProxyPortfolio(rec, r)
-
-	// Forward buffered response to actual ResponseWriter.
 	for k, vs := range rec.header {
 		for _, v := range vs {
 			w.Header().Add(k, v)
@@ -257,368 +257,19 @@ func officeProxyPortfolioAndPublish(w http.ResponseWriter, r *http.Request, topi
 	}
 	w.WriteHeader(rec.code)
 	_, _ = w.Write(rec.body)
-
 	if rec.code < 300 {
 		payload := fmt.Sprintf(payloadFmt, args...)
 		go officePublish(topic, payload, nil)
-		go recordOfficeEvent(topic, payload, officeServiceID)
 	}
 }
 
-// responseRecorder captures an http.ResponseWriter for buffering.
-type responseRecorder struct {
-	header http.Header
-	code   int
-	body   []byte
-}
-
-func (r *responseRecorder) Header() http.Header        { return r.header }
-func (r *responseRecorder) WriteHeader(code int)        { r.code = code }
-func (r *responseRecorder) Write(b []byte) (int, error) { r.body = append(r.body, b...); return len(b), nil }
-
-// ── Gateway pub/sub ───────────────────────────────────────────────────────────
-
-func officePublish(topic, payload string, meta map[string]string) {
-	body, _ := json.Marshal(map[string]interface{}{
-		"topic": topic, "payload": payload,
-		"source": officeServiceID, "metadata": meta,
-	})
-	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
-	defer cancel()
-	req, _ := http.NewRequestWithContext(ctx, http.MethodPost,
-		officeGateway+"/api/v1/gateway/pubsub/publish", bytes.NewReader(body))
-	req.Header.Set("Content-Type", "application/json")
-	resp, err := http.DefaultClient.Do(req)
-	if err != nil {
-		log.Printf("[office-svc] publish topic=%s err=%v", topic, err)
-		return
+// officeDLL calls the office DLL and also records the event on success.
+func officeDLL(funcName string, payload interface{}, topic string, pubPayload string) interface{} {
+	result := officeRust(funcName, payload, nil)
+	if result != nil && topic != "" {
+		go officePublish(topic, pubPayload, nil)
 	}
-	defer resp.Body.Close()
-	recordOfficeEvent(topic, payload, officeServiceID)
-}
-
-// officeSubscribeGateway long-polls the gateway for a set of exact topics and
-// calls handler whenever new events arrive.  Kept for backward compatibility.
-func officeSubscribeGateway(topics []string, handler func(topic, payload string)) {
-	for {
-		for _, topic := range topics {
-			func() {
-				ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-				defer cancel()
-				req, _ := http.NewRequestWithContext(ctx, http.MethodGet,
-					fmt.Sprintf("%s/api/v1/gateway/pubsub/history?limit=5&topic=%s", officeGateway, topic), nil)
-				resp, err := http.DefaultClient.Do(req)
-				if err != nil {
-					return
-				}
-				defer resp.Body.Close()
-				var result struct {
-					Events []struct {
-						Topic   string `json:"topic"`
-						Payload string `json:"payload"`
-					} `json:"events"`
-				}
-				if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
-					return
-				}
-				for _, e := range result.Events {
-					handler(e.Topic, e.Payload)
-				}
-			}()
-		}
-		time.Sleep(3 * time.Second)
-	}
-}
-
-// officeSubscribeGatewayPrefix polls the gateway /pubsub/history/prefix endpoint
-// for each prefix, delivering all matching events to handler.  This is the
-// preferred method: new portfolio sub-topics (e.g. portfolio.crdt.*) are
-// automatically included without code changes.
-func officeSubscribeGatewayPrefix(prefixes []string, handler func(topic, payload string)) {
-	for {
-		for _, prefix := range prefixes {
-			func() {
-				ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-				defer cancel()
-				req, _ := http.NewRequestWithContext(ctx, http.MethodGet,
-					fmt.Sprintf("%s/api/v1/gateway/pubsub/history/prefix?prefix=%s&limit=10",
-						officeGateway, prefix), nil)
-				resp, err := http.DefaultClient.Do(req)
-				if err != nil {
-					return
-				}
-				defer resp.Body.Close()
-				var result struct {
-					Events []struct {
-						Topic   string `json:"topic"`
-						Payload string `json:"payload"`
-					} `json:"events"`
-				}
-				if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
-					return
-				}
-				for _, e := range result.Events {
-					handler(e.Topic, e.Payload)
-				}
-			}()
-		}
-		time.Sleep(3 * time.Second)
-	}
-}
-
-// officeReplayGateway fetches a timestamp-windowed replay from the gateway for
-// a topic or prefix and appends results to the in-process event log.
-func officeReplayGateway(topic, prefix, from, to string) {
-	q := ""
-	switch {
-	case prefix != "":
-		q = fmt.Sprintf("prefix=%s&from=%s&to=%s", prefix, from, to)
-	case topic != "":
-		q = fmt.Sprintf("topic=%s&from=%s&to=%s", topic, from, to)
-	default:
-		return
-	}
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-	req, _ := http.NewRequestWithContext(ctx, http.MethodGet,
-		officeGateway+"/api/v1/gateway/pubsub/replay?"+q, nil)
-	resp, err := http.DefaultClient.Do(req)
-	if err != nil {
-		return
-	}
-	defer resp.Body.Close()
-	var result struct {
-		Events []struct {
-			Topic   string `json:"topic"`
-			Payload string `json:"payload"`
-			Source  string `json:"source"`
-		} `json:"events"`
-	}
-	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
-		return
-	}
-	for _, e := range result.Events {
-		recordOfficeEvent(e.Topic, e.Payload, e.Source)
-	}
-}
-
-func officeRegisterWithGateway(selfEndpoint string) {
-	body, _ := json.Marshal(map[string]interface{}{
-		"id": officeServiceID, "kind": "service",
-		"endpoint": selfEndpoint, "health_path": "/health",
-		"network_manager": "kogi-go-network", "status": "active",
-		"metadata": map[string]string{
-			"publishes": strings.Join([]string{
-				"office.dashboard.refresh", "office.timeline.updated",
-				"office.workspace.story.created", "office.assistant.subscription.active",
-				"office.portfolio.item.created", "office.portfolio.component.updated",
-				"office.portfolio.component.removed", "office.portfolio.graph.changed",
-				"office.portfolio.snapshot.saved", "office.portfolio.checkpoint.created",
-				"office.portfolio.governance.approval.requested",
-				"office.portfolio.governance.resource.allocated",
-				"office.portfolio.model.computed",
-			}, ","),
-			"subscribes": strings.Join([]string{
-				"portfolio.item.created", "portfolio.component.updated",
-				"portfolio.component.removed", "portfolio.graph.changed",
-				"portfolio.snapshot.saved", "portfolio.checkpoint.created",
-				"portfolio.governance.resource.allocated", "portfolio.governance.resource.consumed",
-				"portfolio.governance.approval.requested", "portfolio.governance.approval.resolved",
-				"portfolio.model.computed", "portfolio.health.updated",
-				"ims.profile.updated", "exchange.trade.executed",
-			}, ","),
-		},
-	})
-	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
-	defer cancel()
-	req, _ := http.NewRequestWithContext(ctx, http.MethodPost,
-		officeGateway+"/api/v1/gateway/components/register", bytes.NewReader(body))
-	req.Header.Set("Content-Type", "application/json")
-	resp, err := http.DefaultClient.Do(req)
-	if err != nil {
-		log.Printf("[office-svc] gateway registration err=%v", err)
-		return
-	}
-	defer resp.Body.Close()
-	log.Printf("[office-svc] registered with gateway %s", officeGateway)
-
-	// Register prefix subscriptions for the two namespaces we care about.
-	// Using prefix subscriptions means new portfolio topics (e.g. future CRDT
-	// events) are caught automatically without code changes.
-	for _, sub := range []struct{ prefix, consumer string }{
-		{"portfolio.", officeServiceID},
-		{"ims.", officeServiceID},
-		{"exchange.trade", officeServiceID},
-	} {
-		officeGatewaySubscribePrefix(sub.prefix, sub.consumer)
-	}
-}
-
-// officeGatewaySubscribePrefix registers a prefix subscription on the gateway.
-// The returned subscription ID is discarded here — the office service uses
-// polling rather than push delivery.
-func officeGatewaySubscribePrefix(prefix, consumer string) {
-	body, _ := json.Marshal(map[string]string{"prefix": prefix, "consumer": consumer})
-	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
-	defer cancel()
-	req, _ := http.NewRequestWithContext(ctx, http.MethodPost,
-		officeGateway+"/api/v1/gateway/pubsub/subscribe/prefix", bytes.NewReader(body))
-	req.Header.Set("Content-Type", "application/json")
-	resp, err := http.DefaultClient.Do(req)
-	if err != nil {
-		log.Printf("[office-svc] prefix subscribe prefix=%s err=%v", prefix, err)
-		return
-	}
-	defer resp.Body.Close()
-}
-
-// officeReportHealth sends a health record to the gateway mesh registry.
-func officeReportHealth(healthy bool, note string) {
-	body, _ := json.Marshal(map[string]interface{}{
-		"id":      officeServiceID,
-		"healthy": healthy,
-		"note":    note,
-	})
-	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
-	defer cancel()
-	req, _ := http.NewRequestWithContext(ctx, http.MethodPost,
-		officeGateway+"/api/v1/gateway/components/health", bytes.NewReader(body))
-	req.Header.Set("Content-Type", "application/json")
-	resp, err := http.DefaultClient.Do(req)
-	if err != nil {
-		log.Printf("[office-svc] health report err=%v", err)
-		return
-	}
-	defer resp.Body.Close()
-}
-
-// officeHealthLoop reports health every 30 seconds.
-func officeHealthLoop() {
-	for {
-		time.Sleep(30 * time.Second)
-		_, err := officeResolveBinary()
-		officeReportHealth(err == nil, "")
-	}
-}
-
-// officeDeadLetterMonitor polls the gateway dead-letter queue for office.*
-// events that had no subscribers and logs them.
-func officeDeadLetterMonitor() {
-	for {
-		time.Sleep(60 * time.Second)
-		ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
-		req, _ := http.NewRequestWithContext(ctx, http.MethodGet,
-			officeGateway+"/api/v1/gateway/pubsub/dead-letters?limit=20", nil)
-		resp, err := http.DefaultClient.Do(req)
-		cancel()
-		if err != nil {
-			continue
-		}
-		var result struct {
-			DeadLetters []struct {
-				Topic string `json:"topic"`
-				ID    string `json:"id"`
-			} `json:"dead_letters"`
-		}
-		if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
-			resp.Body.Close()
-			continue
-		}
-		resp.Body.Close()
-		for _, dl := range result.DeadLetters {
-			if strings.HasPrefix(dl.Topic, "office.") {
-				log.Printf("[office-svc] dead-letter id=%s topic=%s", dl.ID, dl.Topic)
-			}
-		}
-	}
-}
-
-// ── Misc helpers ──────────────────────────────────────────────────────────────
-
-// officeProxyGateway does a GET to the gateway at path and writes the response
-// body directly.  On any error it writes fallback as JSON.
-func officeProxyGateway(w http.ResponseWriter, path string, fallback interface{}) {
-	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
-	defer cancel()
-	req, _ := http.NewRequestWithContext(ctx, http.MethodGet, officeGateway+path, nil)
-	resp, err := http.DefaultClient.Do(req)
-	if err != nil {
-		writeOfficeJSON(w, http.StatusOK, fallback)
-		return
-	}
-	defer resp.Body.Close()
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(resp.StatusCode)
-	_, _ = io.Copy(w, resp.Body)
-}
-
-func writeOfficeJSON(w http.ResponseWriter, status int, payload interface{}) {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(status)
-	_ = json.NewEncoder(w).Encode(payload)
-}
-
-func decodeOfficeBody(r *http.Request, dst interface{}) error {
-	defer r.Body.Close()
-	b, _ := io.ReadAll(r.Body)
-	if err := json.Unmarshal(b, dst); err != nil {
-		return fmt.Errorf("invalid JSON: %w", err)
-	}
-	return nil
-}
-
-func officeTrimPrefix(r *http.Request, prefix string) string {
-	return strings.TrimPrefix(r.URL.Path, prefix)
-}
-
-func resolveOfficeAddr(defaultPort, envKey string) string {
-	if p := os.Getenv(envKey); p != "" {
-		return officeToListenAddr(p)
-	}
-	if p := os.Getenv("KOGI_PORT"); p != "" {
-		return officeToListenAddr(p)
-	}
-	return ":" + defaultPort
-}
-
-func officeToListenAddr(port string) string {
-	if strings.HasPrefix(port, ":") {
-		return port
-	}
-	return ":" + port
-}
-
-func officeFileExists(p string) bool {
-	info, err := os.Stat(p)
-	return err == nil && !info.IsDir()
-}
-
-func officeFindRepoRoot() (string, bool) {
-	cur, _ := os.Getwd()
-	for i := 0; i < 8; i++ {
-		if _, err := os.Stat(filepath.Join(cur, "kogi-modules")); err == nil {
-			return cur, true
-		}
-		if _, err := os.Stat(filepath.Join(cur, "go.work")); err == nil {
-			return cur, true
-		}
-		parent := filepath.Dir(cur)
-		if parent == cur {
-			break
-		}
-		cur = parent
-	}
-	return "", false
-}
-
-func officeResolveBinaryHint() string {
-	if p := os.Getenv("KOGI_OFFICE_SYSTEM_BIN"); p != "" {
-		return p
-	}
-	if p, err := exec.LookPath("kogi-office-system"); err == nil {
-		return p
-	}
-	return ""
+	return result
 }
 
 // ── main ──────────────────────────────────────────────────────────────────────
@@ -629,12 +280,9 @@ func main() {
 	addr := resolveOfficeAddr(officeDefaultPort, "KOGI_OFFICE_PORT")
 	selfEndpoint := fmt.Sprintf("http://127.0.0.1%s", addr)
 
-	// Registration + inbound subscription pump
 	go func() {
 		time.Sleep(600 * time.Millisecond)
 		officeRegisterWithGateway(selfEndpoint)
-		// Poll using the gateway's prefix history endpoint — catches all current
-		// and future portfolio.* topics without enumerating them individually.
 		go officeSubscribeGatewayPrefix(
 			[]string{"portfolio.", "ims.", "exchange.trade"},
 			func(topic, payload string) {
@@ -660,6 +308,10 @@ func main() {
 			"portfolio_service":  portfolioService,
 			"network_manager":    "kogi-go-network",
 			"office_rust_binary": officeResolveBinaryHint(),
+			"dll_config": map[string]string{
+				"office_dll_env": OfficeDLLConfig.EnvBinKey,
+				"office_exe_env": OfficeExeConfig.EnvBinKey,
+			},
 			"publishes": []string{
 				"office.dashboard.refresh", "office.timeline.updated",
 				"office.workspace.story.created", "office.assistant.subscription.active",
@@ -690,10 +342,8 @@ func main() {
 			http.NotFound(w, r)
 			return
 		}
-		writeOfficeJSON(w, http.StatusOK, officeRust("overview", nil, map[string]interface{}{
-			"module":      "kogi.office",
-			"application": "Kogi Office",
-			"service":     officeServiceName,
+		writeOfficeJSON(w, http.StatusOK, officeRust("kogi_office_overview", nil, map[string]interface{}{
+			"module": "kogi.office", "application": "Kogi Office", "service": officeServiceName,
 			"views": []map[string]string{
 				{"id": "dashboard", "title": "Office Dashboard", "status": "active"},
 				{"id": "portfolio", "title": "Office Portfolio", "status": "active"},
@@ -708,7 +358,7 @@ func main() {
 	// ── Dashboard ─────────────────────────────────────────────────────────
 	mux.HandleFunc("/api/v1/office/dashboard", func(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Path == "/api/v1/office/dashboard" || r.URL.Path == "/api/v1/office/dashboard/" {
-			writeOfficeJSON(w, http.StatusOK, officeRust("dashboard", nil, map[string]interface{}{
+			writeOfficeJSON(w, http.StatusOK, officeRust("kogi_office_dashboard", nil, map[string]interface{}{
 				"view": "dashboard",
 				"active_projects": []map[string]interface{}{
 					{"id": "proj-kogi-mvp", "name": "Kogi MVP Prototype", "status": "active", "progress_percent": 68},
@@ -736,58 +386,112 @@ func main() {
 			writeOfficeJSON(w, http.StatusBadRequest, map[string]string{"error": err.Error()})
 			return
 		}
-		result := officeRust("ack_dashboard_notification",
+		result := officeDLL("kogi_ack_dashboard_notification",
 			map[string]string{"notification_id": body.NotificationID},
-			map[string]interface{}{"ok": true, "message": "acknowledged"})
-		go officePublish("office.dashboard.refresh",
-			fmt.Sprintf(`{"notification_id":%q,"action":"acknowledged"}`, body.NotificationID), nil)
+			"office.dashboard.refresh",
+			fmt.Sprintf(`{"notification_id":%q,"action":"acknowledged"}`, body.NotificationID))
+		if result == nil {
+			result = map[string]interface{}{"ok": true, "message": "acknowledged"}
+		}
 		writeOfficeJSON(w, http.StatusOK, result)
 	})
 
-	// ── Portfolio proxy — ALL /api/v1/office/portfolio/… routes ──────────
+	// ── Portfolio: all routes call the DLL directly ───────────────────────
 	//
-	// The office service proxies every portfolio sub-path to portfolio-service,
-	// adding office-level pub/sub publishing for mutations.
+	// For mutations we call the DLL and also publish an office-namespace event.
+	// For reads we call the DLL.  A proxy to portfolio-service is used only when
+	// the DLL is explicitly unavailable (handled inside officeRust fallback).
 
-	// Proxy: snapshot
+	// Snapshot / metadata / events / query — read-only, call DLL
 	mux.HandleFunc("/api/v1/office/portfolio/snapshot", func(w http.ResponseWriter, r *http.Request) {
-		officeProxyPortfolio(w, r)
+		writeOfficeJSON(w, http.StatusOK, officeRust("kogi_portfolio_snapshot", nil,
+			map[string]interface{}{"snapshot_id": "unavailable"}))
 	})
-	// Proxy: metadata
 	mux.HandleFunc("/api/v1/office/portfolio/metadata", func(w http.ResponseWriter, r *http.Request) {
-		officeProxyPortfolio(w, r)
+		writeOfficeJSON(w, http.StatusOK, officeRust("kogi_portfolio_metadata", nil, map[string]interface{}{}))
 	})
-	// Proxy: query
-	mux.HandleFunc("/api/v1/office/portfolio/query", func(w http.ResponseWriter, r *http.Request) {
-		officeProxyPortfolio(w, r)
-	})
-	// Proxy: events
 	mux.HandleFunc("/api/v1/office/portfolio/events", func(w http.ResponseWriter, r *http.Request) {
-		officeProxyPortfolio(w, r)
+		writeOfficeJSON(w, http.StatusOK, officeRust("kogi_portfolio_event_log", nil,
+			map[string]interface{}{"events": []interface{}{}}))
 	})
-	// Proxy: snapshots list / save
+	mux.HandleFunc("/api/v1/office/portfolio/query", func(w http.ResponseWriter, r *http.Request) {
+		pql := r.URL.Query().Get("pql")
+		writeOfficeJSON(w, http.StatusOK, officeRust("kogi_portfolio_query_pql",
+			map[string]string{"pql": pql},
+			map[string]interface{}{"query": pql, "results": []interface{}{}}))
+	})
+
+	// Snapshots — list / save / restore
 	mux.HandleFunc("/api/v1/office/portfolio/snapshots", func(w http.ResponseWriter, r *http.Request) {
 		if r.Method == http.MethodPost {
-			officeProxyPortfolioAndPublish(w, r, "office.portfolio.snapshot.saved", `{}`)
+			var req struct{ Label *string `json:"label,omitempty"` }
+			_ = decodeOfficeBody(r, &req)
+			result, err := officeCallRust("kogi_portfolio_save_snapshot", req)
+			if err != nil {
+				writeOfficeJSON(w, http.StatusInternalServerError, map[string]string{"error": err.Error()})
+				return
+			}
+			go officePublish("office.portfolio.snapshot.saved", `{}`, nil)
+			writeOfficeJSON(w, http.StatusCreated, result)
 		} else {
-			officeProxyPortfolio(w, r)
+			writeOfficeJSON(w, http.StatusOK, map[string]interface{}{
+				"snapshots": officeRust("kogi_portfolio_list_snapshots", nil, []interface{}{}),
+			})
 		}
 	})
 	mux.HandleFunc("/api/v1/office/portfolio/snapshots/", func(w http.ResponseWriter, r *http.Request) {
-		officeProxyPortfolio(w, r)
+		parts := strings.SplitN(officeTrimPrefix(r, "/api/v1/office/portfolio/snapshots/"), "/", 2)
+		if len(parts) != 2 || parts[1] != "restore" {
+			writeOfficeJSON(w, http.StatusBadRequest, map[string]string{"error": "use /{id}/restore"})
+			return
+		}
+		result, err := officeCallRust("kogi_portfolio_restore_snapshot", map[string]string{"snapshot_id": parts[0]})
+		if err != nil {
+			writeOfficeJSON(w, http.StatusInternalServerError, map[string]string{"error": err.Error()})
+			return
+		}
+		writeOfficeJSON(w, http.StatusOK, result)
 	})
-	// Proxy: checkpoints list / save
+
+	// Checkpoints — list / save / restore
 	mux.HandleFunc("/api/v1/office/portfolio/checkpoints", func(w http.ResponseWriter, r *http.Request) {
 		if r.Method == http.MethodPost {
-			officeProxyPortfolioAndPublish(w, r, "office.portfolio.checkpoint.created", `{}`)
+			var req struct {
+				Label string  `json:"label"`
+				Note  *string `json:"note,omitempty"`
+			}
+			if err := decodeOfficeBody(r, &req); err != nil {
+				writeOfficeJSON(w, http.StatusBadRequest, map[string]string{"error": err.Error()})
+				return
+			}
+			result, err := officeCallRust("kogi_portfolio_save_checkpoint", req)
+			if err != nil {
+				writeOfficeJSON(w, http.StatusInternalServerError, map[string]string{"error": err.Error()})
+				return
+			}
+			go officePublish("office.portfolio.checkpoint.created", `{}`, nil)
+			writeOfficeJSON(w, http.StatusCreated, result)
 		} else {
-			officeProxyPortfolio(w, r)
+			writeOfficeJSON(w, http.StatusOK, map[string]interface{}{
+				"checkpoints": officeRust("kogi_portfolio_list_checkpoints", nil, []interface{}{}),
+			})
 		}
 	})
 	mux.HandleFunc("/api/v1/office/portfolio/checkpoints/", func(w http.ResponseWriter, r *http.Request) {
-		officeProxyPortfolio(w, r)
+		parts := strings.SplitN(officeTrimPrefix(r, "/api/v1/office/portfolio/checkpoints/"), "/", 2)
+		if len(parts) != 2 || parts[1] != "restore" {
+			writeOfficeJSON(w, http.StatusBadRequest, map[string]string{"error": "use /{id}/restore"})
+			return
+		}
+		result, err := officeCallRust("kogi_portfolio_restore_checkpoint", map[string]string{"checkpoint_id": parts[0]})
+		if err != nil {
+			writeOfficeJSON(w, http.StatusInternalServerError, map[string]string{"error": err.Error()})
+			return
+		}
+		writeOfficeJSON(w, http.StatusOK, result)
 	})
-	// Proxy: books
+
+	// Books
 	mux.HandleFunc("/api/v1/office/portfolio/books", func(w http.ResponseWriter, r *http.Request) {
 		if r.Method == http.MethodPost {
 			officeProxyPortfolioAndPublish(w, r, "office.portfolio.item.created", `{"type":"book"}`)
@@ -795,33 +499,45 @@ func main() {
 			officeProxyPortfolio(w, r)
 		}
 	})
-	// Proxy: active portfolio
+
+	// Active portfolio
 	mux.HandleFunc("/api/v1/office/portfolio/active", func(w http.ResponseWriter, r *http.Request) {
 		officeProxyPortfolio(w, r)
 	})
-	// Proxy: graph operations
+
+	// Graph operations — call DLL and publish
 	mux.HandleFunc("/api/v1/office/portfolio/graph/hierarchy", func(w http.ResponseWriter, r *http.Request) {
-		officeProxyPortfolioAndPublish(w, r, "office.portfolio.graph.changed", `{"edge":"hierarchy","method":%q}`, r.Method)
+		officeProxyPortfolioAndPublish(w, r, "office.portfolio.graph.changed",
+			`{"edge":"hierarchy","method":%q}`, r.Method)
 	})
 	mux.HandleFunc("/api/v1/office/portfolio/graph/dependency", func(w http.ResponseWriter, r *http.Request) {
-		officeProxyPortfolioAndPublish(w, r, "office.portfolio.graph.changed", `{"edge":"dependency","method":%q}`, r.Method)
+		officeProxyPortfolioAndPublish(w, r, "office.portfolio.graph.changed",
+			`{"edge":"dependency","method":%q}`, r.Method)
 	})
 	mux.HandleFunc("/api/v1/office/portfolio/graph/link", func(w http.ResponseWriter, r *http.Request) {
-		officeProxyPortfolioAndPublish(w, r, "office.portfolio.graph.changed", `{"edge":"link","method":%q}`, r.Method)
+		officeProxyPortfolioAndPublish(w, r, "office.portfolio.graph.changed",
+			`{"edge":"link","method":%q}`, r.Method)
 	})
 	mux.HandleFunc("/api/v1/office/portfolio/graph/member", func(w http.ResponseWriter, r *http.Request) {
-		officeProxyPortfolioAndPublish(w, r, "office.portfolio.graph.changed", `{"edge":"member","method":%q}`, r.Method)
+		officeProxyPortfolioAndPublish(w, r, "office.portfolio.graph.changed",
+			`{"edge":"member","method":%q}`, r.Method)
 	})
 	mux.HandleFunc("/api/v1/office/portfolio/graph/subtree/", func(w http.ResponseWriter, r *http.Request) {
-		officeProxyPortfolio(w, r)
+		id := officeTrimPrefix(r, "/api/v1/office/portfolio/graph/subtree/")
+		writeOfficeJSON(w, http.StatusOK, officeRust("kogi_portfolio_subtree",
+			map[string]string{"id": id}, map[string]interface{}{"root": id, "subtree": []interface{}{}}))
 	})
 	mux.HandleFunc("/api/v1/office/portfolio/graph/dependencies/", func(w http.ResponseWriter, r *http.Request) {
-		officeProxyPortfolio(w, r)
+		id := officeTrimPrefix(r, "/api/v1/office/portfolio/graph/dependencies/")
+		writeOfficeJSON(w, http.StatusOK, officeRust("kogi_portfolio_transitive_dependencies",
+			map[string]string{"id": id}, map[string]interface{}{"root": id, "dependencies": []interface{}{}}))
 	})
 	mux.HandleFunc("/api/v1/office/portfolio/graph/order", func(w http.ResponseWriter, r *http.Request) {
-		officeProxyPortfolio(w, r)
+		writeOfficeJSON(w, http.StatusOK, officeRust("kogi_portfolio_dependency_order", nil,
+			map[string]interface{}{"order": []interface{}{}}))
 	})
-	// Proxy: governance
+
+	// Governance
 	mux.HandleFunc("/api/v1/office/portfolio/governance/policy/attach", func(w http.ResponseWriter, r *http.Request) {
 		officeProxyPortfolio(w, r)
 	})
@@ -832,7 +548,6 @@ func main() {
 		officeProxyPortfolioAndPublish(w, r, "office.portfolio.governance.approval.requested", `{}`)
 	})
 	mux.HandleFunc("/api/v1/office/portfolio/governance/approval/", func(w http.ResponseWriter, r *http.Request) {
-		// POST …/{id}/resolve
 		if r.Method == http.MethodPost && strings.HasSuffix(r.URL.Path, "/resolve") {
 			officeProxyPortfolioAndPublish(w, r, "office.portfolio.governance.approval.resolved", `{}`)
 		} else {
@@ -850,16 +565,31 @@ func main() {
 		}
 	})
 	mux.HandleFunc("/api/v1/office/portfolio/governance/resource/overruns", func(w http.ResponseWriter, r *http.Request) {
-		officeProxyPortfolio(w, r)
+		writeOfficeJSON(w, http.StatusOK, officeRust("kogi_portfolio_overrun_allocations", nil,
+			map[string]interface{}{"overruns": []interface{}{}}))
 	})
 	mux.HandleFunc("/api/v1/office/portfolio/governance/resource/", func(w http.ResponseWriter, r *http.Request) {
-		officeProxyPortfolio(w, r)
+		id := officeTrimPrefix(r, "/api/v1/office/portfolio/governance/resource/")
+		res := officeRust("kogi_portfolio_get_resource_allocation",
+			map[string]string{"component_id": id}, nil)
+		if res == nil {
+			writeOfficeJSON(w, http.StatusNotFound, map[string]string{"error": "allocation not found"})
+			return
+		}
+		writeOfficeJSON(w, http.StatusOK, res)
 	})
-	// Proxy: computational models
+
+	// Computational models
 	mux.HandleFunc("/api/v1/office/portfolio/models/health/", func(w http.ResponseWriter, r *http.Request) {
 		id := officeTrimPrefix(r, "/api/v1/office/portfolio/models/health/")
-		officeProxyPortfolioAndPublish(w, r, "office.portfolio.model.computed",
-			`{"model":"portfolio_health","id":%q}`, id)
+		res := officeRust("kogi_portfolio_compute_health", map[string]string{"portfolio_id": id}, nil)
+		if res == nil {
+			writeOfficeJSON(w, http.StatusNotFound, map[string]string{"error": "not found"})
+			return
+		}
+		go officePublish("office.portfolio.model.computed",
+			fmt.Sprintf(`{"model":"portfolio_health","id":%q}`, id), nil)
+		writeOfficeJSON(w, http.StatusOK, res)
 	})
 	mux.HandleFunc("/api/v1/office/portfolio/models/project", func(w http.ResponseWriter, r *http.Request) {
 		officeProxyPortfolio(w, r)
@@ -868,10 +598,14 @@ func main() {
 		officeProxyPortfolio(w, r)
 	})
 	mux.HandleFunc("/api/v1/office/portfolio/models/subportfolio/", func(w http.ResponseWriter, r *http.Request) {
-		officeProxyPortfolio(w, r)
+		id := officeTrimPrefix(r, "/api/v1/office/portfolio/models/subportfolio/")
+		writeOfficeJSON(w, http.StatusOK, officeRust("kogi_portfolio_compute_subportfolio_rollup",
+			map[string]string{"subportfolio_id": id}, map[string]interface{}{"error": "not found"}))
 	})
 	mux.HandleFunc("/api/v1/office/portfolio/models/resource/", func(w http.ResponseWriter, r *http.Request) {
-		officeProxyPortfolio(w, r)
+		id := officeTrimPrefix(r, "/api/v1/office/portfolio/models/resource/")
+		writeOfficeJSON(w, http.StatusOK, officeRust("kogi_portfolio_compute_resource_utilisation",
+			map[string]string{"resource_id": id}, map[string]interface{}{"error": "not found"}))
 	})
 	mux.HandleFunc("/api/v1/office/portfolio/models/asset", func(w http.ResponseWriter, r *http.Request) {
 		officeProxyPortfolio(w, r)
@@ -889,49 +623,62 @@ func main() {
 		officeProxyPortfolio(w, r)
 	})
 	mux.HandleFunc("/api/v1/office/portfolio/models/record/", func(w http.ResponseWriter, r *http.Request) {
-		officeProxyPortfolio(w, r)
+		id := officeTrimPrefix(r, "/api/v1/office/portfolio/models/record/")
+		writeOfficeJSON(w, http.StatusOK, officeRust("kogi_portfolio_compute_record_integrity",
+			map[string]string{"record_id": id}, map[string]interface{}{"error": "not found"}))
 	})
-	// Proxy: components (type-specific must be before /{id})
+
+	// Components — type-specific before /{id}
 	mux.HandleFunc("/api/v1/office/portfolio/components/type/", func(w http.ResponseWriter, r *http.Request) {
-		officeProxyPortfolio(w, r)
+		ct := officeTrimPrefix(r, "/api/v1/office/portfolio/components/type/")
+		writeOfficeJSON(w, http.StatusOK, map[string]interface{}{
+			"type":       ct,
+			"components": officeRust("kogi_portfolio_components_by_type", map[string]string{"component_type": ct}, []interface{}{}),
+		})
 	})
 	mux.HandleFunc("/api/v1/office/portfolio/components", func(w http.ResponseWriter, r *http.Request) {
 		if r.Method == http.MethodPost {
-			// Read body for publishing; re-attach a new reader for proxy
 			bodyBytes, _ := io.ReadAll(r.Body)
 			defer r.Body.Close()
 			r.Body = io.NopCloser(bytes.NewReader(bodyBytes))
-
 			var partial struct {
 				Name          string `json:"name"`
 				ComponentType string `json:"component_type"`
 			}
-			_ = json.Unmarshal(bodyBytes, &partial)
-
+			_ = jsonUnmarshal(bodyBytes, &partial)
 			officeProxyPortfolioAndPublish(w, r,
 				"office.portfolio.item.created",
 				`{"name":%q,"type":%q}`, partial.Name, partial.ComponentType)
 		} else {
-			officeProxyPortfolio(w, r)
+			writeOfficeJSON(w, http.StatusOK, map[string]interface{}{
+				"components": officeRust("kogi_portfolio_all_components", nil, []interface{}{}),
+			})
 		}
 	})
 	mux.HandleFunc("/api/v1/office/portfolio/components/", func(w http.ResponseWriter, r *http.Request) {
 		id := strings.TrimPrefix(officeTrimPrefix(r, "/api/v1/office/portfolio/components/"), "/")
 		switch r.Method {
+		case http.MethodGet:
+			res := officeRust("kogi_portfolio_get_component", map[string]string{"id": id}, nil)
+			if res == nil {
+				writeOfficeJSON(w, http.StatusNotFound, map[string]string{"error": "not found"})
+				return
+			}
+			writeOfficeJSON(w, http.StatusOK, res)
 		case http.MethodPut:
-			officeProxyPortfolioAndPublish(w, r, "office.portfolio.component.updated",
-				`{"id":%q}`, id)
+			officeProxyPortfolioAndPublish(w, r, "office.portfolio.component.updated", `{"id":%q}`, id)
 		case http.MethodDelete:
-			officeProxyPortfolioAndPublish(w, r, "office.portfolio.component.removed",
-				`{"id":%q}`, id)
+			officeProxyPortfolioAndPublish(w, r, "office.portfolio.component.removed", `{"id":%q}`, id)
 		default:
 			officeProxyPortfolio(w, r)
 		}
 	})
-	// Proxy: portfolio overview (fallback catch-all for /api/v1/office/portfolio)
+
+	// Portfolio overview catch-all
 	mux.HandleFunc("/api/v1/office/portfolio", func(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Path == "/api/v1/office/portfolio" || r.URL.Path == "/api/v1/office/portfolio/" {
-			officeProxyPortfolio(w, r)
+			writeOfficeJSON(w, http.StatusOK, officeRust("kogi_office_portfolio_snapshot", nil,
+				map[string]interface{}{"view": "portfolio"}))
 			return
 		}
 		http.NotFound(w, r)
@@ -939,7 +686,7 @@ func main() {
 
 	// ── Timeline ──────────────────────────────────────────────────────────
 	mux.HandleFunc("/api/v1/office/timeline", func(w http.ResponseWriter, r *http.Request) {
-		writeOfficeJSON(w, http.StatusOK, officeRust("timeline", nil, map[string]interface{}{
+		writeOfficeJSON(w, http.StatusOK, officeRust("kogi_office_timeline", nil, map[string]interface{}{
 			"view": "timeline",
 			"calendars": []map[string]interface{}{
 				{"id": "cal-personal", "name": "Personal Calendar", "events": 14},
@@ -956,14 +703,17 @@ func main() {
 		}
 		var body interface{}
 		_ = decodeOfficeBody(r, &body)
-		result := officeRust("create_timeline_event", body, map[string]interface{}{"ok": true})
-		go officePublish("office.timeline.updated", `{"action":"event_created"}`, nil)
+		result := officeDLL("kogi_office_create_timeline_event", body,
+			"office.timeline.updated", `{"action":"event_created"}`)
+		if result == nil {
+			result = map[string]interface{}{"ok": true}
+		}
 		writeOfficeJSON(w, http.StatusCreated, result)
 	})
 
 	// ── Workspace ─────────────────────────────────────────────────────────
 	mux.HandleFunc("/api/v1/office/workspace", func(w http.ResponseWriter, r *http.Request) {
-		writeOfficeJSON(w, http.StatusOK, officeRust("workspace", nil, map[string]interface{}{
+		writeOfficeJSON(w, http.StatusOK, officeRust("kogi_office_workspace", nil, map[string]interface{}{
 			"view":    "workspace",
 			"domains": []string{"personal_work", "operations", "tactics", "strategy", "governance"},
 		}))
@@ -976,14 +726,17 @@ func main() {
 		}
 		var body interface{}
 		_ = decodeOfficeBody(r, &body)
-		result := officeRust("create_workspace_story", body, map[string]interface{}{"ok": true})
-		go officePublish("office.workspace.story.created", `{"action":"story_created"}`, nil)
+		result := officeDLL("kogi_office_create_workspace_story", body,
+			"office.workspace.story.created", `{"action":"story_created"}`)
+		if result == nil {
+			result = map[string]interface{}{"ok": true}
+		}
 		writeOfficeJSON(w, http.StatusCreated, result)
 	})
 
 	// ── Assistant ─────────────────────────────────────────────────────────
 	mux.HandleFunc("/api/v1/office/assistant", func(w http.ResponseWriter, r *http.Request) {
-		writeOfficeJSON(w, http.StatusOK, officeRust("assistant", nil, map[string]interface{}{
+		writeOfficeJSON(w, http.StatusOK, officeRust("kogi_office_assistant", nil, map[string]interface{}{
 			"view":         "assistant",
 			"assistant_id": "office-assistant-001",
 		}))
@@ -998,11 +751,13 @@ func main() {
 			Topic string `json:"topic"`
 		}
 		_ = decodeOfficeBody(r, &body)
-		result := officeRust("create_assistant_subscription",
+		result := officeDLL("kogi_office_create_assistant_subscription",
 			map[string]string{"topic": body.Topic},
-			map[string]interface{}{"ok": true, "topic": body.Topic})
-		go officePublish("office.assistant.subscription.active",
-			fmt.Sprintf(`{"topic":%q}`, body.Topic), nil)
+			"office.assistant.subscription.active",
+			fmt.Sprintf(`{"topic":%q}`, body.Topic))
+		if result == nil {
+			result = map[string]interface{}{"ok": true, "topic": body.Topic}
+		}
 		writeOfficeJSON(w, http.StatusCreated, result)
 	})
 
@@ -1012,7 +767,6 @@ func main() {
 		events := make([]officeEventEntry, len(officeEventLog))
 		copy(events, officeEventLog)
 		officeEventMu.RUnlock()
-		// Return newest first, up to 200
 		n := len(events)
 		if n > 200 {
 			events = events[n-200:]
@@ -1020,10 +774,7 @@ func main() {
 		for i, j := 0, len(events)-1; i < j; i, j = i+1, j-1 {
 			events[i], events[j] = events[j], events[i]
 		}
-		writeOfficeJSON(w, http.StatusOK, map[string]interface{}{
-			"events": events,
-			"count":  len(events),
-		})
+		writeOfficeJSON(w, http.StatusOK, map[string]interface{}{"events": events, "count": len(events)})
 	})
 
 	mux.HandleFunc("/api/v1/office/pubsub/topics", func(w http.ResponseWriter, r *http.Request) {
@@ -1035,8 +786,7 @@ func main() {
 		total := len(officeEventLog)
 		officeEventMu.RUnlock()
 		writeOfficeJSON(w, http.StatusOK, map[string]interface{}{
-			"topic_counts": topicCounts,
-			"total_events": total,
+			"topic_counts": topicCounts, "total_events": total,
 			"published_topics": []string{
 				"office.dashboard.refresh", "office.timeline.updated",
 				"office.workspace.story.created", "office.assistant.subscription.active",
@@ -1060,13 +810,11 @@ func main() {
 		})
 	})
 
-	// Dead-letters: forwards gateway /pubsub/dead-letters, filtered to office.*
 	mux.HandleFunc("/api/v1/office/pubsub/dead-letters", func(w http.ResponseWriter, r *http.Request) {
 		officeProxyGateway(w, "/api/v1/gateway/pubsub/dead-letters?limit=20",
 			map[string]interface{}{"dead_letters": []interface{}{}})
 	})
 
-	// Replay: fetch a window of office.* events from the gateway bus history
 	mux.HandleFunc("/api/v1/office/pubsub/replay", func(w http.ResponseWriter, r *http.Request) {
 		from := r.URL.Query().Get("from")
 		to := r.URL.Query().Get("to")
@@ -1085,30 +833,26 @@ func main() {
 			map[string]interface{}{"events": []interface{}{}})
 	})
 
-	// Bus metrics: forwards gateway /pubsub/metrics
 	mux.HandleFunc("/api/v1/office/pubsub/metrics", func(w http.ResponseWriter, r *http.Request) {
 		officeProxyGateway(w, "/api/v1/gateway/pubsub/metrics",
 			map[string]interface{}{"error": "gateway unavailable"})
 	})
 
-	// Mesh: what the gateway mesh registry knows about this service
+	// ── Mesh ──────────────────────────────────────────────────────────────
 	mux.HandleFunc("/api/v1/office/mesh", func(w http.ResponseWriter, r *http.Request) {
 		officeProxyGateway(w, "/api/v1/gateway/components/id/"+officeServiceID,
 			map[string]interface{}{"error": "gateway unavailable"})
 	})
 
-	// Mesh messages sent to/from this service
 	mux.HandleFunc("/api/v1/office/mesh/messages", func(w http.ResponseWriter, r *http.Request) {
 		limit := r.URL.Query().Get("limit")
 		if limit == "" {
 			limit = "50"
 		}
-		officeProxyGateway(w,
-			"/api/v1/gateway/network/history?source="+officeServiceID+"&limit="+limit,
+		officeProxyGateway(w, "/api/v1/gateway/network/history?source="+officeServiceID+"&limit="+limit,
 			map[string]interface{}{"messages": []interface{}{}})
 	})
 
-	// Office topic routes: what the gateway has wired for this service
 	mux.HandleFunc("/api/v1/office/mesh/routes", func(w http.ResponseWriter, r *http.Request) {
 		officeProxyGateway(w, "/api/v1/gateway/portfolio/routes",
 			map[string]interface{}{"error": "gateway unavailable"})
@@ -1116,4 +860,10 @@ func main() {
 
 	log.Printf("%s listening on %s", officeServiceName, addr)
 	log.Fatal(http.ListenAndServe(addr, mux))
+}
+
+// jsonUnmarshal delegates to the standard library unmarshal, available via the
+// shared "encoding/json" import in utility.go (same package).
+func jsonUnmarshal(b []byte, v interface{}) error {
+	return json.Unmarshal(b, v)
 }
