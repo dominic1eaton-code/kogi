@@ -22,3 +22,11 @@
 - `GET /api/v1/office/timeline`
 - `GET /api/v1/office/workspace`
 - `GET /api/v1/office/assistant`
+
+## Rust System Bridge
+The Go office service can invoke the Rust office system binary when available:
+
+```powershell
+cargo build --manifest-path kogi-modules/office/Cargo.toml
+$env:KOGI_OFFICE_SYSTEM_BIN = "C:\path\to\kogi-office-system.exe"
+```

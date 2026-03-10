@@ -1,6 +1,7 @@
 # kogi-server
 
-Rust backend platform server that boots `kogi-host` and exposes the host system to clients.
+Rust backend platform server that boots `kogi-host` via `HostApp` and exposes the host system to clients.
+The server bridges client requests into the host and publishes/subscribes messages through the gateway.
 
 ## Endpoints
 - `GET /health`
@@ -12,6 +13,8 @@ Rust backend platform server that boots `kogi-host` and exposes the host system 
 - `POST /api/v1/engine/control`
 - `POST /api/v1/engine/ingest`
 - `GET /api/v1/modules`
+- `POST /api/v1/messages`
+- `GET /api/v1/messages`
 - `GET /api/v1/ims/identities`
 - `GET /api/v1/ims/profiles`
 - `GET /api/v1/autonomy/capabilities`

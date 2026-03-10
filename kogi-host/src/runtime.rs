@@ -56,6 +56,10 @@ impl HostRuntime {
         self.executive.summary_line()
     }
 
+    pub fn tick(&self) {
+        self.executive.tick();
+    }
+
     pub fn modules(&self) -> Vec<ModuleRuntime> {
         self.executive.modules()
     }

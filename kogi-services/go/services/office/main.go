@@ -1,11 +1,17 @@
 package main
 
 import (
+	"context"
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
 	"os"
+	"os/exec"
+	"path/filepath"
+	"runtime"
 	"strings"
+	"time"
 )
 
 func main() {
@@ -22,6 +28,8 @@ func main() {
 			"module_id":       "kogi.office",
 			"gateway":         "http://127.0.0.1:8090",
 			"network_manager": "kogi-go-network",
+			"system_bridge":   "rust",
+			"system_binary":   resolveOfficeSystemBinaryHint(),
 			"publishes": []string{
 				"office.dashboard.refresh",
 				"office.timeline.updated",
@@ -37,7 +45,7 @@ func main() {
 	})
 
 	mux.HandleFunc("/api/v1/office", func(w http.ResponseWriter, r *http.Request) {
-		writeJSON(w, http.StatusOK, map[string]interface{}{
+		respondWithSystemOrFallback(w, "overview", map[string]interface{}{
 			"module":      "kogi.office",
 			"application": "Kogi Office",
 			"service":     "kogi-services/go/services/office",
@@ -53,7 +61,7 @@ func main() {
 	})
 
 	mux.HandleFunc("/api/v1/office/dashboard", func(w http.ResponseWriter, r *http.Request) {
-		writeJSON(w, http.StatusOK, map[string]interface{}{
+		respondWithSystemOrFallback(w, "dashboard", map[string]interface{}{
 			"view": "dashboard",
 			"active_projects": []map[string]interface{}{
 				{"id": "proj-kogi-mvp", "name": "Kogi MVP Prototype", "status": "active", "progress_percent": 68},
@@ -96,7 +104,7 @@ func main() {
 	})
 
 	mux.HandleFunc("/api/v1/office/portfolio", func(w http.ResponseWriter, r *http.Request) {
-		writeJSON(w, http.StatusOK, map[string]interface{}{
+		respondWithSystemOrFallback(w, "portfolio", map[string]interface{}{
 			"view":       "portfolio",
 			"views":      []string{"tiled", "tree", "modular_grid"},
 			"item_types": []string{"project", "program", "resource", "asset", "capital", "investment", "solution", "document", "misc", "custom"},
@@ -126,7 +134,7 @@ func main() {
 	})
 
 	mux.HandleFunc("/api/v1/office/timeline", func(w http.ResponseWriter, r *http.Request) {
-		writeJSON(w, http.StatusOK, map[string]interface{}{
+		respondWithSystemOrFallback(w, "timeline", map[string]interface{}{
 			"view": "timeline",
 			"calendars": []map[string]interface{}{
 				{"id": "cal-personal", "name": "Personal Calendar", "events": 14},
@@ -152,7 +160,7 @@ func main() {
 	})
 
 	mux.HandleFunc("/api/v1/office/workspace", func(w http.ResponseWriter, r *http.Request) {
-		writeJSON(w, http.StatusOK, map[string]interface{}{
+		respondWithSystemOrFallback(w, "workspace", map[string]interface{}{
 			"view":    "workspace",
 			"domains": []string{"personal_work", "operations", "tactics", "strategy", "governance"},
 			"user_stories": []map[string]interface{}{
@@ -183,7 +191,7 @@ func main() {
 	})
 
 	mux.HandleFunc("/api/v1/office/assistant", func(w http.ResponseWriter, r *http.Request) {
-		writeJSON(w, http.StatusOK, map[string]interface{}{
+		respondWithSystemOrFallback(w, "assistant", map[string]interface{}{
 			"view":         "assistant",
 			"assistant_id": "office-assistant-001",
 			"chat_context_window": map[string]interface{}{
@@ -243,4 +251,108 @@ func toListenAddr(port string) string {
 		return port
 	}
 	return ":" + port
+}
+
+func respondWithSystemOrFallback(w http.ResponseWriter, action string, fallback interface{}) {
+	payload, err := callOfficeSystem(action)
+	if err == nil {
+		writeJSON(w, http.StatusOK, payload)
+		return
+	}
+	writeJSON(w, http.StatusOK, fallback)
+}
+
+func callOfficeSystem(action string) (interface{}, error) {
+	binary, err := resolveOfficeSystemBinary()
+	if err != nil {
+		return nil, err
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+	defer cancel()
+
+	request := map[string]string{"action": action}
+	raw, _ := json.Marshal(request)
+	cmd := exec.CommandContext(ctx, binary, "--request", string(raw))
+	output, err := cmd.CombinedOutput()
+	if err != nil {
+		return nil, fmt.Errorf("office system failed: %w %s", err, strings.TrimSpace(string(output)))
+	}
+
+	var payload interface{}
+	if err := json.Unmarshal(output, &payload); err != nil {
+		return nil, fmt.Errorf("office system response parse error: %w", err)
+	}
+	return payload, nil
+}
+
+func resolveOfficeSystemBinary() (string, error) {
+	if path := os.Getenv("KOGI_OFFICE_SYSTEM_BIN"); path != "" {
+		return path, nil
+	}
+	if path, err := exec.LookPath("kogi-office-system"); err == nil {
+		return path, nil
+	}
+
+	if root, ok := findRepoRoot(); ok {
+		exeName := "kogi-office-system"
+		if runtime.GOOS == "windows" {
+			exeName += ".exe"
+		}
+		candidates := []string{
+			filepath.Join(root, "kogi-modules", "office", "target", "debug", exeName),
+			filepath.Join(root, "kogi-modules", "office", "target", "release", exeName),
+			filepath.Join(root, "kogi-modules", "office", exeName),
+		}
+		for _, candidate := range candidates {
+			if fileExists(candidate) {
+				return candidate, nil
+			}
+		}
+	}
+
+	return "", fmt.Errorf("kogi-office-system binary not found; set KOGI_OFFICE_SYSTEM_BIN or build kogi-modules/office")
+}
+
+func resolveOfficeSystemBinaryHint() string {
+	if path := os.Getenv("KOGI_OFFICE_SYSTEM_BIN"); path != "" {
+		return path
+	}
+	if path, err := exec.LookPath("kogi-office-system"); err == nil {
+		return path
+	}
+	return ""
+}
+
+func findRepoRoot() (string, bool) {
+	cwd, err := os.Getwd()
+	if err != nil {
+		return "", false
+	}
+
+	current := cwd
+	for i := 0; i < 8; i++ {
+		if pathExists(filepath.Join(current, "kogi-modules")) || pathExists(filepath.Join(current, "go.work")) {
+			return current, true
+		}
+		parent := filepath.Dir(current)
+		if parent == current {
+			break
+		}
+		current = parent
+	}
+	return "", false
+}
+
+func pathExists(path string) bool {
+	_, err := os.Stat(path)
+	return err == nil
+}
+
+func fileExists(path string) bool {
+	info, err := os.Stat(path)
+	if err != nil {
+		return false
+	}
+	return !info.IsDir()
 }

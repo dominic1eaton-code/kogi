@@ -3,7 +3,11 @@
 Rust host runtime for Kogi.
 
 ## Role
-- Runs the kernel + module runtime and acts as the executive control system
+- `HostApp` is the primary host application with lifecycle modes (init/configure/run/pause/shutdown).
+- `HostModel` is the execution model that processes service messages and connects them to `HostSystem`.
+- `HostSystem` is the core computational interface where the kernel bridge, runtime, module runtime, executive, and shell are orchestrated.
+- `HostRuntime` provides runtime boot/tick/engine control/ingest and delegates to the executive.
+- `HostExecutive` manages kernel coordination, module registry, services, and component health.
 - Loads module manifests from `kogi-modules/*/module.yaml`
 - Registers platform components (kernel/host/server/engine/engine-service/database-service/services/modules) with the kernel bridge
 - Emits host lifecycle events

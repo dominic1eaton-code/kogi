@@ -49,9 +49,8 @@ final case class EngineFlowSnapshot(
     generatedAtMs: Long
 )
 
-final class KogiPlatformDataEngine(
-    analytics: AnalyticsRecommendationDiscoverExploreEngine =
-      new AnalyticsRecommendationDiscoverExploreEngine(),
+final class TelemetryEngine(
+    analyticsEngine: AnalyticsEngine = new AnalyticsEngine(),
     maxEnvelopes: Int = 50000,
     maxLedger: Int = 50000
 ) {
@@ -68,7 +67,7 @@ final class KogiPlatformDataEngine(
     val module = payload.getOrElse("module", resolveModule(normalized.source, normalized.topic))
     val eventType = payload.getOrElse("event_type", normalized.topic.replace('.', '_'))
 
-    analytics.ingest(
+    analyticsEngine.ingest(
       StreamEvent(
         id = payload.getOrElse("event_id", normalized.id),
         profileId = profileId,
@@ -88,7 +87,7 @@ final class KogiPlatformDataEngine(
     )
 
     if (hasModuleMetrics(payload)) {
-      analytics.ingestModuleMetric(
+      analyticsEngine.ingestModuleMetric(
         ModuleMetricSample(
           id = payload.getOrElse("metric_id", s"mm-${safeId(normalized.id)}-$timestampMs"),
           module = module,
@@ -106,7 +105,7 @@ final class KogiPlatformDataEngine(
     }
 
     if (hasHostMetrics(payload)) {
-      analytics.ingestHostMetric(
+      analyticsEngine.ingestHostMetric(
         HostMetricSample(
           id = payload.getOrElse("host_metric_id", s"hm-${safeId(normalized.id)}-$timestampMs"),
           hostId = payload.getOrElse("host_id", "kogi-host-001"),
@@ -166,7 +165,7 @@ final class KogiPlatformDataEngine(
       windowMs: Long = 5L * 60L * 1000L
   ): EngineFlowSnapshot = {
     val componentStats = buildComponentStats(windowMs)
-    val system = analytics.systemSnapshot(hostId = hostId, windowMs = windowMs)
+    val system = analyticsEngine.systemSnapshot(hostId = hostId, windowMs = windowMs)
     val recentLedger = ledger.takeRight(64).toList
     val observedTopics = envelopes.takeRight(2000).map(_.topic).distinct.sorted.toList
 
@@ -310,4 +309,41 @@ final class KogiPlatformDataEngine(
 
   private def safeId(input: String): String =
     input.toLowerCase.replaceAll("[^a-z0-9]+", "-")
+}
+
+final class KogiPlatformDataEngine(
+    analytics: AnalyticsEngine = new AnalyticsEngine(),
+    maxEnvelopes: Int = 50000,
+    maxLedger: Int = 50000
+) {
+  private val telemetry = new TelemetryEngine(
+    analyticsEngine = analytics,
+    maxEnvelopes = maxEnvelopes,
+    maxLedger = maxLedger
+  )
+
+  def ingestEnvelope(envelope: PlatformDataEnvelope): EngineFlowSnapshot =
+    telemetry.ingestEnvelope(envelope)
+
+  def ingestGatewayMessage(
+      topic: String,
+      payload: Map[String, String],
+      source: String,
+      target: String,
+      flowId: String,
+      timestampMs: Long = System.currentTimeMillis()
+  ): EngineFlowSnapshot =
+    telemetry.ingestGatewayMessage(topic, payload, source, target, flowId, timestampMs)
+
+  def snapshot(
+      hostId: String = "kogi-host-001",
+      windowMs: Long = 5L * 60L * 1000L
+  ): EngineFlowSnapshot =
+    telemetry.snapshot(hostId = hostId, windowMs = windowMs)
+
+  def flowLedger(limit: Int = 100): List[DataFlowLedgerEntry] =
+    telemetry.flowLedger(limit)
+
+  def flowEnvelopes(limit: Int = 100): List[PlatformDataEnvelope] =
+    telemetry.flowEnvelopes(limit)
 }

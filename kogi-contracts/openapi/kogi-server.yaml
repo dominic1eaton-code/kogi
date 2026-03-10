@@ -74,6 +74,41 @@ paths:
       responses:
         "200":
           description: module list
+  /api/v1/messages:
+    post:
+      summary: Relay a message to the host and publish to the gateway
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                topic:
+                  type: string
+                payload:
+                  type: object
+                source:
+                  type: string
+                target:
+                  type: string
+      responses:
+        "200":
+          description: message relay result
+    get:
+      summary: Fetch gateway message history (server subscription bridge)
+      parameters:
+        - in: query
+          name: limit
+          schema:
+            type: integer
+        - in: query
+          name: topic
+          schema:
+            type: string
+      responses:
+        "200":
+          description: gateway message history
   /api/v1/ims/identities:
     get:
       summary: List worker identities with personas, roles, and worker types

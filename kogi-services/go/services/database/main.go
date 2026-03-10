@@ -52,8 +52,10 @@ func main() {
 			"module_id":       "kogi.database",
 			"engine":          "postgres",
 			"schema":          "kogi-database/postgres/schema.sql",
+			"gateway":         "http://127.0.0.1:8090",
 			"network_manager": "kogi-go-network",
 			"system":          system,
+			"system_bridge":   "rust",
 			"publishes": []string{
 				"database.query.executed",
 				"database.ledger.updated",

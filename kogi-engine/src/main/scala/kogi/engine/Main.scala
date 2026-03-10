@@ -2,7 +2,7 @@ package kogi.engine
 
 object Main {
   def main(args: Array[String]): Unit = {
-    val engine = new KogiPlatformDataEngine()
+    val engine = new KogiEngine()
     val now = System.currentTimeMillis()
 
     val flows = Seq(

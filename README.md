@@ -7,10 +7,10 @@ This repository has been refactored into a multi-language monorepo aligned to th
 ## Platform Components
 
 - `kogi-kernel` (Zig): low-level kernel orchestration, module registry, scheduler, cache/memory, process/file management, RBAC, mode barrier, FFI.
-- `kogi-host` (Rust): host runtime that boots the kernel + modules and orchestrates gateway + module services + engine/database services with an interactive shell.
-- `kogi-server` (Rust): backend server that boots `kogi-host` and provides the client-facing interface into the host system.
+- `kogi-host` (Rust): host runtime and system application (HostApp/HostModel/HostSystem) that boots the kernel + modules and orchestrates gateway + module services + engine/database services with an interactive shell.
+- `kogi-server` (Rust): backend server that boots `kogi-host` (HostApp), provides client-facing access, and bridges client messages to the gateway + host.
 - `kogi-services/go` (Go): networking gateway, pub/sub, component communication, plus module, engine, and database service facades.
-- `kogi-engine` (Scala): platform data/data-processing engine (analytics, recommendations, discovery, exploration, streaming).
+- `kogi-engine` (Scala): platform data/data-processing engine (analytics, telemetry, recommendations/discovery/explore, search, query optimization).
 - `kogi-desktop-client` (Java): desktop client shell.
 - `kogi-web-client` (Angular + TypeScript): web client shell.
 - `kogi-mobile` (Kotlin Android + iOS scaffold): mobile/device client infrastructure.

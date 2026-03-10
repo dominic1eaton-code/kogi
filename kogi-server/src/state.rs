@@ -1,9 +1,12 @@
 use kogi_host::executive::HostError;
-use kogi_host::runtime::HostRuntime;
+use kogi_host::{HostApp, HostMessage, HostMessageResult};
 use kogi_office_module::{
     to_json, NewAssistantSubscription, NewPortfolioItem, NewTimelineEvent, NewWorkspaceStory,
     OfficeModule,
 };
+use std::io::{Read, Write};
+use std::net::TcpStream;
+use std::time::{Duration, SystemTime, UNIX_EPOCH};
 
 #[derive(Clone, Debug)]
 pub struct WorkerIdentity {
@@ -35,7 +38,8 @@ pub struct IdentityProfile {
 #[derive(Clone, Debug)]
 pub struct ServerState {
     pub kernel_mode: &'static str,
-    pub host: HostRuntime,
+    pub host: HostApp,
+    pub gateway: GatewayClient,
     pub identities: Vec<WorkerIdentity>,
     pub profiles: Vec<IdentityProfile>,
     pub office_module: OfficeModule,
@@ -43,10 +47,14 @@ pub struct ServerState {
 
 impl ServerState {
     pub fn bootstrap() -> Result<Self, HostError> {
-        let host = HostRuntime::bootstrap()?;
+        let mut host = HostApp::new()?;
+        host.init()?;
+        host.configure()?;
+        host.run()?;
         Ok(Self {
             kernel_mode: "user",
             host,
+            gateway: GatewayClient::new("http://127.0.0.1:8090"),
             identities: vec![WorkerIdentity {
                 id: "ident-001",
                 display_name: "Dominic Worker",
@@ -154,11 +162,12 @@ impl ServerState {
 
     pub fn host_summary_json(&self) -> String {
         format!(
-            "{{\"host_id\":\"kogi-host-001\",\"booted\":{},\"module_count\":{},\"component_count\":{},\"kernel_mode\":\"{}\",\"engine_service\":\"kogi-services/go/services/engine\",\"database_service\":\"kogi-services/go/services/database\"}}",
+            "{{\"host_id\":\"kogi-host-001\",\"booted\":{},\"module_count\":{},\"component_count\":{},\"kernel_mode\":\"{}\",\"host_mode\":\"{}\",\"engine_service\":\"kogi-services/go/services/engine\",\"database_service\":\"kogi-services/go/services/database\"}}",
             self.host.booted(),
             self.host.module_count(),
             self.host.component_count(),
-            self.kernel_mode
+            self.kernel_mode,
+            self.host.mode_label()
         )
     }
 
@@ -189,9 +198,10 @@ impl ServerState {
 
     pub fn summary_json(&self) -> String {
         format!(
-            "{{\"kernel_mode\":\"{}\",\"host_booted\":{},\"module_count\":{},\"component_count\":{},\"identity_count\":{},\"profile_count\":{},\"office_views\":5,\"office_service\":\"kogi-services/go/services/office\",\"engine_service\":\"kogi-services/go/services/engine\",\"database_service\":\"kogi-services/go/services/database\",\"data_flow\":\"clients->server->host->services/modules/kernel->engine\"}}",
+            "{{\"kernel_mode\":\"{}\",\"host_booted\":{},\"host_mode\":\"{}\",\"module_count\":{},\"component_count\":{},\"identity_count\":{},\"profile_count\":{},\"office_views\":5,\"office_service\":\"kogi-services/go/services/office\",\"engine_service\":\"kogi-services/go/services/engine\",\"database_service\":\"kogi-services/go/services/database\",\"gateway\":\"http://127.0.0.1:8090\",\"data_flow\":\"clients->server->gateway->services/modules + server->host->kernel\"}}",
             self.kernel_mode,
             self.host.booted(),
+            self.host.mode_label(),
             self.host.module_count(),
             self.host.component_count(),
             self.identities.len(),
@@ -366,7 +376,7 @@ impl ServerState {
         };
 
         format!(
-            "{{\"engine\":\"kogi-engine\",\"status\":\"active\",\"ingest_topic\":\"engine.ingest\",\"flow\":\"clients->server->host->services/modules/kernel->engine\",\"components\":{},\"engine_service\":{engine_service},\"capabilities\":[\"analytics\",\"recommendations\",\"discover\",\"explore\",\"realtime snapshots\"]}}",
+            "{{\"engine\":\"kogi-engine\",\"status\":\"active\",\"ingest_topic\":\"engine.ingest\",\"flow\":\"clients->server->gateway->services/modules->engine + server->host->kernel\",\"components\":{},\"engine_service\":{engine_service},\"capabilities\":[\"analytics\",\"recommendations\",\"discover\",\"explore\",\"realtime snapshots\"]}}",
             json_str_array_owned(&component_ids),
         )
     }
@@ -380,15 +390,83 @@ impl ServerState {
     }
 
     pub fn engine_control(&self, action: &str) -> Result<String, HostError> {
+        let payload = format!("{{\"action\":\"{}\"}}", escape_json(action));
+        let _ = self.publish_gateway_event(
+            "engine.control.requested",
+            &payload,
+            "kogi.services.engine",
+        );
         self.host.engine_control(action)
     }
 
     pub fn engine_ingest(&self, payload: &str) -> Result<String, HostError> {
+        let body = if payload.trim_start().starts_with('{') {
+            payload.to_string()
+        } else {
+            format!("{{\"payload\":\"{}\"}}", escape_json(payload))
+        };
+        let _ = self.publish_gateway_event("engine.ingest", &body, "kogi.engine");
         self.host.engine_ingest(payload)
     }
 
     pub fn database_query(&self, sql: &str) -> Result<String, HostError> {
+        let payload = format!("{{\"sql\":\"{}\"}}", escape_json(sql));
+        let _ = self.publish_gateway_event(
+            "database.query.executed",
+            &payload,
+            "kogi.services.database",
+        );
         self.host.database_query(sql)
+    }
+
+    pub fn relay_message_json(
+        &mut self,
+        topic: &str,
+        payload: &str,
+        source: &str,
+        target: &str,
+    ) -> String {
+        let message = HostMessage {
+            topic: topic.to_string(),
+            payload: payload.to_string(),
+            source: source.to_string(),
+            target: target.to_string(),
+            received_at_ms: now_ms(),
+        };
+        let host_result = self.host.handle_message(message);
+        let gateway_result = match self.gateway.publish(topic, payload, source, target) {
+            Ok(body) => body,
+            Err(err) => format!(
+                "{{\"status\":\"error\",\"error\":\"{}\"}}",
+                escape_json(&err)
+            ),
+        };
+
+        format!(
+            "{{\"host\":{},\"gateway\":{}}}",
+            host_message_result_json(&host_result),
+            gateway_result
+        )
+    }
+
+    pub fn gateway_history_json(&self, limit: usize, topic: Option<&str>) -> String {
+        match self.gateway.history(limit, topic) {
+            Ok(body) => body,
+            Err(err) => format!(
+                "{{\"status\":\"error\",\"error\":\"{}\"}}",
+                escape_json(&err)
+            ),
+        }
+    }
+
+    fn publish_gateway_event(
+        &self,
+        topic: &str,
+        payload: &str,
+        target: &str,
+    ) -> Result<String, String> {
+        self.gateway
+            .publish(topic, payload, "kogi.server", target)
     }
 
     pub fn unified_screens_json(&self) -> String {
@@ -477,4 +555,146 @@ fn escape_json(value: &str) -> String {
         .replace('\n', "\\n")
         .replace('\r', "\\r")
         .replace('\t', "\\t")
+}
+
+fn now_ms() -> u64 {
+    SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .unwrap_or_else(|_| Duration::from_millis(0))
+        .as_millis() as u64
+}
+
+fn host_message_result_json(result: &HostMessageResult) -> String {
+    format!(
+        "{{\"topic\":\"{}\",\"status\":\"{}\",\"handled\":{},\"processed_at_ms\":{},\"response\":\"{}\",\"error\":{}}}",
+        escape_json(&result.topic),
+        escape_json(&result.status),
+        result.handled,
+        result.processed_at_ms,
+        escape_json(&result.response),
+        match &result.error {
+            Some(err) => format!("\"{}\"", escape_json(err)),
+            None => "null".to_string(),
+        }
+    )
+}
+
+#[derive(Clone, Debug)]
+pub struct GatewayClient {
+    endpoint: String,
+}
+
+impl GatewayClient {
+    pub fn new(endpoint: &str) -> Self {
+        Self {
+            endpoint: endpoint.trim_end_matches('/').to_string(),
+        }
+    }
+
+    pub fn publish(
+        &self,
+        topic: &str,
+        payload: &str,
+        source: &str,
+        target: &str,
+    ) -> Result<String, String> {
+        let endpoint = format!("{}/api/v1/gateway/pubsub/publish", self.endpoint);
+        let body = format!(
+            "{{\"topic\":\"{}\",\"payload\":\"{}\",\"source\":\"{}\",\"target\":\"{}\"}}",
+            escape_json(topic),
+            escape_json(payload),
+            escape_json(source),
+            escape_json(target)
+        );
+        let (status, response) = http_request("POST", &endpoint, Some(&body))?;
+        if (200..300).contains(&status) {
+            Ok(response)
+        } else {
+            Err(format!(
+                "gateway publish failed status={status} endpoint={endpoint}"
+            ))
+        }
+    }
+
+    pub fn history(&self, limit: usize, topic: Option<&str>) -> Result<String, String> {
+        let mut endpoint = format!("{}/api/v1/gateway/pubsub/history?limit={}", self.endpoint, limit);
+        if let Some(topic) = topic {
+            endpoint.push_str("&topic=");
+            endpoint.push_str(&percent_encode(topic));
+        }
+        let (status, response) = http_request("GET", &endpoint, None)?;
+        if (200..300).contains(&status) {
+            Ok(response)
+        } else {
+            Err(format!(
+                "gateway history failed status={status} endpoint={endpoint}"
+            ))
+        }
+    }
+}
+
+fn percent_encode(value: &str) -> String {
+    let mut encoded = String::new();
+    for byte in value.bytes() {
+        match byte {
+            b'A'..=b'Z' | b'a'..=b'z' | b'0'..=b'9' | b'-' | b'_' | b'.' | b'~' => {
+                encoded.push(byte as char);
+            }
+            _ => encoded.push_str(&format!("%{:02X}", byte)),
+        }
+    }
+    encoded
+}
+
+fn http_request(method: &str, endpoint: &str, body: Option<&str>) -> Result<(u16, String), String> {
+    let stripped = endpoint
+        .strip_prefix("http://")
+        .ok_or_else(|| "only http endpoints are supported".to_string())?;
+
+    let (host_port, path) = if let Some((host_port, path)) = stripped.split_once('/') {
+        (host_port, format!("/{}", path))
+    } else {
+        (stripped, "/".to_string())
+    };
+
+    if host_port.is_empty() {
+        return Err("invalid endpoint host".to_string());
+    }
+
+    let request_body = body.unwrap_or("");
+    let mut stream = TcpStream::connect(host_port)
+        .map_err(|err| format!("connect failed: {err}"))?;
+    let _ = stream.set_read_timeout(Some(Duration::from_secs(2)));
+    let _ = stream.set_write_timeout(Some(Duration::from_secs(2)));
+
+    let request = format!(
+        "{method} {path} HTTP/1.1\r\nHost: {host}\r\nContent-Type: application/json\r\nContent-Length: {len}\r\nConnection: close\r\n\r\n{body}",
+        method = method,
+        path = path,
+        host = host_port,
+        len = request_body.as_bytes().len(),
+        body = request_body
+    );
+    stream
+        .write_all(request.as_bytes())
+        .map_err(|err| format!("request write failed: {err}"))?;
+
+    let mut response = String::new();
+    stream
+        .read_to_string(&mut response)
+        .map_err(|err| format!("response read failed: {err}"))?;
+
+    let status_line = response.lines().next().unwrap_or("HTTP/1.1 000 UNKNOWN");
+    let status = status_line
+        .split_whitespace()
+        .nth(1)
+        .unwrap_or("000")
+        .parse::<u16>()
+        .unwrap_or(0);
+    let body = response
+        .split("\r\n\r\n")
+        .nth(1)
+        .unwrap_or("")
+        .to_string();
+    Ok((status, body))
 }

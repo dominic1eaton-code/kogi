@@ -1,8 +1,15 @@
+pub mod app;
 pub mod executive;
+pub mod host;
 pub mod kernel_bridge;
+pub mod model;
 pub mod module_runtime;
 pub mod shell;
 pub mod runtime;
+
+pub use app::{HostApp, HostMode};
+pub use host::HostSystem;
+pub use model::{HostMessage, HostMessageResult, HostModel};
 
 pub const DEFAULT_MODULE_ROOTS: [&str; 2] = ["kogi-modules", "../kogi-modules"];
 

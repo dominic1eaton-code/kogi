@@ -163,8 +163,9 @@ final class DataStreamingEngine(maxEvents: Int = 10000) {
   def size: Int = stream.size
 }
 
-final class AnalyticsRecommendationDiscoverExploreEngine(
+final class AnalyticsEngine(
     streamEngine: DataStreamingEngine = new DataStreamingEngine(),
+    recommendationEngine: RecommendationEngine = new RecommendationEngine(),
     defaultWindow: Int = 250,
     defaultRealtimeWindowMs: Long = 5L * 60L * 1000L,
     recommendationLimit: Int = 8,
@@ -316,9 +317,9 @@ final class AnalyticsRecommendationDiscoverExploreEngine(
     val signal = deriveSignal(events)
     val health = PortfolioHealthPipeline.score(signal)
     val modules = moduleActivity(events)
-    val recommendations = buildRecommendations(signal, health, events, modules)
-    val discover = buildDiscover(events, modules)
-    val explore = buildExplore(events, modules, recommendations)
+    val recommendations = recommendationEngine.analyticsRecommendations(signal, health, events, modules)
+    val discover = recommendationEngine.analyticsDiscover(events, modules)
+    val explore = recommendationEngine.analyticsExplore(events, modules, recommendations)
 
     AnalyticsSnapshot(
       profileId = profileId,
@@ -326,9 +327,9 @@ final class AnalyticsRecommendationDiscoverExploreEngine(
       signal = signal,
       health = health,
       modules = modules,
-      recommendations = recommendations.take(recommendationLimit),
-      discover = discover.take(discoverLimit),
-      explore = explore.take(exploreLimit),
+      recommendations = recommendations,
+      discover = discover,
+      explore = explore,
       lastUpdatedMs = events.lastOption.map(_.timestampMs).getOrElse(System.currentTimeMillis())
     )
   }
@@ -373,26 +374,33 @@ final class AnalyticsRecommendationDiscoverExploreEngine(
     val throughputPerMin = if (metricCount > 0) throughputFromMetrics else throughputFromEvents
 
     val moduleActivityList = moduleActivity(events)
-    val recommendations = (
-      buildRecommendations(signal, health, events, moduleActivityList) ++
-        moduleOperationalRecommendations(module, errorRate, p95LatencyMs, avgQueueDepth, avgCpuPct)
+    val recommendations = recommendationEngine.moduleRecommendations(
+      module = module,
+      signal = signal,
+      health = health,
+      events = events,
+      moduleActivity = moduleActivityList,
+      errorRate = errorRate,
+      p95LatencyMs = p95LatencyMs,
+      avgQueueDepth = avgQueueDepth,
+      avgCpuPct = avgCpuPct
     )
-      .groupBy(_.message)
-      .values
-      .map(_.head)
-      .toList
-      .sortBy(card => priorityRank(card.priority))
-      .take(recommendationLimit)
 
-    val discover = (
-      buildDiscover(events, moduleActivityList) ++
-        moduleDiscover(module, metrics)
-    ).take(discoverLimit)
+    val discover = recommendationEngine.moduleDiscover(
+      module = module,
+      metrics = metrics,
+      events = events,
+      moduleActivity = moduleActivityList
+    )
 
-    val explore = (
-      buildExplore(events, moduleActivityList, recommendations) ++
-        moduleExplore(module, errorRate, blockedRate)
-    ).take(exploreLimit)
+    val explore = recommendationEngine.moduleExplore(
+      module = module,
+      errorRate = errorRate,
+      blockedRate = blockedRate,
+      events = events,
+      moduleActivity = moduleActivityList,
+      recommendations = recommendations
+    )
 
     val anomalies = moduleAnomalies(module, errorRate, blockedRate, p95LatencyMs, avgQueueDepth, avgCpuPct, health)
     val lastUpdatedMs = (
@@ -486,9 +494,9 @@ final class AnalyticsRecommendationDiscoverExploreEngine(
 
     val host = hostSnapshot(hostId, windowMs, nowMs)
 
-    val recommendations = buildSystemRecommendations(host, moduleSnapshots).take(recommendationLimit)
-    val discover = buildSystemDiscover(host, moduleSnapshots).take(discoverLimit)
-    val explore = buildSystemExplore(host, moduleSnapshots).take(exploreLimit)
+    val recommendations = recommendationEngine.systemRecommendations(host, moduleSnapshots)
+    val discover = recommendationEngine.systemDiscover(host, moduleSnapshots)
+    val explore = recommendationEngine.systemExplore(host, moduleSnapshots)
 
     SystemRealtimeSnapshot(
       host = host,
