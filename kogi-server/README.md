@@ -5,6 +5,7 @@ Rust backend platform server for Kogi MVP.
 ## Endpoints
 - `GET /health`
 - `GET /api/v1/system`
+- `GET /api/v1/engine/system`
 - `GET /api/v1/modules`
 - `GET /api/v1/ims/identities`
 - `GET /api/v1/ims/profiles`

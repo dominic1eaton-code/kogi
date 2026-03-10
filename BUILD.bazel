@@ -21,8 +21,13 @@ filegroup(
 )
 
 filegroup(
+    name = "engine",
+    srcs = ["//kogi-engine:all_srcs"],
+)
+
+filegroup(
     name = "scala_analytics",
-    srcs = ["//kogi-analytics-scala:all_srcs"],
+    srcs = [":engine"],
 )
 
 filegroup(
@@ -62,7 +67,7 @@ filegroup(
         ":host",
         ":server",
         ":go_services",
-        ":scala_analytics",
+        ":engine",
         ":desktop_client",
         ":web_client",
         ":mobile_client",

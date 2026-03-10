@@ -13,6 +13,7 @@ pub struct ModuleRuntime {
     pub kind: String,
     pub version: String,
     pub entrypoint: String,
+    pub status: String,
     pub language: String,
     pub network_manager: String,
     pub capabilities: Vec<String>,
@@ -28,6 +29,7 @@ impl ModuleRuntime {
         let mut kind = None;
         let mut version = None;
         let mut entrypoint = None;
+        let mut status = None;
         let mut language = None;
         let mut network_manager = None;
         let mut capabilities = None;
@@ -52,6 +54,7 @@ impl ModuleRuntime {
                     "kind" => kind = Some(value),
                     "version" => version = Some(value),
                     "entrypoint" => entrypoint = Some(value),
+                    "status" => status = Some(value),
                     "language" => language = Some(value),
                     "network_manager" => network_manager = Some(value),
                     "capabilities" => capabilities = Some(value),
@@ -71,6 +74,7 @@ impl ModuleRuntime {
             kind: kind.ok_or_else(|| "missing kind".to_string())?,
             version: version.unwrap_or_else(|| "0.1.0".to_string()),
             entrypoint: entrypoint.unwrap_or_else(|| "service".to_string()),
+            status: status.unwrap_or_else(|| "active".to_string()),
             language: language.unwrap_or_else(|| "unknown".to_string()),
             network_manager: network_manager.unwrap_or_else(|| "kogi-go-network".to_string()),
             capabilities: parse_csv(capabilities.as_deref().unwrap_or_default()),

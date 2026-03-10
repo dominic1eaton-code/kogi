@@ -1,13 +1,17 @@
 mod executive;
 mod kernel_bridge;
 mod module_runtime;
+mod shell;
 
 use executive::HostExecutive;
 use kernel_bridge::LocalKernelBridge;
+use shell::run_shell;
 
 fn main() {
     let bridge = LocalKernelBridge::new();
     let mut host = HostExecutive::new(bridge);
+    let args = std::env::args().skip(1).collect::<Vec<_>>();
+    let shell_mode = !args.iter().any(|arg| arg == "--once");
 
     let module_roots = ["kogi-modules", "../kogi-modules"];
     let mut load_result = Err(String::from("no module paths checked"));
@@ -34,5 +38,16 @@ fn main() {
     }
 
     host.tick();
-    println!("kogi-host running with {} modules", host.module_count());
+    println!(
+        "kogi-host orchestrator online: modules={} components={}",
+        host.module_count(),
+        host.component_count()
+    );
+
+    if shell_mode {
+        if let Err(err) = run_shell(&mut host) {
+            eprintln!("shell terminated with error: {err}");
+            std::process::exit(1);
+        }
+    }
 }

@@ -141,6 +141,11 @@ fn route(
         return ("200 OK", "application/json", s.summary_json());
     }
 
+    if first_line.starts_with("GET /api/v1/engine/system") {
+        let s = state.lock().expect("state lock poisoned");
+        return ("200 OK", "application/json", s.engine_overview_json());
+    }
+
     if first_line.starts_with("GET /api/v1/ims/identities") {
         let s = state.lock().expect("state lock poisoned");
         return ("200 OK", "application/json", s.identities_json());

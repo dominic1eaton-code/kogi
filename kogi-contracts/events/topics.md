@@ -11,6 +11,9 @@
 - `host.module.activated`
 - `host.module.deactivated`
 - `host.mode.changed`
+- `host.orchestrator.booted`
+- `host.orchestrator.health.checked`
+- `host.orchestrator.dispatch`
 
 ## Provisioning
 - `user.provisioned`
@@ -41,3 +44,12 @@
 ## AI and Analytics
 - `ai.agent.action.logged`
 - `analytics.portfolio.health.calculated`
+- `engine.ingest`
+- `engine.flow.processed`
+- `engine.snapshot.generated`
+
+## Gateway and Networking
+- `gateway.component.registered`
+- `gateway.pubsub.published`
+- `gateway.network.sent`
+- `gateway.route.resolved`

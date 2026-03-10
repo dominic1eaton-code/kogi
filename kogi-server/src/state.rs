@@ -223,7 +223,7 @@ impl ServerState {
 
     pub fn summary_json(&self) -> String {
         format!(
-            "{{\"kernel_mode\":\"{}\",\"module_count\":{},\"identity_count\":{},\"profile_count\":{},\"office_views\":5,\"office_service\":\"kogi-services/go/services/office\"}}",
+            "{{\"kernel_mode\":\"{}\",\"module_count\":{},\"identity_count\":{},\"profile_count\":{},\"office_views\":5,\"office_service\":\"kogi-services/go/services/office\",\"engine\":\"kogi-engine\",\"data_flow\":\"all component events route through kogi-services gateway and kogi-engine ingest\"}}",
             self.kernel_mode,
             self.modules.len(),
             self.identities.len(),
@@ -380,6 +380,10 @@ impl ServerState {
             topic: topic.to_string(),
         };
         to_json(&self.office_module.create_assistant_subscription(request))
+    }
+
+    pub fn engine_overview_json(&self) -> String {
+        "{\"engine\":\"kogi-engine\",\"status\":\"active\",\"ingest_topic\":\"engine.ingest\",\"flow\":\"kernel->host->server->gateway->services/modules->engine\",\"components\":[\"kogi.kernel\",\"kogi.host\",\"kogi.server\",\"kogi.services.gateway\",\"kogi.services.auth\",\"kogi.services.portfolio\",\"kogi.services.exchange\",\"kogi.services.ims\",\"kogi.services.office\",\"kogi.office\",\"kogi.exchange\",\"kogi.community\"],\"capabilities\":[\"analytics\",\"recommendations\",\"discover\",\"explore\",\"realtime snapshots\"]}".to_string()
     }
 
     pub fn unified_screens_json(&self) -> String {

@@ -17,6 +17,12 @@ paths:
       responses:
         "200":
           description: system summary
+  /api/v1/engine/system:
+    get:
+      summary: Kogi engine ingest and realtime processing summary
+      responses:
+        "200":
+          description: engine system summary
   /api/v1/modules:
     get:
       summary: Registered module list

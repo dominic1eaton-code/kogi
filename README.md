@@ -7,10 +7,10 @@ This repository has been refactored into a multi-language monorepo aligned to th
 ## Platform Components
 
 - `kogi-kernel` (Zig): low-level kernel orchestration, module registry, scheduler, cache/memory, process/file management, RBAC, mode barrier, FFI.
-- `kogi-host` (Rust): executive control runtime that loads module manifests and coordinates activation.
+- `kogi-host` (Rust): central coordinator/orchestrator for kernel, modules, services, server, and engine with interactive shell CLI.
 - `kogi-server` (Rust): backend server connecting kernel, host, and clients.
-- `kogi-services/go` (Go): networking gateway and microservice infrastructure.
-- `kogi-analytics-scala` (Scala): AI/data pipeline and analytics scoring layer.
+- `kogi-services/go` (Go): networking gateway, pub/sub, component communication, and microservice infrastructure.
+- `kogi-engine` (Scala): platform data/data-processing engine (analytics, recommendations, discovery, exploration, streaming).
 - `kogi-desktop-client` (Java): desktop client shell.
 - `kogi-web-client` (Angular + TypeScript): web client shell.
 - `kogi-mobile` (Kotlin Android + iOS scaffold): mobile/device client infrastructure.
@@ -39,6 +39,8 @@ zig build run
 
 # host
 cargo run --manifest-path kogi-host/Cargo.toml
+# host one-shot mode (skip interactive shell)
+cargo run --manifest-path kogi-host/Cargo.toml -- --once
 
 # server
 cargo run --manifest-path kogi-server/Cargo.toml
@@ -55,9 +57,10 @@ $env:KOGI_GATEWAY_PORT = "18090"; go run ./kogi-services/go/gateway
 # helper script alternative
 .\tools\build\run_go_service.ps1 -Service gateway -Port 18090
 
-# scala analytics
-cd kogi-analytics-scala
+# scala engine
+cd kogi-engine
 sbt compile
+sbt "runMain kogi.engine.Main"
 
 # desktop client
 javac kogi-desktop-client/src/main/java/com/kogi/desktop/*.java
