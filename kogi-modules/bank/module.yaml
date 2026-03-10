@@ -1,0 +1,15 @@
+id: kogi.bank
+name: Kogi Bank
+kind: bank
+version: 0.1.0
+language: go
+entrypoint: kogi-services/go/services/exchange
+status: active
+capabilities: "Wallets, capital, fundraising, taxes, account management."
+integrations: "stripe,wellsfargo,chase,startupengine,gofundme,patreon"
+isolation_mode: isolated_service
+network_manager: kogi-go-network
+memory_limit_mb: 512
+max_processes: 80
+max_files: 5000
+max_resources: 12000

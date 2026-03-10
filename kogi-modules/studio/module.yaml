@@ -1,0 +1,15 @@
+id: kogi.studio
+name: Kogi Studio
+kind: studio
+version: 0.1.0
+language: rust
+entrypoint: kogi-server
+status: active
+capabilities: "Ideas, concepts, prototypes, testbeds, content and files management."
+integrations: "googledrive,googleworkspace,microsoftteams"
+isolation_mode: isolated_service
+network_manager: kogi-go-network
+memory_limit_mb: 640
+max_processes: 84
+max_files: 7000
+max_resources: 13000

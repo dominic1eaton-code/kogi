@@ -4,3 +4,15 @@
 .zig-cache/
 zig-out/
 *.o
+node_modules/
+dist/
+.angular/
+.gradle/
+**/target/
+*.class
+*.jar
+bazel-*
+.metals/
+.bloop/
+MODULE.bazel.lock
+.cache/

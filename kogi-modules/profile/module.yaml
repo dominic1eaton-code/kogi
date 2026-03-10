@@ -1,0 +1,15 @@
+id: kogi.profile
+name: Kogi Profile
+kind: profile
+version: 0.1.0
+language: rust
+entrypoint: kogi-server
+status: active
+capabilities: "Profiles, personas, settings, preferences and configuration."
+integrations: "openid,oauth2"
+isolation_mode: isolated_service
+network_manager: kogi-go-network
+memory_limit_mb: 384
+max_processes: 48
+max_files: 4000
+max_resources: 7000

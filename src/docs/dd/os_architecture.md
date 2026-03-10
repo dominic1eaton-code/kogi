@@ -19,5 +19,5 @@
 - Event-driven integration topics defined in `kogi-contracts/events/topics.md`.
 - API contracts defined in `kogi-contracts/openapi/kogi-server.yaml`.
 - Financial correctness constraint: immutable ledger entries in PostgreSQL via DB triggers.
-- IMS contracts expose multi-profile identity abstractions with profile-scoped accounts, portfolios, integrations, and tools.
-- Module manifests declare memory/process/file/resource limits enforced via host/kernel orchestration.
+- IMS API surfaces support multi-profile identities and autonomy abstractions.
+- Module resource isolation limits are defined per service and managed by host/kernel.

@@ -1,0 +1,15 @@
+id: kogi.office
+name: Kogi Office
+kind: office
+version: 0.1.0
+language: hybrid-rust-go
+entrypoint: kogi-services/go/services/office
+status: active
+capabilities: "Dashboard, portfolio, timeline, workspace, assistant, scheduling, governance, work management."
+integrations: "jira,monday,base44,claude,chatgpt,grok,openai,gitlab,github"
+isolation_mode: isolated_service
+network_manager: kogi-go-network
+memory_limit_mb: 768
+max_processes: 96
+max_files: 6000
+max_resources: 14000

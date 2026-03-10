@@ -1,0 +1,125 @@
+openapi: 3.0.3
+info:
+  title: Kogi MVP Server API
+  version: 0.1.0
+servers:
+  - url: http://127.0.0.1:8080
+paths:
+  /health:
+    get:
+      summary: Server liveness
+      responses:
+        "200":
+          description: healthy
+  /api/v1/system:
+    get:
+      summary: Kernel and host summary
+      responses:
+        "200":
+          description: system summary
+  /api/v1/modules:
+    get:
+      summary: Registered module list
+      responses:
+        "200":
+          description: module list
+  /api/v1/ims/identities:
+    get:
+      summary: List worker identities with personas, roles, and worker types
+      responses:
+        "200":
+          description: identities
+  /api/v1/ims/profiles:
+    get:
+      summary: List configurable user profiles for each identity
+      responses:
+        "200":
+          description: profiles
+  /api/v1/autonomy/capabilities:
+    get:
+      summary: Worker autonomy abstractions exposed by the platform
+      responses:
+        "200":
+          description: autonomy capabilities
+  /api/v1/kernel/modules/isolation:
+    get:
+      summary: Module isolation memory/process/file/resource state
+      responses:
+        "200":
+          description: module isolation state
+  /api/v1/office:
+    get:
+      summary: Office module overview and view registry
+      responses:
+        "200":
+          description: office module overview
+  /api/v1/office/dashboard:
+    get:
+      summary: Office dashboard state
+      responses:
+        "200":
+          description: office dashboard
+  /api/v1/office/portfolio:
+    get:
+      summary: Office portfolio tiled/tree/grid and focus state
+      responses:
+        "200":
+          description: office portfolio
+  /api/v1/office/timeline:
+    get:
+      summary: Office timeline calendars, schedules, roadmaps, and gantts
+      responses:
+        "200":
+          description: office timeline
+  /api/v1/office/workspace:
+    get:
+      summary: Office workspace stories, work packages, and tools
+      responses:
+        "200":
+          description: office workspace
+  /api/v1/office/assistant:
+    get:
+      summary: Office assistant context, recommendations, and subscriptions
+      responses:
+        "200":
+          description: office assistant
+  /api/v1/screens/unified:
+    get:
+      summary: Unified Kogi platform module and workflow screen series
+      responses:
+        "200":
+          description: unified screen catalog
+  /api/v1/screens/unified/flat:
+    get:
+      summary: Flat line-oriented catalog for lightweight clients
+      responses:
+        "200":
+          description: flat unified screen catalog
+  /api/v1/auth/provision:
+    post:
+      summary: Trigger provisioner flow
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                plan:
+                  type: string
+      responses:
+        "202":
+          description: provisioning queued
+components:
+  schemas:
+    Module:
+      type: object
+      properties:
+        id:
+          type: string
+        state:
+          type: string
+        language:
+          type: string
