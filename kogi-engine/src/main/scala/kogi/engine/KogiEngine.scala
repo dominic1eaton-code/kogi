@@ -8,7 +8,11 @@ final case class EngineControlStatus(
 
 final class KogiEngine(
     val recommendationEngine: RecommendationEngine = new RecommendationEngine(),
-    val analyticsEngine: AnalyticsEngine = new AnalyticsEngine(recommendationEngine = recommendationEngine),
+    val riskEngine: RiskEngine = new RiskEngine(),
+    val analyticsEngine: AnalyticsEngine = new AnalyticsEngine(
+      riskEngine = riskEngine,
+      recommendationEngine = recommendationEngine
+    ),
     val telemetryEngine: TelemetryEngine = new TelemetryEngine(analyticsEngine = analyticsEngine),
     val optimizationEngine: OptimizationEngine = new OptimizationEngine(),
     val searchEngine: SearchEngine = new SearchEngine(),
@@ -72,6 +76,9 @@ final class KogiEngine(
 
   def optimize(request: OptimizationRequest): OptimizationPlan =
     optimizationEngine.optimize(request)
+
+  def optimizeRisk(request: RiskOptimizationRequest): RiskOptimizationPlan =
+    riskEngine.optimize(request)
 
   def search(query: SearchQuery): SearchResult =
     searchEngine.search(query)

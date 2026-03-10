@@ -123,48 +123,9 @@ final case class SystemRealtimeSnapshot(
     generatedAtMs: Long
 )
 
-final class DataStreamingEngine(maxEvents: Int = 10000) {
-  private var stream: Vector[StreamEvent] = Vector.empty
-  private var subscribers: Map[Int, StreamEvent => Unit] = Map.empty
-  private var nextSubscriberId: Int = 1
-
-  def ingest(event: StreamEvent): Unit = {
-    stream = (stream :+ event).takeRight(maxEvents)
-    subscribers.values.foreach(handler => handler(event))
-  }
-
-  def ingestBatch(events: Seq[StreamEvent]): Unit = events.foreach(ingest)
-
-  def recent(limit: Int): Vector[StreamEvent] = stream.takeRight(limit.max(0))
-
-  def all: Vector[StreamEvent] = stream
-
-  def eventsByProfile(profileId: String, limit: Int): Vector[StreamEvent] = {
-    stream.filter(_.profileId == profileId).takeRight(limit.max(0))
-  }
-
-  def eventsByModule(module: String, limit: Int): Vector[StreamEvent] = {
-    stream.filter(_.module == module).takeRight(limit.max(0))
-  }
-
-  def eventsSince(sinceMs: Long): Vector[StreamEvent] =
-    stream.filter(_.timestampMs >= sinceMs)
-
-  def eventsByModuleSince(module: String, sinceMs: Long): Vector[StreamEvent] =
-    stream.filter(e => e.module == module && e.timestampMs >= sinceMs)
-
-  def subscribe(handler: StreamEvent => Unit): () => Unit = {
-    val id = nextSubscriberId
-    nextSubscriberId += 1
-    subscribers = subscribers.updated(id, handler)
-    () => subscribers = subscribers - id
-  }
-
-  def size: Int = stream.size
-}
-
 final class AnalyticsEngine(
     streamEngine: DataStreamingEngine = new DataStreamingEngine(),
+    riskEngine: RiskEngine = new RiskEngine(),
     recommendationEngine: RecommendationEngine = new RecommendationEngine(),
     defaultWindow: Int = 250,
     defaultRealtimeWindowMs: Long = 5L * 60L * 1000L,
@@ -175,6 +136,7 @@ final class AnalyticsEngine(
     maxHostMetrics: Int = 20000
 ) {
   private val stream = streamEngine
+  private val risk = riskEngine
   private val knownModules = Set(
     "kogi-kernel",
     "kogi-host",
@@ -315,7 +277,7 @@ final class AnalyticsEngine(
   def snapshotForProfile(profileId: String, window: Int = defaultWindow): AnalyticsSnapshot = {
     val events = stream.eventsByProfile(profileId, window)
     val signal = deriveSignal(events)
-    val health = PortfolioHealthPipeline.score(signal)
+    val health = risk.score(signal)
     val modules = moduleActivity(events)
     val recommendations = recommendationEngine.analyticsRecommendations(signal, health, events, modules)
     val discover = recommendationEngine.analyticsDiscover(events, modules)
@@ -349,7 +311,7 @@ final class AnalyticsEngine(
     val metrics = moduleMetrics.filter(m => m.module == module && m.timestampMs >= sinceMs)
 
     val signal = deriveSignal(events)
-    val health = PortfolioHealthPipeline.score(signal)
+    val health = risk.score(signal)
     val errorEvents = events.count(e => containsAny(e.eventType, "error", "failed", "incident"))
     val blockedEvents = events.count(e => containsAny(e.eventType, "blocked", "stalled", "overdue"))
     val eventCount = events.size

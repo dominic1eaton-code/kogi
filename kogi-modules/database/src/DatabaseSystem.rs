@@ -8,6 +8,22 @@ use std::time::{SystemTime, UNIX_EPOCH};
 
 static ID_COUNTER: AtomicU64 = AtomicU64::new(1);
 
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+enum StorageTarget {
+    Local,
+    Network,
+}
+
+struct StorageProfile {
+    engine: String,
+    mode: String,
+    dsn: String,
+    database: String,
+    schema_path: String,
+    storage_root: String,
+    state_path: String,
+}
+
 pub struct DatabaseSystem {
     config: DatabaseConfig,
 }
@@ -20,17 +36,27 @@ struct ActionOutcome {
 
 impl DatabaseSystem {
     pub fn from_env() -> Self {
-        let state_path = resolve_state_path();
-        let storage_root = resolve_storage_root(&state_path);
-        let dsn = env_default("KOGI_DATABASE_DSN", "");
-        let dsn = if dsn.is_empty() {
+        let storage_root = resolve_storage_root();
+        let state_path_local = resolve_state_path(StorageTarget::Local);
+        let state_path_network = resolve_state_path(StorageTarget::Network);
+
+        let postgres_dsn = env_default("KOGI_DATABASE_DSN", "");
+        let postgres_dsn = if postgres_dsn.is_empty() {
             env_default("DATABASE_URL", "postgres://kogi:kogi@127.0.0.1:5432/kogi")
         } else {
-            dsn
+            postgres_dsn
         };
 
-        let database = env_default("KOGI_DATABASE_NAME", "kogi");
-        let schema_path = env_default("KOGI_DATABASE_SCHEMA", "kogi-database/postgres/schema.sql");
+        let postgres_database = env_default("KOGI_DATABASE_NAME", "kogi");
+        let postgres_schema_path = env_default(
+            "KOGI_DATABASE_POSTGRES_SCHEMA",
+            &env_default("KOGI_DATABASE_SCHEMA", "kogi-database/postgres/schema.sql"),
+        );
+        let sqlite_schema_path =
+            env_default("KOGI_DATABASE_SQLITE_SCHEMA", "kogi-database/sqlite/schema.sql");
+        let sqlite_path = resolve_sqlite_path(&storage_root);
+
+        let default_target = resolve_default_target();
         let max_connections = env_default("KOGI_DATABASE_MAX_CONNECTIONS", "64")
             .parse::<u32>()
             .unwrap_or(64);
@@ -42,14 +68,18 @@ impl DatabaseSystem {
             .unwrap_or(6);
 
         let config = DatabaseConfig {
-            dsn,
-            database,
-            schema_path,
+            postgres_dsn,
+            postgres_database,
+            postgres_schema_path,
+            sqlite_path,
+            sqlite_schema_path,
             storage_root,
-            state_path,
+            state_path_local,
+            state_path_network,
             max_connections,
             snapshot_retention,
             backup_retention,
+            default_target,
         };
 
         ensure_storage_paths(&config);
@@ -62,8 +92,10 @@ impl DatabaseSystem {
     }
 
     pub fn handle_request(&self, request: DatabaseRequest) -> DatabaseResponse {
+        let target = resolve_request_target(&self.config, &request);
+        let profile = self.storage_profile(target);
         let mut warnings = Vec::new();
-        let mut state = match self.load_state() {
+        let mut state = match self.load_state(&profile.state_path) {
             Ok(state) => state,
             Err(err) => {
                 warnings.push(err);
@@ -87,11 +119,7 @@ impl DatabaseSystem {
             );
         }
 
-        if state.connection.dsn.is_empty() {
-            state.connection.dsn = self.config.dsn.clone();
-            state.connection.database = self.config.database.clone();
-            state.connection.schema_path = self.config.schema_path.clone();
-        }
+        self.apply_storage_profile(&mut state, &profile);
 
         let actor = request.actor.clone().unwrap_or_else(DatabaseActor::system);
         let access = if action == "status" {
@@ -120,8 +148,8 @@ impl DatabaseSystem {
         }
 
         let outcome = match action.as_str() {
-            "status" => Ok(self.status(&state)),
-            "connect" => Ok(self.connect(&mut state)),
+            "status" => Ok(self.status(&state, &profile)),
+            "connect" => Ok(self.connect(&mut state, &profile)),
             "create" => self.create_record(&mut state, &request, &actor),
             "read" => self.read_record(&mut state, &request),
             "update" => self.update_record(&mut state, &request, &actor),
@@ -129,7 +157,7 @@ impl DatabaseSystem {
             "query" => self.query(&mut state, &request),
             "snapshot" => self.snapshot(&mut state, &request),
             "checkpoint" => self.checkpoint(&mut state),
-            "backup" => self.backup(&mut state, &request),
+            "backup" => self.backup(&mut state, &request, &profile),
             "restore" => self.restore(&mut state, &request),
             "scale" => self.scale(&mut state, &request),
             "optimize" => self.optimize(&mut state, &request),
@@ -152,7 +180,7 @@ impl DatabaseSystem {
         self.update_storage(&mut state);
         self.record_audit(&mut state, &request_id, &action, &actor, &status, &message);
         if mutated || status == "ok" {
-            if let Err(err) = self.save_state(&state) {
+            if let Err(err) = self.save_state(&state, &profile.state_path) {
                 warnings.push(err);
             }
         }
@@ -170,10 +198,14 @@ impl DatabaseSystem {
         }
     }
 
-    fn status(&self, state: &DatabaseState) -> ActionOutcome {
+    fn status(&self, state: &DatabaseState, profile: &StorageProfile) -> ActionOutcome {
         ActionOutcome {
             data: json!({
                 "config": self.config,
+                "active_target": profile.mode,
+                "active_engine": profile.engine,
+                "active_state_path": profile.state_path,
+                "active_storage_root": profile.storage_root,
                 "connection": state.connection,
                 "storage": state.storage,
                 "scaling": state.scaling,
@@ -190,23 +222,24 @@ impl DatabaseSystem {
         }
     }
 
-    fn connect(&self, state: &mut DatabaseState) -> ActionOutcome {
+    fn connect(&self, state: &mut DatabaseState, profile: &StorageProfile) -> ActionOutcome {
+        self.apply_storage_profile(state, profile);
         state.connection.connected = true;
-        state.connection.mode = if env_default("KOGI_DATABASE_LIVE", "0") == "1" {
-            "configured".to_string()
+        let base_mode = if env_default("KOGI_DATABASE_LIVE", "0") == "1" {
+            "configured"
         } else {
-            "simulated".to_string()
+            "simulated"
         };
-        state.connection.dsn = self.config.dsn.clone();
-        state.connection.database = self.config.database.clone();
-        state.connection.schema_path = self.config.schema_path.clone();
+        state.connection.mode = format!("{base_mode}-{}", profile.mode);
         state.connection.last_checked_ms = Some(now_ms());
 
         ActionOutcome {
             data: json!({
                 "connection": state.connection,
-                "schema": self.config.schema_path,
-                "database": self.config.database,
+                "engine": profile.engine,
+                "schema": profile.schema_path,
+                "database": profile.database,
+                "storage_root": profile.storage_root,
                 "max_connections": self.config.max_connections,
             }),
             message: "connection established".to_string(),
@@ -342,34 +375,37 @@ impl DatabaseSystem {
             }
         };
 
-        let records = state
-            .collections
-            .entry(collection.clone())
-            .or_insert_with(BTreeMap::new);
-        let record = match records.get_mut(&record_id) {
-            Some(record) => record,
-            None => {
-                self.unlock_record(state, &collection, &record_id, &lock_id);
-                end_write(state);
-                return Err("record not found".to_string());
-            }
-        };
-
-        if let Some(payload) = &request.payload {
-            if let Some(record_object) = record.as_object_mut() {
-                if let Some(update_object) = payload.as_object() {
-                    for (key, value) in update_object {
-                        record_object.insert(key.clone(), value.clone());
-                    }
-                } else {
-                    *record = payload.clone();
+        let updated_record = {
+            let records = state
+                .collections
+                .entry(collection.clone())
+                .or_insert_with(BTreeMap::new);
+            let record = match records.get_mut(&record_id) {
+                Some(record) => record,
+                None => {
+                    self.unlock_record(state, &collection, &record_id, &lock_id);
+                    end_write(state);
+                    return Err("record not found".to_string());
                 }
-                record_object.insert("updated_by".to_string(), Value::String(actor.id.clone()));
-                record_object.insert("updated_at_ms".to_string(), Value::Number(now_ms().into()));
-            } else {
-                *record = payload.clone();
+            };
+
+            if let Some(payload) = &request.payload {
+                match (record.as_object_mut(), payload.as_object()) {
+                    (Some(record_object), Some(update_object)) => {
+                        for (key, value) in update_object {
+                            record_object.insert(key.clone(), value.clone());
+                        }
+                        record_object.insert("updated_by".to_string(), Value::String(actor.id.clone()));
+                        record_object.insert("updated_at_ms".to_string(), Value::Number(now_ms().into()));
+                    }
+                    _ => {
+                        *record = payload.clone();
+                    }
+                }
             }
-        }
+
+            record.clone()
+        };
 
         self.unlock_record(state, &collection, &record_id, &lock_id);
         end_write(state);
@@ -378,7 +414,7 @@ impl DatabaseSystem {
             data: json!({
                 "collection": collection,
                 "record_id": record_id,
-                "record": record,
+                "record": updated_record,
             }),
             message: "record updated".to_string(),
             mutated: true,
@@ -522,6 +558,7 @@ impl DatabaseSystem {
         &self,
         state: &mut DatabaseState,
         request: &DatabaseRequest,
+        profile: &StorageProfile,
     ) -> Result<ActionOutcome, String> {
         let snapshot_id = request
             .payload
@@ -553,14 +590,15 @@ impl DatabaseSystem {
         };
 
         let backup_id = new_id("backup");
-        let backup_root = Path::new(&self.config.storage_root).join("backups");
+        let backup_root = Path::new(&profile.storage_root).join("backups");
         fs::create_dir_all(&backup_root)
             .map_err(|err| format!("backup directory error: {err}"))?;
         let backup_path = backup_root.join(format!("{}.json", backup_id));
         let payload = json!({
             "snapshot": snapshot,
             "created_at_ms": now_ms(),
-            "database": self.config.database,
+            "database": profile.database,
+            "engine": profile.engine,
         });
         let encoded = serde_json::to_string_pretty(&payload)
             .map_err(|err| format!("backup encode error: {err}"))?;
@@ -961,8 +999,8 @@ impl DatabaseSystem {
         }
     }
 
-    fn load_state(&self) -> Result<DatabaseState, String> {
-        let path = Path::new(&self.config.state_path);
+    fn load_state(&self, state_path: &str) -> Result<DatabaseState, String> {
+        let path = Path::new(state_path);
         if !path.exists() {
             return Ok(DatabaseState::default());
         }
@@ -973,8 +1011,8 @@ impl DatabaseSystem {
         Ok(state)
     }
 
-    fn save_state(&self, state: &DatabaseState) -> Result<(), String> {
-        let path = Path::new(&self.config.state_path);
+    fn save_state(&self, state: &DatabaseState, state_path: &str) -> Result<(), String> {
+        let path = Path::new(state_path);
         if let Some(parent) = path.parent() {
             fs::create_dir_all(parent).map_err(|err| format!("state dir error: {err}"))?;
         }
@@ -982,6 +1020,49 @@ impl DatabaseSystem {
             .map_err(|err| format!("state encode error: {err}"))?;
         fs::write(path, content).map_err(|err| format!("state write error: {err}"))?;
         Ok(())
+    }
+
+    fn storage_profile(&self, target: StorageTarget) -> StorageProfile {
+        let (engine, mode, dsn, database, schema_path) = match target {
+            StorageTarget::Local => (
+                "sqlite",
+                "local",
+                format!("sqlite:{}", self.config.sqlite_path),
+                self.config.sqlite_path.clone(),
+                self.config.sqlite_schema_path.clone(),
+            ),
+            StorageTarget::Network => (
+                "postgres",
+                "network",
+                self.config.postgres_dsn.clone(),
+                self.config.postgres_database.clone(),
+                self.config.postgres_schema_path.clone(),
+            ),
+        };
+
+        let storage_root = storage_root_for(&self.config.storage_root, target);
+        let state_path = match target {
+            StorageTarget::Local => self.config.state_path_local.clone(),
+            StorageTarget::Network => self.config.state_path_network.clone(),
+        };
+
+        StorageProfile {
+            engine: engine.to_string(),
+            mode: mode.to_string(),
+            dsn,
+            database,
+            schema_path,
+            storage_root,
+            state_path,
+        }
+    }
+
+    fn apply_storage_profile(&self, state: &mut DatabaseState, profile: &StorageProfile) {
+        state.connection.dsn = profile.dsn.clone();
+        state.connection.database = profile.database.clone();
+        state.connection.schema_path = profile.schema_path.clone();
+        state.storage.engine = profile.engine.clone();
+        state.storage.tier = profile.mode.clone();
     }
 
     fn error_response(
@@ -1108,7 +1189,18 @@ fn next_id_from_collections(collections: &BTreeMap<String, BTreeMap<String, Valu
     max_id.saturating_add(1)
 }
 
-fn resolve_state_path() -> String {
+fn resolve_state_path(target: StorageTarget) -> String {
+    let env_key = match target {
+        StorageTarget::Local => "KOGI_DATABASE_STATE_PATH_LOCAL",
+        StorageTarget::Network => "KOGI_DATABASE_STATE_PATH_NETWORK",
+    };
+
+    if let Ok(path) = std::env::var(env_key) {
+        if !path.is_empty() {
+            return path;
+        }
+    }
+
     if let Ok(path) = std::env::var("KOGI_DATABASE_STATE_PATH") {
         if !path.is_empty() {
             return path;
@@ -1116,18 +1208,25 @@ fn resolve_state_path() -> String {
     }
 
     if let Some(root) = find_repo_root() {
+        let filename = match target {
+            StorageTarget::Local => "database_state_local.json",
+            StorageTarget::Network => "database_state_network.json",
+        };
         let path = root
             .join("kogi-modules")
             .join("database")
             .join("state")
-            .join("database_state.json");
+            .join(filename);
         return path.to_string_lossy().to_string();
     }
 
-    "kogi-database-state.json".to_string()
+    match target {
+        StorageTarget::Local => "kogi-database-state-local.json".to_string(),
+        StorageTarget::Network => "kogi-database-state-network.json".to_string(),
+    }
 }
 
-fn resolve_storage_root(state_path: &str) -> String {
+fn resolve_storage_root() -> String {
     if let Ok(root) = std::env::var("KOGI_DATABASE_STORAGE_ROOT") {
         if !root.is_empty() {
             return root;
@@ -1135,16 +1234,22 @@ fn resolve_storage_root(state_path: &str) -> String {
     }
 
     if let Some(root) = find_repo_root() {
-        return root
-            .join("kogi-database")
-            .join("postgres")
-            .to_string_lossy()
-            .to_string();
+        return root.join("kogi-database").to_string_lossy().to_string();
     }
 
-    Path::new(state_path)
-        .parent()
-        .unwrap_or_else(|| Path::new("."))
+    "kogi-database".to_string()
+}
+
+fn resolve_sqlite_path(storage_root: &str) -> String {
+    if let Ok(path) = std::env::var("KOGI_DATABASE_SQLITE_PATH") {
+        if !path.is_empty() {
+            return path;
+        }
+    }
+
+    Path::new(storage_root)
+        .join("sqlite")
+        .join("kogi.db")
         .to_string_lossy()
         .to_string()
 }
@@ -1163,10 +1268,74 @@ fn find_repo_root() -> Option<PathBuf> {
 }
 
 fn ensure_storage_paths(config: &DatabaseConfig) {
-    let state_path = Path::new(&config.state_path);
-    if let Some(parent) = state_path.parent() {
-        let _ = fs::create_dir_all(parent);
+    for state_path in [&config.state_path_local, &config.state_path_network] {
+        let path = Path::new(state_path);
+        if let Some(parent) = path.parent() {
+            let _ = fs::create_dir_all(parent);
+        }
     }
-    let backup_root = Path::new(&config.storage_root).join("backups");
-    let _ = fs::create_dir_all(backup_root);
+
+    for target in [StorageTarget::Local, StorageTarget::Network] {
+        let root = storage_root_for(&config.storage_root, target);
+        let backup_root = Path::new(&root).join("backups");
+        let _ = fs::create_dir_all(backup_root);
+    }
+}
+
+fn storage_root_for(storage_root: &str, target: StorageTarget) -> String {
+    let segment = match target {
+        StorageTarget::Local => "sqlite",
+        StorageTarget::Network => "postgres",
+    };
+    Path::new(storage_root)
+        .join(segment)
+        .to_string_lossy()
+        .to_string()
+}
+
+fn resolve_default_target() -> String {
+    let mode = env_default("KOGI_DATABASE_MODE", "");
+    if !mode.is_empty() {
+        return mode;
+    }
+    let target = env_default("KOGI_DATABASE_TARGET", "");
+    if !target.is_empty() {
+        return target;
+    }
+    env_default("KOGI_DATABASE_ENGINE", "network")
+}
+
+fn resolve_request_target(config: &DatabaseConfig, request: &DatabaseRequest) -> StorageTarget {
+    if let Some(options) = &request.options {
+        for key in ["storage", "storage_mode", "storage_target", "engine"] {
+            if let Some(value) = options.get(key) {
+                if let Some(parsed) = parse_storage_target(value) {
+                    return parsed;
+                }
+            }
+        }
+    }
+
+    if let Some(payload) = &request.payload {
+        for key in ["storage", "storage_mode", "storage_target", "engine"] {
+            if let Some(value) = payload.get(key).and_then(|item| item.as_str()) {
+                if let Some(parsed) = parse_storage_target(value) {
+                    return parsed;
+                }
+            }
+        }
+    }
+
+    parse_storage_target(&config.default_target).unwrap_or(StorageTarget::Network)
+}
+
+fn parse_storage_target(value: &str) -> Option<StorageTarget> {
+    let normalized = value.trim().to_lowercase();
+    match normalized.as_str() {
+        "local" | "sqlite" | "desktop" | "client" => Some(StorageTarget::Local),
+        "network" | "postgres" | "postgresql" | "remote" | "server" => {
+            Some(StorageTarget::Network)
+        }
+        _ => None,
+    }
 }

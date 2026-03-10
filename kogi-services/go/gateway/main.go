@@ -9,6 +9,7 @@ import (
 	"strconv"
 	"strings"
 	"time"
+	"flag"
 
 	"kogi.services/lib/eventbus"
 	"kogi.services/lib/mesh"
@@ -53,6 +54,13 @@ func main() {
 	bus := eventbus.NewWithHistory(25000)
 	registry := mesh.NewRegistry()
 	seedRegistry(registry)
+
+	debug := flag.Bool("debug", false, "enable debug logging")
+	flag.Parse()
+	if *debug {
+		log.Printf("debug logging enabled")
+		// Subscribe to all events for debugging
+	}
 
 	bus.SubscribeAll("gateway.logger", func(e eventbus.Event) {
 		log.Printf("pubsub topic=%s source=%s target=%s payload=%s", e.Topic, e.Source, e.Target, e.Payload)

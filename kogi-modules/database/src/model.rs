@@ -3,14 +3,18 @@ use std::collections::BTreeMap;
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct DatabaseConfig {
-    pub dsn: String,
-    pub database: String,
-    pub schema_path: String,
+    pub postgres_dsn: String,
+    pub postgres_database: String,
+    pub postgres_schema_path: String,
+    pub sqlite_path: String,
+    pub sqlite_schema_path: String,
     pub storage_root: String,
-    pub state_path: String,
+    pub state_path_local: String,
+    pub state_path_network: String,
     pub max_connections: u32,
     pub snapshot_retention: usize,
     pub backup_retention: usize,
+    pub default_target: String,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize, Default)]

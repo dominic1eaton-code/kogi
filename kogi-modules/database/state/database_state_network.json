@@ -1,0 +1,123 @@
+{
+  "collections": {},
+  "next_id": 1,
+  "access_policies": [
+    {
+      "role": "admin",
+      "actions": [
+        "*"
+      ],
+      "collections": [
+        "*"
+      ],
+      "read_only": false
+    },
+    {
+      "role": "service",
+      "actions": [
+        "*"
+      ],
+      "collections": [
+        "*"
+      ],
+      "read_only": false
+    },
+    {
+      "role": "operator",
+      "actions": [
+        "read",
+        "query",
+        "snapshot",
+        "checkpoint",
+        "backup",
+        "restore",
+        "optimize",
+        "scale",
+        "storage",
+        "concurrency"
+      ],
+      "collections": [
+        "*"
+      ],
+      "read_only": false
+    },
+    {
+      "role": "analyst",
+      "actions": [
+        "read",
+        "query",
+        "storage"
+      ],
+      "collections": [
+        "*"
+      ],
+      "read_only": true
+    },
+    {
+      "role": "guest",
+      "actions": [
+        "read",
+        "query"
+      ],
+      "collections": [
+        "public"
+      ],
+      "read_only": true
+    }
+  ],
+  "service_tokens": [],
+  "locks": {},
+  "snapshots": [],
+  "checkpoints": [],
+  "backups": [],
+  "scaling": {
+    "read_replicas": 1,
+    "write_nodes": 1,
+    "shard_count": 1,
+    "autoscale_enabled": false,
+    "strategy": "single_primary"
+  },
+  "optimization": {
+    "vacuum_enabled": true,
+    "analyze_enabled": true,
+    "index_rebuild_enabled": false,
+    "compression": "lz4",
+    "last_optimized_ms": null
+  },
+  "storage": {
+    "capacity_mb": 10240,
+    "used_mb": 1,
+    "tier": "network",
+    "engine": "postgres",
+    "format": "row",
+    "collection_count": 0,
+    "record_count": 0
+  },
+  "concurrency": {
+    "max_readers": 256,
+    "max_writers": 64,
+    "active_readers": 0,
+    "active_writers": 0,
+    "lock_timeout_ms": 15000,
+    "last_conflict": null
+  },
+  "connection": {
+    "connected": false,
+    "mode": "disconnected",
+    "dsn": "postgres://kogi:kogi@127.0.0.1:5432/kogi",
+    "database": "kogi",
+    "schema_path": "kogi-database/postgres/schema.sql",
+    "last_checked_ms": null
+  },
+  "audit": [
+    {
+      "id": "req-1773167951127-1",
+      "action": "status",
+      "actor": "database-service",
+      "status": "ok",
+      "timestamp_ms": 1773167951127,
+      "details": "status ok"
+    }
+  ],
+  "operation_count": 1
+}
