@@ -11,7 +11,13 @@ The web client includes:
 cargo run --manifest-path kogi-server/Cargo.toml
 
 # in another shell
-cd kogi-web-client
+cd kogi-client/web
 npm install
 npm run start
+```
+
+## Bazel
+```powershell
+bazel build //:web_build
+bazel run //:web_run
 ```

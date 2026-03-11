@@ -41,4 +41,9 @@ cargo run --manifest-path kogi-host/Cargo.toml
 cargo run --manifest-path kogi-host/Cargo.toml -- --once
 ```
 
+## Run (Bazel)
+```powershell
+bazel run //:host_run
+```
+
 Run the gateway and Go services (module services + engine/database services) to enable health checks and engine ingest/control.

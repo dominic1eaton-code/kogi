@@ -17,6 +17,8 @@ import (
     "strings"
     "sync"
     "time"
+
+    "kogi.services/lib/ops"
 )
 
 type ingestRecord struct {
@@ -37,10 +39,15 @@ var (
     ingestMu    sync.Mutex
     ingestLog   []ingestRecord
     controlMode = "stopped"
+    engineRuntime *ops.Runtime
 )
 
 func main() {
+    engineRuntime = ops.Init("engine-service")
+    engineRuntime.State("init")
     mux := http.NewServeMux()
+    engineRuntime.State("configure")
+    engineRuntime.WatchSignals()
 
     mux.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
         writeJSON(w, http.StatusOK, map[string]string{"status": "ok", "service": "engine-service"})
@@ -63,6 +70,7 @@ func main() {
             "system_bridge":   "scala",
             "system_endpoint": engineEndpoint(),
             "system_command":  engineCommandHint(),
+            "grpc":            grpcModeSummary(),
             "engine_subengines": []string{
                 "AnalyticsEngine",
                 "TelemetryEngine",
@@ -99,6 +107,17 @@ func main() {
         ingestMu.Lock()
         controlMode = action
         ingestMu.Unlock()
+        if engineRuntime != nil {
+            engineRuntime.Status("control_mode", action)
+            switch strings.ToLower(action) {
+            case "pause", "paused":
+                engineRuntime.State("paused")
+            case "stop", "shutdown", "shutting_down":
+                engineRuntime.State("shutting_down")
+            case "start", "running":
+                engineRuntime.State("running")
+            }
+        }
 
         engineResponse, forwarded, forwardErr := forwardEngineControl(action)
         gatewayResponse, gatewayErr := publishGatewayMessage(gatewayPublishRequest{
@@ -143,6 +162,9 @@ func main() {
         })
         count := len(ingestLog)
         ingestMu.Unlock()
+        if engineRuntime != nil {
+            engineRuntime.Status("ingest_count", fmt.Sprintf("%d", count))
+        }
 
         ingestOptions := map[string]string{
             "topic":     "engine.ingest",
@@ -242,11 +264,24 @@ func main() {
     })
 
     addr := resolveAddr("9014", "KOGI_ENGINE_PORT")
+    engineRuntime.State("running")
+    engineRuntime.Status("ok", "listening="+addr)
     log.Printf("engine-service listening on %s", addr)
-    log.Fatal(http.ListenAndServe(addr, mux))
+    log.Fatal(http.ListenAndServe(addr, ops.WithHTTPDebug(engineRuntime, mux)))
 }
 
 func forwardEngineControl(action string) (map[string]interface{}, bool, string) {
+    if engineRuntime != nil {
+        engineRuntime.Message("send", "engine.control", "kogi.services.engine", "kogi.engine", action)
+    }
+    if resp, attempted, err, required := grpcAttempt("Control", grpcControlRequest(action)); attempted {
+        if err == "" {
+            return resp, true, ""
+        }
+        if required {
+            return nil, true, err
+        }
+    }
     response, err := callEngineCLI("control", nil, map[string]string{"mode": action})
     if err == nil {
         return response, true, ""
@@ -264,6 +299,24 @@ func forwardEngineControl(action string) (map[string]interface{}, bool, string) 
 }
 
 func forwardEngineIngest(payload string, payloadMap map[string]string, options map[string]string) (map[string]interface{}, bool, string) {
+    if engineRuntime != nil {
+        engineRuntime.Message("send", "engine.ingest", "kogi.services.engine", "kogi.engine", payload)
+    }
+    options = grpcFlowDefaults(options)
+    grpcTopic := defaultIfEmpty(options["topic"], "engine.ingest")
+    grpcSource := defaultIfEmpty(options["source"], "kogi.services.engine")
+    grpcTarget := defaultIfEmpty(options["target"], "kogi.engine")
+    if resp, attempted, err, required := grpcAttempt(
+        "Ingest",
+        grpcIngestRequest(grpcTopic, grpcSource, grpcTarget, payloadMap, options),
+    ); attempted {
+        if err == "" {
+            return resp, true, ""
+        }
+        if required {
+            return nil, true, err
+        }
+    }
     response, err := callEngineCLI("ingest", payloadMap, options)
     if err == nil {
         return response, true, ""
@@ -280,6 +333,20 @@ func forwardEngineIngest(payload string, payloadMap map[string]string, options m
 }
 
 func forwardEngineSnapshot() (map[string]interface{}, bool, string) {
+    if engineRuntime != nil {
+        engineRuntime.Message("send", "engine.snapshot", "kogi.services.engine", "kogi.engine", "{}")
+    }
+    if resp, attempted, err, required := grpcAttempt(
+        "Snapshot",
+        grpcSnapshotRequest("kogi-host-001", 5*60*1000),
+    ); attempted {
+        if err == "" {
+            return resp, true, ""
+        }
+        if required {
+            return nil, true, err
+        }
+    }
     response, err := callEngineCLI("snapshot", nil, nil)
     if err == nil {
         return response, true, ""
@@ -296,6 +363,9 @@ func forwardEngineSnapshot() (map[string]interface{}, bool, string) {
 }
 
 func forwardEngineFromMessage(request gatewayPublishRequest) (map[string]interface{}, bool, string) {
+    if engineRuntime != nil {
+        engineRuntime.Message("receive", request.Topic, request.Source, request.Target, request.Payload)
+    }
     topic := strings.ToLower(request.Topic)
     payloadMap := parsePayloadMap(request.Payload)
 
@@ -487,10 +557,19 @@ func gatewayURL() string {
 
 func publishGatewayMessage(request gatewayPublishRequest) (map[string]interface{}, string) {
     endpoint := gatewayURL() + "/api/v1/gateway/pubsub/publish"
+    if engineRuntime != nil {
+        engineRuntime.Publish(request.Topic, request.Source, request.Target, request.Payload)
+    }
     raw := mustJSON(request)
     response, err := postJSON(endpoint, raw)
     if err != nil {
+        if engineRuntime != nil {
+            engineRuntime.Debugf("publish failed endpoint=%s err=%s", endpoint, err.Error())
+        }
         return nil, err.Error()
+    }
+    if engineRuntime != nil {
+        engineRuntime.Debugf("publish ack endpoint=%s", endpoint)
     }
     return parseJSONResponse(response), ""
 }
@@ -500,12 +579,22 @@ func gatewayHistory(limit int, topic string) (map[string]interface{}, error) {
     if topic != "" {
         endpoint += "&topic=" + url.QueryEscape(topic)
     }
+    if engineRuntime != nil {
+        engineRuntime.Subscribe("history", topic, "engine-service")
+        engineRuntime.Debugf("history request endpoint=%s", endpoint)
+    }
     resp, err := http.Get(endpoint)
     if err != nil {
+        if engineRuntime != nil {
+            engineRuntime.Debugf("history failed endpoint=%s err=%s", endpoint, err.Error())
+        }
         return nil, err
     }
     defer resp.Body.Close()
     body, _ := io.ReadAll(resp.Body)
+    if engineRuntime != nil {
+        engineRuntime.Debugf("history response endpoint=%s status=%d bytes=%d", endpoint, resp.StatusCode, len(body))
+    }
     return parseJSONResponse(string(body)), nil
 }
 

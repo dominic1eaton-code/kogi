@@ -9,17 +9,25 @@ final case class EngineControlStatus(
 final class KogiEngine(
     val recommendationEngine: RecommendationEngine = new RecommendationEngine(),
     val riskEngine: RiskEngine = new RiskEngine(),
-    val analyticsEngine: AnalyticsEngine = new AnalyticsEngine(
-      riskEngine = riskEngine,
-      recommendationEngine = recommendationEngine
-    ),
-    val telemetryEngine: TelemetryEngine = new TelemetryEngine(analyticsEngine = analyticsEngine),
+    analyticsEngineOverride: AnalyticsEngine = null,
+    telemetryEngineOverride: TelemetryEngine = null,
     val optimizationEngine: OptimizationEngine = new OptimizationEngine(),
     val searchEngine: SearchEngine = new SearchEngine(),
     val queryEngine: QueryEngine = new QueryEngine(),
     initialGraphEdges: Seq[GraphEdge] = Seq.empty,
     initialGraphNodes: Seq[GraphNode] = Seq.empty
 ) {
+  val analyticsEngine: AnalyticsEngine =
+    if (analyticsEngineOverride != null) analyticsEngineOverride
+    else new AnalyticsEngine(
+      riskEngine = riskEngine,
+      recommendationEngine = recommendationEngine
+    )
+
+  val telemetryEngine: TelemetryEngine =
+    if (telemetryEngineOverride != null) telemetryEngineOverride
+    else new TelemetryEngine(analyticsEngine = analyticsEngine)
+
   private var controlMode: String = "stopped"
 
   // ------------------------------------------------------------------

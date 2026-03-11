@@ -1,6 +1,5 @@
-package portfolio.graph.api
+package kogi.engine
 
-import portfolio.graph._
 import scala.util.{Try, Either, Right, Left}
 
 
@@ -30,30 +29,28 @@ import scala.util.{Try, Either, Right, Left}
 // Result type aliases
 // ─────────────────────────────────────────────────────────────
 
-type ApiResult[A] = Either[ApiError, A]
+object GraphEngineAPI {
+  type ApiResult[A] = Either[ApiError, A]
 
-sealed trait ApiError
-case class NodeNotFound(id: String)          extends ApiError
-case class CyclePresent(nodes: Set[String])  extends ApiError
-case class EngineError(message: String)      extends ApiError
+  sealed trait ApiError
+  case class NodeNotFound(id: String) extends ApiError
+  case class CyclePresent(nodes: Set[String]) extends ApiError
+  case class EngineError(message: String) extends ApiError
 
+  final case class Snapshot(private[engine] engine: GraphEngine)
 
-// ─────────────────────────────────────────────────────────────
-// Snapshot handle (returned by .snapshot())
-// Used as the argument to .diff(snapshot)
-// ─────────────────────────────────────────────────────────────
+  def builder: GraphEngineBuilder = new GraphEngineBuilder()
 
-opaque type Snapshot = GraphEngine
-object Snapshot:
-  private[api] def apply(e: GraphEngine): Snapshot = e
-  private[api] def engine(s: Snapshot): GraphEngine = s
+  def fromEngine(engine: GraphEngine): GraphEngineAPI =
+    new GraphEngineAPI(engine)
 
+  def from(edges: Seq[GraphEdge], nodes: Seq[GraphNode] = Seq.empty): GraphEngineAPI =
+    new GraphEngineAPI(GraphEngine(edges, nodes))
+}
 
-// ─────────────────────────────────────────────────────────────
-// Builder
-// ─────────────────────────────────────────────────────────────
+import GraphEngineAPI._
 
-class GraphEngineBuilder private[api] (
+class GraphEngineBuilder private[engine] (
   private val edgesBuf: Vector[GraphEdge] = Vector.empty,
   private val nodesBuf: Vector[GraphNode] = Vector.empty
 ) {
@@ -94,7 +91,7 @@ class GraphEngineBuilder private[api] (
 // Main API class
 // ─────────────────────────────────────────────────────────────
 
-class GraphEngineAPI private[api] (private val engine: GraphEngine) {
+class GraphEngineAPI private[engine] (private val engine: GraphEngine) {
 
   // ---- Node / Edge accessors ─────────────────────────────────
 
@@ -244,7 +241,7 @@ class GraphEngineAPI private[api] (private val engine: GraphEngine) {
    * Diff this graph against an earlier snapshot.
    */
   def diff(earlier: Snapshot): GraphDiff =
-    Snapshot.engine(earlier).diff(engine)
+    earlier.engine.diff(engine)
 
   /**
    * Diff this graph against another API instance.
@@ -342,21 +339,6 @@ class GraphEngineAPI private[api] (private val engine: GraphEngine) {
 // ─────────────────────────────────────────────────────────────
 // Companion object entry point
 // ─────────────────────────────────────────────────────────────
-
-object GraphEngineAPI {
-
-  /** Start building a new graph. */
-  def builder: GraphEngineBuilder = new GraphEngineBuilder()
-
-  /** Wrap an existing GraphEngine directly. */
-  def fromEngine(engine: GraphEngine): GraphEngineAPI =
-    new GraphEngineAPI(engine)
-
-  /** Build from raw edge/node sequences directly. */
-  def from(edges: Seq[GraphEdge], nodes: Seq[GraphNode] = Seq.empty): GraphEngineAPI =
-    new GraphEngineAPI(GraphEngine(edges, nodes))
-}
-
 
 // ─────────────────────────────────────────────────────────────
 // Usage Examples

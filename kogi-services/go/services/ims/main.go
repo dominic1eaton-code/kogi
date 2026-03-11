@@ -6,6 +6,8 @@ import (
 	"net/http"
 	"os"
 	"strings"
+
+	"kogi.services/lib/ops"
 )
 
 type workerIdentity struct {
@@ -34,6 +36,9 @@ type workerProfile struct {
 }
 
 func main() {
+	rt := ops.Init("ims-service")
+	rt.State("init")
+
 	identities := []workerIdentity{
 		{
 			ID:          "ident-001",
@@ -104,6 +109,8 @@ func main() {
 	}
 
 	mux := http.NewServeMux()
+	rt.State("configure")
+	rt.WatchSignals()
 
 	mux.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
 		writeJSON(w, http.StatusOK, map[string]string{"status": "ok", "service": "ims-service"})
@@ -161,8 +168,10 @@ func main() {
 	})
 
 	addr := resolveAddr("9005", "KOGI_IMS_PORT")
+	rt.State("running")
+	rt.Status("ok", "listening="+addr)
 	log.Printf("ims-service listening on %s", addr)
-	log.Fatal(http.ListenAndServe(addr, mux))
+	log.Fatal(http.ListenAndServe(addr, ops.WithHTTPDebug(rt, mux)))
 }
 
 func writeJSON(w http.ResponseWriter, status int, payload interface{}) {

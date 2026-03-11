@@ -1,42 +1,76 @@
 mod state;
+mod runtime;
 
 use std::io::{Read, Write};
 use std::net::{TcpListener, TcpStream};
 use std::sync::{Arc, Mutex};
 
 use serde_json::Value;
+use runtime::{env_bool, Runtime};
 use state::ServerState;
 
 fn main() {
+    let mut debug = env_bool("KOGI_DEBUG");
+    let mut silent = env_bool("KOGI_SILENT");
+    for arg in std::env::args().skip(1) {
+        match arg.as_str() {
+            "--debug" => debug = true,
+            "--silent" => silent = true,
+            _ => {}
+        }
+    }
+
+    let runtime = Arc::new(Runtime::new("kogi-server", debug, silent));
+    runtime.state("init");
+    runtime.status("startup", "binding=127.0.0.1:8080");
+    if runtime.debug_enabled() {
+        runtime.debug("debug enabled");
+    }
+
+    let rt_for_signal = runtime.clone();
+    if let Err(err) = ctrlc::set_handler(move || {
+        rt_for_signal.state("shutting_down");
+        rt_for_signal.status("signal", "interrupt");
+        std::process::exit(0);
+    }) {
+        runtime.error(&format!("failed to set signal handler: {err}"));
+    }
+
     let listener = match TcpListener::bind("127.0.0.1:8080") {
         Ok(l) => l,
         Err(err) => {
-            eprintln!("failed to bind server: {err}");
+            runtime.state("shutting_down");
+            runtime.error(&format!("failed to bind server: {err}"));
             std::process::exit(1);
         }
     };
 
-    let state = match ServerState::bootstrap() {
+    runtime.state("configure");
+    let state = match ServerState::bootstrap(runtime.clone()) {
         Ok(state) => Arc::new(Mutex::new(state)),
         Err(err) => {
-            eprintln!("failed to bootstrap host app: {err}");
+            runtime.state("shutting_down");
+            runtime.error(&format!("failed to bootstrap host app: {err}"));
             std::process::exit(1);
         }
     };
-    println!("kogi-server listening on http://127.0.0.1:8080");
+    runtime.state("running");
+    runtime.status("ok", "listening=http://127.0.0.1:8080");
+    runtime.info("listening on http://127.0.0.1:8080");
 
     for stream in listener.incoming() {
         match stream {
             Ok(stream) => {
                 let state = Arc::clone(&state);
-                handle_connection(stream, state);
+                let runtime = runtime.clone();
+                handle_connection(stream, state, runtime);
             }
-            Err(err) => eprintln!("connection error: {err}"),
+            Err(err) => runtime.error(&format!("connection error: {err}")),
         }
     }
 }
 
-fn handle_connection(mut stream: TcpStream, state: Arc<Mutex<ServerState>>) {
+fn handle_connection(mut stream: TcpStream, state: Arc<Mutex<ServerState>>, runtime: Arc<Runtime>) {
     let mut buffer = [0_u8; 4096];
     let bytes = match stream.read(&mut buffer) {
         Ok(n) => n,
@@ -45,9 +79,15 @@ fn handle_connection(mut stream: TcpStream, state: Arc<Mutex<ServerState>>) {
 
     let request = String::from_utf8_lossy(&buffer[..bytes]);
     let first_line = request.lines().next().unwrap_or("GET / HTTP/1.1");
+    let mut parts = first_line.split_whitespace();
+    let method = parts.next().unwrap_or("-");
+    let path = parts.next().unwrap_or("-");
+    runtime.debug(&format!(
+        "message received kind=http method={method} path={path} bytes={bytes}"
+    ));
 
     let request_body = request.split("\r\n\r\n").nth(1).unwrap_or("");
-    let (status, content_type, body) = route(first_line, request_body, &state);
+    let (status, content_type, body) = route(first_line, request_body, &state, &runtime);
     let response = format!(
         "HTTP/1.1 {status}\r\nContent-Type: {content_type}\r\nContent-Length: {}\r\nConnection: close\r\n\r\n{}",
         body.len(),
@@ -56,14 +96,20 @@ fn handle_connection(mut stream: TcpStream, state: Arc<Mutex<ServerState>>) {
 
     let _ = stream.write_all(response.as_bytes());
     let _ = stream.flush();
+    runtime.debug(&format!(
+        "message sent kind=http method={method} path={path} status={status} bytes={}",
+        body.len()
+    ));
 }
 
 fn route(
     first_line: &str,
     request_body: &str,
     state: &Arc<Mutex<ServerState>>,
+    runtime: &Arc<Runtime>,
 ) -> (&'static str, &'static str, String) {
     if first_line.starts_with("GET /health") {
+        runtime.status("ok", "health_check");
         return (
             "200 OK",
             "application/json",
@@ -79,6 +125,7 @@ fn route(
         let source = json_string(request_body, "source")
             .unwrap_or_else(|| "client".to_string());
         let target = json_string(request_body, "target").unwrap_or_default();
+        runtime.message("receive", &topic, &source, &target, &payload);
         let mut s = state.lock().expect("state lock poisoned");
         return (
             "200 OK",
@@ -92,6 +139,7 @@ fn route(
             .and_then(|value| value.parse::<usize>().ok())
             .unwrap_or(100);
         let topic = query_param(first_line, "topic");
+        runtime.debug(&format!("message receive history limit={limit} topic={}", topic.clone().unwrap_or_default()));
         let s = state.lock().expect("state lock poisoned");
         return (
             "200 OK",
@@ -205,6 +253,7 @@ fn route(
 
     if first_line.starts_with("POST /api/v1/engine/control") {
         let action = json_string(request_body, "action").unwrap_or_else(|| "start".to_string());
+        runtime.message("receive", "engine.control", "client", "kogi.server", &action);
         let s = state.lock().expect("state lock poisoned");
         return match s.engine_control(&action) {
             Ok(body) => ("200 OK", "application/json", body),
@@ -222,6 +271,7 @@ fn route(
         } else {
             request_body.to_string()
         };
+        runtime.message("receive", "engine.ingest", "client", "kogi.server", &payload);
         let s = state.lock().expect("state lock poisoned");
         return match s.engine_ingest(&payload) {
             Ok(body) => ("200 OK", "application/json", body),
@@ -247,6 +297,7 @@ fn route(
 
     if first_line.starts_with("POST /api/v1/database/query") {
         let sql = json_string(request_body, "sql").unwrap_or_else(|| "select 1".to_string());
+        runtime.message("receive", "database.query", "client", "kogi.server", &sql);
         let s = state.lock().expect("state lock poisoned");
         return match s.database_query(&sql) {
             Ok(body) => ("200 OK", "application/json", body),

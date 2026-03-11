@@ -90,6 +90,8 @@ import (
 	"strings"
 	"sync"
 	"time"
+
+	"kogi.services/lib/ops"
 )
 
 const (
@@ -114,6 +116,8 @@ var (
 	officeEventLog []officeEventEntry
 )
 
+var officeRuntime *ops.Runtime
+
 func recordOfficeEvent(topic, payload, source string) {
 	officeEventMu.Lock()
 	defer officeEventMu.Unlock()
@@ -131,11 +135,17 @@ func recordOfficeEvent(topic, payload, source string) {
 // ── Service-specific publish / gateway helpers ────────────────────────────────
 
 func officePublish(topic, payload string, meta map[string]string) {
+	if officeRuntime != nil {
+		officeRuntime.Publish(topic, officeServiceID, "", payload)
+	}
 	publish(officeGateway, officeServiceID, topic, payload, meta)
 	recordOfficeEvent(topic, payload, officeServiceID)
 }
 
 func officeGatewaySubscribePrefix(prefix, consumer string) {
+	if officeRuntime != nil {
+		officeRuntime.Subscribe("prefix", prefix, consumer)
+	}
 	gatewaySubscribePrefix(officeGateway, prefix, consumer)
 }
 
@@ -158,19 +168,35 @@ func officeDeadLetterMonitor() {
 }
 
 func officeSubscribeGateway(topics []string, handler func(topic, payload string)) {
+	if officeRuntime != nil {
+		for _, topic := range topics {
+			officeRuntime.Subscribe("exact", topic, officeServiceID)
+		}
+	}
 	subscribeGatewayExact(officeGateway, topics, handler)
 }
 
 func officeSubscribeGatewayPrefix(prefixes []string, handler func(topic, payload string)) {
+	if officeRuntime != nil {
+		for _, prefix := range prefixes {
+			officeRuntime.Subscribe("prefix", prefix, officeServiceID)
+		}
+	}
 	subscribeGatewayPrefix(officeGateway, prefixes, handler)
 }
 
 func officeReplayGateway(topic, prefix, from, to string) {
+	if officeRuntime != nil {
+		officeRuntime.Debugf("replay request topic=%s prefix=%s from=%s to=%s", topic, prefix, from, to)
+	}
 	replayGateway(officeGateway, topic, prefix, from, to,
 		func(t, p, s string) { recordOfficeEvent(t, p, s) })
 }
 
 func officeRegisterWithGateway(selfEndpoint string) {
+	if officeRuntime != nil {
+		officeRuntime.Debugf("register gateway endpoint=%s", selfEndpoint)
+	}
 	registerWithGateway(
 		officeGateway, officeServiceID, selfEndpoint, "/health",
 		[]string{
@@ -275,7 +301,11 @@ func officeDLL(funcName string, payload interface{}, topic string, pubPayload st
 // ── main ──────────────────────────────────────────────────────────────────────
 
 func main() {
+	officeRuntime = ops.Init(officeServiceName)
+	officeRuntime.State("init")
 	mux := http.NewServeMux()
+	officeRuntime.State("configure")
+	officeRuntime.WatchSignals()
 
 	addr := resolveOfficeAddr(officeDefaultPort, "KOGI_OFFICE_PORT")
 	selfEndpoint := fmt.Sprintf("http://127.0.0.1%s", addr)
@@ -858,8 +888,10 @@ func main() {
 			map[string]interface{}{"error": "gateway unavailable"})
 	})
 
+	officeRuntime.State("running")
+	officeRuntime.Status("ok", "listening="+addr)
 	log.Printf("%s listening on %s", officeServiceName, addr)
-	log.Fatal(http.ListenAndServe(addr, mux))
+	log.Fatal(http.ListenAndServe(addr, ops.WithHTTPDebug(officeRuntime, mux)))
 }
 
 // jsonUnmarshal delegates to the standard library unmarshal, available via the

@@ -6,7 +6,10 @@ use kogi_office_module::{
 };
 use std::io::{Read, Write};
 use std::net::TcpStream;
+use std::sync::Arc;
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
+
+use crate::runtime::Runtime;
 
 #[derive(Clone, Debug)]
 pub struct WorkerIdentity {
@@ -43,18 +46,23 @@ pub struct ServerState {
     pub identities: Vec<WorkerIdentity>,
     pub profiles: Vec<IdentityProfile>,
     pub office_module: OfficeModule,
+    pub runtime: Arc<Runtime>,
 }
 
 impl ServerState {
-    pub fn bootstrap() -> Result<Self, HostError> {
+    pub fn bootstrap(runtime: Arc<Runtime>) -> Result<Self, HostError> {
         let mut host = HostApp::new()?;
+        runtime.debug("host init");
         host.init()?;
+        runtime.debug("host configure");
         host.configure()?;
+        runtime.debug("host run");
         host.run()?;
+        runtime.status("host", "booted");
         Ok(Self {
             kernel_mode: "user",
             host,
-            gateway: GatewayClient::new("http://127.0.0.1:8090"),
+            gateway: GatewayClient::new("http://127.0.0.1:8090", runtime.clone()),
             identities: vec![WorkerIdentity {
                 id: "ident-001",
                 display_name: "Dominic Worker",
@@ -132,6 +140,7 @@ impl ServerState {
                 },
             ],
             office_module: OfficeModule::mvp(),
+            runtime,
         })
     }
 
@@ -391,6 +400,13 @@ impl ServerState {
 
     pub fn engine_control(&self, action: &str) -> Result<String, HostError> {
         let payload = format!("{{\"action\":\"{}\"}}", escape_json(action));
+        self.runtime.message(
+            "send",
+            "engine.control.requested",
+            "kogi.server",
+            "kogi.services.engine",
+            &payload,
+        );
         let _ = self.publish_gateway_event(
             "engine.control.requested",
             &payload,
@@ -405,12 +421,21 @@ impl ServerState {
         } else {
             format!("{{\"payload\":\"{}\"}}", escape_json(payload))
         };
+        self.runtime
+            .message("send", "engine.ingest", "kogi.server", "kogi.engine", &body);
         let _ = self.publish_gateway_event("engine.ingest", &body, "kogi.engine");
         self.host.engine_ingest(payload)
     }
 
     pub fn database_query(&self, sql: &str) -> Result<String, HostError> {
         let payload = format!("{{\"sql\":\"{}\"}}", escape_json(sql));
+        self.runtime.message(
+            "send",
+            "database.query.executed",
+            "kogi.server",
+            "kogi.services.database",
+            &payload,
+        );
         let _ = self.publish_gateway_event(
             "database.query.executed",
             &payload,
@@ -426,6 +451,8 @@ impl ServerState {
         source: &str,
         target: &str,
     ) -> String {
+        self.runtime
+            .message("receive", topic, source, target, payload);
         let message = HostMessage {
             topic: topic.to_string(),
             payload: payload.to_string(),
@@ -434,6 +461,10 @@ impl ServerState {
             received_at_ms: now_ms(),
         };
         let host_result = self.host.handle_message(message);
+        self.runtime.debug(&format!(
+            "host message status={} handled={} topic={}",
+            host_result.status, host_result.handled, host_result.topic
+        ));
         let gateway_result = match self.gateway.publish(topic, payload, source, target) {
             Ok(body) => body,
             Err(err) => format!(
@@ -450,6 +481,11 @@ impl ServerState {
     }
 
     pub fn gateway_history_json(&self, limit: usize, topic: Option<&str>) -> String {
+        self.runtime.debug(&format!(
+            "gateway history request limit={} topic={}",
+            limit,
+            topic.unwrap_or("")
+        ));
         match self.gateway.history(limit, topic) {
             Ok(body) => body,
             Err(err) => format!(
@@ -582,12 +618,14 @@ fn host_message_result_json(result: &HostMessageResult) -> String {
 #[derive(Clone, Debug)]
 pub struct GatewayClient {
     endpoint: String,
+    runtime: Arc<Runtime>,
 }
 
 impl GatewayClient {
-    pub fn new(endpoint: &str) -> Self {
+    pub fn new(endpoint: &str, runtime: Arc<Runtime>) -> Self {
         Self {
             endpoint: endpoint.trim_end_matches('/').to_string(),
+            runtime,
         }
     }
 
@@ -599,6 +637,8 @@ impl GatewayClient {
         target: &str,
     ) -> Result<String, String> {
         let endpoint = format!("{}/api/v1/gateway/pubsub/publish", self.endpoint);
+        self.runtime
+            .message("send", topic, source, target, payload);
         let body = format!(
             "{{\"topic\":\"{}\",\"payload\":\"{}\",\"source\":\"{}\",\"target\":\"{}\"}}",
             escape_json(topic),
@@ -607,6 +647,8 @@ impl GatewayClient {
             escape_json(target)
         );
         let (status, response) = http_request("POST", &endpoint, Some(&body))?;
+        self.runtime
+            .debug(&format!("gateway publish status={status} endpoint={endpoint}"));
         if (200..300).contains(&status) {
             Ok(response)
         } else {
@@ -622,7 +664,11 @@ impl GatewayClient {
             endpoint.push_str("&topic=");
             endpoint.push_str(&percent_encode(topic));
         }
+        self.runtime
+            .debug(&format!("gateway history endpoint={endpoint}"));
         let (status, response) = http_request("GET", &endpoint, None)?;
+        self.runtime
+            .debug(&format!("gateway history status={status} endpoint={endpoint}"));
         if (200..300).contains(&status) {
             Ok(response)
         } else {

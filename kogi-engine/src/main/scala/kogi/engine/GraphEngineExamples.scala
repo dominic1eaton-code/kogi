@@ -1,6 +1,5 @@
-package portfolio.graph.examples
+package kogi.engine
 
-import portfolio.graph._
 
 // =============================================================
 //  GraphEngine – Real-World Usage Examples

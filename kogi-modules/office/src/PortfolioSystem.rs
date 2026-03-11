@@ -1094,6 +1094,7 @@ fn parse_component_type(s: &str) -> PortfolioComponentType {
 /// plus `edges` (the typed relationship graph).  Snapshots, checkpoints,
 /// events, CRDT operations, governance data, and plugins are maintained
 /// alongside.
+#[derive(Clone)]
 pub struct PortfolioSystem {
     // ── Core state ────────────────────────────────────────────────────────
     pub components: HashMap<String, PortfolioComponent>,
@@ -1124,6 +1125,26 @@ pub struct PortfolioSystem {
     // ── Plugins ───────────────────────────────────────────────────────────
     pub plugins: Vec<Arc<dyn PortfolioPlugin>>,
 }
+
+impl std::fmt::Debug for PortfolioSystem {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("PortfolioSystem")
+            .field("components", &self.components.len())
+            .field("edges", &self.edges.len())
+            .field("active_portfolio_id", &self.active_portfolio_id)
+            .field("actor_id", &self.actor_id)
+            .field("event_log", &self.event_log)
+            .field("snapshots", &self.snapshots.len())
+            .field("checkpoints", &self.checkpoints.len())
+            .field("crdt", &self.crdt)
+            .field("policy_engines", &self.policy_engines.len())
+            .field("approval_requests", &self.approval_requests.len())
+            .field("resource_allocations", &self.resource_allocations.len())
+            .field("plugins", &self.plugins.len())
+            .finish()
+    }
+}
+
 
 // ── Constructors ──────────────────────────────────────────────────────────────
 
@@ -2381,11 +2402,14 @@ impl PortfolioSystem {
 // Bridge: `PortfolioEntityType` (os_bridge) → `PortfolioComponentType`
 fn entity_type_to_component_type(et: &PortfolioEntityType) -> PortfolioComponentType {
     match et {
+        PortfolioEntityType::Portfolio => PortfolioComponentType::Portfolio,
         PortfolioEntityType::Project => PortfolioComponentType::Project,
         PortfolioEntityType::Program => PortfolioComponentType::Program,
         PortfolioEntityType::SubPortfolio => PortfolioComponentType::SubPortfolio,
         PortfolioEntityType::Artifact => PortfolioComponentType::Artifact,
         PortfolioEntityType::Asset => PortfolioComponentType::Asset,
+        PortfolioEntityType::Document => PortfolioComponentType::Artifact,
+        PortfolioEntityType::Custom => PortfolioComponentType::Resource,
         PortfolioEntityType::Resource
         | PortfolioEntityType::Capital
         | PortfolioEntityType::Investment
@@ -2522,6 +2546,7 @@ impl PortfolioHealthModel {
             summary: format!(
                 "Health {:.1}/100 — {active}/{total} children active, \
                  resource utilisation {utilisation_pct:.1}%",
+                health_score,
             ),
         }
     }
@@ -2532,7 +2557,7 @@ impl PortfolioHealthModel {
 // =============================================================================
 
 /// Earned-value inputs for project-level schedule/cost analysis.
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct ProjectMetricsInput {
     /// Planned value (budget authorised for work scheduled to date).
     pub planned_value: f64,
@@ -2846,7 +2871,7 @@ impl ResourceUtilisationModel {
 // =============================================================================
 
 /// Financial inputs for an `Asset` component.
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct AssetValueInput {
     /// Original acquisition cost.
     pub acquisition_cost: f64,
@@ -3075,7 +3100,7 @@ impl BinderCoverageModel {
 // =============================================================================
 
 /// Consistency inputs for a `Book` component (any `BookType`).
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct BookConsistencyInput {
     pub book_type: BookType,
     /// Number of pages / entries present.

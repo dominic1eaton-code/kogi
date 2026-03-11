@@ -3,7 +3,11 @@ param(
     [ValidateSet('gateway','auth','portfolio','exchange','ims','office','bank','marketplace','studio','community','developer','profile','organizations','engine','database')]
     [string]$Service = 'gateway',
     [Parameter(Mandatory = $false)]
-    [string]$Port
+    [string]$Port,
+    [Parameter(Mandatory = $false)]
+    [switch]$Silent,
+    [Parameter(Mandatory = $false)]
+    [switch]$Debug
 )
 
 $root = Resolve-Path (Join-Path $PSScriptRoot '..\..')
@@ -36,5 +40,13 @@ if ($Port) {
     $env:KOGI_PORT = $Port
 }
 
+$args = @()
+if ($Silent) {
+    $args += '--silent'
+}
+if ($Debug) {
+    $args += '--debug'
+}
+
 Write-Host "Running $Service from $target"
-go run $target
+go run $target @args

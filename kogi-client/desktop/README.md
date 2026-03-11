@@ -11,6 +11,12 @@ The desktop UI now includes:
 cargo run --manifest-path kogi-server/Cargo.toml
 
 # in another shell
-javac kogi-desktop-client/src/main/java/com/kogi/desktop/*.java
-java -cp kogi-desktop-client/src/main/java com.kogi.desktop.Main
+javac -d kogi-client/desktop/target/classes kogi-client/desktop/src/main/java/com/kogi/desktop/*.java
+java -cp kogi-client/desktop/target/classes com.kogi.desktop.Main
+```
+
+## Bazel
+```powershell
+bazel build //:desktop_build
+bazel run //:desktop_run
 ```

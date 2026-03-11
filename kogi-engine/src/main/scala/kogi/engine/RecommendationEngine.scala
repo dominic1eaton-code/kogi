@@ -146,6 +146,23 @@ object PersonaLabel {
     case Newcomer       => "newcomer"
     case UnknownPersona => "unknown"
   }
+
+  def fromString(raw: String): Option[PersonaLabel] = raw.trim.toLowerCase match {
+    case "explorer"       => Some(Explorer)
+    case "specialist"     => Some(Specialist)
+    case "casual"         => Some(CasualBrowser)
+    case "casual-browser" => Some(CasualBrowser)
+    case "power"          => Some(PowerUser)
+    case "power-user"     => Some(PowerUser)
+    case "early"          => Some(EarlyAdopter)
+    case "early-adopter"  => Some(EarlyAdopter)
+    case "value"          => Some(ValueSeeker)
+    case "value-seeker"   => Some(ValueSeeker)
+    case "collaborator"   => Some(Collaborator)
+    case "newcomer"       => Some(Newcomer)
+    case "unknown"        => Some(UnknownPersona)
+    case _                => Some(UnknownPersona)
+  }
 }
 
 final case class PersonaBuildResult(
@@ -932,7 +949,7 @@ final class RecommendationEngine(
   }
 
   // Scala 2 shim for Option.when
-  private implicit class OptionWhen[A](val a: A) extends AnyVal {
+  private implicit class OptionWhen[A](val a: A) {
     def pipe[B](f: A => B): B = f(a)
   }
   private object Option {

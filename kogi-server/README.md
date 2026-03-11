@@ -34,3 +34,28 @@ The server bridges client requests into the host and publishes/subscribes messag
 ```powershell
 cargo run --manifest-path kogi-server/Cargo.toml
 ```
+
+## Run (Bazel)
+```powershell
+bazel run //:server_run
+```
+
+## Run Modes
+The server supports:
+- `--silent` or `KOGI_SILENT=1` to suppress stdout/stderr (background-friendly).
+- `--debug` or `KOGI_DEBUG=1` to emit structured state/status/message logs.
+
+Examples:
+```powershell
+cargo run --manifest-path kogi-server/Cargo.toml -- --silent
+cargo run --manifest-path kogi-server/Cargo.toml -- --debug
+$env:KOGI_DEBUG = "1"; cargo run --manifest-path kogi-server/Cargo.toml
+```
+
+## Background Manager
+Use the repo helper to run server + services in the background:
+```powershell
+.\tools\build\kogi_daemon.ps1 -Action start -Target server
+.\tools\build\kogi_daemon.ps1 -Action status -Target server
+.\tools\build\kogi_daemon.ps1 -Action stop -Target server
+```

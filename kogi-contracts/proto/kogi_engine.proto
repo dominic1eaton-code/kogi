@@ -1,0 +1,14 @@
+syntax = "proto3";
+
+package kogi.engine.v1;
+
+import "google/protobuf/struct.proto";
+
+// EngineService exposes gRPC control + ingest + snapshot operations.
+// Payloads are expressed as google.protobuf.Struct for JSON-like transport.
+service EngineService {
+  rpc Control(google.protobuf.Struct) returns (google.protobuf.Struct);
+  rpc Status(google.protobuf.Struct) returns (google.protobuf.Struct);
+  rpc Ingest(google.protobuf.Struct) returns (google.protobuf.Struct);
+  rpc Snapshot(google.protobuf.Struct) returns (google.protobuf.Struct);
+}

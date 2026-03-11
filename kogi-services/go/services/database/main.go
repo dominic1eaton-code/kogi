@@ -15,6 +15,8 @@ import (
 	"runtime"
 	"strings"
 	"time"
+
+	"kogi.services/lib/ops"
 )
 
 type databaseActor struct {
@@ -37,8 +39,14 @@ type databaseRequest struct {
 	CorrelationID string            `json:"correlation_id,omitempty"`
 }
 
+var databaseRuntime *ops.Runtime
+
 func main() {
+	databaseRuntime = ops.Init("database-service")
+	databaseRuntime.State("init")
 	mux := http.NewServeMux()
+	databaseRuntime.State("configure")
+	databaseRuntime.WatchSignals()
 
 	mux.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
 		writeJSON(w, http.StatusOK, map[string]string{"status": "ok", "service": "database-service"})
@@ -86,8 +94,10 @@ func main() {
 	mux.HandleFunc("/api/v1/database/operation", handleOperation())
 
 	addr := resolveAddr("9015", "KOGI_DATABASE_PORT")
+	databaseRuntime.State("running")
+	databaseRuntime.Status("ok", "listening="+addr)
 	log.Printf("database-service listening on %s", addr)
-	log.Fatal(http.ListenAndServe(addr, mux))
+	log.Fatal(http.ListenAndServe(addr, ops.WithHTTPDebug(databaseRuntime, mux)))
 }
 
 func handleAction(action string, method string) http.HandlerFunc {
@@ -147,7 +157,12 @@ func executeDatabaseRequest(ctx context.Context, req databaseRequest) map[string
 
 	response, err := callDatabaseSystem(timeoutCtx, req)
 	if err != nil {
+		if databaseRuntime != nil {
+			databaseRuntime.Debugf("message receive action=%s request_id=%s status=degraded err=%s", req.Action, req.RequestID, err.Error())
+		}
 		response = fallbackResponse(req, err)
+	} else if databaseRuntime != nil {
+		databaseRuntime.Debugf("message receive action=%s request_id=%s status=ok", req.Action, req.RequestID)
 	}
 	attachServiceMetadata(response)
 	return response
@@ -178,6 +193,9 @@ func callDatabaseSystem(ctx context.Context, req databaseRequest) (map[string]in
 	payload, err := json.Marshal(req)
 	if err != nil {
 		return nil, err
+	}
+	if databaseRuntime != nil {
+		databaseRuntime.Message("send", "database."+req.Action, "database-service", "kogi.database", string(payload))
 	}
 
 	cmd := exec.CommandContext(ctx, binary)

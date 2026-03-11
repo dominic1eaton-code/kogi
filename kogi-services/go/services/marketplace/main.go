@@ -6,6 +6,8 @@ import (
     "net/http"
     "os"
     "strings"
+
+    "kogi.services/lib/ops"
 )
 
 type listing struct {
@@ -15,7 +17,11 @@ type listing struct {
 }
 
 func main() {
+    rt := ops.Init("marketplace-service")
+    rt.State("init")
     mux := http.NewServeMux()
+    rt.State("configure")
+    rt.WatchSignals()
 
     mux.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
         writeJSON(w, http.StatusOK, map[string]string{"status": "ok", "service": "marketplace-service"})
@@ -50,8 +56,10 @@ func main() {
     })
 
     addr := resolveAddr("9008", "KOGI_MARKETPLACE_PORT")
+    rt.State("running")
+    rt.Status("ok", "listening="+addr)
     log.Printf("marketplace-service listening on %s", addr)
-    log.Fatal(http.ListenAndServe(addr, mux))
+    log.Fatal(http.ListenAndServe(addr, ops.WithHTTPDebug(rt, mux)))
 }
 
 func writeJSON(w http.ResponseWriter, status int, payload interface{}) {

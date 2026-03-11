@@ -9,10 +9,10 @@ import (
 	"strconv"
 	"strings"
 	"time"
-	"flag"
 
 	"kogi.services/lib/eventbus"
 	"kogi.services/lib/mesh"
+	"kogi.services/lib/ops"
 )
 
 type gatewayInfo struct {
@@ -94,16 +94,19 @@ type recordHealthRequest struct {
 	Note    string `json:"note"`
 }
 
+var gatewayRuntime *ops.Runtime
+
 func main() {
+	gatewayRuntime = ops.Init("gateway")
+	gatewayRuntime.State("init")
 	bus := eventbus.NewWithHistory(25000)
 	registry := mesh.NewRegistry()
 	seedRegistry(registry, bus)
 
-	debug := flag.Bool("debug", false, "enable debug logging")
-	flag.Parse()
+	gatewayRuntime.State("configure")
+	gatewayRuntime.WatchSignals()
 
-	if *debug {
-		log.Printf("[gateway] debug logging enabled")
+	if gatewayRuntime.DebugEnabled() {
 		bus.SubscribeAll("gateway.debug", func(e eventbus.Event) {
 			log.Printf("[gateway/debug] topic=%s source=%s target=%s", e.Topic, e.Source, e.Target)
 		})
@@ -198,6 +201,9 @@ func main() {
 			writeJSON(w, http.StatusBadRequest, map[string]string{"error": err.Error()})
 			return
 		}
+		if gatewayRuntime != nil {
+			gatewayRuntime.Debugf("component register id=%s kind=%s endpoint=%s", req.ID, req.Kind, req.Endpoint)
+		}
 		registered := registry.Register(mesh.Component{
 			ID:             req.ID,
 			Kind:           req.Kind,
@@ -221,6 +227,9 @@ func main() {
 		bus.PublishWith("gateway.component.registered",
 			fmt.Sprintf(`{"id":%q,"kind":%q}`, req.ID, req.Kind),
 			eventbus.PublishOptions{Source: "kogi.services.gateway"})
+		if gatewayRuntime != nil {
+			gatewayRuntime.Publish("gateway.component.registered", "kogi.services.gateway", req.ID, fmt.Sprintf(`{"id":%q,"kind":%q}`, req.ID, req.Kind))
+		}
 		writeJSON(w, http.StatusCreated, map[string]interface{}{
 			"registered": registered,
 			"count":      len(registry.Components()),
@@ -280,6 +289,9 @@ func main() {
 			writeJSON(w, http.StatusBadRequest, map[string]string{"error": err.Error()})
 			return
 		}
+		if gatewayRuntime != nil {
+			gatewayRuntime.Debugf("component unregister id=%s", body.ID)
+		}
 		removed, ok := registry.Unregister(body.ID)
 		if !ok {
 			writeJSON(w, http.StatusNotFound, map[string]string{"error": "component not found"})
@@ -288,6 +300,9 @@ func main() {
 		bus.PublishWith("gateway.component.unregistered",
 			fmt.Sprintf(`{"id":%q}`, body.ID),
 			eventbus.PublishOptions{Source: "kogi.services.gateway"})
+		if gatewayRuntime != nil {
+			gatewayRuntime.Publish("gateway.component.unregistered", "kogi.services.gateway", body.ID, fmt.Sprintf(`{"id":%q}`, body.ID))
+		}
 		writeJSON(w, http.StatusOK, map[string]interface{}{
 			"unregistered": removed,
 			"count":        len(registry.Components()),
@@ -305,6 +320,9 @@ func main() {
 			writeJSON(w, http.StatusBadRequest, map[string]string{"error": err.Error()})
 			return
 		}
+		if gatewayRuntime != nil {
+			gatewayRuntime.Debugf("component status update id=%s status=%s", req.ID, req.Status)
+		}
 		updated, ok := registry.UpdateStatus(req.ID, req.Status)
 		if !ok {
 			writeJSON(w, http.StatusNotFound, map[string]string{"error": "component not found"})
@@ -313,6 +331,9 @@ func main() {
 		bus.PublishWith("gateway.component.status.updated",
 			fmt.Sprintf(`{"id":%q,"status":%q}`, req.ID, req.Status),
 			eventbus.PublishOptions{Source: "kogi.services.gateway"})
+		if gatewayRuntime != nil {
+			gatewayRuntime.Publish("gateway.component.status.updated", "kogi.services.gateway", req.ID, fmt.Sprintf(`{"id":%q,"status":%q}`, req.ID, req.Status))
+		}
 		writeJSON(w, http.StatusOK, map[string]interface{}{"component": updated})
 	})
 
@@ -326,6 +347,9 @@ func main() {
 		if err := decodeJSON(r, &req); err != nil {
 			writeJSON(w, http.StatusBadRequest, map[string]string{"error": err.Error()})
 			return
+		}
+		if gatewayRuntime != nil {
+			gatewayRuntime.Debugf("component health id=%s healthy=%v note=%s", req.ID, req.Healthy, req.Note)
 		}
 		rec := registry.RecordHealth(req.ID, req.Healthy, req.Note)
 		if !req.Healthy {
@@ -369,12 +393,19 @@ func main() {
 		}
 		source := defaultIfEmpty(req.Source, "gateway")
 		target := registry.ResolveTarget(req.Topic, req.Target)
+		if gatewayRuntime != nil {
+			gatewayRuntime.Message("receive", req.Topic, source, target, req.Payload)
+		}
 		event := bus.PublishWith(req.Topic, req.Payload, eventbus.PublishOptions{
 			Source:   source,
 			Target:   target,
 			Metadata: req.Metadata,
 		})
 		networkMessage := registry.Send(source, target, req.Topic, req.Payload, req.Metadata)
+		if gatewayRuntime != nil {
+			gatewayRuntime.Message("send", req.Topic, source, target, req.Payload)
+			gatewayRuntime.Debugf("network status=%s message_id=%s", networkMessage.Status, networkMessage.ID)
+		}
 		engineMessage := mirrorToEngine(bus, registry, event)
 		writeJSON(w, http.StatusAccepted, map[string]interface{}{
 			"event":          event,
@@ -401,6 +432,9 @@ func main() {
 			return
 		}
 		consumer := defaultIfEmpty(req.Consumer, "anonymous")
+		if gatewayRuntime != nil {
+			gatewayRuntime.Subscribe("exact", req.Topic, consumer)
+		}
 		subID := bus.SubscribeNamed(req.Topic, consumer, func(e eventbus.Event) {
 			// Events delivered via poll at /pubsub/history or /pubsub/receive
 		})
@@ -428,6 +462,9 @@ func main() {
 			return
 		}
 		consumer := defaultIfEmpty(req.Consumer, "anonymous")
+		if gatewayRuntime != nil {
+			gatewayRuntime.Subscribe("prefix", req.Prefix, consumer)
+		}
 		subID := bus.SubscribePrefix(req.Prefix, consumer, func(e eventbus.Event) {
 			// Events delivered via poll at /pubsub/history/prefix
 		})
@@ -453,6 +490,9 @@ func main() {
 		if req.SubscriptionID == "" {
 			writeJSON(w, http.StatusBadRequest, map[string]string{"error": "subscription_id is required"})
 			return
+		}
+		if gatewayRuntime != nil {
+			gatewayRuntime.Debugf("unsubscribe id=%s", req.SubscriptionID)
 		}
 		removed := bus.Unsubscribe(req.SubscriptionID)
 		writeJSON(w, http.StatusOK, map[string]interface{}{
@@ -625,6 +665,9 @@ func main() {
 			return
 		}
 		target := registry.ResolveTarget(req.Topic, req.Target)
+		if gatewayRuntime != nil {
+			gatewayRuntime.Message("receive", req.Topic, defaultIfEmpty(req.Source, "gateway"), target, req.Payload)
+		}
 		message := registry.Send(
 			defaultIfEmpty(req.Source, "gateway"),
 			target,
@@ -632,6 +675,10 @@ func main() {
 			req.Payload,
 			req.Metadata,
 		)
+		if gatewayRuntime != nil {
+			gatewayRuntime.Message("send", req.Topic, defaultIfEmpty(req.Source, "gateway"), target, req.Payload)
+			gatewayRuntime.Debugf("network status=%s message_id=%s", message.Status, message.ID)
+		}
 		event := bus.PublishWith(req.Topic, req.Payload, eventbus.PublishOptions{
 			Source:   defaultIfEmpty(req.Source, "gateway"),
 			Target:   target,
@@ -759,8 +806,10 @@ func main() {
 	})
 
 	addr := resolveAddr("8090", "KOGI_GATEWAY_PORT")
+	gatewayRuntime.State("running")
+	gatewayRuntime.Status("ok", "listening="+addr)
 	log.Printf("[gateway] kogi-go-gateway v0.3.0 listening on %s", addr)
-	log.Fatal(http.ListenAndServe(addr, mux))
+	log.Fatal(http.ListenAndServe(addr, ops.WithHTTPDebug(gatewayRuntime, mux)))
 }
 
 // ── Registry seed ─────────────────────────────────────────────────────────────
@@ -917,6 +966,9 @@ func seedRegistry(registry *mesh.Registry, bus *eventbus.Bus) {
 	bus.PublishWith("gateway.component.registered",
 		`{"id":"kogi.services.gateway","kind":"gateway","status":"seeded"}`,
 		eventbus.PublishOptions{Source: "kogi.services.gateway"})
+	if gatewayRuntime != nil {
+		gatewayRuntime.Publish("gateway.component.registered", "kogi.services.gateway", "kogi.services.gateway", `{"id":"kogi.services.gateway","kind":"gateway","status":"seeded"}`)
+	}
 }
 
 // ── Engine mirror ─────────────────────────────────────────────────────────────
@@ -949,11 +1001,18 @@ func mirrorToEngine(bus *eventbus.Bus, registry *mesh.Registry, origin eventbus.
 			Metadata: map[string]string{"origin_topic": origin.Topic},
 		},
 	)
-	return registry.Send(
+	if gatewayRuntime != nil {
+		gatewayRuntime.Publish("engine.ingest", "kogi.services.gateway", "kogi.engine", string(encoded))
+	}
+	msg := registry.Send(
 		"kogi.services.gateway", "kogi.engine",
 		event.Topic, event.Payload,
 		map[string]string{"origin_topic": origin.Topic},
 	)
+	if gatewayRuntime != nil {
+		gatewayRuntime.Debugf("engine mirror status=%s message_id=%s origin_topic=%s", msg.Status, msg.ID, origin.Topic)
+	}
+	return msg
 }
 
 // ── Topic → module inference ──────────────────────────────────────────────────

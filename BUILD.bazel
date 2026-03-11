@@ -1,5 +1,7 @@
 package(default_visibility = ["//visibility:public"])
 
+load("//tools/bazel:defs.bzl", "kogi_build", "kogi_run")
+
 filegroup(
     name = "kernel",
     srcs = ["//kogi-kernel:all_srcs"],
@@ -32,17 +34,17 @@ filegroup(
 
 filegroup(
     name = "desktop_client",
-    srcs = ["//kogi-desktop-client:all_srcs"],
+    srcs = ["//kogi-client/desktop:all_srcs"],
 )
 
 filegroup(
     name = "web_client",
-    srcs = ["//kogi-web-client:all_srcs"],
+    srcs = ["//kogi-client/web:all_srcs"],
 )
 
 filegroup(
     name = "mobile_client",
-    srcs = ["//kogi-mobile:all_srcs"],
+    srcs = ["//kogi-client/mobile:all_srcs"],
 )
 
 filegroup(
@@ -75,4 +77,256 @@ filegroup(
         ":modules",
         ":contracts",
     ],
+)
+
+kogi_build(
+    name = "kernel_build",
+    commands = ["zig build"],
+    srcs = [":kernel"],
+    required_tools = ["zig"],
+)
+
+kogi_build(
+    name = "host_build",
+    commands = ["cargo build --manifest-path kogi-host/Cargo.toml"],
+    srcs = [":host"],
+    required_tools = ["cargo"],
+)
+
+kogi_build(
+    name = "server_build",
+    commands = ["cargo build --manifest-path kogi-server/Cargo.toml"],
+    srcs = [":server"],
+    required_tools = ["cargo"],
+)
+
+kogi_build(
+    name = "services_build",
+    commands = ["go build ./kogi-services/go/..."],
+    srcs = [":go_services"],
+    required_tools = ["go"],
+)
+
+kogi_build(
+    name = "engine_build",
+    commands = ["sbt compile"],
+    workdir = "kogi-engine",
+    srcs = [":engine"],
+    required_tools = ["sbt"],
+)
+
+kogi_build(
+    name = "desktop_build",
+    commands = ["javac -d target/classes src/main/java/com/kogi/desktop/*.java"],
+    workdir = "kogi-client/desktop",
+    srcs = [":desktop_client"],
+    required_tools = ["javac"],
+)
+
+kogi_build(
+    name = "web_build",
+    commands = [
+        "npm install",
+        "npm run build",
+    ],
+    workdir = "kogi-client/web",
+    srcs = [":web_client"],
+    required_tools = ["npm"],
+)
+
+kogi_build(
+    name = "mobile_android_build",
+    commands = ["gradle assembleDebug"],
+    workdir = "kogi-client/mobile/android",
+    srcs = [":mobile_client"],
+    required_tools = ["gradle"],
+)
+
+kogi_build(
+    name = "mobile_ios_build",
+    commands = ["Write-Output \"iOS builds require macOS/Xcode\""],
+    srcs = [":mobile_client"],
+)
+
+kogi_build(
+    name = "modules_build",
+    commands = [
+        "cargo build --manifest-path kogi-modules/office/Cargo.toml",
+        "cargo build --manifest-path kogi-modules/database/Cargo.toml",
+        "cargo build --manifest-path kogi-modules/network/Cargo.toml",
+    ],
+    srcs = [":modules"],
+    required_tools = ["cargo"],
+)
+
+kogi_build(
+    name = "database_build",
+    commands = ["Get-ChildItem kogi-database | Out-Null"],
+    srcs = [":database"],
+)
+
+kogi_build(
+    name = "contracts_build",
+    commands = ["Get-ChildItem kogi-contracts | Out-Null"],
+    srcs = [":contracts"],
+)
+
+filegroup(
+    name = "build_all",
+    srcs = [
+        ":kernel_build",
+        ":host_build",
+        ":server_build",
+        ":services_build",
+        ":engine_build",
+        ":desktop_build",
+        ":web_build",
+        ":mobile_android_build",
+        ":modules_build",
+        ":database_build",
+        ":contracts_build",
+    ],
+)
+
+kogi_run(
+    name = "kernel_run",
+    command = "zig build run",
+    srcs = [":kernel"],
+)
+
+kogi_run(
+    name = "host_run",
+    command = "cargo run --manifest-path kogi-host/Cargo.toml",
+    srcs = [":host"],
+)
+
+kogi_run(
+    name = "server_run",
+    command = "cargo run --manifest-path kogi-server/Cargo.toml",
+    srcs = [":server"],
+)
+
+kogi_run(
+    name = "gateway_run",
+    command = "go run ./kogi-services/go/gateway",
+    srcs = [":go_services"],
+)
+
+kogi_run(
+    name = "auth_run",
+    command = "go run ./kogi-services/go/services/auth",
+    srcs = [":go_services"],
+)
+
+kogi_run(
+    name = "portfolio_run",
+    command = "go run ./kogi-services/go/services/portfolio",
+    srcs = [":go_services"],
+)
+
+kogi_run(
+    name = "exchange_run",
+    command = "go run ./kogi-services/go/services/exchange",
+    srcs = [":go_services"],
+)
+
+kogi_run(
+    name = "ims_run",
+    command = "go run ./kogi-services/go/services/ims",
+    srcs = [":go_services"],
+)
+
+kogi_run(
+    name = "office_run",
+    command = "go run ./kogi-services/go/services/office",
+    srcs = [":go_services"],
+)
+
+kogi_run(
+    name = "bank_run",
+    command = "go run ./kogi-services/go/services/bank",
+    srcs = [":go_services"],
+)
+
+kogi_run(
+    name = "marketplace_run",
+    command = "go run ./kogi-services/go/services/marketplace",
+    srcs = [":go_services"],
+)
+
+kogi_run(
+    name = "studio_run",
+    command = "go run ./kogi-services/go/services/studio",
+    srcs = [":go_services"],
+)
+
+kogi_run(
+    name = "community_run",
+    command = "go run ./kogi-services/go/services/community",
+    srcs = [":go_services"],
+)
+
+kogi_run(
+    name = "developer_run",
+    command = "go run ./kogi-services/go/services/developer",
+    srcs = [":go_services"],
+)
+
+kogi_run(
+    name = "profile_run",
+    command = "go run ./kogi-services/go/services/profile",
+    srcs = [":go_services"],
+)
+
+kogi_run(
+    name = "organizations_run",
+    command = "go run ./kogi-services/go/services/organizations",
+    srcs = [":go_services"],
+)
+
+kogi_run(
+    name = "engine_service_run",
+    command = "go run ./kogi-services/go/services/engine",
+    srcs = [":go_services"],
+)
+
+kogi_run(
+    name = "database_service_run",
+    command = "go run ./kogi-services/go/services/database",
+    srcs = [":go_services"],
+)
+
+kogi_run(
+    name = "engine_run",
+    command = "sbt \"runMain kogi.engine.Main\"",
+    workdir = "kogi-engine",
+    srcs = [":engine"],
+)
+
+kogi_run(
+    name = "engine_grpc_run",
+    command = "sbt \"runMain kogi.engine.EngineGrpcServer\"",
+    workdir = "kogi-engine",
+    srcs = [":engine"],
+)
+
+kogi_run(
+    name = "desktop_run",
+    command = "javac -d target/classes src/main/java/com/kogi/desktop/*.java && java -cp target/classes com.kogi.desktop.Main",
+    workdir = "kogi-client/desktop",
+    srcs = [":desktop_client"],
+)
+
+kogi_run(
+    name = "web_run",
+    command = "npm run start",
+    workdir = "kogi-client/web",
+    srcs = [":web_client"],
+)
+
+kogi_run(
+    name = "mobile_android_run",
+    command = "gradle installDebug",
+    workdir = "kogi-client/mobile/android",
+    srcs = [":mobile_client"],
 )

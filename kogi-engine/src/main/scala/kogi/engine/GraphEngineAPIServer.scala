@@ -1,6 +1,5 @@
-package portfolio.graph.api
+package kogi.engine
 
-import portfolio.graph._
 import com.sun.net.httpserver.{HttpServer, HttpExchange, HttpHandler}
 import java.net.InetSocketAddress
 import java.io.{InputStream, OutputStream}

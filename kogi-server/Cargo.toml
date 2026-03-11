@@ -7,3 +7,4 @@ edition = "2021"
 serde_json = "1.0"
 kogi-office-module = { path = "../kogi-modules/office" }
 kogi-host = { path = "../kogi-host" }
+ctrlc = "3.4"

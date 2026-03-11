@@ -1,6 +1,5 @@
-package portfolio.graph.cli
+package kogi.engine
 
-import portfolio.graph._
 import scala.util.{Try, Success, Failure}
 import java.io.{File, PrintWriter}
 import scala.io.Source

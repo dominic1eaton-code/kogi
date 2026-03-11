@@ -74,6 +74,8 @@ import (
 	"net/http"
 	"strings"
 	"time"
+
+	"kogi.services/lib/ops"
 )
 
 const (
@@ -83,13 +85,21 @@ const (
 	portfolioGateway     = "http://127.0.0.1:8090"
 )
 
+var portfolioRuntime *ops.Runtime
+
 // portfolioPublish fires a pub/sub event to the gateway.
 func portfolioPublish(topic, payload string, meta map[string]string) {
+	if portfolioRuntime != nil {
+		portfolioRuntime.Publish(topic, portfolioServiceID, "", payload)
+	}
 	publish(portfolioGateway, portfolioServiceID, topic, payload, meta)
 }
 
 // portfolioGatewaySubscribePrefix registers a prefix subscription.
 func portfolioGatewaySubscribePrefix(prefix, consumer string) {
+	if portfolioRuntime != nil {
+		portfolioRuntime.Subscribe("prefix", prefix, consumer)
+	}
 	gatewaySubscribePrefix(portfolioGateway, prefix, consumer)
 }
 
@@ -121,6 +131,9 @@ func portfolioInboundPoll(topics []string) {
 
 // portfolioRegisterWithGateway registers and subscribes this service.
 func portfolioRegisterWithGateway(selfEndpoint string) {
+	if portfolioRuntime != nil {
+		portfolioRuntime.Debugf("register gateway endpoint=%s", selfEndpoint)
+	}
 	registerWithGateway(
 		portfolioGateway, portfolioServiceID, selfEndpoint, "/health",
 		[]string{
@@ -250,7 +263,11 @@ type artifactMaturityReq struct {
 // ── main ──────────────────────────────────────────────────────────────────────
 
 func main() {
+	portfolioRuntime = ops.Init(portfolioServiceName)
+	portfolioRuntime.State("init")
 	mux := http.NewServeMux()
+	portfolioRuntime.State("configure")
+	portfolioRuntime.WatchSignals()
 
 	addr := resolveAddr(portfolioDefaultPort, "KOGI_PORTFOLIO_PORT")
 	selfEndpoint := fmt.Sprintf("http://127.0.0.1%s", addr)
@@ -980,8 +997,10 @@ func main() {
 			map[string]interface{}{"snapshot_id": "unavailable"}))
 	})
 
+	portfolioRuntime.State("running")
+	portfolioRuntime.Status("ok", "listening="+addr)
 	log.Printf("%s listening on %s", portfolioServiceName, addr)
-	log.Fatal(http.ListenAndServe(addr, mux))
+	log.Fatal(http.ListenAndServe(addr, ops.WithHTTPDebug(portfolioRuntime, mux)))
 }
 
 // resolveAddr and helpers for this service use the shared utility versions.
