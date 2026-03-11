@@ -1,925 +1,1220 @@
+//! kernel.zig — Kernel Coordinator
+//!
+//! The kernel is the thin top-level orchestration layer that wires together
+//! the seven specialised subsystems:
+//!
+//!   memory.zig    → MemoryManager   (allocation, buddy/slab, pressure)
+//!   network.zig   → NetworkManager  (addresses, interfaces, sockets, firewall)
+//!   process.zig   → Orchestrator    (process table, scheduler, thread pool)
+//!   services.zig  → ServiceManager  (lifecycle, health, dep-graph)
+//!   module.zig    → ModuleSystem    (module registry, lifecycle, event bus)
+//!   resources.zig → ResourcesManager (unified resource accounting)
+//!   events.zig    → EventManager    (kernel-wide event log + subscriber dispatch)
+//!
+//! The Kernel struct itself contains very little logic.  Every resource
+//! acquire/release, every lifecycle transition, and every subsystem call
+//! are delegated to the appropriate subsystem.  The kernel only:
+//!
+//!   • Boots the subsystems in the correct dependency order
+//!   • Exposes convenience one-liners used by bootstrap code
+//!   • Aggregates KernelStats from all seven subsystems
+//!   • Enforces the top-level RBAC rules (role → Permission)
+//!   • Emits a KernelEvent for every state-changing operation
+//!
+//! Subsystem dependency start order:
+//!   memory → process → network → module → resources → services → events
+
 const std = @import("std");
 
+const mem_mod  = @import("memory.zig");
+const proc_mod = @import("processes.zig");
+const net_mod  = @import("network.zig");
+const mod_mod  = @import("module.zig");
+const svc_mod  = @import("services.zig");
+const res_mod  = @import("resources.zig");
+const evt_mod  = @import("events.zig");
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Re-export shared primitives (single canonical definition across the kernel)
+// ─────────────────────────────────────────────────────────────────────────────
+
+pub const Role       = res_mod.Role;
+pub const Permission = res_mod.Permission;
+pub const hasPermission = res_mod.hasPermission;
+pub const EventManager   = evt_mod.EventManager;
+pub const EventFilter    = evt_mod.EventFilter;
+pub const EventDomain    = evt_mod.EventDomain;
+pub const EventDomainSet = evt_mod.EventDomainSet;
+pub const EventSeverity  = evt_mod.EventSeverity;
+pub const EventKind      = evt_mod.EventKind;
+pub const KernelEvent    = evt_mod.KernelEvent;
+pub const HandlerFn      = evt_mod.HandlerFn;
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Errors
+// ─────────────────────────────────────────────────────────────────────────────
+
+pub const KernelError = error{
+    AccessDenied,
+    PrivilegeDenied,
+    NotInitialised,
+    AlreadyInitialised,
+    SubsystemError,
+    ModuleNotFound,
+    ComponentNotFound,
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Kernel Mode
+// ─────────────────────────────────────────────────────────────────────────────
+
+/// Kernel privilege mode.
+/// - `privileged`  — kernel-level operations are permitted; requires root/host role.
+/// - `user`        — unprivileged shell; only informational commands are available.
+///
+/// `kernel` is kept as a compile-time alias for backward compatibility.
 pub const Mode = enum {
-    kernel,
+    privileged,
     user,
+
+    /// Backward-compatible alias so existing code using `.kernel` still compiles.
+    pub const kernel = Mode.privileged;
+
+    pub fn label(self: Mode) []const u8 {
+        return switch (self) {
+            .privileged => "privileged",
+            .user        => "user",
+        };
+    }
+
+    pub fn isPrivileged(self: Mode) bool {
+        return self == .privileged;
+    }
 };
 
-pub const ModuleStatus = enum {
-    active,
-    disabled,
+// ─────────────────────────────────────────────────────────────────────────────
+// Bootstrap configuration
+// ─────────────────────────────────────────────────────────────────────────────
+
+pub const KernelConfig = struct {
+    // ── Memory ──────────────────────────────────────────────────────────────
+    /// Total heap pool available to the kernel (default 4 GiB).
+    memory_total_bytes:   u64   = 4  * 1024 * 1024 * 1024,
+    /// Capacity of the MemoryManager audit log (0 = disabled).
+    memory_audit_cap:     usize = 4096,
+    /// Enable allocation audit log.
+    memory_audit_enabled: bool  = true,
+
+    // ── Processes ────────────────────────────────────────────────────────────
+    /// Number of logical worker threads in the thread pool.
+    worker_count:     u32   = 16,
+    /// Per-priority-lane task queue depth.
+    queue_lane_cap:   usize = 256,
+
+    // ── Network ──────────────────────────────────────────────────────────────
+    max_sockets:       usize                    = 512,
+    max_connections:   usize                    = 256,
+    max_conn_failures: u32                      = 5,
+    packet_lane_cap:   usize                    = 1024,
+    firewall_default:  net_mod.FirewallAction   = .allow,
+
+    // ── Module system ────────────────────────────────────────────────────────
+    module_event_cap: usize = 2048,
+
+    // ── Services ─────────────────────────────────────────────────────────────
+    service_event_cap:      usize = 1024,
+    global_mem_ceiling:     u64   = 32 * 1024 * 1024 * 1024,
+    global_process_ceiling: u32   = 4096,
+    global_conn_ceiling:    u32   = 8192,
+
+    // ── Resources ────────────────────────────────────────────────────────────
+    resource_log_cap: usize = 4096,
+    /// Capacity of the kernel-wide EventManager ring buffer.
+    event_log_cap: usize = 8192,
 };
 
-pub const ModuleRecord = struct {
-    id: []const u8,
-    kind: []const u8,
-    status: ModuleStatus,
-    registered_at_ms: i64,
+// ─────────────────────────────────────────────────────────────────────────────
+// KernelStats  (aggregate snapshot from all six subsystems)
+// ─────────────────────────────────────────────────────────────────────────────
+
+pub const KernelStats = struct {
+    // Mode
+    mode:         Mode,
+    session_role: Role,
+
+    // Memory
+    memory_used_bytes:  u64,
+    memory_total_bytes: u64,
+
+    // Processes
+    live_processes:  usize,
+    idle_workers:    usize,
+    busy_workers:    usize,
+    queued_tasks:    usize,
+    scheduled_jobs:  usize,
+
+    // Network
+    open_sockets:       usize,
+    active_connections: usize,
+    queued_packets:     usize,
+    route_count:        usize,
+
+    // Modules
+    total_modules:  usize,
+    active_modules: usize,
+    module_events:  usize,
+
+    // Services
+    total_services:   usize,
+    running_services: usize,
+    faulted_services: usize,
+    service_events:   usize,
+
+    // Resources
+    tenant_count:         usize,
+    resource_event_count: usize,
+    // Events
+    kernel_events_total:       u64,
+    kernel_events_log_len:     usize,
+    kernel_events_overflow:    u64,
+    kernel_event_subscribers:  usize,
 };
 
-pub const EventRecord = struct {
-    topic: []const u8,
-    payload: []const u8,
-    emitted_at_ms: i64,
-};
-
-pub const Permission = enum {
-    kernel_admin,
-    schedule_tasks,
-    manage_modules,
-    manage_memory,
-    manage_processes,
-    manage_files,
-    read_audit,
-};
-
-pub const Role = enum {
-    root,
-    host,
-    server,
-    module_runtime,
-    user,
-};
-
-pub const ProcessState = enum {
-    ready,
-    running,
-    waiting,
-    terminated,
-};
-
-pub const ProcessRecord = struct {
-    pid: u64,
-    owner: Role,
-    name: []const u8,
-    state: ProcessState,
-    created_at_ms: i64,
-};
-
-pub const FileRecord = struct {
-    path: []const u8,
-    owner: Role,
-    size_bytes: u64,
-    created_at_ms: i64,
-};
-
-pub const ScheduleEntry = struct {
-    id: []const u8,
-    topic: []const u8,
-    payload: []const u8,
-    due_at_ms: i64,
-    interval_ms: ?u64,
-    enabled: bool,
-};
-
-pub const CacheEntry = struct {
-    value: []const u8,
-    expires_at_ms: i64,
-};
-
-pub const ModuleLimits = struct {
-    memory_limit_bytes: u64,
-    max_processes: u32,
-    max_files: u32,
-    max_resource_units: u32,
-};
-
-pub const ModuleUsage = struct {
-    memory_used_bytes: u64,
-    process_count: u32,
-    file_count: u32,
-    resource_units_used: u32,
-};
-
-pub const ModuleIsolationContext = struct {
-    module_id: []const u8,
-    limits: ModuleLimits,
-    usage: ModuleUsage,
-    network_manager: []const u8,
-    service_endpoint: []const u8,
-    status: ModuleStatus,
-};
-
-pub const ComponentClass = enum {
-    kernel,
-    host,
-    server,
-    engine,
-    services,
-    module,
-};
-
-pub const ComponentIsolationContext = struct {
-    component_id: []const u8,
-    class: ComponentClass,
-    limits: ModuleLimits,
-    usage: ModuleUsage,
-    network_ingress_bytes: u64,
-    network_egress_bytes: u64,
-    network_manager: []const u8,
-    endpoint: []const u8,
-    status: ModuleStatus,
-    registered_at_ms: i64,
-};
-
-pub const AccessDenied = error{AccessDenied};
+// ─────────────────────────────────────────────────────────────────────────────
+// Kernel
+// ─────────────────────────────────────────────────────────────────────────────
 
 pub const Kernel = struct {
-    allocator: std.mem.Allocator,
-    mode: Mode,
+    allocator:    std.mem.Allocator,
+    mode:         Mode,
+    /// Role of the currently active shell session (changes with su/sudo).
+    session_role: Role,
 
-    modules: std.StringHashMap(ModuleRecord),
-    module_isolation: std.StringHashMap(ModuleIsolationContext),
-    component_isolation: std.StringHashMap(ComponentIsolationContext),
-    events: std.ArrayList(EventRecord),
-    scheduler: std.ArrayList(ScheduleEntry),
-    processes: std.ArrayList(ProcessRecord),
-    files: std.ArrayList(FileRecord),
-    cache: std.StringHashMap(CacheEntry),
+    // ── Subsystems ───────────────────────────────────────────────────────────
+    memory:    mem_mod.MemoryManager,
+    processes: proc_mod.Orchestrator,
+    network:   net_mod.NetworkManager,
+    modules:   mod_mod.ModuleSystem,
+    resources: res_mod.ResourcesManager,
+    services:  svc_mod.ServiceManager,
+    events:    evt_mod.EventManager,
 
-    memory_total_bytes: u64,
-    memory_used_bytes: u64,
-    next_pid: u64,
+    // ── Process-subsystem owned objects (Orchestrator borrows pointers) ──────
+    _proc_table:  proc_mod.ProcessTable,
+    _thread_pool: proc_mod.ThreadPool,
+    _work_queue:  proc_mod.WorkQueue,
+    _scheduler:   proc_mod.Scheduler,
+    _res_ledger:  proc_mod.ResourceLedger,
 
-    pub fn init(allocator: std.mem.Allocator) Kernel {
+    // ── Memory audit log (optional) ──────────────────────────────────────────
+    _audit_log: ?mem_mod.AuditLog,
+
+    // ─────────────────────────────────────────────────────────────────────────
+
+    pub fn init(allocator: std.mem.Allocator, cfg: KernelConfig) !Kernel {
+        // ── 1. Memory ──────────────────────────────────────────────────────
+        var audit: ?mem_mod.AuditLog = if (cfg.memory_audit_enabled)
+            try mem_mod.AuditLog.init(allocator, cfg.memory_audit_cap)
+        else
+            null;
+
+        const mem_mgr = mem_mod.MemoryManager.init(
+            allocator,
+            cfg.memory_total_bytes,
+            if (cfg.memory_audit_enabled) &(audit.?) else null,
+        );
+
+        // ── 2. Processes ───────────────────────────────────────────────────
+        const proc_table  = proc_mod.ProcessTable.init(allocator);
+        const thread_pool = try proc_mod.ThreadPool.init(allocator, cfg.worker_count);
+        const work_queue  = proc_mod.WorkQueue.init(allocator, cfg.queue_lane_cap);
+        const scheduler   = proc_mod.Scheduler.init(allocator);
+        const res_ledger  = proc_mod.ResourceLedger.init(allocator);
+
+        // ── 3. Network ─────────────────────────────────────────────────────
+        const net_mgr = net_mod.NetworkManager.init(
+            allocator,
+            cfg.max_sockets,
+            cfg.max_connections,
+            cfg.max_conn_failures,
+            cfg.packet_lane_cap,
+            cfg.firewall_default,
+        );
+
+        // ── 4. Module system ───────────────────────────────────────────────
+        var mod_sys = mod_mod.ModuleSystem.init(
+            allocator,
+            cfg.memory_total_bytes,
+            cfg.module_event_cap,
+        );
+        // ModuleSystem stores cross-references by value; relink after move.
+        mod_sys.relink();
+
+        // ── 5. Resources ───────────────────────────────────────────────────
+        var res_mgr = res_mod.ResourcesManager.init(
+            allocator,
+            .{
+                .memory_bytes    = cfg.global_mem_ceiling,
+                .max_processes   = cfg.global_process_ceiling,
+                .max_connections = cfg.global_conn_ceiling,
+            },
+            cfg.resource_log_cap,
+        );
+        res_mgr.relink();
+
+        // ── 6. Services ────────────────────────────────────────────────────
+        var svc_mgr = svc_mod.ServiceManager.init(
+            allocator,
+            .{
+                .memory_bytes    = cfg.global_mem_ceiling,
+                .max_processes   = cfg.global_process_ceiling,
+                .max_connections = cfg.global_conn_ceiling,
+            },
+            cfg.service_event_cap,
+        );
+        svc_mgr.relink();
+        // ── 7. Events ─────────────────────────────────────────────────────
+        const evt_mgr = try evt_mod.EventManager.init(
+            allocator,
+            cfg.event_log_cap,
+        );
+
+        // Build Orchestrator last (it borrows pointers to the owned sub-objects
+        // above; those are stored inline in the Kernel struct so the pointers
+        // will be stable once the struct is in its final location).
+        const orch = proc_mod.Orchestrator.init(
+            allocator,
+            &proc_table,
+            &thread_pool,
+            &scheduler,
+            &work_queue,
+            &res_ledger,
+        );
+
         return .{
-            .allocator = allocator,
-            .mode = .kernel,
-            .modules = std.StringHashMap(ModuleRecord).init(allocator),
-            .module_isolation = std.StringHashMap(ModuleIsolationContext).init(allocator),
-            .component_isolation = std.StringHashMap(ComponentIsolationContext).init(allocator),
-            .events = std.ArrayList(EventRecord).init(allocator),
-            .scheduler = std.ArrayList(ScheduleEntry).init(allocator),
-            .processes = std.ArrayList(ProcessRecord).init(allocator),
-            .files = std.ArrayList(FileRecord).init(allocator),
-            .cache = std.StringHashMap(CacheEntry).init(allocator),
-            .memory_total_bytes = 4 * 1024 * 1024 * 1024,
-            .memory_used_bytes = 0,
-            .next_pid = 1000,
+            .allocator     = allocator,
+            .mode          = .privileged,
+            .session_role  = .root,
+            .memory        = mem_mgr,
+            .processes     = orch,
+            .network       = net_mgr,
+            .modules       = mod_sys,
+            .resources     = res_mgr,
+            .services      = svc_mgr,
+            ._proc_table   = proc_table,
+            ._thread_pool  = thread_pool,
+            ._work_queue   = work_queue,
+            ._scheduler    = scheduler,
+            ._res_ledger   = res_ledger,
+            ._audit_log    = audit,
+            .events        = evt_mgr,
         };
+    }
+
+    /// Re-seat all internal pointer cross-references after the Kernel struct
+    /// has been moved into its final storage location (e.g. the heap).
+    /// Must be called once immediately after init.
+    pub fn relink(self: *Kernel) void {
+        // Orchestrator borrows pointers — rebuild with addresses of the
+        // inline fields at their final location.
+        self.processes = proc_mod.Orchestrator.init(
+            self.allocator,
+            &self._proc_table,
+            &self._thread_pool,
+            &self._scheduler,
+            &self._work_queue,
+            &self._res_ledger,
+        );
+
+        // ModuleSystem and ResourcesManager also hold self-referential ptrs.
+        self.modules.relink();
+        self.resources.relink();
+        self.services.relink();
+
+        // Point ResourcesManager's bridge at the live MemoryManager.
+        self.resources.attachMemoryManager(&self.memory);
+        self.resources.attachTrafficLedger(&self.network.ledger);
+        self.resources.attachProcessTable(&self._proc_table);
+        self.resources.attachModuleRegistry(&self.modules.registry);
     }
 
     pub fn deinit(self: *Kernel) void {
-        var module_it = self.modules.valueIterator();
-        while (module_it.next()) |module| {
-            self.allocator.free(module.id);
-            self.allocator.free(module.kind);
-        }
-        self.modules.deinit();
-
-        var isolation_it = self.module_isolation.valueIterator();
-        while (isolation_it.next()) |ctx| {
-            self.allocator.free(ctx.module_id);
-            self.allocator.free(ctx.network_manager);
-            self.allocator.free(ctx.service_endpoint);
-        }
-        self.module_isolation.deinit();
-
-        var component_it = self.component_isolation.valueIterator();
-        while (component_it.next()) |ctx| {
-            self.allocator.free(ctx.component_id);
-            self.allocator.free(ctx.network_manager);
-            self.allocator.free(ctx.endpoint);
-        }
-        self.component_isolation.deinit();
-
-        for (self.events.items) |event| {
-            self.allocator.free(event.topic);
-            self.allocator.free(event.payload);
-        }
         self.events.deinit();
-
-        for (self.scheduler.items) |entry| {
-            self.allocator.free(entry.id);
-            self.allocator.free(entry.topic);
-            self.allocator.free(entry.payload);
-        }
-        self.scheduler.deinit();
-
-        for (self.processes.items) |process| {
-            self.allocator.free(process.name);
-        }
+        self.services.deinit();
+        self.resources.deinit();
+        self.modules.deinit();
+        self.network.deinit();
         self.processes.deinit();
-
-        for (self.files.items) |file| {
-            self.allocator.free(file.path);
-        }
-        self.files.deinit();
-
-        var cache_it = self.cache.valueIterator();
-        while (cache_it.next()) |entry| {
-            self.allocator.free(entry.value);
-        }
-        self.cache.deinit();
+        self._proc_table.deinit();
+        self._thread_pool.deinit();
+        self._work_queue.deinit();
+        self._scheduler.deinit();
+        self._res_ledger.deinit();
+        self.memory.deinit();
+        if (self._audit_log) |*a| a.deinit();
     }
 
+    // ─────────────────────────────────────────────────────────────────────
+    // RBAC enforcement
+    // ─────────────────────────────────────────────────────────────────────
+
+    pub fn enforce(_: *const Kernel, actor: Role, permission: Permission) !void {
+        if (!hasPermission(actor, permission)) return KernelError.AccessDenied;
+    }
+
+    /// Transition the kernel privilege mode.
+    /// Entering `.privileged` requires `.root` or `.host`; anyone may drop to `.user`.
     pub fn setMode(self: *Kernel, mode: Mode, actor: Role) !void {
-        if (actor != .root and actor != .host) return AccessDenied.AccessDenied;
+        if (mode == .privileged and actor != .root and actor != .host)
+            return KernelError.PrivilegeDenied;
+        if (mode == .user and actor != .root and actor != .host and actor != .server)
+            return KernelError.AccessDenied;
         self.mode = mode;
+        self.events.emitKernel(.kernel_mode_changed, .info, mode.label());
     }
 
-    pub fn enforce(self: *Kernel, actor: Role, permission: Permission) !void {
-        _ = self;
-        if (!hasPermission(actor, permission)) {
-            return AccessDenied.AccessDenied;
-        }
+    /// Elevate the current session to privileged mode.
+    /// Returns `PrivilegeDenied` if the actor is not root or host.
+    pub fn enterPrivileged(self: *Kernel, actor: Role) !void {
+        try self.setMode(.privileged, actor);
+        self.session_role = actor;
+        self.events.emitKernel(.kernel_mode_changed, .info, "enter-privileged");
     }
 
-    pub fn registerModule(self: *Kernel, actor: Role, id: []const u8, kind: []const u8) !void {
-        try self.enforce(actor, .manage_modules);
-
-        const now = std.time.milliTimestamp();
-        const id_copy = try self.allocator.dupe(u8, id);
-        errdefer self.allocator.free(id_copy);
-        const kind_copy = try self.allocator.dupe(u8, kind);
-        errdefer self.allocator.free(kind_copy);
-
-        try self.modules.put(id_copy, .{
-            .id = id_copy,
-            .kind = kind_copy,
-            .status = .active,
-            .registered_at_ms = now,
-        });
-
-        const isolation_key = try self.allocator.dupe(u8, id);
-        errdefer self.allocator.free(isolation_key);
-        const endpoint = if (std.mem.eql(u8, id, "kogi.office"))
-            try self.allocator.dupe(u8, "/services/office")
-        else
-            try std.fmt.allocPrint(self.allocator, "/modules/{s}", .{id});
-        errdefer self.allocator.free(endpoint);
-        const network_manager = try self.allocator.dupe(u8, "kogi-go-network");
-        errdefer self.allocator.free(network_manager);
-
-        try self.module_isolation.put(isolation_key, .{
-            .module_id = isolation_key,
-            .limits = defaultModuleLimits(),
-            .usage = .{
-                .memory_used_bytes = 0,
-                .process_count = 0,
-                .file_count = 0,
-                .resource_units_used = 0,
-            },
-            .network_manager = network_manager,
-            .service_endpoint = endpoint,
-            .status = .active,
-        });
-
-        try self.registerPlatformComponent(
-            actor,
-            id,
-            .module,
-            endpoint,
-            network_manager,
-            defaultModuleLimits(),
-        );
-
-        try self.publishEvent(actor, "kernel.module.registered", "{}", now);
+    /// Drop the current session to user mode.
+    pub fn exitPrivileged(self: *Kernel, actor: Role) !void {
+        try self.setMode(.user, actor);
+        self.session_role = .user;
+        self.events.emitKernel(.kernel_mode_changed, .info, "exit-privileged");
     }
 
-    pub fn bootstrapOfficeModule(self: *Kernel, actor: Role) !void {
-        try self.registerModule(actor, "kogi.office", "office");
-
-        try self.setModuleLimits(actor, "kogi.office", .{
-            .memory_limit_bytes = 768 * 1024 * 1024,
-            .max_processes = 96,
-            .max_files = 6000,
-            .max_resource_units = 14000,
-        });
-
-        try self.allocateModuleMemory(actor, "kogi.office", 64 * 1024 * 1024);
-        _ = try self.spawnModuleProcess(actor, "kogi.office", "office-dashboard-worker");
-        _ = try self.spawnModuleProcess(actor, "kogi.office", "office-assistant-worker");
-        try self.createModuleFile(actor, "kogi.office", "/modules/office/dashboard.cache", 8192);
-        try self.createModuleFile(actor, "kogi.office", "/modules/office/workspace.cache", 8192);
-        try self.reserveModuleResources(actor, "kogi.office", 320);
-
-        try self.publishEvent(
-            actor,
-            "office.module.bootstrapped",
-            "{\"module\":\"kogi.office\",\"views\":[\"dashboard\",\"portfolio\",\"timeline\",\"workspace\",\"assistant\"]}",
-            std.time.milliTimestamp(),
-        );
+    /// Return true iff the kernel is currently in privileged mode.
+    pub fn isPrivileged(self: *const Kernel) bool {
+        return self.mode == .privileged;
     }
 
-    pub fn setModuleLimits(self: *Kernel, actor: Role, module_id: []const u8, limits: ModuleLimits) !void {
-        try self.enforce(actor, .manage_modules);
-        var ctx = try self.getIsolationContext(module_id);
-        ctx.limits = limits;
+    /// Enforce both RBAC *and* that the kernel is in privileged mode.
+    /// Use this for operations that should never run in user mode.
+    pub fn enforcePrivileged(self: *const Kernel, actor: Role, permission: Permission) !void {
+        if (!self.mode.isPrivileged()) return KernelError.PrivilegeDenied;
+        try self.enforce(actor, permission);
     }
 
-    pub fn allocateModuleMemory(self: *Kernel, actor: Role, module_id: []const u8, bytes: u64) !void {
-        try self.enforce(actor, .manage_memory);
+    // ─────────────────────────────────────────────────────────────────────
+    // Memory convenience wrappers
+    // ─────────────────────────────────────────────────────────────────────
 
-        if (self.memory_used_bytes + bytes > self.memory_total_bytes) {
-            return error.OutOfMemory;
-        }
-
-        var ctx = try self.getIsolationContext(module_id);
-        if (ctx.usage.memory_used_bytes + bytes > ctx.limits.memory_limit_bytes) {
-            return error.ModuleResourceLimitExceeded;
-        }
-
-        ctx.usage.memory_used_bytes += bytes;
-        self.memory_used_bytes += bytes;
-    }
-
-    pub fn freeModuleMemory(self: *Kernel, actor: Role, module_id: []const u8, bytes: u64) !void {
-        try self.enforce(actor, .manage_memory);
-
-        var ctx = try self.getIsolationContext(module_id);
-
-        if (bytes >= ctx.usage.memory_used_bytes) {
-            self.memory_used_bytes -= ctx.usage.memory_used_bytes;
-            ctx.usage.memory_used_bytes = 0;
-        } else {
-            ctx.usage.memory_used_bytes -= bytes;
-            self.memory_used_bytes -= bytes;
-        }
-    }
-
-    pub fn spawnModuleProcess(self: *Kernel, actor: Role, module_id: []const u8, name: []const u8) !u64 {
-        try self.enforce(actor, .manage_processes);
-
-        var ctx = try self.getIsolationContext(module_id);
-        if (ctx.usage.process_count >= ctx.limits.max_processes) {
-            return error.ModuleResourceLimitExceeded;
-        }
-
-        const pid = try self.spawnProcess(actor, name, .module_runtime);
-        ctx.usage.process_count += 1;
-        return pid;
-    }
-
-    pub fn createModuleFile(self: *Kernel, actor: Role, module_id: []const u8, path: []const u8, size_bytes: u64) !void {
-        try self.enforce(actor, .manage_files);
-
-        var ctx = try self.getIsolationContext(module_id);
-        if (ctx.usage.file_count >= ctx.limits.max_files) {
-            return error.ModuleResourceLimitExceeded;
-        }
-
-        try self.createFile(actor, path, .module_runtime, size_bytes);
-        ctx.usage.file_count += 1;
-    }
-
-    pub fn reserveModuleResources(self: *Kernel, actor: Role, module_id: []const u8, units: u32) !void {
-        try self.enforce(actor, .manage_modules);
-
-        var ctx = try self.getIsolationContext(module_id);
-        if (ctx.usage.resource_units_used + units > ctx.limits.max_resource_units) {
-            return error.ModuleResourceLimitExceeded;
-        }
-
-        ctx.usage.resource_units_used += units;
-    }
-
-    pub fn registerPlatformComponent(
-        self: *Kernel,
-        actor: Role,
-        component_id: []const u8,
-        class: ComponentClass,
-        endpoint: []const u8,
-        network_manager: []const u8,
-        limits: ModuleLimits,
-    ) !void {
-        try self.enforce(actor, .manage_modules);
-        if (self.component_isolation.get(component_id) != null) {
-            return error.ComponentAlreadyRegistered;
-        }
-
-        const id_copy = try self.allocator.dupe(u8, component_id);
-        errdefer self.allocator.free(id_copy);
-        const endpoint_copy = try self.allocator.dupe(u8, endpoint);
-        errdefer self.allocator.free(endpoint_copy);
-        const network_copy = try self.allocator.dupe(u8, network_manager);
-        errdefer self.allocator.free(network_copy);
-
-        try self.component_isolation.put(id_copy, .{
-            .component_id = id_copy,
-            .class = class,
-            .limits = limits,
-            .usage = .{
-                .memory_used_bytes = 0,
-                .process_count = 0,
-                .file_count = 0,
-                .resource_units_used = 0,
-            },
-            .network_ingress_bytes = 0,
-            .network_egress_bytes = 0,
-            .network_manager = network_copy,
-            .endpoint = endpoint_copy,
-            .status = .active,
-            .registered_at_ms = std.time.milliTimestamp(),
-        });
-
-        try self.publishEvent(actor, "kernel.component.registered", "{}", std.time.milliTimestamp());
-    }
-
-    pub fn bootstrapCorePlatformComponents(self: *Kernel, actor: Role) !void {
-        try self.registerPlatformComponent(
-            actor,
-            "kogi.kernel",
-            .kernel,
-            "local://kogi-kernel",
-            "kernel-native",
-            .{
-                .memory_limit_bytes = 1024 * 1024 * 1024,
-                .max_processes = 512,
-                .max_files = 20000,
-                .max_resource_units = 40000,
-            },
-        );
-        try self.registerPlatformComponent(
-            actor,
-            "kogi.host",
-            .host,
-            "local://kogi-host",
-            "kernel-native",
-            .{
-                .memory_limit_bytes = 768 * 1024 * 1024,
-                .max_processes = 384,
-                .max_files = 16000,
-                .max_resource_units = 30000,
-            },
-        );
-        try self.registerPlatformComponent(
-            actor,
-            "kogi.server",
-            .server,
-            "http://127.0.0.1:8080/health",
-            "kogi-go-network",
-            .{
-                .memory_limit_bytes = 768 * 1024 * 1024,
-                .max_processes = 256,
-                .max_files = 12000,
-                .max_resource_units = 24000,
-            },
-        );
-        try self.registerPlatformComponent(
-            actor,
-            "kogi.engine",
-            .engine,
-            "local://kogi-engine",
-            "kogi-go-network",
-            .{
-                .memory_limit_bytes = 1024 * 1024 * 1024,
-                .max_processes = 256,
-                .max_files = 12000,
-                .max_resource_units = 32000,
-            },
-        );
-        try self.registerPlatformComponent(
-            actor,
-            "kogi.services",
-            .services,
-            "http://127.0.0.1:8090/health",
-            "kogi-go-network",
-            .{
-                .memory_limit_bytes = 768 * 1024 * 1024,
-                .max_processes = 256,
-                .max_files = 12000,
-                .max_resource_units = 24000,
-            },
-        );
-
-        try self.allocateComponentMemory(actor, "kogi.host", 32 * 1024 * 1024);
-        try self.allocateComponentMemory(actor, "kogi.server", 48 * 1024 * 1024);
-        try self.allocateComponentMemory(actor, "kogi.engine", 64 * 1024 * 1024);
-        _ = try self.spawnComponentProcess(actor, "kogi.host", "host-orchestrator");
-        _ = try self.spawnComponentProcess(actor, "kogi.server", "server-router");
-        _ = try self.spawnComponentProcess(actor, "kogi.engine", "engine-stream-processor");
-        try self.createComponentFile(actor, "kogi.engine", "/engine/flows.log", 4096);
-        try self.reserveComponentResources(actor, "kogi.services", 256);
-        try self.recordComponentNetwork(actor, "kogi.services", 4096, 8192);
-    }
-
-    pub fn setComponentLimits(self: *Kernel, actor: Role, component_id: []const u8, limits: ModuleLimits) !void {
-        try self.enforce(actor, .manage_modules);
-        var ctx = try self.getComponentContext(component_id);
-        ctx.limits = limits;
-    }
-
-    pub fn allocateComponentMemory(self: *Kernel, actor: Role, component_id: []const u8, bytes: u64) !void {
-        try self.enforce(actor, .manage_memory);
-
-        if (self.memory_used_bytes + bytes > self.memory_total_bytes) {
-            return error.OutOfMemory;
-        }
-
-        var ctx = try self.getComponentContext(component_id);
-        if (ctx.usage.memory_used_bytes + bytes > ctx.limits.memory_limit_bytes) {
-            return error.ComponentResourceLimitExceeded;
-        }
-
-        ctx.usage.memory_used_bytes += bytes;
-        self.memory_used_bytes += bytes;
-    }
-
-    pub fn freeComponentMemory(self: *Kernel, actor: Role, component_id: []const u8, bytes: u64) !void {
-        try self.enforce(actor, .manage_memory);
-
-        var ctx = try self.getComponentContext(component_id);
-        if (bytes >= ctx.usage.memory_used_bytes) {
-            self.memory_used_bytes -= ctx.usage.memory_used_bytes;
-            ctx.usage.memory_used_bytes = 0;
-        } else {
-            ctx.usage.memory_used_bytes -= bytes;
-            self.memory_used_bytes -= bytes;
-        }
-    }
-
-    pub fn spawnComponentProcess(self: *Kernel, actor: Role, component_id: []const u8, name: []const u8) !u64 {
-        try self.enforce(actor, .manage_processes);
-
-        var ctx = try self.getComponentContext(component_id);
-        if (ctx.usage.process_count >= ctx.limits.max_processes) {
-            return error.ComponentResourceLimitExceeded;
-        }
-
-        const owner = componentOwnerRole(ctx.class);
-        const pid = try self.spawnProcess(actor, name, owner);
-        ctx.usage.process_count += 1;
-        return pid;
-    }
-
-    pub fn createComponentFile(
-        self: *Kernel,
-        actor: Role,
-        component_id: []const u8,
-        path: []const u8,
-        size_bytes: u64,
-    ) !void {
-        try self.enforce(actor, .manage_files);
-
-        var ctx = try self.getComponentContext(component_id);
-        if (ctx.usage.file_count >= ctx.limits.max_files) {
-            return error.ComponentResourceLimitExceeded;
-        }
-
-        const owner = componentOwnerRole(ctx.class);
-        try self.createFile(actor, path, owner, size_bytes);
-        ctx.usage.file_count += 1;
-    }
-
-    pub fn reserveComponentResources(
-        self: *Kernel,
-        actor: Role,
-        component_id: []const u8,
-        units: u32,
-    ) !void {
-        try self.enforce(actor, .manage_modules);
-
-        var ctx = try self.getComponentContext(component_id);
-        if (ctx.usage.resource_units_used + units > ctx.limits.max_resource_units) {
-            return error.ComponentResourceLimitExceeded;
-        }
-
-        ctx.usage.resource_units_used += units;
-    }
-
-    pub fn recordComponentNetwork(
-        self: *Kernel,
-        actor: Role,
-        component_id: []const u8,
-        ingress_bytes: u64,
-        egress_bytes: u64,
-    ) !void {
-        try self.enforce(actor, .manage_modules);
-
-        var ctx = try self.getComponentContext(component_id);
-        ctx.network_ingress_bytes += ingress_bytes;
-        ctx.network_egress_bytes += egress_bytes;
-    }
-
-    pub fn getComponentIsolation(self: *Kernel, component_id: []const u8) ?ComponentIsolationContext {
-        if (self.component_isolation.get(component_id)) |ctx| {
-            return ctx;
-        }
-        return null;
-    }
-
-    pub fn getModuleIsolation(self: *Kernel, module_id: []const u8) ?ModuleIsolationContext {
-        if (self.module_isolation.get(module_id)) |ctx| {
-            return ctx;
-        }
-        return null;
-    }
-
-    pub fn publishEvent(self: *Kernel, actor: Role, topic: []const u8, payload: []const u8, at_ms: i64) !void {
-        try self.enforce(actor, .manage_modules);
-
-        const topic_copy = try self.allocator.dupe(u8, topic);
-        errdefer self.allocator.free(topic_copy);
-        const payload_copy = try self.allocator.dupe(u8, payload);
-        errdefer self.allocator.free(payload_copy);
-
-        try self.events.append(.{
-            .topic = topic_copy,
-            .payload = payload_copy,
-            .emitted_at_ms = at_ms,
-        });
-    }
-
-    pub fn schedule(self: *Kernel, actor: Role, id: []const u8, topic: []const u8, payload: []const u8, due_at_ms: i64, interval_ms: ?u64) !void {
-        try self.enforce(actor, .schedule_tasks);
-
-        try self.scheduler.append(.{
-            .id = try self.allocator.dupe(u8, id),
-            .topic = try self.allocator.dupe(u8, topic),
-            .payload = try self.allocator.dupe(u8, payload),
-            .due_at_ms = due_at_ms,
-            .interval_ms = interval_ms,
-            .enabled = true,
-        });
-    }
-
-    pub fn tick(self: *Kernel, actor: Role, now_ms: i64) !u64 {
-        try self.enforce(actor, .schedule_tasks);
-        var triggered: u64 = 0;
-
-        for (self.scheduler.items) |*entry| {
-            if (!entry.enabled) continue;
-            if (entry.due_at_ms > now_ms) continue;
-
-            try self.publishEvent(actor, entry.topic, entry.payload, now_ms);
-            triggered += 1;
-
-            if (entry.interval_ms) |interval| {
-                entry.due_at_ms = now_ms + @as(i64, @intCast(interval));
-            } else {
-                entry.enabled = false;
-            }
-        }
-
-        return triggered;
-    }
-
+    /// Allocate `bytes` from the global pool (no tenant tracking).
     pub fn allocateMemory(self: *Kernel, actor: Role, bytes: u64) !void {
-        try self.enforce(actor, .manage_memory);
-        if (self.memory_used_bytes + bytes > self.memory_total_bytes) {
-            return error.OutOfMemory;
-        }
-        self.memory_used_bytes += bytes;
+        try self.enforcePrivileged(actor, .manage_memory);
+        try self.memory.allocate(bytes);
     }
 
     pub fn freeMemory(self: *Kernel, actor: Role, bytes: u64) !void {
-        try self.enforce(actor, .manage_memory);
-        if (bytes >= self.memory_used_bytes) {
-            self.memory_used_bytes = 0;
-            return;
-        }
-        self.memory_used_bytes -= bytes;
+        try self.enforcePrivileged(actor, .manage_memory);
+        self.memory.free(bytes);
     }
 
-    pub fn putCache(self: *Kernel, actor: Role, key: []const u8, value: []const u8, ttl_ms: u64) !void {
-        try self.enforce(actor, .manage_memory);
-
-        const key_copy = try self.allocator.dupe(u8, key);
-        errdefer self.allocator.free(key_copy);
-        const value_copy = try self.allocator.dupe(u8, value);
-        errdefer self.allocator.free(value_copy);
-
-        const expires_at = std.time.milliTimestamp() + @as(i64, @intCast(ttl_ms));
-
-        if (self.cache.getPtr(key_copy)) |existing| {
-            self.allocator.free(existing.value);
-            existing.* = .{ .value = value_copy, .expires_at_ms = expires_at };
-            self.allocator.free(key_copy);
-        } else {
-            try self.cache.put(key_copy, .{ .value = value_copy, .expires_at_ms = expires_at });
-        }
+    /// Allocate memory for a specific tenant, respecting per-tenant limits.
+    pub fn allocateTenantMemory(self: *Kernel, actor: Role, tenant_id: []const u8, bytes: u64) !void {
+        try self.enforcePrivileged(actor, .manage_memory);
+        try self.resources.acquireMemory(actor, tenant_id, bytes);
+        self.events.emitMemory(.memory_allocated, .info, tenant_id, "tenant-memory-acquired");
     }
 
-    pub fn getCache(self: *Kernel, key: []const u8) ?[]const u8 {
-        const now = std.time.milliTimestamp();
-        if (self.cache.getPtr(key)) |entry| {
-            if (entry.expires_at_ms < now) return null;
-            return entry.value;
-        }
-        return null;
+    pub fn freeTenantMemory(self: *Kernel, actor: Role, tenant_id: []const u8, bytes: u64) !void {
+        try self.enforcePrivileged(actor, .manage_memory);
+        try self.resources.releaseMemory(actor, tenant_id, bytes);
+        self.events.emitMemory(.memory_freed, .info, tenant_id, "tenant-memory-released");
     }
+
+    // ─────────────────────────────────────────────────────────────────────
+    // Process convenience wrappers
+    // ─────────────────────────────────────────────────────────────────────
 
     pub fn spawnProcess(self: *Kernel, actor: Role, name: []const u8, owner: Role) !u64 {
-        try self.enforce(actor, .manage_processes);
-
-        const pid = self.next_pid;
-        self.next_pid += 1;
-
-        try self.processes.append(.{
-            .pid = pid,
-            .owner = owner,
-            .name = try self.allocator.dupe(u8, name),
-            .state = .ready,
-            .created_at_ms = std.time.milliTimestamp(),
-        });
-
+        try self.enforcePrivileged(actor, .manage_processes);
+        const pid = try self._proc_table.spawn(actor, name, owner, 128, null);
+        self.events.emitProcess(.process_spawned, .info, name, "spawned");
         return pid;
     }
 
-    pub fn setProcessState(self: *Kernel, actor: Role, pid: u64, state: ProcessState) !void {
-        try self.enforce(actor, .manage_processes);
-
-        for (self.processes.items) |*process| {
-            if (process.pid == pid) {
-                process.state = state;
-                return;
-            }
-        }
-        return error.NotFound;
+    pub fn terminateProcess(self: *Kernel, actor: Role, pid: u64) !void {
+        try self.enforcePrivileged(actor, .manage_processes);
+        try self._proc_table.transition(actor, pid, .terminated);
+        self.events.emitProcess(.process_terminated, .info, "kernel", "terminated");
     }
 
-    pub fn createFile(self: *Kernel, actor: Role, path: []const u8, owner: Role, size_bytes: u64) !void {
-        try self.enforce(actor, .manage_files);
+    // ─────────────────────────────────────────────────────────────────────
+    // Network convenience wrappers
+    // ─────────────────────────────────────────────────────────────────────
 
-        try self.files.append(.{
-            .path = try self.allocator.dupe(u8, path),
-            .owner = owner,
-            .size_bytes = size_bytes,
-            .created_at_ms = std.time.milliTimestamp(),
+    pub fn registerNetworkAddress(
+        self:         *Kernel,
+        actor:        Role,
+        name:         []const u8,
+        addr:         net_mod.Ipv4,
+        port:         u16,
+        component_id: []const u8,
+        scheme:       []const u8,
+    ) !void {
+        try self.enforcePrivileged(actor, .manage_modules);
+        try self.network.addresses.register(actor, name, addr, port, component_id, scheme);
+        self.events.emitNetwork(.network_address_registered, .info, name, component_id);
+    }
+
+    pub fn recordNetworkTraffic(
+        self:         *Kernel,
+        actor:        Role,
+        component_id: []const u8,
+        ingress:      u64,
+        egress:       u64,
+    ) !void {
+        try self.enforcePrivileged(actor, .manage_modules);
+        try self.resources.recordIngress(actor, component_id, ingress);
+        try self.resources.recordEgress(actor, component_id, egress);
+        self.events.emitNetwork(.network_traffic_recorded, .debug, component_id, "traffic");
+    }
+
+    // ─────────────────────────────────────────────────────────────────────
+    // Module convenience wrappers
+    // ─────────────────────────────────────────────────────────────────────
+
+    pub fn registerModule(
+        self:  *Kernel,
+        actor: Role,
+        id:    []const u8,
+        kind:  []const u8,
+    ) !void {
+        try self.enforcePrivileged(actor, .manage_modules);
+        const endpoint = try std.fmt.allocPrint(self.allocator, "/modules/{s}", .{id});
+        defer self.allocator.free(endpoint);
+        try self.modules.registry.register(
+            actor,
+            id, kind,
+            .module,
+            "1.0.0", kind,
+            endpoint,
+            "kogi-go-network",
+            mod_mod.defaultCapsForClass(.module),
+        );
+        // Automatically register the module as a resource tenant.
+        self.resources.registerTenant(actor, id, .{}) catch |err| switch (err) {
+            res_mod.ResourceError.TenantAlreadyRegistered => {},
+            else => return err,
+        };
+        self.events.emitModule(.module_registered, .info, id, "registered");
+    }
+
+    pub fn startModule(self: *Kernel, actor: Role, id: []const u8) !void {
+        try self.enforcePrivileged(actor, .manage_modules);
+        try self.modules.lifecycle.start(actor, id);
+        self.events.emitModule(.module_started, .info, id, "started");
+    }
+
+    pub fn stopModule(self: *Kernel, actor: Role, id: []const u8) !void {
+        try self.enforcePrivileged(actor, .manage_modules);
+        try self.modules.lifecycle.stop(actor, id);
+        self.resources.releaseAll(id);
+        self.events.emitModule(.module_stopped, .info, id, "stopped");
+    }
+
+    pub fn removeModule(self: *Kernel, actor: Role, id: []const u8) !void {
+        try self.enforcePrivileged(actor, .manage_modules);
+        try self.modules.lifecycle.remove(actor, id);
+        self.resources.releaseAll(id);
+        self.resources.removeTenant(actor, id) catch {};
+        self.events.emitModule(.module_removed, .info, id, "removed");
+    }
+
+    // ─────────────────────────────────────────────────────────────────────
+    // Service convenience wrappers
+    // ─────────────────────────────────────────────────────────────────────
+
+    pub fn registerService(
+        self:         *Kernel,
+        actor:        Role,
+        id:           []const u8,
+        display_name: []const u8,
+        version:      []const u8,
+        budget:       svc_mod.ResourceBudget,
+        restart:      svc_mod.RestartConfig,
+        health:       svc_mod.HealthPolicy,
+        handle:       svc_mod.ServiceHandle,
+    ) !void {
+        try self.enforcePrivileged(actor, .manage_modules);
+        try self.services.register(actor, id, display_name, version, budget, restart, health, handle);
+    }
+
+    pub fn startService(self: *Kernel, actor: Role, id: []const u8) !void {
+        try self.enforcePrivileged(actor, .manage_modules);
+        try self.services.provisionAndStart(actor, id);
+        self.events.emitService(.service_started, .info, id, "started");
+    }
+
+    pub fn stopService(self: *Kernel, actor: Role, id: []const u8) !void {
+        try self.enforcePrivileged(actor, .manage_modules);
+        try self.services.stop(actor, id);
+        self.events.emitService(.service_stopped, .info, id, "stopped");
+    }
+
+    /// Start all registered services in topological dependency order.
+    pub fn startAllServices(self: *Kernel, actor: Role) !usize {
+        try self.enforcePrivileged(actor, .manage_modules);
+        return self.services.startAll(actor);
+    }
+
+    /// Stop all running services in reverse dependency order.
+    pub fn stopAllServices(self: *Kernel, actor: Role) !void {
+        try self.enforcePrivileged(actor, .manage_modules);
+        try self.services.stopAll(actor);
+    }
+
+    // ─────────────────────────────────────────────────────────────────────
+    // Resource convenience wrappers
+    // ─────────────────────────────────────────────────────────────────────
+
+    pub fn registerTenant(self: *Kernel, actor: Role, id: []const u8, policy: res_mod.ResourcePolicy) !void {
+        try self.enforcePrivileged(actor, .manage_modules);
+        try self.resources.registerTenant(actor, id, policy);
+    }
+
+    pub fn acquireResource(self: *Kernel, actor: Role, req: res_mod.AllocationRequest) !void {
+        try self.resources.acquire(actor, req);
+    }
+
+    pub fn releaseResource(self: *Kernel, actor: Role, req: res_mod.ReleaseRequest) void {
+        self.resources.release(actor, req);
+    }
+
+    // ─────────────────────────────────────────────────────────────────────
+    // Scheduler
+    // ─────────────────────────────────────────────────────────────────────
+
+    pub fn schedule(
+        self:        *Kernel,
+        actor:       Role,
+        label:       []const u8,
+        payload:     []const u8,
+        due_at_ms:   i64,
+        interval_ms: ?u64,
+        priority:    proc_mod.TaskPriority,
+        owner_pid:   ?u64,
+    ) ![]const u8 {
+        try self.enforce(actor, .schedule_tasks);
+        return self._scheduler.schedule(actor, label, payload, due_at_ms, interval_ms, priority, owner_pid);
+    }
+
+    pub fn tick(self: *Kernel, actor: Role, now_ms: i64) !struct { fired: u64, dispatched: u64 } {
+        try self.enforce(actor, .schedule_tasks);
+        return self.processes.tick(actor, now_ms);
+    }
+
+    // ─────────────────────────────────────────────────────────────────────
+    // Health tick
+    // ─────────────────────────────────────────────────────────────────────
+
+    pub fn healthTick(self: *Kernel, now_ms: i64) !usize {
+        return self.services.healthTick(now_ms);
+    }
+
+    pub fn recoverFaultedServices(self: *Kernel, actor: Role) !usize {
+        return self.services.recoverFaulted(actor);
+    }
+
+    // ─────────────────────────────────────────────────────────────────────
+    // Bootstrap helpers
+    // ─────────────────────────────────────────────────────────────────────
+
+    /// Register and fully provision all core platform components in one call.
+    /// Mirrors the old bootstrapCorePlatformComponents from kernel.zig.
+    pub fn bootstrapCorePlatformComponents(self: *Kernel, actor: Role) !void {
+        try self.enforcePrivileged(actor, .manage_modules);
+
+        const components = [_]struct {
+            id:       []const u8,
+            class:    mod_mod.ModuleClass,
+            endpoint: []const u8,
+            net_mgr:  []const u8,
+        }{
+            .{ .id = "kogi.kernel",   .class = .kernel,   .endpoint = "local://kogi-kernel",        .net_mgr = "kernel-native"    },
+            .{ .id = "kogi.host",     .class = .host,     .endpoint = "local://kogi-host",          .net_mgr = "kernel-native"    },
+            .{ .id = "kogi.server",   .class = .server,   .endpoint = "http://127.0.0.1:8080/health",.net_mgr = "kogi-go-network" },
+            .{ .id = "kogi.engine",   .class = .engine,   .endpoint = "local://kogi-engine",        .net_mgr = "kogi-go-network" },
+            .{ .id = "kogi.services", .class = .services, .endpoint = "http://127.0.0.1:8090/health",.net_mgr = "kogi-go-network" },
+        };
+
+        for (components) |c| {
+            try self.modules.registry.register(
+                actor, c.id, c.id, c.class,
+                "1.0.0", c.id, c.endpoint, c.net_mgr,
+                mod_mod.defaultCapsForClass(c.class),
+            );
+            try self.modules.lifecycle.start(actor, c.id);
+
+            // Register as resource tenant with class-default policy.
+            const limits = c.class.defaultLimits();
+            self.resources.registerTenant(actor, c.id, .{
+                .memory_bytes    = limits.memory_bytes,
+                .max_processes   = limits.max_processes,
+                .max_files       = limits.max_files,
+                .max_units       = limits.max_resource_units,
+                .max_connections = limits.max_network_connections,
+            }) catch |err| switch (err) {
+                res_mod.ResourceError.TenantAlreadyRegistered => {},
+                else => return err,
+            };
+        }
+
+        // Provision initial resources for the standard components.
+        try self.resources.acquireMemory(actor, "kogi.host",     32 * 1024 * 1024);
+        try self.resources.acquireMemory(actor, "kogi.server",   48 * 1024 * 1024);
+        try self.resources.acquireMemory(actor, "kogi.engine",   64 * 1024 * 1024);
+        try self.resources.acquireProcess(actor, "kogi.host");
+        try self.resources.acquireProcess(actor, "kogi.server");
+        try self.resources.acquireProcess(actor, "kogi.engine");
+        try self.resources.acquireFile(actor, "kogi.engine");
+        try self.resources.acquireUnits(actor, "kogi.services", 256);
+        try self.resources.recordIngress(actor, "kogi.services", 4096);
+        try self.resources.recordEgress(actor, "kogi.services", 8192);
+    }
+
+    /// Register the canonical network managers used by all components.
+    pub fn bootstrapNetworkManagers(self: *Kernel, actor: Role) !void {
+        try self.enforcePrivileged(actor, .manage_modules);
+        try self.network.registerManager(actor, "kernel-native",   "native");
+        try self.network.registerManager(actor, "kogi-go-network", "go-rpc");
+    }
+
+    /// Provision the kogi.office module with its standard resource budget.
+    /// Mirrors the old bootstrapOfficeModule from kernel.zig.
+    pub fn bootstrapOfficeModule(self: *Kernel, actor: Role) !void {
+        try self.enforcePrivileged(actor, .manage_modules);
+
+        const id = "kogi.office";
+
+        try self.modules.registry.register(
+            actor, id, "office", .module,
+            "2.0.0", "Office Module",
+            "/services/office", "kogi-go-network",
+            mod_mod.defaultCapsForClass(.module),
+        );
+
+        try self.modules.registry.setLimits(actor, id, .{
+            .memory_bytes        = 768 * 1024 * 1024,
+            .max_processes       = 96,
+            .max_files           = 6_000,
+            .max_resource_units  = 14_000,
+            .max_network_connections = 64,
         });
+
+        try self.modules.lifecycle.start(actor, id);
+
+        self.resources.registerTenant(actor, id, .{
+            .memory_bytes    = 768 * 1024 * 1024,
+            .max_processes   = 96,
+            .max_files       = 6_000,
+            .max_units       = 14_000,
+            .max_connections = 64,
+        }) catch |err| switch (err) {
+            res_mod.ResourceError.TenantAlreadyRegistered => {},
+            else => return err,
+        };
+
+        // Provision initial resources via ResourcesManager.
+        const dims = [_]res_mod.DimensionAcquire{
+            .{ .memory_bytes = 64 * 1024 * 1024 },
+            .{ .processes    = 2  },
+            .{ .files        = 2  },
+            .{ .units        = 320 },
+            .{ .network_ingress = 4096 },
+            .{ .network_egress  = 8192 },
+        };
+        try self.resources.acquire(actor, .{ .tenant_id = id, .dimensions = &dims });
+
+        try self.modules.bus.publish(id, "office.module.bootstrapped",
+            "{\\"module\\":\\"kogi.office\\",\\"views\\":[\\"dashboard\\",\\"portfolio\\",\\"timeline\\",\\"workspace\\",\\"assistant\\"]}");
     }
 
-    pub fn stats(self: *Kernel) KernelStats {
-        var ingress_total: u64 = 0;
-        var egress_total: u64 = 0;
-        var component_it = self.component_isolation.valueIterator();
-        while (component_it.next()) |component| {
-            ingress_total += component.network_ingress_bytes;
-            egress_total += component.network_egress_bytes;
+    // ─────────────────────────────────────────────────────────────────────
+    // Event management  (pub API delegating to EventManager)
+    // ─────────────────────────────────────────────────────────────────────
+
+    /// Subscribe to kernel events.  The handler is called synchronously on
+    /// every matching publish; it must not call back into the Kernel.
+    pub fn subscribeEvents(
+        self:    *Kernel,
+        actor:   Role,
+        name:    []const u8,
+        filter:  evt_mod.EventFilter,
+        handler: evt_mod.HandlerFn,
+        ctx:     ?*anyopaque,
+    ) !void {
+        try self.enforcePrivileged(actor, .manage_modules);
+        try self.events.subscribe(actor, name, filter, handler, ctx);
+    }
+
+    pub fn unsubscribeEvents(self: *Kernel, actor: Role, name: []const u8) !void {
+        try self.enforcePrivileged(actor, .manage_modules);
+        try self.events.unsubscribe(actor, name);
+    }
+
+    /// Retrieve events from the log with id > `watermark`, optionally filtered.
+    /// Pass `null` for filter to get every event.
+    pub fn queryEvents(
+        self:      *const Kernel,
+        filter:    ?*const evt_mod.EventFilter,
+        watermark: u64,
+        out:       *std.ArrayList(evt_mod.KernelEvent),
+    ) !void {
+        if (filter) |f| {
+            try self.events.query(f, watermark, out);
+        } else {
+            try self.events.since(watermark, out);
         }
+    }
+
+    /// Publish a custom cross-cutting event from outside the kernel.
+    pub fn publishEvent(
+        self:      *Kernel,
+        actor:     Role,
+        source_id: []const u8,
+        payload:   []const u8,
+    ) !void {
+        try self.enforcePrivileged(actor, .manage_modules);
+        self.events.emitCustom(source_id, payload);
+    }
+
+    /// Suspend synchronous event delivery to all subscribers.
+    /// Events continue to be appended to the log.
+    pub fn suspendEventDispatch(self: *Kernel, actor: Role) !void {
+        try self.enforcePrivileged(actor, .kernel_admin);
+        self.events.suspendDispatch();
+    }
+
+    /// Resume synchronous event delivery.
+    pub fn resumeEventDispatch(self: *Kernel, actor: Role) !void {
+        try self.enforcePrivileged(actor, .kernel_admin);
+        self.events.resumeDispatch();
+    }
+
+    /// Return the most recently published KernelEvent, or null.
+    pub fn latestEvent(self: *const Kernel) ?evt_mod.KernelEvent {
+        return self.events.latest();
+    }
+
+    // ─────────────────────────────────────────────────────────────────────
+    // Aggregate stats
+    // ─────────────────────────────────────────────────────────────────────
+
+    pub fn stats(self: *const Kernel) KernelStats {
+        const mem_s  = self.memory.stats();
+        const proc_s = self.processes.stats();
+        const net_s  = self.network.stats();
+        const mod_s  = self.modules.stats();
+        const svc_s  = self.services.stats();
+        const res_s  = self.resources.stats();
+        const evt_s  = self.events.stats();
 
         return .{
-            .module_count = self.modules.count(),
-            .isolated_module_count = self.module_isolation.count(),
-            .component_count = self.component_isolation.count(),
-            .event_count = self.events.items.len,
-            .scheduled_count = self.scheduler.items.len,
-            .process_count = self.processes.items.len,
-            .file_count = self.files.items.len,
-            .memory_used_bytes = self.memory_used_bytes,
-            .memory_total_bytes = self.memory_total_bytes,
-            .network_ingress_bytes = ingress_total,
-            .network_egress_bytes = egress_total,
-            .mode = self.mode,
+            .mode               = self.mode,
+            .session_role       = self.session_role,
+            .memory_used_bytes  = mem_s.used_bytes,
+            .memory_total_bytes = mem_s.total_bytes,
+            .live_processes     = proc_s.live_processes,
+            .idle_workers       = proc_s.idle_workers,
+            .busy_workers       = proc_s.busy_workers,
+            .queued_tasks       = proc_s.queued_tasks,
+            .scheduled_jobs     = proc_s.scheduled_jobs,
+            .open_sockets       = net_s.open_sockets,
+            .active_connections = net_s.active_connections,
+            .queued_packets     = net_s.queued_packets,
+            .route_count        = net_s.route_count,
+            .total_modules      = mod_s.total_modules,
+            .active_modules     = mod_s.active_modules,
+            .module_events      = mod_s.event_count,
+            .total_services     = svc_s.total,
+            .running_services   = svc_s.running,
+            .faulted_services   = svc_s.faulted,
+            .service_events     = svc_s.total_events,
+            .tenant_count       = res_s.tenant_count,
+            .resource_event_count = res_s.event_count,
+            .kernel_events_total      = evt_s.total_events,
+            .kernel_events_log_len    = evt_s.log_len,
+            .kernel_events_overflow   = evt_s.overflow_count,
+            .kernel_event_subscribers = evt_s.active_subscribers,
         };
     }
-
-    fn getIsolationContext(self: *Kernel, module_id: []const u8) !*ModuleIsolationContext {
-        return self.module_isolation.getPtr(module_id) orelse error.ModuleNotFound;
-    }
-
-    fn getComponentContext(self: *Kernel, component_id: []const u8) !*ComponentIsolationContext {
-        return self.component_isolation.getPtr(component_id) orelse error.ComponentNotFound;
-    }
 };
 
-pub const KernelStats = struct {
-    module_count: usize,
-    isolated_module_count: usize,
-    component_count: usize,
-    event_count: usize,
-    scheduled_count: usize,
-    process_count: usize,
-    file_count: usize,
-    memory_used_bytes: u64,
-    memory_total_bytes: u64,
-    network_ingress_bytes: u64,
-    network_egress_bytes: u64,
-    mode: Mode,
-};
+// ─────────────────────────────────────────────────────────────────────────────
+// Tests
+// ─────────────────────────────────────────────────────────────────────────────
 
-pub fn defaultModuleLimits() ModuleLimits {
-    return .{
-        .memory_limit_bytes = 512 * 1024 * 1024,
-        .max_processes = 128,
-        .max_files = 5000,
-        .max_resource_units = 10000,
-    };
-}
-
-fn componentOwnerRole(class: ComponentClass) Role {
-    return switch (class) {
-        .kernel => .root,
-        .host => .host,
-        .server => .server,
-        .engine => .server,
-        .services => .server,
-        .module => .module_runtime,
-    };
-}
-
-pub fn hasPermission(role: Role, permission: Permission) bool {
-    return switch (role) {
-        .root => true,
-        .host => switch (permission) {
-            .kernel_admin,
-            .schedule_tasks,
-            .manage_modules,
-            .manage_memory,
-            .manage_processes,
-            .manage_files,
-            .read_audit,
-            => true,
-        },
-        .server => switch (permission) {
-            .schedule_tasks,
-            .manage_modules,
-            .manage_processes,
-            .manage_files,
-            => true,
-            .kernel_admin,
-            .manage_memory,
-            .read_audit,
-            => false,
-        },
-        .module_runtime => switch (permission) {
-            .schedule_tasks,
-            .manage_files,
-            => true,
-            .kernel_admin,
-            .manage_modules,
-            .manage_memory,
-            .manage_processes,
-            .read_audit,
-            => false,
-        },
-        .user => permission == .read_audit,
-    };
-}
-
-test "kernel registers modules and enforces security" {
-    var kernel = Kernel.init(std.testing.allocator);
-    defer kernel.deinit();
-
-    try kernel.registerModule(.host, "kogi.office", "office");
-
-    const denied = kernel.registerModule(.user, "x", "y");
-    try std.testing.expectError(AccessDenied.AccessDenied, denied);
-
-    const s = kernel.stats();
-    try std.testing.expectEqual(@as(usize, 1), s.module_count);
-    try std.testing.expectEqual(@as(usize, 1), s.isolated_module_count);
-    try std.testing.expectEqual(@as(usize, 1), s.component_count);
-}
-
-test "module resource isolation limits are enforced" {
-    var kernel = Kernel.init(std.testing.allocator);
-    defer kernel.deinit();
-
-    try kernel.registerModule(.host, "kogi.exchange", "exchange");
-    try kernel.setModuleLimits(.host, "kogi.exchange", .{
-        .memory_limit_bytes = 1024,
-        .max_processes = 1,
-        .max_files = 1,
-        .max_resource_units = 10,
+fn makeKernel(allocator: std.mem.Allocator) !*Kernel {
+    const k = try allocator.create(Kernel);
+    errdefer allocator.destroy(k);
+    k.* = try Kernel.init(allocator, .{
+        .memory_total_bytes    = 4  * 1024 * 1024 * 1024,
+        .memory_audit_enabled  = false,
+        .worker_count          = 4,
+        .queue_lane_cap        = 64,
+        .max_sockets           = 64,
+        .max_connections       = 32,
+        .max_conn_failures     = 3,
+        .packet_lane_cap       = 128,
+        .module_event_cap      = 256,
+        .service_event_cap     = 256,
+        .global_mem_ceiling    = 8 * 1024 * 1024 * 1024,
+        .global_process_ceiling = 512,
+        .global_conn_ceiling   = 1024,
+        .resource_log_cap      = 256,
+        .event_log_cap         = 512,
     });
+    k.relink();
+    return k;
+}
 
-    try kernel.allocateModuleMemory(.host, "kogi.exchange", 900);
-    try std.testing.expectError(
-        error.ModuleResourceLimitExceeded,
-        kernel.allocateModuleMemory(.host, "kogi.exchange", 200),
-    );
+test "kernel: init and deinit" {
+    const k = try makeKernel(std.testing.allocator);
+    defer {
+        k.deinit();
+        std.testing.allocator.destroy(k);
+    }
+    try std.testing.expectEqual(Mode.privileged, k.mode);
+}
 
-    _ = try kernel.spawnModuleProcess(.host, "kogi.exchange", "exchange-worker");
-    try std.testing.expectError(
-        error.ModuleResourceLimitExceeded,
-        kernel.spawnModuleProcess(.host, "kogi.exchange", "exchange-worker-2"),
-    );
+test "kernel: RBAC — user role denied" {
+    const k = try makeKernel(std.testing.allocator);
+    defer { k.deinit(); std.testing.allocator.destroy(k); }
 
-    try kernel.createModuleFile(.host, "kogi.exchange", "/tmp/exchange.log", 128);
     try std.testing.expectError(
-        error.ModuleResourceLimitExceeded,
-        kernel.createModuleFile(.host, "kogi.exchange", "/tmp/exchange-2.log", 128),
+        KernelError.AccessDenied,
+        k.registerModule(.user, "evil", "evil"),
     );
 }
 
-test "office bootstrap provisions endpoint and resources" {
-    var kernel = Kernel.init(std.testing.allocator);
-    defer kernel.deinit();
+test "kernel: registerModule registers in module system and resource registry" {
+    const k = try makeKernel(std.testing.allocator);
+    defer { k.deinit(); std.testing.allocator.destroy(k); }
 
-    try kernel.bootstrapOfficeModule(.host);
-
-    const ctx = kernel.getModuleIsolation("kogi.office") orelse return error.ModuleNotFound;
-    try std.testing.expectEqualStrings("kogi.office", ctx.module_id);
-    try std.testing.expectEqualStrings("/services/office", ctx.service_endpoint);
-    try std.testing.expect(ctx.usage.memory_used_bytes > 0);
-    try std.testing.expect(ctx.usage.process_count >= 2);
+    try k.registerModule(.host, "test.mod", "test");
+    try std.testing.expectEqual(@as(usize, 1), k.modules.registry.count());
+    try std.testing.expect(k.resources.registry.getPtr("test.mod") != null);
 }
 
-test "core platform components are provisioned and network tracked" {
-    var kernel = Kernel.init(std.testing.allocator);
-    defer kernel.deinit();
+test "kernel: start and stop module" {
+    const k = try makeKernel(std.testing.allocator);
+    defer { k.deinit(); std.testing.allocator.destroy(k); }
 
-    try kernel.bootstrapCorePlatformComponents(.host);
-    const services_before = kernel.getComponentIsolation("kogi.services") orelse return error.ComponentNotFound;
-    try kernel.recordComponentNetwork(.host, "kogi.services", 128, 256);
+    try k.registerModule(.host, "a.mod", "a");
+    try k.startModule(.host, "a.mod");
+    try std.testing.expectEqual(
+        mod_mod.ModuleStatus.active,
+        k.modules.registry.get("a.mod").?.status,
+    );
 
-    const ctx = kernel.getComponentIsolation("kogi.engine") orelse return error.ComponentNotFound;
-    try std.testing.expectEqual(ComponentClass.engine, ctx.class);
-    try std.testing.expect(ctx.usage.memory_used_bytes > 0);
+    try k.stopModule(.host, "a.mod");
+    try std.testing.expectEqual(
+        mod_mod.ModuleStatus.stopped,
+        k.modules.registry.get("a.mod").?.status,
+    );
+}
 
-    const services = kernel.getComponentIsolation("kogi.services") orelse return error.ComponentNotFound;
-    try std.testing.expectEqual(services_before.network_ingress_bytes + 128, services.network_ingress_bytes);
-    try std.testing.expectEqual(services_before.network_egress_bytes + 256, services.network_egress_bytes);
+test "kernel: bootstrapCorePlatformComponents" {
+    const k = try makeKernel(std.testing.allocator);
+    defer { k.deinit(); std.testing.allocator.destroy(k); }
+
+    try k.bootstrapCorePlatformComponents(.host);
+    try std.testing.expectEqual(@as(usize, 5), k.modules.registry.count());
+    try std.testing.expectEqual(@as(usize, 5), k.modules.registry.activeCount());
+    try std.testing.expect(k.resources.registry.getPtr("kogi.kernel") != null);
+}
+
+test "kernel: bootstrapOfficeModule provisions resources" {
+    const k = try makeKernel(std.testing.allocator);
+    defer { k.deinit(); std.testing.allocator.destroy(k); }
+
+    try k.bootstrapOfficeModule(.host);
+
+    const usage = k.resources.getUsage("kogi.office").?;
+    try std.testing.expectEqual(@as(u64, 64 * 1024 * 1024), usage.memory_bytes);
+    try std.testing.expectEqual(@as(u32, 2), usage.process_count);
+    try std.testing.expectEqual(@as(u32, 2), usage.file_count);
+    try std.testing.expectEqual(@as(u32, 320), usage.unit_count);
+    try std.testing.expectEqual(@as(u64, 4096), usage.ingress_bytes);
+    try std.testing.expectEqual(@as(u64, 8192), usage.egress_bytes);
+}
+
+test "kernel: allocateTenantMemory enforces limits" {
+    const k = try makeKernel(std.testing.allocator);
+    defer { k.deinit(); std.testing.allocator.destroy(k); }
+
+    try k.registerTenant(.host, "limited", .{ .memory_bytes = 1000 });
+    try k.allocateTenantMemory(.host, "limited", 800);
+    try std.testing.expectError(
+        res_mod.ResourceError.TenantLimitExceeded,
+        k.allocateTenantMemory(.host, "limited", 300),
+    );
+    try k.freeTenantMemory(.host, "limited", 800);
+    try std.testing.expectEqual(@as(u64, 0), k.resources.getUsage("limited").?.memory_bytes);
+}
+
+test "kernel: spawnProcess and terminateProcess" {
+    const k = try makeKernel(std.testing.allocator);
+    defer { k.deinit(); std.testing.allocator.destroy(k); }
+
+    const pid = try k.spawnProcess(.host, "worker", .module_runtime);
+    try std.testing.expect(pid >= 1000);
+    try std.testing.expectEqual(@as(usize, 1), k._proc_table.liveCount());
+
+    try k.terminateProcess(.host, pid);
+    try std.testing.expectEqual(@as(usize, 0), k._proc_table.liveCount());
+}
+
+test "kernel: schedule and tick" {
+    const k = try makeKernel(std.testing.allocator);
+    defer { k.deinit(); std.testing.allocator.destroy(k); }
+
+    _ = try k.schedule(.host, "job", "{}", 0, null, .normal, null);
+    const result = try k.tick(.host, 0);
+    try std.testing.expectEqual(@as(u64, 1), result.fired);
+}
+
+test "kernel: aggregate stats" {
+    const k = try makeKernel(std.testing.allocator);
+    defer { k.deinit(); std.testing.allocator.destroy(k); }
+
+    try k.bootstrapCorePlatformComponents(.host);
+    const s = k.stats();
+    try std.testing.expectEqual(Mode.privileged, s.mode);
+    try std.testing.expectEqual(@as(usize, 5), s.active_modules);
+    try std.testing.expectEqual(@as(usize, 5), s.tenant_count);
+    try std.testing.expect(s.memory_used_bytes > 0);
+}
+
+test "kernel: mode transition" {
+    const k = try makeKernel(std.testing.allocator);
+    defer { k.deinit(); std.testing.allocator.destroy(k); }
+
+    try k.setMode(.user, .root);
+    try std.testing.expectEqual(Mode.user, k.mode);
+    try std.testing.expectError(KernelError.PrivilegeDenied, k.setMode(.privileged, .user));
+}
+
+test "kernel: networkAddress registration" {
+    const k = try makeKernel(std.testing.allocator);
+    defer { k.deinit(); std.testing.allocator.destroy(k); }
+
+    const ip = try net_mod.Ipv4.parse("127.0.0.1");
+    try k.registerNetworkAddress(.host, "kogi.server", ip, 8080, "kogi.server", "http");
+
+    const rec = k.network.addresses.resolve("kogi.server");
+    try std.testing.expect(rec != null);
+    try std.testing.expectEqual(@as(u16, 8080), rec.?.port);
+}
+
+test "kernel: events emitted for module lifecycle" {
+    const k = try makeKernel(std.testing.allocator);
+    defer { k.deinit(); std.testing.allocator.destroy(k); }
+
+    try k.registerModule(.host, "evtest.mod", "test");
+    try k.startModule(.host, "evtest.mod");
+    try k.stopModule(.host, "evtest.mod");
+
+    // At least 3 events: registered, started, stopped
+    const s = k.stats();
+    try std.testing.expect(s.kernel_events_total >= 3);
+}
+
+test "kernel: events emitted for process lifecycle" {
+    const k = try makeKernel(std.testing.allocator);
+    defer { k.deinit(); std.testing.allocator.destroy(k); }
+
+    const pid = try k.spawnProcess(.host, "worker", .module_runtime);
+    try k.terminateProcess(.host, pid);
+
+    const s = k.stats();
+    try std.testing.expect(s.kernel_events_total >= 2);
+}
+
+test "kernel: events emitted for memory allocation" {
+    const k = try makeKernel(std.testing.allocator);
+    defer { k.deinit(); std.testing.allocator.destroy(k); }
+
+    try k.registerTenant(.host, "memtest", .{ .memory_bytes = 1024 * 1024 });
+    try k.allocateTenantMemory(.host, "memtest", 512 * 1024);
+    try k.freeTenantMemory(.host, "memtest", 512 * 1024);
+
+    const f = evt_mod.EventFilter.forDomain(.memory);
+    var out = std.ArrayList(evt_mod.KernelEvent).init(std.testing.allocator);
+    defer out.deinit();
+    try k.queryEvents(&f, 0, &out);
+    try std.testing.expect(out.items.len >= 2);
+}
+
+test "kernel: subscribeEvents receives filtered events" {
+    const S = struct {
+        var count: usize = 0;
+        fn handler(_: ?*anyopaque, _: *const evt_mod.KernelEvent) void { count += 1; }
+    };
+    S.count = 0;
+
+    const k = try makeKernel(std.testing.allocator);
+    defer { k.deinit(); std.testing.allocator.destroy(k); }
+
+    const f = evt_mod.EventFilter.forDomain(.module);
+    try k.subscribeEvents(.host, "mod-watcher", f, S.handler, null);
+
+    try k.registerModule(.host, "sub.mod", "test");
+    try k.startModule(.host, "sub.mod");
+    try k.stopModule(.host, "sub.mod");
+
+    // registered + started + stopped = 3 module-domain events
+    try std.testing.expect(S.count >= 3);
+}
+
+test "kernel: suspendEventDispatch halts delivery but not logging" {
+    const S = struct {
+        var count: usize = 0;
+        fn handler(_: ?*anyopaque, _: *const evt_mod.KernelEvent) void { count += 1; }
+    };
+    S.count = 0;
+
+    const k = try makeKernel(std.testing.allocator);
+    defer { k.deinit(); std.testing.allocator.destroy(k); }
+
+    try k.subscribeEvents(.host, "paused-watcher", evt_mod.EventFilter.matchesAll(), S.handler, null);
+    try k.suspendEventDispatch(.root);
+
+    try k.registerModule(.host, "bg.mod", "bg");
+    try k.startModule(.host, "bg.mod");
+
+    // No delivery while suspended
+    try std.testing.expectEqual(@as(usize, 0), S.count);
+
+    // But events were still logged
+    try std.testing.expect(k.stats().kernel_events_total >= 2);
+
+    // Resume and confirm future events are delivered
+    try k.resumeEventDispatch(.root);
+    try k.stopModule(.host, "bg.mod");
+    try std.testing.expect(S.count >= 1);
+}
+
+test "kernel: queryEvents pages via watermark" {
+    const k = try makeKernel(std.testing.allocator);
+    defer { k.deinit(); std.testing.allocator.destroy(k); }
+
+    try k.registerModule(.host, "page.a", "a");
+    const mark = k.stats().kernel_events_total;
+    try k.registerModule(.host, "page.b", "b");
+    try k.registerModule(.host, "page.c", "c");
+
+    var out = std.ArrayList(evt_mod.KernelEvent).init(std.testing.allocator);
+    defer out.deinit();
+    try k.queryEvents(null, mark, &out);
+
+    // Events for page.b and page.c only
+    try std.testing.expect(out.items.len >= 2);
+}
+
+test "kernel: latestEvent returns most recent published event" {
+    const k = try makeKernel(std.testing.allocator);
+    defer { k.deinit(); std.testing.allocator.destroy(k); }
+
+    try std.testing.expect(k.latestEvent() == null);
+
+    try k.setMode(.user, .root);
+    const ev = k.latestEvent();
+    try std.testing.expect(ev != null);
+    try std.testing.expectEqual(evt_mod.EventDomain.kernel, ev.?.domain);
+    try std.testing.expectEqual(evt_mod.EventKind.kernel_mode_changed, ev.?.kind);
+}
+
+test "kernel: publishEvent allows custom cross-cutting events" {
+    const k = try makeKernel(std.testing.allocator);
+    defer { k.deinit(); std.testing.allocator.destroy(k); }
+
+    try k.publishEvent(.host, "integration-test", "{\\"msg\\":\\"hello\\"}");
+    const ev = k.latestEvent().?;
+    try std.testing.expectEqual(evt_mod.EventDomain.custom, ev.domain);
+    try std.testing.expectEqualStrings("integration-test", ev.sourceSlice());
+}
+
+test "kernel: aggregate stats include event counters" {
+    const k = try makeKernel(std.testing.allocator);
+    defer { k.deinit(); std.testing.allocator.destroy(k); }
+
+    try k.bootstrapCorePlatformComponents(.host);
+    const s = k.stats();
+    try std.testing.expect(s.kernel_events_total > 0);
+    try std.testing.expect(s.kernel_events_log_len > 0);
+    try std.testing.expectEqual(@as(u64, 0), s.kernel_events_overflow);
+}
+
+test "kernel: enterPrivileged and exitPrivileged" {
+    const k = try makeKernel(std.testing.allocator);
+    defer { k.deinit(); std.testing.allocator.destroy(k); }
+
+    // Start in privileged mode by default
+    try std.testing.expect(k.isPrivileged());
+    try std.testing.expectEqual(Role.root, k.session_role);
+
+    // Drop to user mode
+    try k.exitPrivileged(.root);
+    try std.testing.expect(!k.isPrivileged());
+    try std.testing.expectEqual(Role.user, k.session_role);
+
+    // Escalate back
+    try k.enterPrivileged(.host);
+    try std.testing.expect(k.isPrivileged());
+    try std.testing.expectEqual(Role.host, k.session_role);
+}
+
+test "kernel: PrivilegeDenied — user role cannot enter privileged mode" {
+    const k = try makeKernel(std.testing.allocator);
+    defer { k.deinit(); std.testing.allocator.destroy(k); }
+
+    try std.testing.expectError(KernelError.PrivilegeDenied, k.enterPrivileged(.user));
+    try std.testing.expectError(KernelError.PrivilegeDenied, k.enterPrivileged(.module_runtime));
+}
+
+test "kernel: enforcePrivileged blocks ops when in user mode" {
+    const k = try makeKernel(std.testing.allocator);
+    defer { k.deinit(); std.testing.allocator.destroy(k); }
+
+    try k.exitPrivileged(.root);
+
+    // While in user mode, privileged ops must return PrivilegeDenied
+    try std.testing.expectError(
+        KernelError.PrivilegeDenied,
+        k.registerModule(.host, "blocked.mod", "test"),
+    );
+    try std.testing.expectError(
+        KernelError.PrivilegeDenied,
+        k.allocateTenantMemory(.host, "t", 1024),
+    );
+
+    // Re-enter privileged and confirm ops work again
+    try k.enterPrivileged(.host);
+    try k.registerModule(.host, "ok.mod", "test");
+    try std.testing.expectEqual(@as(usize, 1), k.modules.registry.count());
+}
+
+test "kernel: user-mode stats and queries still work without privilege" {
+    const k = try makeKernel(std.testing.allocator);
+    defer { k.deinit(); std.testing.allocator.destroy(k); }
+
+    try k.registerModule(.host, "stat.mod", "test");
+    try k.exitPrivileged(.root);
+
+    // stats() is always available
+    const s = k.stats();
+    try std.testing.expectEqual(Mode.user, s.mode);
+    try std.testing.expectEqual(Role.user, s.session_role);
+    try std.testing.expectEqual(@as(usize, 1), s.total_modules);
+
+    // latestEvent() is always available
+    try std.testing.expect(k.latestEvent() != null);
 }

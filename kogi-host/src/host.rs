@@ -1,23 +1,28 @@
-use crate::executive::{ComponentRuntime, HostError, ModuleIsolationSnapshot, ModuleRuntime};
-use crate::kernel_bridge::KernelBridge;
-use crate::runtime::HostRuntime;
-use crate::{module_runtime, shell};
+use crate::executive::{ComponentRuntime, HostError, ModuleIsolationSnapshot};
+use crate::kernel::{FfiKernelStats, KernelBridge};
+use crate::runtime::{HostRuntime, ModuleRuntime};
+use crate::shell;
 
 pub struct HostSystem {
     runtime: HostRuntime,
 }
 
 impl HostSystem {
-    pub fn new() -> Self {
-        Self {
-            runtime: HostRuntime::new(),
-        }
+    /// Create an uninitialised system.  The kernel bridge is initialised but
+    /// modules are not yet loaded.  Call [`bootstrap`] for a fully booted system.
+    pub fn new() -> Result<Self, HostError> {
+        Ok(Self {
+            runtime: HostRuntime::new()?,
+        })
     }
 
+    /// Load modules from default roots, boot the executive, and start the engine.
     pub fn bootstrap(&mut self) -> Result<(), HostError> {
         self.runtime = HostRuntime::bootstrap()?;
         Ok(())
     }
+
+    // ── Runtime accessors ─────────────────────────────────────────────────────
 
     pub fn runtime(&self) -> &HostRuntime {
         &self.runtime
@@ -27,9 +32,13 @@ impl HostSystem {
         &mut self.runtime
     }
 
+    // ── Interactive shell ─────────────────────────────────────────────────────
+
     pub fn run_shell(&mut self) -> Result<(), HostError> {
         shell::run_shell(self.runtime.executive_mut())
     }
+
+    // ── Convenience passthrough ───────────────────────────────────────────────
 
     pub fn tick(&self) {
         self.runtime.tick();
@@ -63,6 +72,11 @@ impl HostSystem {
         self.runtime.module_isolation_snapshot()
     }
 
+    /// Return a live kernel stats snapshot from the Zig kernel.
+    pub fn kernel_stats(&self) -> Result<FfiKernelStats, HostError> {
+        self.runtime.executive().kernel_stats()
+    }
+
     pub fn fetch_service_runtime(&self, service_id: &str) -> Result<String, HostError> {
         self.runtime.fetch_service_runtime(service_id)
     }
@@ -87,8 +101,14 @@ impl HostSystem {
     }
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
+// Module-level utilities
+// ─────────────────────────────────────────────────────────────────────────────
+
+/// Format a human-readable description of a host's bridge type and loaded
+/// module IDs.  Useful for diagnostic logging.
 pub fn describe_host_components<B: KernelBridge>(
-    host: &B,
+    _host: &B,
     module_ids: &[String],
 ) -> String {
     format!(
@@ -96,9 +116,4 @@ pub fn describe_host_components<B: KernelBridge>(
         std::any::type_name::<B>(),
         module_ids.len()
     )
-}
-
-pub fn module_runtime_hint(name: &str) -> String {
-    let _ = std::any::type_name::<module_runtime::ModuleRuntime>();
-    format!("module_runtime::{name}")
 }
