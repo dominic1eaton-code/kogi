@@ -1,0 +1,16 @@
+[package]
+name = "kogi-network-module"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+name = "kogi_network_module"
+path = "src/lib.rs"
+
+[[bin]]
+name = "kogi-network-system"
+path = "src/bin/kogi_network_system.rs"
+
+[dependencies]
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
