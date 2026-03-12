@@ -6,8 +6,27 @@ import { firstValueFrom } from 'rxjs';
 import { ApiService } from './app/core/api.service';
 
 type ViewKind = 'module' | 'workflow';
-type AppMode = 'unified' | 'office';
+type AppMode = 'office' | 'unified' | 'platform' | 'providers';
 type OfficeViewId = 'dashboard' | 'portfolio' | 'timeline' | 'workspace' | 'assistant';
+type PlatformViewId =
+  | 'system'
+  | 'host'
+  | 'host_components'
+  | 'engine'
+  | 'engine_runtime'
+  | 'database'
+  | 'modules'
+  | 'autonomy';
+type ProviderViewId =
+  | 'snapshot'
+  | 'platforms'
+  | 'providers'
+  | 'resources'
+  | 'versions'
+  | 'metadata'
+  | 'data'
+  | 'affiliates'
+  | 'affiliate_links';
 
 interface UnifiedScreen {
   id: string;
@@ -31,8 +50,8 @@ interface NavItem {
   title: string;
 }
 
-interface OfficeViewSpec {
-  id: OfficeViewId;
+interface ViewSpec<T extends string> {
+  id: T;
   title: string;
   subtitle: string;
   sections: string[];
@@ -41,6 +60,10 @@ interface OfficeViewSpec {
   quickLinks: string[];
   endpoint: string;
 }
+
+type OfficeViewSpec = ViewSpec<OfficeViewId>;
+type PlatformViewSpec = ViewSpec<PlatformViewId>;
+type ProviderViewSpec = ViewSpec<ProviderViewId>;
 
 const fallbackCatalog: UnifiedScreenCatalog = {
   series: 'kogi-unified-screen-system',
@@ -52,6 +75,12 @@ const fallbackCatalog: UnifiedScreenCatalog = {
     'Kogi Platform - Screen Flows v3.pdf',
   ],
   modules: [
+    {
+      id: 'home',
+      title: 'Home',
+      tags: ['dashboard', 'profile', 'workspace'],
+      sections: ['Overview Cards', 'Quicklinks', 'Alerts', 'Profile Hub', 'Workspace Hub'],
+    },
     { id: 'dashboard', title: 'Dashboard', tags: ['overview', 'activity', 'ai'], sections: ['Portfolio Health', 'Quick Access Modules', 'Recent Activity'] },
     { id: 'office', title: 'Office', tags: ['projects', 'programs', 'portfolio'], sections: ['Programs and Projects', 'Milestones Due', 'Team Capacity', '3rd Party Integrations'] },
     { id: 'workspace', title: 'Workspace', tags: ['tasks', 'kanban', 'sprints'], sections: ['Kanban Board', 'Calendar', 'Gantt Timeline'] },
@@ -61,12 +90,18 @@ const fallbackCatalog: UnifiedScreenCatalog = {
     { id: 'studio', title: 'Studio', tags: ['ideas', 'prototypes', 'tools'], sections: ['Ideas Grid', 'Testbeds', 'Toolsets'] },
     { id: 'community', title: 'Community', tags: ['feeds', 'spaces', 'messages'], sections: ['Feeds and Timelines', 'Spaces and Rooms', 'Direct Messages'] },
     { id: 'developer', title: 'Developer', tags: ['api', 'sdk', 'integrations'], sections: ['API Reference', 'Webhooks', 'Extensions'] },
-    { id: 'profile', title: 'Profile', tags: ['personas', 'settings', 'config'], sections: ['Personas and Roles', 'Settings and Config', 'Activity Stats'] },
-    { id: 'organizations', title: 'Organizations', tags: ['coops', 'collectives', 'teams'], sections: ['Organizations Grid', 'Governance and Proposals', 'Cap Tables'] },
-    { id: 'legal', title: 'Legal', tags: ['ip', 'contracts', 'compliance'], sections: ['IP and Trademarks', 'Contracts', 'Compliance and Audit'] },
+    { id: 'profile', title: 'Profiles', tags: ['personas', 'settings', 'skills'], sections: ['Profile Types', 'Personas and Roles', 'Skills and Contact', 'Data and Metadata'] },
+    { id: 'configuration', title: 'Configuration', tags: ['settings', 'parameters', 'policies'], sections: ['Settings', 'Parameters', 'Options', 'Policies'] },
+    { id: 'providers', title: 'Providers', tags: ['registry', 'platforms', 'affiliates'], sections: ['Registry Overview', 'Platform Catalog', 'Resources and Versions', 'Affiliate Links'] },
+    { id: 'organizations', title: 'Center', tags: ['coops', 'collectives', 'teams'], sections: ['Organizations Grid', 'Governance and Proposals', 'Federations'] },
     { id: 'marketplace', title: 'Marketplace', tags: ['buy', 'sell', 'barter'], sections: ['Marketplace Grid', 'Barter System', 'My Orders'] },
     { id: 'bank', title: 'Bank', tags: ['wallets', 'finance', 'fundraising'], sections: ['Wallet Types', 'Fundraising and Capital', 'Tax Summary'] },
     { id: 'exchange', title: 'Exchange', tags: ['bids', 'deals', 'due-diligence'], sections: ['Bids and Offers', 'Deal Pipeline', 'Requests'] },
+    { id: 'network', title: 'Network', tags: ['gateway', 'services', 'discovery'], sections: ['Gateway', 'Service Mesh', 'Registry', 'Discovery'] },
+    { id: 'engine', title: 'Engine', tags: ['data', 'ai', 'pipelines'], sections: ['Ingest Pipelines', 'Optimization', 'Recommendations', 'Telemetry'] },
+    { id: 'host', title: 'Host', tags: ['orchestration', 'runtime', 'kernel'], sections: ['Host Runtime', 'Module Orchestration', 'Kernel Bridge'] },
+    { id: 'server', title: 'Server', tags: ['api', 'routing', 'gateway'], sections: ['API Surface', 'Request Routing', 'Security'] },
+    { id: 'clients', title: 'Clients', tags: ['web', 'desktop', 'mobile'], sections: ['Web Console', 'Desktop Studio', 'Mobile Control'] },
   ],
   workflows: [
     { id: 'asset-transfer', title: 'Asset Transfer', module: 'exchange', tags: ['transfer', 'escrow'], steps: ['Select asset', 'Create transfer terms', 'Assign parties', 'Set escrow controls', 'Finalize settlement'] },
@@ -147,8 +182,192 @@ const officeViewSpecs: ReadonlyArray<OfficeViewSpec> = [
   },
 ];
 
+const platformViewSpecs: ReadonlyArray<PlatformViewSpec> = [
+  {
+    id: 'system',
+    title: 'Platform System',
+    subtitle: 'Kernel, host, modules, registry totals, and cross-service flow map',
+    sections: ['Kernel + Host Mode', 'Module + Component Counts', 'Provider Registry Totals', 'Data Flow Map'],
+    flows: ['Review active services', 'Confirm data flow', 'Audit health status'],
+    integrations: ['kogi-server', 'kogi-host', 'gateway'],
+    quickLinks: ['/api/v1/system', '/api/v1/host', '/api/v1/modules'],
+    endpoint: '/api/v1/system',
+  },
+  {
+    id: 'host',
+    title: 'Host Summary',
+    subtitle: 'Host runtime, component counts, provider totals, and kernel mode',
+    sections: ['Host Boot Status', 'Component and Module Totals', 'Provider Registry Totals', 'Kernel Mode'],
+    flows: ['Inspect host runtime', 'Verify module orchestration', 'Review provider inventory'],
+    integrations: ['kernel', 'modules', 'services'],
+    quickLinks: ['/api/v1/host', '/api/v1/host/components'],
+    endpoint: '/api/v1/host',
+  },
+  {
+    id: 'host_components',
+    title: 'Host Components',
+    subtitle: 'Kernel-managed components, limits, and network manager assignments',
+    sections: ['Component Inventory', 'Resource Limits', 'Network Managers'],
+    flows: ['Inspect component limits', 'Audit active component set'],
+    integrations: ['kernel', 'network'],
+    quickLinks: ['/api/v1/host/components'],
+    endpoint: '/api/v1/host/components',
+  },
+  {
+    id: 'engine',
+    title: 'Engine Overview',
+    subtitle: 'Data engine status, ingest topics, and capability map',
+    sections: ['Engine Status', 'Capabilities', 'Ingest Topics', 'Flow Map'],
+    flows: ['Review ingest readiness', 'Validate analytics capabilities'],
+    integrations: ['kogi-engine', 'gateway'],
+    quickLinks: ['/api/v1/engine/system', '/api/v1/engine/runtime'],
+    endpoint: '/api/v1/engine/system',
+  },
+  {
+    id: 'engine_runtime',
+    title: 'Engine Runtime',
+    subtitle: 'Service runtime snapshot for the data engine',
+    sections: ['Runtime Status', 'Service Health', 'Latency and Throughput'],
+    flows: ['Ping engine runtime', 'Verify service health'],
+    integrations: ['kogi-engine', 'gateway'],
+    quickLinks: ['/api/v1/engine/runtime'],
+    endpoint: '/api/v1/engine/runtime',
+  },
+  {
+    id: 'database',
+    title: 'Database Runtime',
+    subtitle: 'Database service status and query interface',
+    sections: ['Runtime Status', 'Query Interface', 'Data Store Health'],
+    flows: ['Run validation query', 'Review runtime health'],
+    integrations: ['kogi-database', 'gateway'],
+    quickLinks: ['/api/v1/database/runtime', '/api/v1/database/query'],
+    endpoint: '/api/v1/database/runtime',
+  },
+  {
+    id: 'modules',
+    title: 'Module Registry',
+    subtitle: 'Live module inventory, capabilities, and integration map',
+    sections: ['Module Inventory', 'Capabilities', 'Integrations'],
+    flows: ['Review module versions', 'Verify integration coverage'],
+    integrations: ['kogi-host', 'module services'],
+    quickLinks: ['/api/v1/modules'],
+    endpoint: '/api/v1/modules',
+  },
+  {
+    id: 'autonomy',
+    title: 'Autonomy Capabilities',
+    subtitle: 'System-level autonomy primitives for independent workers',
+    sections: ['Identity Management', 'Workspace Organization', 'Connection Registry', 'Asset Vault'],
+    flows: ['Review autonomy coverage', 'Audit capability list'],
+    integrations: ['kogi-host', 'kogi-engine'],
+    quickLinks: ['/api/v1/autonomy/capabilities'],
+    endpoint: '/api/v1/autonomy/capabilities',
+  },
+];
+
+const providerViewSpecs: ReadonlyArray<ProviderViewSpec> = [
+  {
+    id: 'snapshot',
+    title: 'Provider Snapshot',
+    subtitle: 'Registry totals, active providers, and affiliate links',
+    sections: ['Totals', 'Active Providers', 'Active Platforms', 'Affiliate Links'],
+    flows: ['Review registry health', 'Validate active inventory'],
+    integrations: ['kogi-host', 'provider registry'],
+    quickLinks: ['/api/v1/providers', '/api/v1/providers/platforms'],
+    endpoint: '/api/v1/providers',
+  },
+  {
+    id: 'platforms',
+    title: 'Platforms',
+    subtitle: 'Platform catalog with status, links, and tags',
+    sections: ['Platform Catalog', 'Status Overview', 'Support Contacts'],
+    flows: ['Audit platform coverage', 'Verify platform status'],
+    integrations: ['registry', 'platforms'],
+    quickLinks: ['/api/v1/providers/platforms'],
+    endpoint: '/api/v1/providers/platforms',
+  },
+  {
+    id: 'providers',
+    title: 'Providers',
+    subtitle: 'Provider inventory with owners, tags, and current versions',
+    sections: ['Provider Inventory', 'Owners and Contacts', 'Version Coverage'],
+    flows: ['Review provider status', 'Check version coverage'],
+    integrations: ['registry', 'provider services'],
+    quickLinks: ['/api/v1/providers/providers'],
+    endpoint: '/api/v1/providers/providers',
+  },
+  {
+    id: 'resources',
+    title: 'Provider Resources',
+    subtitle: 'Registered resources, endpoints, and credential refs',
+    sections: ['Resource Inventory', 'Environments', 'Credential References'],
+    flows: ['Inspect resource endpoints', 'Validate credentials'],
+    integrations: ['provider services'],
+    quickLinks: ['/api/v1/providers/resources'],
+    endpoint: '/api/v1/providers/resources',
+  },
+  {
+    id: 'versions',
+    title: 'Provider Versions',
+    subtitle: 'Version control snapshots across providers',
+    sections: ['Version Inventory', 'Release Status', 'Compatibility Matrix'],
+    flows: ['Validate version coverage', 'Review release notes'],
+    integrations: ['provider services'],
+    quickLinks: ['/api/v1/providers/versions'],
+    endpoint: '/api/v1/providers/versions',
+  },
+  {
+    id: 'metadata',
+    title: 'Provider Metadata',
+    subtitle: 'Metadata key-value entries and scopes',
+    sections: ['Metadata Entries', 'Scopes and Policies', 'Update Times'],
+    flows: ['Audit metadata coverage', 'Review scopes'],
+    integrations: ['provider services'],
+    quickLinks: ['/api/v1/providers/metadata'],
+    endpoint: '/api/v1/providers/metadata',
+  },
+  {
+    id: 'data',
+    title: 'Provider Data Assets',
+    subtitle: 'Provider datasets, sync status, and storage locations',
+    sections: ['Datasets', 'Sync Status', 'Storage Locations'],
+    flows: ['Check sync status', 'Validate data coverage'],
+    integrations: ['provider services', 'storage'],
+    quickLinks: ['/api/v1/providers/data'],
+    endpoint: '/api/v1/providers/data',
+  },
+  {
+    id: 'affiliates',
+    title: 'Affiliates',
+    subtitle: 'Affiliate registry entries and partner metadata',
+    sections: ['Affiliate Inventory', 'Partner Metadata', 'Contact Points'],
+    flows: ['Review affiliate status', 'Validate contacts'],
+    integrations: ['provider registry'],
+    quickLinks: ['/api/v1/providers/affiliates'],
+    endpoint: '/api/v1/providers/affiliates',
+  },
+  {
+    id: 'affiliate_links',
+    title: 'Affiliate Links',
+    subtitle: 'Provider-affiliate link status and tracking URLs',
+    sections: ['Link Inventory', 'Channels', 'Tracking URLs'],
+    flows: ['Audit affiliate links', 'Validate tracking configuration'],
+    integrations: ['provider registry'],
+    quickLinks: ['/api/v1/providers/affiliate-links'],
+    endpoint: '/api/v1/providers/affiliate-links',
+  },
+];
+
 function isOfficeViewId(value: string): value is OfficeViewId {
   return officeViewSpecs.some((x) => x.id === value);
+}
+
+function isPlatformViewId(value: string): value is PlatformViewId {
+  return platformViewSpecs.some((x) => x.id === value);
+}
+
+function isProviderViewId(value: string): value is ProviderViewId {
+  return providerViewSpecs.some((x) => x.id === value);
 }
 
 @Component({
@@ -164,7 +383,7 @@ function isOfficeViewId(value: string): value is OfficeViewId {
           <input
             [value]="navQuery()"
             (input)="setNavQuery(($any($event.target)).value)"
-            placeholder="Search modules, flows, integrations" />
+            placeholder="Search modules, views, services" />
         </label>
         <div class="top-actions">
           <button class="ghost" (click)="refreshActive()">Refresh</button>
@@ -176,16 +395,21 @@ function isOfficeViewId(value: string): value is OfficeViewId {
 
       <section class="workspace-shell">
         <aside class="icon-rail">
-          <button class="rail-btn active">◎</button>
-          <button class="rail-btn">▦</button>
-          <button class="rail-btn">↺</button>
-          <button class="rail-btn">⚙</button>
+          <button class="rail-btn active">?</button>
+          <button class="rail-btn">?</button>
+          <button class="rail-btn">?</button>
+          <button class="rail-btn">?</button>
         </aside>
 
         <aside class="navigator">
           <div class="mode-row">
             <button class="mode-btn" [class.active]="appMode() === 'office'" (click)="setAppMode('office')">Office</button>
             <button class="mode-btn" [class.active]="appMode() === 'unified'" (click)="setAppMode('unified')">Unified</button>
+          </div>
+
+          <div class="mode-row">
+            <button class="mode-btn" [class.active]="appMode() === 'platform'" (click)="setAppMode('platform')">Platform</button>
+            <button class="mode-btn" [class.active]="appMode() === 'providers'" (click)="setAppMode('providers')">Providers</button>
           </div>
 
           <div class="mode-row" *ngIf="appMode() === 'unified'">
@@ -212,26 +436,26 @@ function isOfficeViewId(value: string): value is OfficeViewId {
               <p>{{ activeSubtitle() }}</p>
             </div>
             <div class="hero-chip">
-              <span>{{ appMode() === 'office' ? 'Office Runtime' : 'Unified Runtime' }}</span>
+              <span>{{ activeModeLabel() }}</span>
             </div>
           </article>
 
           <section class="meta-row">
             <article class="metric">
               <span>Series</span>
-              <strong>{{ catalog().series }}</strong>
+              <strong>{{ activeSeries() }}</strong>
             </article>
             <article class="metric">
               <span>Version</span>
-              <strong>{{ catalog().version }}</strong>
+              <strong>{{ activeVersion() }}</strong>
             </article>
             <article class="metric">
               <span>Visible Views</span>
               <strong>{{ navItems().length }}</strong>
             </article>
             <article class="metric">
-              <span>Active Profile</span>
-              <strong>{{ activeProfile() }}</strong>
+              <span>Endpoint</span>
+              <strong>{{ activeEndpoint() }}</strong>
             </article>
           </section>
 
@@ -251,14 +475,14 @@ function isOfficeViewId(value: string): value is OfficeViewId {
             </article>
 
             <article class="panel">
-              <h2>{{ appMode() === 'office' ? 'Integrations' : 'Tags' }}</h2>
+              <h2>{{ appMode() === 'unified' ? 'Tags' : 'Integrations' }}</h2>
               <div class="chips">
                 <span class="chip chip-alt" *ngFor="let tag of displayTags()">{{ tag }}</span>
               </div>
             </article>
 
             <article class="panel">
-              <h2>{{ appMode() === 'office' ? 'Quick Links' : 'Source Files' }}</h2>
+              <h2>{{ appMode() === 'unified' ? 'Source Files' : 'Quick Links' }}</h2>
               <ul>
                 <li *ngFor="let link of displayLinks()">{{ link }}</li>
               </ul>
@@ -267,22 +491,56 @@ function isOfficeViewId(value: string): value is OfficeViewId {
 
           <section class="tool-row">
             <button (click)="loadSystem()">System</button>
+            <button (click)="loadHostSummary()">Host</button>
+            <button (click)="loadHostComponents()">Host Components</button>
+            <button (click)="loadModulesList()">Modules</button>
+            <button (click)="loadEngineOverview()">Engine</button>
+            <button (click)="loadEngineRuntime()">Engine Runtime</button>
+            <button (click)="loadDatabaseRuntime()">Database</button>
+            <button (click)="loadProvidersSnapshot()">Providers</button>
+            <button (click)="loadProvidersAffiliates()">Affiliates</button>
             <button (click)="loadIdentities()">IMS Identities</button>
             <button (click)="loadProfiles()">IMS Profiles</button>
             <button (click)="loadIsolation()">Module Isolation</button>
             <button (click)="loadOfficeOverview()">Office Overview</button>
+            <button (click)="loadUnifiedCatalog()">Unified Screens</button>
           </section>
 
-          <section class="office-actions" *ngIf="appMode() === 'office'">
+          <section class="action-row" *ngIf="appMode() === 'office'">
             <input
-              [value]="officeActionDraft()"
-              (input)="setOfficeActionDraft(($any($event.target)).value)"
-              placeholder="Action input (id, name, topic)" />
+              [value]="actionDraft()"
+              (input)="setActionDraft(($any($event.target)).value)"
+              placeholder="Office action input (id, name, topic)" />
             <button (click)="ackOfficeNotification()">Ack</button>
             <button (click)="createOfficePortfolioItem()">Portfolio+</button>
             <button (click)="createOfficeTimelineEvent()">Timeline+</button>
             <button (click)="createOfficeWorkspaceStory()">Story+</button>
             <button (click)="subscribeOfficeAssistant()">Subscribe+</button>
+          </section>
+
+          <section class="action-row" *ngIf="appMode() === 'platform'">
+            <input
+              [value]="actionDraft()"
+              (input)="setActionDraft(($any($event.target)).value)"
+              placeholder="Platform action input (engine action or SQL)" />
+            <button (click)="engineControl()">Engine Control</button>
+            <button (click)="engineIngest()">Engine Ingest</button>
+            <button (click)="databaseQuery()">DB Query</button>
+          </section>
+
+          <section class="action-row" *ngIf="appMode() === 'providers'">
+            <input
+              [value]="actionDraft()"
+              (input)="setActionDraft(($any($event.target)).value)"
+              placeholder="Provider action input (name|id|extra)" />
+            <button (click)="createProviderPlatform()">Platform+</button>
+            <button (click)="createProvider()">Provider+</button>
+            <button (click)="addProviderResource()">Resource+</button>
+            <button (click)="addProviderVersion()">Version+</button>
+            <button (click)="setProviderMetadata()">Metadata+</button>
+            <button (click)="addProviderDataAsset()">Data+</button>
+            <button (click)="registerAffiliate()">Affiliate+</button>
+            <button (click)="addAffiliateLink()">Affiliate Link+</button>
           </section>
         </section>
 
@@ -304,7 +562,7 @@ function isOfficeViewId(value: string): value is OfficeViewId {
         radial-gradient(1200px 500px at 10% -10%, rgba(61, 130, 255, .28), transparent 60%),
         radial-gradient(1000px 700px at 95% 10%, rgba(23, 214, 255, .18), transparent 60%),
         #070b17;
-      font-family: "Manrope", "Segoe UI", sans-serif;
+      font-family: "Space Grotesk", "Manrope", "Segoe UI", sans-serif;
       padding: 16px;
     }
     .topbar {
@@ -523,12 +781,12 @@ function isOfficeViewId(value: string): value is OfficeViewId {
       color: #c3dafd;
     }
     li + li { margin-top: 3px; }
-    .tool-row, .office-actions {
+    .tool-row, .action-row {
       display: flex;
       gap: 8px;
       flex-wrap: wrap;
     }
-    .tool-row button, .office-actions button {
+    .tool-row button, .action-row button {
       border: 1px solid rgba(112, 146, 240, .32);
       border-radius: 10px;
       background: rgba(17, 37, 82, .8);
@@ -536,7 +794,7 @@ function isOfficeViewId(value: string): value is OfficeViewId {
       padding: 8px 11px;
       cursor: pointer;
     }
-    .office-actions input {
+    .action-row input {
       min-width: 230px;
       border: 1px solid rgba(112, 146, 240, .32);
       border-radius: 10px;
@@ -605,9 +863,11 @@ export class AppComponent {
   readonly viewKind = signal<ViewKind>('module');
   readonly activeUnifiedId = signal('dashboard');
   readonly activeOfficeId = signal<OfficeViewId>('dashboard');
+  readonly activePlatformId = signal<PlatformViewId>('system');
+  readonly activeProviderId = signal<ProviderViewId>('snapshot');
   readonly activeProfile = signal('work');
   readonly payload = signal('Select a view from the left sidebar.');
-  readonly officeActionDraft = signal('');
+  readonly actionDraft = signal('');
   readonly navQuery = signal('');
 
   readonly activeUnifiedItems = computed(() =>
@@ -622,10 +882,22 @@ export class AppComponent {
     officeViewSpecs.find((x) => x.id === this.activeOfficeId()) ?? officeViewSpecs[0],
   );
 
+  readonly activePlatformSpec = computed(() =>
+    platformViewSpecs.find((x) => x.id === this.activePlatformId()) ?? platformViewSpecs[0],
+  );
+
+  readonly activeProviderSpec = computed(() =>
+    providerViewSpecs.find((x) => x.id === this.activeProviderId()) ?? providerViewSpecs[0],
+  );
+
   readonly navItems = computed<NavItem[]>(() => {
     const raw = this.appMode() === 'office'
       ? officeViewSpecs.map((x) => ({ id: x.id, title: x.title }))
-      : this.activeUnifiedItems().map((x) => ({ id: x.id, title: x.title }));
+      : this.appMode() === 'platform'
+        ? platformViewSpecs.map((x) => ({ id: x.id, title: x.title }))
+        : this.appMode() === 'providers'
+          ? providerViewSpecs.map((x) => ({ id: x.id, title: x.title }))
+          : this.activeUnifiedItems().map((x) => ({ id: x.id, title: x.title }));
 
     const query = this.navQuery().trim().toLowerCase();
     if (!query) {
@@ -638,6 +910,12 @@ export class AppComponent {
     if (this.appMode() === 'office') {
       return this.activeOfficeSpec().title;
     }
+    if (this.appMode() === 'platform') {
+      return this.activePlatformSpec().title;
+    }
+    if (this.appMode() === 'providers') {
+      return this.activeProviderSpec().title;
+    }
     return this.activeUnifiedScreen()?.title ?? 'Kogi';
   });
 
@@ -645,13 +923,71 @@ export class AppComponent {
     if (this.appMode() === 'office') {
       return this.activeOfficeSpec().subtitle;
     }
+    if (this.appMode() === 'platform') {
+      return this.activePlatformSpec().subtitle;
+    }
+    if (this.appMode() === 'providers') {
+      return this.activeProviderSpec().subtitle;
+    }
     return this.viewKind() === 'module'
       ? 'Unified module screen from reconciled v2/v3 docs.'
       : 'Unified workflow screen from reconciled v2/v3 docs.';
   });
 
+  readonly activeSeries = computed(() => {
+    if (this.appMode() === 'office') {
+      return 'kogi-office-application';
+    }
+    if (this.appMode() === 'platform') {
+      return 'kogi-platform-architecture';
+    }
+    if (this.appMode() === 'providers') {
+      return 'kogi-provider-registry';
+    }
+    return this.catalog().series;
+  });
+
+  readonly activeVersion = computed(() => {
+    if (this.appMode() === 'office') {
+      return 'v0.3.0';
+    }
+    if (this.appMode() === 'platform') {
+      return 'v1.0.0';
+    }
+    if (this.appMode() === 'providers') {
+      return 'v0.2.0';
+    }
+    return this.catalog().version;
+  });
+
+  readonly activeEndpoint = computed(() => {
+    if (this.appMode() === 'office') {
+      return this.activeOfficeSpec().endpoint;
+    }
+    if (this.appMode() === 'platform') {
+      return this.activePlatformSpec().endpoint;
+    }
+    if (this.appMode() === 'providers') {
+      return this.activeProviderSpec().endpoint;
+    }
+    return '/api/v1/screens/unified';
+  });
+
   constructor() {
     void this.loadOfficeView();
+  }
+
+  activeModeLabel(): string {
+    switch (this.appMode()) {
+      case 'office':
+        return 'Office Runtime';
+      case 'platform':
+        return 'Platform Runtime';
+      case 'providers':
+        return 'Provider Registry';
+      default:
+        return 'Unified Runtime';
+    }
   }
 
   setProfile(profileId: string): void {
@@ -662,8 +998,8 @@ export class AppComponent {
     this.navQuery.set(value);
   }
 
-  setOfficeActionDraft(value: string): void {
-    this.officeActionDraft.set(value);
+  setActionDraft(value: string): void {
+    this.actionDraft.set(value);
   }
 
   setAppMode(mode: AppMode): void {
@@ -673,8 +1009,19 @@ export class AppComponent {
       void this.loadOfficeView();
       return;
     }
+    if (mode === 'platform') {
+      this.activePlatformId.set('system');
+      void this.loadPlatformView();
+      return;
+    }
+    if (mode === 'providers') {
+      this.activeProviderId.set('snapshot');
+      void this.loadProviderView();
+      return;
+    }
     const first = this.activeUnifiedItems()[0];
     this.activeUnifiedId.set(first?.id ?? '');
+    void this.loadUnifiedCatalog();
   }
 
   setViewKind(kind: ViewKind): void {
@@ -687,6 +1034,12 @@ export class AppComponent {
     if (this.appMode() === 'office') {
       return id === this.activeOfficeId();
     }
+    if (this.appMode() === 'platform') {
+      return id === this.activePlatformId();
+    }
+    if (this.appMode() === 'providers') {
+      return id === this.activeProviderId();
+    }
     return id === this.activeUnifiedId();
   }
 
@@ -696,12 +1049,28 @@ export class AppComponent {
       void this.loadOfficeView();
       return;
     }
+    if (this.appMode() === 'platform' && isPlatformViewId(id)) {
+      this.activePlatformId.set(id);
+      void this.loadPlatformView();
+      return;
+    }
+    if (this.appMode() === 'providers' && isProviderViewId(id)) {
+      this.activeProviderId.set(id);
+      void this.loadProviderView();
+      return;
+    }
     this.activeUnifiedId.set(id);
   }
 
   displaySections(): string[] {
     if (this.appMode() === 'office') {
       return this.activeOfficeSpec().sections;
+    }
+    if (this.appMode() === 'platform') {
+      return this.activePlatformSpec().sections;
+    }
+    if (this.appMode() === 'providers') {
+      return this.activeProviderSpec().sections;
     }
     return this.activeUnifiedScreen()?.sections ?? [];
   }
@@ -710,12 +1079,24 @@ export class AppComponent {
     if (this.appMode() === 'office') {
       return this.activeOfficeSpec().flows;
     }
+    if (this.appMode() === 'platform') {
+      return this.activePlatformSpec().flows;
+    }
+    if (this.appMode() === 'providers') {
+      return this.activeProviderSpec().flows;
+    }
     return this.activeUnifiedScreen()?.steps ?? [];
   }
 
   displayTags(): string[] {
     if (this.appMode() === 'office') {
       return this.activeOfficeSpec().integrations;
+    }
+    if (this.appMode() === 'platform') {
+      return this.activePlatformSpec().integrations;
+    }
+    if (this.appMode() === 'providers') {
+      return this.activeProviderSpec().integrations;
     }
     return this.activeUnifiedScreen()?.tags ?? [];
   }
@@ -724,12 +1105,26 @@ export class AppComponent {
     if (this.appMode() === 'office') {
       return this.activeOfficeSpec().quickLinks;
     }
+    if (this.appMode() === 'platform') {
+      return this.activePlatformSpec().quickLinks;
+    }
+    if (this.appMode() === 'providers') {
+      return this.activeProviderSpec().quickLinks;
+    }
     return this.catalog().sources;
   }
 
   async refreshActive(): Promise<void> {
     if (this.appMode() === 'office') {
       await this.loadOfficeView();
+      return;
+    }
+    if (this.appMode() === 'platform') {
+      await this.loadPlatformView();
+      return;
+    }
+    if (this.appMode() === 'providers') {
+      await this.loadProviderView();
       return;
     }
     await this.loadUnifiedCatalog();
@@ -787,8 +1182,74 @@ export class AppComponent {
     }
   }
 
+  async loadPlatformView(): Promise<void> {
+    try {
+      const data = await this.fetchPlatformView(this.activePlatformId());
+      this.payload.set(JSON.stringify(data, null, 2));
+    } catch (err) {
+      this.payload.set(`platform view request failed: ${String(err)}`);
+    }
+  }
+
+  private async fetchPlatformView(viewId: PlatformViewId): Promise<unknown> {
+    switch (viewId) {
+      case 'system':
+        return firstValueFrom(this.api.systemSummary());
+      case 'host':
+        return firstValueFrom(this.api.hostSummary());
+      case 'host_components':
+        return firstValueFrom(this.api.hostComponents());
+      case 'engine':
+        return firstValueFrom(this.api.engineOverview());
+      case 'engine_runtime':
+        return firstValueFrom(this.api.engineRuntime());
+      case 'database':
+        return firstValueFrom(this.api.databaseRuntime());
+      case 'modules':
+        return firstValueFrom(this.api.modulesList());
+      case 'autonomy':
+        return firstValueFrom(this.api.autonomyCapabilities());
+      default:
+        return firstValueFrom(this.api.systemSummary());
+    }
+  }
+
+  async loadProviderView(): Promise<void> {
+    try {
+      const data = await this.fetchProviderView(this.activeProviderId());
+      this.payload.set(JSON.stringify(data, null, 2));
+    } catch (err) {
+      this.payload.set(`provider view request failed: ${String(err)}`);
+    }
+  }
+
+  private async fetchProviderView(viewId: ProviderViewId): Promise<unknown> {
+    switch (viewId) {
+      case 'snapshot':
+        return firstValueFrom(this.api.providersSnapshot());
+      case 'platforms':
+        return firstValueFrom(this.api.providersPlatforms());
+      case 'providers':
+        return firstValueFrom(this.api.providersList());
+      case 'resources':
+        return firstValueFrom(this.api.providersResources());
+      case 'versions':
+        return firstValueFrom(this.api.providersVersions());
+      case 'metadata':
+        return firstValueFrom(this.api.providersMetadata());
+      case 'data':
+        return firstValueFrom(this.api.providersDataAssets());
+      case 'affiliates':
+        return firstValueFrom(this.api.providersAffiliates());
+      case 'affiliate_links':
+        return firstValueFrom(this.api.providersAffiliateLinks());
+      default:
+        return firstValueFrom(this.api.providersSnapshot());
+    }
+  }
+
   async ackOfficeNotification(): Promise<void> {
-    const notificationId = this.officeActionDraft().trim() || 'notif-001';
+    const notificationId = this.actionDraft().trim() || 'notif-001';
     try {
       const data = await firstValueFrom(this.api.officeAckNotification(notificationId));
       this.payload.set(JSON.stringify(data, null, 2));
@@ -799,7 +1260,7 @@ export class AppComponent {
   }
 
   async createOfficePortfolioItem(): Promise<void> {
-    const name = this.officeActionDraft().trim() || 'Office Generated Item';
+    const name = this.actionDraft().trim() || 'Office Generated Item';
     try {
       const data = await firstValueFrom(
         this.api.officeCreatePortfolioItem('project', name, 'active'),
@@ -813,7 +1274,7 @@ export class AppComponent {
   }
 
   async createOfficeTimelineEvent(): Promise<void> {
-    const title = this.officeActionDraft().trim() || 'Office Timeline Event';
+    const title = this.actionDraft().trim() || 'Office Timeline Event';
     try {
       const data = await firstValueFrom(
         this.api.officeCreateTimelineEvent('cal-work', title, 'milestone', '2026-03-12T18:00:00Z'),
@@ -827,7 +1288,7 @@ export class AppComponent {
   }
 
   async createOfficeWorkspaceStory(): Promise<void> {
-    const title = this.officeActionDraft().trim() || 'As a worker, I can execute office flows';
+    const title = this.actionDraft().trim() || 'As a worker, I can execute office flows';
     try {
       const data = await firstValueFrom(this.api.officeCreateWorkspaceStory(title, 5));
       this.payload.set(JSON.stringify(data, null, 2));
@@ -839,7 +1300,7 @@ export class AppComponent {
   }
 
   async subscribeOfficeAssistant(): Promise<void> {
-    const topic = this.officeActionDraft().trim() || 'office.dashboard.alerts';
+    const topic = this.actionDraft().trim() || 'office.dashboard.alerts';
     try {
       const data = await firstValueFrom(this.api.officeSubscribeAssistant(topic));
       this.payload.set(JSON.stringify(data, null, 2));
@@ -850,9 +1311,246 @@ export class AppComponent {
     }
   }
 
+  async engineControl(): Promise<void> {
+    const action = this.actionDraft().trim() || 'start';
+    try {
+      const data = await firstValueFrom(this.api.engineControl(action));
+      this.payload.set(JSON.stringify(data, null, 2));
+    } catch (err) {
+      this.payload.set(`engine control failed: ${String(err)}`);
+    }
+  }
+
+  async engineIngest(): Promise<void> {
+    const raw = this.actionDraft().trim();
+    let payload: unknown = { source: 'web', note: raw || 'manual ingest' };
+    if (raw.startsWith('{') || raw.startsWith('[')) {
+      try {
+        payload = JSON.parse(raw);
+      } catch {
+        payload = { source: 'web', note: raw };
+      }
+    }
+    try {
+      const data = await firstValueFrom(this.api.engineIngest(payload));
+      this.payload.set(JSON.stringify(data, null, 2));
+    } catch (err) {
+      this.payload.set(`engine ingest failed: ${String(err)}`);
+    }
+  }
+
+  async databaseQuery(): Promise<void> {
+    const sql = this.actionDraft().trim() || 'select 1';
+    try {
+      const data = await firstValueFrom(this.api.databaseQuery(sql));
+      this.payload.set(JSON.stringify(data, null, 2));
+    } catch (err) {
+      this.payload.set(`database query failed: ${String(err)}`);
+    }
+  }
+
+  async createProviderPlatform(): Promise<void> {
+    const parts = this.parseDraft();
+    const name = parts[0] ?? 'New Platform';
+    const kind = parts[1] ?? 'platform';
+    const category = parts[2] ?? 'general';
+    try {
+      const data = await firstValueFrom(this.api.providersCreatePlatform(name, kind, category, 'active'));
+      this.payload.set(JSON.stringify(data, null, 2));
+      await this.loadProviderView();
+    } catch (err) {
+      this.payload.set(`provider platform create failed: ${String(err)}`);
+    }
+  }
+
+  async createProvider(): Promise<void> {
+    const parts = this.parseDraft();
+    const name = parts[0] ?? 'New Provider';
+    const platformId = parts[1] ?? 'platform-001';
+    const kind = parts[2] ?? 'api';
+    try {
+      const data = await firstValueFrom(
+        this.api.providersCreateProvider(name, platformId, kind, 'active'),
+      );
+      this.payload.set(JSON.stringify(data, null, 2));
+      await this.loadProviderView();
+    } catch (err) {
+      this.payload.set(`provider create failed: ${String(err)}`);
+    }
+  }
+
+  async addProviderResource(): Promise<void> {
+    const parts = this.parseDraft();
+    const providerId = parts[0] ?? 'provider-001';
+    const resourceType = parts[1] ?? 'api';
+    const name = parts[2] ?? 'primary-resource';
+    try {
+      const data = await firstValueFrom(
+        this.api.providersAddResource(providerId, resourceType, name, 'active'),
+      );
+      this.payload.set(JSON.stringify(data, null, 2));
+      await this.loadProviderView();
+    } catch (err) {
+      this.payload.set(`provider resource failed: ${String(err)}`);
+    }
+  }
+
+  async addProviderVersion(): Promise<void> {
+    const parts = this.parseDraft();
+    const providerId = parts[0] ?? 'provider-001';
+    const version = parts[1] ?? 'v1';
+    const status = parts[2] ?? 'stable';
+    try {
+      const data = await firstValueFrom(
+        this.api.providersAddVersion(providerId, version, status),
+      );
+      this.payload.set(JSON.stringify(data, null, 2));
+      await this.loadProviderView();
+    } catch (err) {
+      this.payload.set(`provider version failed: ${String(err)}`);
+    }
+  }
+
+  async setProviderMetadata(): Promise<void> {
+    const parts = this.parseDraft();
+    const providerId = parts[0] ?? 'provider-001';
+    const key = parts[1] ?? 'region';
+    const value = parts[2] ?? 'us';
+    try {
+      const data = await firstValueFrom(
+        this.api.providersSetMetadata(providerId, key, value, 'general'),
+      );
+      this.payload.set(JSON.stringify(data, null, 2));
+      await this.loadProviderView();
+    } catch (err) {
+      this.payload.set(`provider metadata failed: ${String(err)}`);
+    }
+  }
+
+  async addProviderDataAsset(): Promise<void> {
+    const parts = this.parseDraft();
+    const providerId = parts[0] ?? 'provider-001';
+    const dataset = parts[1] ?? 'dataset';
+    const status = parts[2] ?? 'active';
+    const recordCount = parts[3] ? Number(parts[3]) : 0;
+    try {
+      const data = await firstValueFrom(
+        this.api.providersAddDataAsset(providerId, dataset, status, Number.isNaN(recordCount) ? 0 : recordCount),
+      );
+      this.payload.set(JSON.stringify(data, null, 2));
+      await this.loadProviderView();
+    } catch (err) {
+      this.payload.set(`provider data asset failed: ${String(err)}`);
+    }
+  }
+
+  async registerAffiliate(): Promise<void> {
+    const parts = this.parseDraft();
+    const name = parts[0] ?? 'New Affiliate';
+    const kind = parts[1] ?? 'partner';
+    const status = parts[2] ?? 'active';
+    try {
+      const data = await firstValueFrom(
+        this.api.providersRegisterAffiliate(name, kind, status),
+      );
+      this.payload.set(JSON.stringify(data, null, 2));
+      await this.loadProviderView();
+    } catch (err) {
+      this.payload.set(`affiliate register failed: ${String(err)}`);
+    }
+  }
+
+  async addAffiliateLink(): Promise<void> {
+    const parts = this.parseDraft();
+    const providerId = parts[0] ?? 'provider-001';
+    const affiliateId = parts[1] ?? 'affiliate-001';
+    const status = parts[2] ?? 'active';
+    try {
+      const data = await firstValueFrom(
+        this.api.providersAddAffiliateLink(providerId, affiliateId, status),
+      );
+      this.payload.set(JSON.stringify(data, null, 2));
+      await this.loadProviderView();
+    } catch (err) {
+      this.payload.set(`affiliate link failed: ${String(err)}`);
+    }
+  }
+
   async loadSystem(): Promise<void> {
     try {
       const data = await firstValueFrom(this.api.systemSummary());
+      this.payload.set(JSON.stringify(data, null, 2));
+    } catch (err) {
+      this.payload.set(`request failed: ${String(err)}`);
+    }
+  }
+
+  async loadHostSummary(): Promise<void> {
+    try {
+      const data = await firstValueFrom(this.api.hostSummary());
+      this.payload.set(JSON.stringify(data, null, 2));
+    } catch (err) {
+      this.payload.set(`request failed: ${String(err)}`);
+    }
+  }
+
+  async loadHostComponents(): Promise<void> {
+    try {
+      const data = await firstValueFrom(this.api.hostComponents());
+      this.payload.set(JSON.stringify(data, null, 2));
+    } catch (err) {
+      this.payload.set(`request failed: ${String(err)}`);
+    }
+  }
+
+  async loadEngineOverview(): Promise<void> {
+    try {
+      const data = await firstValueFrom(this.api.engineOverview());
+      this.payload.set(JSON.stringify(data, null, 2));
+    } catch (err) {
+      this.payload.set(`request failed: ${String(err)}`);
+    }
+  }
+
+  async loadEngineRuntime(): Promise<void> {
+    try {
+      const data = await firstValueFrom(this.api.engineRuntime());
+      this.payload.set(JSON.stringify(data, null, 2));
+    } catch (err) {
+      this.payload.set(`request failed: ${String(err)}`);
+    }
+  }
+
+  async loadDatabaseRuntime(): Promise<void> {
+    try {
+      const data = await firstValueFrom(this.api.databaseRuntime());
+      this.payload.set(JSON.stringify(data, null, 2));
+    } catch (err) {
+      this.payload.set(`request failed: ${String(err)}`);
+    }
+  }
+
+  async loadModulesList(): Promise<void> {
+    try {
+      const data = await firstValueFrom(this.api.modulesList());
+      this.payload.set(JSON.stringify(data, null, 2));
+    } catch (err) {
+      this.payload.set(`request failed: ${String(err)}`);
+    }
+  }
+
+  async loadProvidersSnapshot(): Promise<void> {
+    try {
+      const data = await firstValueFrom(this.api.providersSnapshot());
+      this.payload.set(JSON.stringify(data, null, 2));
+    } catch (err) {
+      this.payload.set(`request failed: ${String(err)}`);
+    }
+  }
+
+  async loadProvidersAffiliates(): Promise<void> {
+    try {
+      const data = await firstValueFrom(this.api.providersAffiliates());
       this.payload.set(JSON.stringify(data, null, 2));
     } catch (err) {
       this.payload.set(`request failed: ${String(err)}`);
@@ -884,6 +1582,13 @@ export class AppComponent {
     } catch (err) {
       this.payload.set(`request failed: ${String(err)}`);
     }
+  }
+
+  private parseDraft(): string[] {
+    return this.actionDraft()
+      .split('|')
+      .map((part) => part.trim())
+      .filter((part) => part.length > 0);
   }
 }
 

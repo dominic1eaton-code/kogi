@@ -99,6 +99,26 @@
                 android:paddingVertical="6dp"
                 android:text="Assistant"
                 android:textColor="@color/kogiText" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:background="@drawable/bg_mobile_chip"
+                android:paddingHorizontal="10dp"
+                android:paddingVertical="6dp"
+                android:text="Platform"
+                android:textColor="@color/kogiText" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:background="@drawable/bg_mobile_chip"
+                android:paddingHorizontal="10dp"
+                android:paddingVertical="6dp"
+                android:text="Providers"
+                android:textColor="@color/kogiText" />
         </LinearLayout>
     </HorizontalScrollView>
 
@@ -255,6 +275,282 @@
                     android:layout_height="wrap_content"
                     android:background="@drawable/bg_mobile_button"
                     android:text="Assistant"
+                    android:textAllCaps="false"
+                    android:textColor="@color/kogiText" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:background="@drawable/bg_mobile_card"
+                android:padding="12dp"
+                android:layout_marginBottom="10dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Platform Views"
+                    android:textColor="@color/kogiText"
+                    android:textStyle="bold"
+                    android:textSize="15sp"
+                    android:layout_marginBottom="8dp" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:layout_marginBottom="8dp">
+
+                    <Button
+                        android:id="@+id/btnPlatformSystem"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:layout_marginEnd="6dp"
+                        android:background="@drawable/bg_mobile_button"
+                        android:text="System"
+                        android:textAllCaps="false"
+                        android:textColor="@color/kogiText" />
+
+                    <Button
+                        android:id="@+id/btnPlatformHost"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:layout_marginStart="6dp"
+                        android:background="@drawable/bg_mobile_button"
+                        android:text="Host"
+                        android:textAllCaps="false"
+                        android:textColor="@color/kogiText" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:layout_marginBottom="8dp">
+
+                    <Button
+                        android:id="@+id/btnPlatformComponents"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:layout_marginEnd="6dp"
+                        android:background="@drawable/bg_mobile_button"
+                        android:text="Components"
+                        android:textAllCaps="false"
+                        android:textColor="@color/kogiText" />
+
+                    <Button
+                        android:id="@+id/btnPlatformEngine"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:layout_marginStart="6dp"
+                        android:background="@drawable/bg_mobile_button"
+                        android:text="Engine"
+                        android:textAllCaps="false"
+                        android:textColor="@color/kogiText" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:layout_marginBottom="8dp">
+
+                    <Button
+                        android:id="@+id/btnPlatformEngineRuntime"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:layout_marginEnd="6dp"
+                        android:background="@drawable/bg_mobile_button"
+                        android:text="Engine RT"
+                        android:textAllCaps="false"
+                        android:textColor="@color/kogiText" />
+
+                    <Button
+                        android:id="@+id/btnPlatformDatabase"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:layout_marginStart="6dp"
+                        android:background="@drawable/bg_mobile_button"
+                        android:text="Database"
+                        android:textAllCaps="false"
+                        android:textColor="@color/kogiText" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <Button
+                        android:id="@+id/btnPlatformModules"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:layout_marginEnd="6dp"
+                        android:background="@drawable/bg_mobile_button"
+                        android:text="Modules"
+                        android:textAllCaps="false"
+                        android:textColor="@color/kogiText" />
+
+                    <Button
+                        android:id="@+id/btnPlatformAutonomy"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:layout_marginStart="6dp"
+                        android:background="@drawable/bg_mobile_button"
+                        android:text="Autonomy"
+                        android:textAllCaps="false"
+                        android:textColor="@color/kogiText" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:background="@drawable/bg_mobile_card"
+                android:padding="12dp"
+                android:layout_marginBottom="10dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Provider Registry"
+                    android:textColor="@color/kogiText"
+                    android:textStyle="bold"
+                    android:textSize="15sp"
+                    android:layout_marginBottom="8dp" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:layout_marginBottom="8dp">
+
+                    <Button
+                        android:id="@+id/btnProvidersSnapshot"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:layout_marginEnd="6dp"
+                        android:background="@drawable/bg_mobile_button"
+                        android:text="Snapshot"
+                        android:textAllCaps="false"
+                        android:textColor="@color/kogiText" />
+
+                    <Button
+                        android:id="@+id/btnProvidersPlatforms"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:layout_marginStart="6dp"
+                        android:background="@drawable/bg_mobile_button"
+                        android:text="Platforms"
+                        android:textAllCaps="false"
+                        android:textColor="@color/kogiText" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:layout_marginBottom="8dp">
+
+                    <Button
+                        android:id="@+id/btnProvidersProviders"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:layout_marginEnd="6dp"
+                        android:background="@drawable/bg_mobile_button"
+                        android:text="Providers"
+                        android:textAllCaps="false"
+                        android:textColor="@color/kogiText" />
+
+                    <Button
+                        android:id="@+id/btnProvidersAffiliates"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:layout_marginStart="6dp"
+                        android:background="@drawable/bg_mobile_button"
+                        android:text="Affiliates"
+                        android:textAllCaps="false"
+                        android:textColor="@color/kogiText" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:layout_marginBottom="8dp">
+
+                    <Button
+                        android:id="@+id/btnProvidersResources"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:layout_marginEnd="6dp"
+                        android:background="@drawable/bg_mobile_button"
+                        android:text="Resources"
+                        android:textAllCaps="false"
+                        android:textColor="@color/kogiText" />
+
+                    <Button
+                        android:id="@+id/btnProvidersVersions"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:layout_marginStart="6dp"
+                        android:background="@drawable/bg_mobile_button"
+                        android:text="Versions"
+                        android:textAllCaps="false"
+                        android:textColor="@color/kogiText" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:layout_marginBottom="8dp">
+
+                    <Button
+                        android:id="@+id/btnProvidersMetadata"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:layout_marginEnd="6dp"
+                        android:background="@drawable/bg_mobile_button"
+                        android:text="Metadata"
+                        android:textAllCaps="false"
+                        android:textColor="@color/kogiText" />
+
+                    <Button
+                        android:id="@+id/btnProvidersData"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:layout_marginStart="6dp"
+                        android:background="@drawable/bg_mobile_button"
+                        android:text="Data"
+                        android:textAllCaps="false"
+                        android:textColor="@color/kogiText" />
+                </LinearLayout>
+
+                <Button
+                    android:id="@+id/btnProvidersAffiliateLinks"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/bg_mobile_button"
+                    android:text="Affiliate Links"
                     android:textAllCaps="false"
                     android:textColor="@color/kogiText" />
             </LinearLayout>

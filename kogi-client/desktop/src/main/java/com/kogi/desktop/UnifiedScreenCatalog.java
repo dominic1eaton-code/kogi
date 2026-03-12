@@ -39,6 +39,12 @@ public final class UnifiedScreenCatalog {
             ),
             List.of(
                 UnifiedScreenView.module(
+                    "home",
+                    "Home",
+                    List.of("dashboard", "profile", "workspace"),
+                    List.of("Overview Cards", "Quicklinks", "Alerts", "Profile Hub", "Workspace Hub")
+                ),
+                UnifiedScreenView.module(
                     "dashboard",
                     "Dashboard",
                     List.of("overview", "activity", "ai"),
@@ -94,9 +100,21 @@ public final class UnifiedScreenCatalog {
                 ),
                 UnifiedScreenView.module(
                     "profile",
-                    "Profile",
-                    List.of("personas", "settings", "config"),
-                    List.of("Personas and Roles", "Settings", "Activity Stats")
+                    "Profiles",
+                    List.of("personas", "settings", "skills"),
+                    List.of("Profile Types", "Personas and Roles", "Skills and Contact", "Data and Metadata")
+                ),
+                UnifiedScreenView.module(
+                    "configuration",
+                    "Configuration",
+                    List.of("settings", "parameters", "policies"),
+                    List.of("Settings", "Parameters", "Options", "Policies")
+                ),
+                UnifiedScreenView.module(
+                    "providers",
+                    "Providers",
+                    List.of("registry", "platforms", "affiliates"),
+                    List.of("Registry Overview", "Platform Catalog", "Resources and Versions", "Affiliate Links")
                 ),
                 UnifiedScreenView.module(
                     "organizations",
@@ -127,6 +145,36 @@ public final class UnifiedScreenCatalog {
                     "Exchange",
                     List.of("bids", "deals", "due-diligence"),
                     List.of("Bids and Offers", "Deal Pipeline", "Requests")
+                ),
+                UnifiedScreenView.module(
+                    "network",
+                    "Network",
+                    List.of("gateway", "services", "discovery"),
+                    List.of("Gateway", "Service Mesh", "Registry", "Discovery")
+                ),
+                UnifiedScreenView.module(
+                    "engine",
+                    "Engine",
+                    List.of("data", "ai", "pipelines"),
+                    List.of("Ingest Pipelines", "Optimization", "Recommendations", "Telemetry")
+                ),
+                UnifiedScreenView.module(
+                    "host",
+                    "Host",
+                    List.of("orchestration", "runtime", "kernel"),
+                    List.of("Host Runtime", "Module Orchestration", "Kernel Bridge")
+                ),
+                UnifiedScreenView.module(
+                    "server",
+                    "Server",
+                    List.of("api", "routing", "gateway"),
+                    List.of("API Surface", "Request Routing", "Security")
+                ),
+                UnifiedScreenView.module(
+                    "clients",
+                    "Clients",
+                    List.of("web", "desktop", "mobile"),
+                    List.of("Web Console", "Desktop Studio", "Mobile Control")
                 )
             ),
             List.of(

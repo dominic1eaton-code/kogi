@@ -39,6 +39,8 @@ public final class DashboardFrame extends JFrame {
     private final KogiApiClient api;
     private UnifiedScreenCatalog catalog;
     private final List<UnifiedScreenView> officeViews;
+    private final List<UnifiedScreenView> platformViews;
+    private final List<UnifiedScreenView> providerViews;
     private List<UnifiedScreenView> currentViews;
 
     private final JComboBox<String> profileSelect;
@@ -62,6 +64,8 @@ public final class DashboardFrame extends JFrame {
         this.api = api;
         this.catalog = UnifiedScreenCatalog.fallback();
         this.officeViews = buildOfficeViews();
+        this.platformViews = buildPlatformViews();
+        this.providerViews = buildProviderViews();
         this.currentViews = new ArrayList<>(officeViews);
 
         this.profileSelect = new JComboBox<>(new String[] {
@@ -70,7 +74,7 @@ public final class DashboardFrame extends JFrame {
             "Business Profile",
             "Community Profile",
         });
-        this.modeSelect = new JComboBox<>(new String[] {"Office Views", "Unified Views"});
+        this.modeSelect = new JComboBox<>(new String[] {"Office Views", "Platform Views", "Provider Registry", "Unified Views"});
         this.kindSelect = new JComboBox<>(new String[] {"Module Views", "Workflow Views"});
         this.searchField = new JTextField();
         this.navModel = new DefaultListModel<>();
@@ -101,13 +105,14 @@ public final class DashboardFrame extends JFrame {
         root.add(shellSplit, BorderLayout.CENTER);
 
         setContentPane(root);
+        kindSelect.setEnabled(isUnifiedMode());
 
         modeSelect.addActionListener(e -> {
-            kindSelect.setEnabled(!isOfficeMode());
+            kindSelect.setEnabled(isUnifiedMode());
             reloadNavigation(currentSelectionId());
         });
         kindSelect.addActionListener(e -> {
-            if (!isOfficeMode()) {
+            if (isUnifiedMode()) {
                 reloadNavigation(currentSelectionId());
             }
         });
@@ -255,12 +260,21 @@ public final class DashboardFrame extends JFrame {
         toolRow.setOpaque(false);
         toolRow.add(actionButton("Health", () -> runCall("HEALTH", api::health)));
         toolRow.add(actionButton("System", () -> runCall("SYSTEM", api::systemSummary)));
+        toolRow.add(actionButton("Host", () -> runCall("HOST", api::hostSummary)));
+        toolRow.add(actionButton("Host Components", () -> runCall("HOST_COMPONENTS", api::hostComponents)));
         toolRow.add(actionButton("Modules", () -> runCall("MODULES", api::modules)));
+        toolRow.add(actionButton("Engine", () -> runCall("ENGINE", api::engineOverview)));
+        toolRow.add(actionButton("Engine Runtime", () -> runCall("ENGINE_RUNTIME", api::engineRuntime)));
+        toolRow.add(actionButton("Database", () -> runCall("DATABASE", api::databaseRuntime)));
+        toolRow.add(actionButton("Providers", () -> runCall("PROVIDERS", api::providersSnapshot)));
+        toolRow.add(actionButton("Affiliates", () -> runCall("AFFILIATES", api::providersAffiliates)));
         toolRow.add(actionButton("IMS Identities", () -> runCall("IMS_IDENTITIES", api::identities)));
         toolRow.add(actionButton("IMS Profiles", () -> runCall("IMS_PROFILES", api::profiles)));
         toolRow.add(actionButton("Isolation", () -> runCall("ISOLATION", api::moduleIsolation)));
         toolRow.add(actionButton("Office Overview", () -> runCall("OFFICE_OVERVIEW", api::officeOverview)));
         toolRow.add(actionButton("Office View", this::fetchActiveOfficeView));
+        toolRow.add(actionButton("Platform View", this::fetchActivePlatformView));
+        toolRow.add(actionButton("Provider View", this::fetchActiveProviderView));
 
         JPanel outputPanel = panelCard("Realtime Diagnostics", output);
         outputPanel.setPreferredSize(new Dimension(0, 250));
@@ -348,6 +362,18 @@ public final class DashboardFrame extends JFrame {
         return modeSelect.getSelectedIndex() == 0;
     }
 
+    private boolean isPlatformMode() {
+        return modeSelect.getSelectedIndex() == 1;
+    }
+
+    private boolean isProviderMode() {
+        return modeSelect.getSelectedIndex() == 2;
+    }
+
+    private boolean isUnifiedMode() {
+        return modeSelect.getSelectedIndex() == 3;
+    }
+
     private String selectedUnifiedKind() {
         return kindSelect.getSelectedIndex() == 1 ? "workflow" : "module";
     }
@@ -358,9 +384,16 @@ public final class DashboardFrame extends JFrame {
     }
 
     private void reloadNavigation(String preserveId) {
-        List<UnifiedScreenView> views = isOfficeMode()
-            ? officeViews
-            : catalog.screensForKind(selectedUnifiedKind());
+        List<UnifiedScreenView> views;
+        if (isOfficeMode()) {
+            views = officeViews;
+        } else if (isPlatformMode()) {
+            views = platformViews;
+        } else if (isProviderMode()) {
+            views = providerViews;
+        } else {
+            views = catalog.screensForKind(selectedUnifiedKind());
+        }
         currentViews = new ArrayList<>(views);
         applyNavFilter(preserveId);
     }
@@ -408,9 +441,21 @@ public final class DashboardFrame extends JFrame {
         if (isOfficeMode()) {
             subtitleLabel.setText("Kogi Office application view from module service payload.");
             seriesLabel.setText("Series: kogi-office-application");
-            versionLabel.setText("Version: v0.2.0");
+            versionLabel.setText("Version: v0.3.0");
             sourcesArea.setText(officeSources(selected.id()));
             fetchActiveOfficeView();
+        } else if (isPlatformMode()) {
+            subtitleLabel.setText("Platform runtime view stitched from host, engine, and database services.");
+            seriesLabel.setText("Series: kogi-platform-architecture");
+            versionLabel.setText("Version: v1.0.0");
+            sourcesArea.setText(platformSources(selected.id()));
+            fetchActivePlatformView();
+        } else if (isProviderMode()) {
+            subtitleLabel.setText("Provider registry view across platforms, providers, and affiliates.");
+            seriesLabel.setText("Series: kogi-provider-registry");
+            versionLabel.setText("Version: v0.2.0");
+            sourcesArea.setText(providerSources(selected.id()));
+            fetchActiveProviderView();
         } else if ("workflow".equals(selected.kind())) {
             subtitleLabel.setText("Unified workflow view linked to module: " + safeModule(selected.module()));
             seriesLabel.setText("Series: " + catalog.series());
@@ -448,6 +493,35 @@ public final class DashboardFrame extends JFrame {
         };
     }
 
+    private String platformSources(String viewId) {
+        return switch (viewId) {
+            case "system" -> "- /api/v1/system\n- /api/v1/host\n- /api/v1/modules";
+            case "host" -> "- /api/v1/host\n- /api/v1/host/components";
+            case "host_components" -> "- /api/v1/host/components";
+            case "engine" -> "- /api/v1/engine/system\n- /api/v1/engine/runtime";
+            case "engine_runtime" -> "- /api/v1/engine/runtime";
+            case "database" -> "- /api/v1/database/runtime\n- /api/v1/database/query";
+            case "modules" -> "- /api/v1/modules";
+            case "autonomy" -> "- /api/v1/autonomy/capabilities";
+            default -> "- /api/v1/system";
+        };
+    }
+
+    private String providerSources(String viewId) {
+        return switch (viewId) {
+            case "snapshot" -> "- /api/v1/providers";
+            case "platforms" -> "- /api/v1/providers/platforms";
+            case "providers" -> "- /api/v1/providers/providers";
+            case "resources" -> "- /api/v1/providers/resources";
+            case "versions" -> "- /api/v1/providers/versions";
+            case "metadata" -> "- /api/v1/providers/metadata";
+            case "data" -> "- /api/v1/providers/data";
+            case "affiliates" -> "- /api/v1/providers/affiliates";
+            case "affiliate_links" -> "- /api/v1/providers/affiliate-links";
+            default -> "- /api/v1/providers";
+        };
+    }
+
     private String safeModule(String module) {
         return module == null || module.isBlank() ? "(none)" : module;
     }
@@ -477,6 +551,14 @@ public final class DashboardFrame extends JFrame {
     private void refreshActiveMode() {
         if (isOfficeMode()) {
             fetchActiveOfficeView();
+            return;
+        }
+        if (isPlatformMode()) {
+            fetchActivePlatformView();
+            return;
+        }
+        if (isProviderMode()) {
+            fetchActiveProviderView();
             return;
         }
         syncCatalog();
@@ -511,6 +593,53 @@ public final class DashboardFrame extends JFrame {
             case "workspace" -> api.officeWorkspace();
             case "assistant" -> api.officeAssistant();
             default -> api.officeOverview();
+        };
+    }
+
+    private void fetchActivePlatformView() {
+        if (!isPlatformMode()) {
+            return;
+        }
+        runCall("PLATFORM_VIEW", this::activePlatformViewPayload);
+    }
+
+    private String activePlatformViewPayload() throws IOException, InterruptedException {
+        UnifiedScreenView selected = navList.getSelectedValue();
+        String id = selected == null ? "system" : selected.id();
+        return switch (id) {
+            case "system" -> api.systemSummary();
+            case "host" -> api.hostSummary();
+            case "host_components" -> api.hostComponents();
+            case "engine" -> api.engineOverview();
+            case "engine_runtime" -> api.engineRuntime();
+            case "database" -> api.databaseRuntime();
+            case "modules" -> api.modules();
+            case "autonomy" -> api.autonomyCapabilities();
+            default -> api.systemSummary();
+        };
+    }
+
+    private void fetchActiveProviderView() {
+        if (!isProviderMode()) {
+            return;
+        }
+        runCall("PROVIDER_VIEW", this::activeProviderViewPayload);
+    }
+
+    private String activeProviderViewPayload() throws IOException, InterruptedException {
+        UnifiedScreenView selected = navList.getSelectedValue();
+        String id = selected == null ? "snapshot" : selected.id();
+        return switch (id) {
+            case "snapshot" -> api.providersSnapshot();
+            case "platforms" -> api.providersPlatforms();
+            case "providers" -> api.providersList();
+            case "resources" -> api.providersResources();
+            case "versions" -> api.providersVersions();
+            case "metadata" -> api.providersMetadata();
+            case "data" -> api.providersDataAssets();
+            case "affiliates" -> api.providersAffiliates();
+            case "affiliate_links" -> api.providersAffiliateLinks();
+            default -> api.providersSnapshot();
         };
     }
 
@@ -619,6 +748,292 @@ public final class DashboardFrame extends JFrame {
                     "Ask contextual question",
                     "Apply recommendation",
                     "Subscribe to recurring insights"
+                )
+            )
+        );
+    }
+
+    private static List<UnifiedScreenView> buildPlatformViews() {
+        return List.of(
+            new UnifiedScreenView(
+                "platform",
+                "system",
+                "Platform System",
+                "",
+                List.of("kernel", "host", "modules", "registry"),
+                List.of(
+                    "Kernel + host mode",
+                    "Module and component counts",
+                    "Provider registry totals",
+                    "Data flow map"
+                ),
+                List.of(
+                    "Review active services",
+                    "Confirm data flow",
+                    "Audit health status"
+                )
+            ),
+            new UnifiedScreenView(
+                "platform",
+                "host",
+                "Host Summary",
+                "",
+                List.of("host", "components", "providers"),
+                List.of(
+                    "Host boot status",
+                    "Component and module totals",
+                    "Provider registry totals"
+                ),
+                List.of(
+                    "Inspect host runtime",
+                    "Verify module orchestration"
+                )
+            ),
+            new UnifiedScreenView(
+                "platform",
+                "host_components",
+                "Host Components",
+                "",
+                List.of("components", "limits", "network"),
+                List.of(
+                    "Component inventory",
+                    "Resource limits",
+                    "Network managers"
+                ),
+                List.of(
+                    "Inspect component limits",
+                    "Audit active component set"
+                )
+            ),
+            new UnifiedScreenView(
+                "platform",
+                "engine",
+                "Engine Overview",
+                "",
+                List.of("engine", "data", "analytics"),
+                List.of(
+                    "Engine status",
+                    "Capabilities",
+                    "Ingest topics"
+                ),
+                List.of(
+                    "Review ingest readiness",
+                    "Validate analytics capabilities"
+                )
+            ),
+            new UnifiedScreenView(
+                "platform",
+                "engine_runtime",
+                "Engine Runtime",
+                "",
+                List.of("engine", "runtime", "service"),
+                List.of(
+                    "Runtime status",
+                    "Service health",
+                    "Latency and throughput"
+                ),
+                List.of(
+                    "Ping engine runtime",
+                    "Verify service health"
+                )
+            ),
+            new UnifiedScreenView(
+                "platform",
+                "database",
+                "Database Runtime",
+                "",
+                List.of("database", "storage", "query"),
+                List.of(
+                    "Runtime status",
+                    "Query interface",
+                    "Data store health"
+                ),
+                List.of(
+                    "Run validation query",
+                    "Review runtime health"
+                )
+            ),
+            new UnifiedScreenView(
+                "platform",
+                "modules",
+                "Module Registry",
+                "",
+                List.of("modules", "capabilities", "integrations"),
+                List.of(
+                    "Module inventory",
+                    "Capabilities",
+                    "Integrations"
+                ),
+                List.of(
+                    "Review module versions",
+                    "Verify integration coverage"
+                )
+            ),
+            new UnifiedScreenView(
+                "platform",
+                "autonomy",
+                "Autonomy Capabilities",
+                "",
+                List.of("identity", "workspace", "registry"),
+                List.of(
+                    "Identity management",
+                    "Workspace organization",
+                    "Connection registry",
+                    "Asset vault"
+                ),
+                List.of(
+                    "Review autonomy coverage",
+                    "Audit capability list"
+                )
+            )
+        );
+    }
+
+    private static List<UnifiedScreenView> buildProviderViews() {
+        return List.of(
+            new UnifiedScreenView(
+                "providers",
+                "snapshot",
+                "Provider Snapshot",
+                "",
+                List.of("registry", "totals", "affiliates"),
+                List.of(
+                    "Registry totals",
+                    "Active providers",
+                    "Active platforms",
+                    "Affiliate links"
+                ),
+                List.of(
+                    "Review registry health",
+                    "Validate active inventory"
+                )
+            ),
+            new UnifiedScreenView(
+                "providers",
+                "platforms",
+                "Platforms",
+                "",
+                List.of("platforms", "status", "tags"),
+                List.of(
+                    "Platform catalog",
+                    "Status overview",
+                    "Support contacts"
+                ),
+                List.of(
+                    "Audit platform coverage",
+                    "Verify platform status"
+                )
+            ),
+            new UnifiedScreenView(
+                "providers",
+                "providers",
+                "Providers",
+                "",
+                List.of("providers", "owners", "versions"),
+                List.of(
+                    "Provider inventory",
+                    "Owners and contacts",
+                    "Version coverage"
+                ),
+                List.of(
+                    "Review provider status",
+                    "Check version coverage"
+                )
+            ),
+            new UnifiedScreenView(
+                "providers",
+                "resources",
+                "Provider Resources",
+                "",
+                List.of("resources", "endpoints", "credentials"),
+                List.of(
+                    "Resource inventory",
+                    "Environments",
+                    "Credential references"
+                ),
+                List.of(
+                    "Inspect resource endpoints",
+                    "Validate credentials"
+                )
+            ),
+            new UnifiedScreenView(
+                "providers",
+                "versions",
+                "Provider Versions",
+                "",
+                List.of("versions", "release", "compatibility"),
+                List.of(
+                    "Version inventory",
+                    "Release status",
+                    "Compatibility matrix"
+                ),
+                List.of(
+                    "Validate version coverage",
+                    "Review release notes"
+                )
+            ),
+            new UnifiedScreenView(
+                "providers",
+                "metadata",
+                "Provider Metadata",
+                "",
+                List.of("metadata", "scopes", "policies"),
+                List.of(
+                    "Metadata entries",
+                    "Scopes and policies",
+                    "Update times"
+                ),
+                List.of(
+                    "Audit metadata coverage",
+                    "Review scopes"
+                )
+            ),
+            new UnifiedScreenView(
+                "providers",
+                "data",
+                "Provider Data Assets",
+                "",
+                List.of("datasets", "sync", "storage"),
+                List.of(
+                    "Datasets",
+                    "Sync status",
+                    "Storage locations"
+                ),
+                List.of(
+                    "Check sync status",
+                    "Validate data coverage"
+                )
+            ),
+            new UnifiedScreenView(
+                "providers",
+                "affiliates",
+                "Affiliates",
+                "",
+                List.of("affiliates", "partners", "contacts"),
+                List.of(
+                    "Affiliate inventory",
+                    "Partner metadata",
+                    "Contact points"
+                ),
+                List.of(
+                    "Review affiliate status",
+                    "Validate contacts"
+                )
+            ),
+            new UnifiedScreenView(
+                "providers",
+                "affiliate_links",
+                "Affiliate Links",
+                "",
+                List.of("links", "channels", "tracking"),
+                List.of(
+                    "Link inventory",
+                    "Channels",
+                    "Tracking URLs"
+                ),
+                List.of(
+                    "Audit affiliate links",
+                    "Validate tracking configuration"
                 )
             )
         );

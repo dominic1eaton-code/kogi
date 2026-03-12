@@ -12,6 +12,50 @@ export class ApiService {
     return this.http.get(`${this.baseUrl}/api/v1/system`);
   }
 
+  hostSummary(): Observable<unknown> {
+    return this.http.get(`${this.baseUrl}/api/v1/host`);
+  }
+
+  hostComponents(): Observable<unknown> {
+    return this.http.get(`${this.baseUrl}/api/v1/host/components`);
+  }
+
+  modulesList(): Observable<unknown> {
+    return this.http.get(`${this.baseUrl}/api/v1/modules`);
+  }
+
+  engineOverview(): Observable<unknown> {
+    return this.http.get(`${this.baseUrl}/api/v1/engine/system`);
+  }
+
+  engineRuntime(): Observable<unknown> {
+    return this.http.get(`${this.baseUrl}/api/v1/engine/runtime`);
+  }
+
+  engineControl(action: string): Observable<unknown> {
+    return this.http.post(`${this.baseUrl}/api/v1/engine/control`, {
+      action,
+    });
+  }
+
+  engineIngest(payload: unknown): Observable<unknown> {
+    return this.http.post(`${this.baseUrl}/api/v1/engine/ingest`, payload ?? {});
+  }
+
+  databaseRuntime(): Observable<unknown> {
+    return this.http.get(`${this.baseUrl}/api/v1/database/runtime`);
+  }
+
+  databaseQuery(sql: string): Observable<unknown> {
+    return this.http.post(`${this.baseUrl}/api/v1/database/query`, {
+      sql,
+    });
+  }
+
+  autonomyCapabilities(): Observable<unknown> {
+    return this.http.get(`${this.baseUrl}/api/v1/autonomy/capabilities`);
+  }
+
   identities(): Observable<unknown> {
     return this.http.get(`${this.baseUrl}/api/v1/ims/identities`);
   }

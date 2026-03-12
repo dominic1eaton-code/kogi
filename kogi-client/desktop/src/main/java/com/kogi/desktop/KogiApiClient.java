@@ -28,6 +28,44 @@ public final class KogiApiClient {
         return get("/api/v1/system");
     }
 
+    public String hostSummary() throws IOException, InterruptedException {
+        return get("/api/v1/host");
+    }
+
+    public String hostComponents() throws IOException, InterruptedException {
+        return get("/api/v1/host/components");
+    }
+
+    public String engineOverview() throws IOException, InterruptedException {
+        return get("/api/v1/engine/system");
+    }
+
+    public String engineRuntime() throws IOException, InterruptedException {
+        return get("/api/v1/engine/runtime");
+    }
+
+    public String engineControl(String action) throws IOException, InterruptedException {
+        return post("/api/v1/engine/control",
+            "{\"action\":\"" + escape(action) + "\"}");
+    }
+
+    public String engineIngest(String payload) throws IOException, InterruptedException {
+        return post("/api/v1/engine/ingest", payload == null ? "{}" : payload);
+    }
+
+    public String databaseRuntime() throws IOException, InterruptedException {
+        return get("/api/v1/database/runtime");
+    }
+
+    public String databaseQuery(String sql) throws IOException, InterruptedException {
+        return post("/api/v1/database/query",
+            "{\"sql\":\"" + escape(sql) + "\"}");
+    }
+
+    public String autonomyCapabilities() throws IOException, InterruptedException {
+        return get("/api/v1/autonomy/capabilities");
+    }
+
     public String identities() throws IOException, InterruptedException {
         return get("/api/v1/ims/identities");
     }
@@ -62,6 +100,42 @@ public final class KogiApiClient {
 
     public String officeAssistant() throws IOException, InterruptedException {
         return get("/api/v1/office/assistant");
+    }
+
+    public String providersSnapshot() throws IOException, InterruptedException {
+        return get("/api/v1/providers");
+    }
+
+    public String providersPlatforms() throws IOException, InterruptedException {
+        return get("/api/v1/providers/platforms");
+    }
+
+    public String providersList() throws IOException, InterruptedException {
+        return get("/api/v1/providers/providers");
+    }
+
+    public String providersResources() throws IOException, InterruptedException {
+        return get("/api/v1/providers/resources");
+    }
+
+    public String providersVersions() throws IOException, InterruptedException {
+        return get("/api/v1/providers/versions");
+    }
+
+    public String providersMetadata() throws IOException, InterruptedException {
+        return get("/api/v1/providers/metadata");
+    }
+
+    public String providersDataAssets() throws IOException, InterruptedException {
+        return get("/api/v1/providers/data");
+    }
+
+    public String providersAffiliates() throws IOException, InterruptedException {
+        return get("/api/v1/providers/affiliates");
+    }
+
+    public String providersAffiliateLinks() throws IOException, InterruptedException {
+        return get("/api/v1/providers/affiliate-links");
     }
 
     public String officeAckNotification(String notificationId) throws IOException, InterruptedException {
