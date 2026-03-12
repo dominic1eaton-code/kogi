@@ -14,6 +14,7 @@ final class KogiEngine(
     val optimizationEngine: OptimizationEngine = new OptimizationEngine(),
     val searchEngine: SearchEngine = new SearchEngine(),
     val queryEngine: QueryEngine = new QueryEngine(),
+    val matchEngine: MatchEngine = new MatchEngine(),
     initialGraphEdges: Seq[GraphEdge] = Seq.empty,
     initialGraphNodes: Seq[GraphNode] = Seq.empty
 ) {
@@ -298,4 +299,8 @@ final class KogiEngine(
 
   def query(sql: String): QueryPlan =
     queryEngine.optimize(sql)
+
+  def matchProfilesToResources(profiles: Seq[Profile], resources: Seq[Resource]): Map[Profile, Seq[Resource]] = {
+    matchEngine.matchProfilesToResources(profiles, resources)
+  }
 }

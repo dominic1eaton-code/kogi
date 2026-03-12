@@ -4,7 +4,7 @@ pub use crate::assistant_system::{AssistantSnapshot, NewAssistantSubscription};
 use crate::assistant_system::AssistantSystem;
 pub use crate::dashboard_system::DashboardSnapshot;
 use crate::dashboard_system::DashboardSystem;
-pub use crate::portfolio_system::{
+pub use crate::PortfolioSystem_test::{
     NewPortfolioItem, PortfolioSnapshot,
     // Component CRUD
     PortfolioComponentType, BookType, PortfolioComponent,
@@ -22,7 +22,7 @@ pub use crate::portfolio_system::{
     ProjectMetricsInput, AssetValueInput, BookConsistencyInput,
     ArtifactMaturityInput, BinderCoverageInput, FolderOrganisationInput,
 };
-use crate::portfolio_system::PortfolioSystem;
+use crate::PortfolioSystem_test::PortfolioSystem;
 pub use crate::timeline_system::{NewTimelineEvent, TimelineSnapshot};
 use crate::timeline_system::TimelineSystem;
 pub use crate::workspace_system::{NewWorkspaceStory, WorkspaceSnapshot};
@@ -939,7 +939,7 @@ pub extern "C" fn kogi_portfolio_compute_health(args_json: *const c_char) -> *mu
 #[no_mangle]
 pub extern "C" fn kogi_portfolio_compute_project_metrics(args_json: *const c_char) -> *mut c_char {
     let input: ProjectMetricsInput = match parse_arg(args_json) { Ok(a) => a, Err(e) => return e };
-    use crate::portfolio_system::ProjectMetricsModel;
+    use crate::PortfolioSystem_test::ProjectMetricsModel;
     match serde_json::to_value(ProjectMetricsModel::compute(&input)) {
         Ok(v)  => FfiResponse::ok(v).into_json(),
         Err(e) => FfiResponse::err(e.to_string()).into_json(),
@@ -978,7 +978,7 @@ pub extern "C" fn kogi_portfolio_compute_resource_utilisation(args_json: *const 
 #[no_mangle]
 pub extern "C" fn kogi_portfolio_compute_asset_value(args_json: *const c_char) -> *mut c_char {
     let input: AssetValueInput = match parse_arg(args_json) { Ok(a) => a, Err(e) => return e };
-    use crate::portfolio_system::AssetValueModel;
+    use crate::PortfolioSystem_test::AssetValueModel;
     match serde_json::to_value(AssetValueModel::compute(&input)) {
         Ok(v)  => FfiResponse::ok(v).into_json(),
         Err(e) => FfiResponse::err(e.to_string()).into_json(),
@@ -1021,7 +1021,7 @@ pub extern "C" fn kogi_portfolio_compute_binder_coverage(args_json: *const c_cha
 #[no_mangle]
 pub extern "C" fn kogi_portfolio_compute_book_consistency(args_json: *const c_char) -> *mut c_char {
     let input: BookConsistencyInput = match parse_arg(args_json) { Ok(a) => a, Err(e) => return e };
-    use crate::portfolio_system::BookConsistencyModel;
+    use crate::PortfolioSystem_test::BookConsistencyModel;
     match serde_json::to_value(BookConsistencyModel::compute(&input)) {
         Ok(v)  => FfiResponse::ok(v).into_json(),
         Err(e) => FfiResponse::err(e.to_string()).into_json(),

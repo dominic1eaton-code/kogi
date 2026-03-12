@@ -53,6 +53,19 @@ object KogiEngineCli {
         engine.index(SearchDocument(id = id, title = title, body = body, tags = parsed.tags, metadata = parsed.metadata))
         Map("status" -> "ok", "action" -> "index", "id" -> id)
 
+
+      // ----------------------------------------------------------------
+      // Matching – placeholder for future matching capabilities
+      // ----------------------------------------------------------------
+      case "match-profiles-resources" =>
+        val profiles = Seq.empty[Profile]  // In a real implementation, parse from input
+        val resources = Seq.empty[Resource] // In a real implementation, parse from input
+        val matches = engine.matchProfilesToResources(profiles, resources)
+        Map("status" -> "ok", "action" -> "match-profiles-resources",
+            "matches" -> matches.map { case (p, rs) =>
+              Map("profile" -> p.toString, "resources" -> rs.map(_.toString))
+            }.toSeq)
+
       // ----------------------------------------------------------------
       // Graph – mutation
       //

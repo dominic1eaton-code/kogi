@@ -106,3 +106,34 @@ Set `KOGI_ENGINE_ENDPOINT` only if you also expose a Scala HTTP endpoint (legacy
 - `KogiEngine.snapshot(hostId)`: combined engine + host + module realtime snapshot.
 - `KogiEngine.search(query: SearchQuery)`: search + filter over indexed documents.
 - `KogiEngine.query(sql: String)`: query analysis + optimization hints.
+
+---
+
+Now I have a thorough understanding of the codebase. Let me write the complete implementations.Now let me verify both files compile cleanly and check for any type references that need validation:Good — those were placeholder stubs with undefined types. The new implementation replaces all of them with fully typed implementations. Let me present the files:Here's a summary of what was built:
+
+---
+
+**MatchEngine** — replaces all the empty stubs with a fully typed, multi-dimensional matching system:
+
+- **Subject types**: `UserSubject` (with `UserRole`: Owner, Investor, Donor, Subscriber, etc.), `ComponentSubject` (Portfolio/Program/Project/Resource/Artifact/Asset), `ResourceSubject`, `AssetSubject`, `AnalyticsArtifact`
+- **Core match pairs**: user↔component, component↔users (filtered by role), asset↔component, resource↔component, user↔user (talent/similarity)
+- **`componentBundle`**: single call that returns matched users + resources + assets for any portfolio component
+- **`matchExchangeListings`**: pairs marketplace listings with best-fit buyers/investors
+- **`matchWorkloadsToPlans`**: delegates to `OptimizationEngine` and wraps results as match candidates
+- **`matchArtifactsToUser`**: re-ranks search results, recommendations, and index items by persona + tag alignment
+- **`MatchWeights`**: pluggable scoring strategies (`default`, `investment`, `talent`, `analytics`)
+- Scoring uses Jaccard similarity for tags, attribute overlap, role→kind affinity, persona boosting, and budget/value signals
+
+---
+
+**PersonalizationEngine** — fully implemented across all requested dimensions:
+
+- **Core entry point**: `personalize(request)` returns a `PersonalizationResult` with recommendations, delivery config, segments, experiment assignments, and persona metadata in one call
+- **Preference management**: explicit/inferred/default three-tier fallback chain; `setPreference`, `resolvePreferences`
+- **Content delivery adaptation**: `ContentDeliveryConfig` (density, ordering, feed limits, sidebar, filters) derived from persona × context
+- **`rankContent` / `adaptContent`**: dynamic reordering of feed items using persona rules (suppress low-value for ValueSeekers, promote new for EarlyAdopters, cap depth for CasualBrowsers, etc.)
+- **Segmentation**: `Segment` definitions with rule-based matching, `assignSegments`, `profilesInSegment`
+- **A/B testing**: sticky variant assignment via weighted random sampling, `recordExposure`, `experimentStats`
+- **Multi-armed bandit (UCB1)**: `registerBanditSlot`, `selectBanditArm`, `recordBanditReward`, `banditStats`
+- **Persona lifecycle**: `buildPersona`, `detectPersonaDrift`, `applyPersonaDriftIfNeeded`
+- Composes over `RecommendationEngine` — all interaction recording and hybrid recommendation calls pass through

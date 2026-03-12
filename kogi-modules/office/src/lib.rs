@@ -3,7 +3,7 @@ pub mod os_bridge;
 #[path = "DashboardSystem.rs"]
 pub mod dashboard_system;
 #[path = "PortfolioSystem.rs"]
-pub mod portfolio_system;
+pub mod PortfolioSystem_test;
 #[path = "TimelineSystem.rs"]
 pub mod timeline_system;
 #[path = "WorkspaceSystem.rs"]
