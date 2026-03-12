@@ -1,0 +1,10 @@
+{
+  "name": "kogi-client",
+  "version": "0.1.0",
+  "description": "Kogi server client (Node.js)",
+  "main": "kogiClient.js",
+  "type": "commonjs",
+  "engines": {
+    "node": ">=18"
+  }
+}
