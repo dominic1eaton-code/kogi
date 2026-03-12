@@ -3,7 +3,7 @@ name: Kogi Developer
 kind: developer
 version: 0.1.0
 language: go
-entrypoint: kogi-services/go/services/developer
+entrypoint: kogi-network/services/developer
 status: active
 capabilities: "Developer tools, API SDK, integrations, extensions."
 integrations: "github,gitlab,openapi,webhooks"

@@ -3,7 +3,7 @@ name: Kogi Studio
 kind: studio
 version: 0.1.0
 language: go
-entrypoint: kogi-services/go/services/studio
+entrypoint: kogi-network/services/studio
 status: active
 capabilities: "Ideas, concepts, prototypes, testbeds, content and files management."
 integrations: "googledrive,googleworkspace,microsoftteams"

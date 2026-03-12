@@ -2,7 +2,7 @@
 
 - Module ID: kogi.community
 - Runtime language: go
-- Host entrypoint: `kogi-services/go/services/community`
+- Host entrypoint: `kogi-network/services/community`
 
 ## Scope
 Feeds, spaces, rooms, chats, messaging and community graph.

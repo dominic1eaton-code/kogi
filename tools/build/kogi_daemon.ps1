@@ -99,11 +99,11 @@ function Start-ServiceProcess([string]$name, [hashtable]$state) {
         }
         'gateway' {
             $cmd = 'go'
-            $args = @('run', './kogi-services/go/gateway') + $flags
+            $args = @('run', './kogi-network/gateway') + $flags
         }
         default {
             $cmd = 'go'
-            $args = @('run', "./kogi-services/go/services/$name") + $flags
+            $args = @('run', "./kogi-network/services/$name") + $flags
         }
     }
 

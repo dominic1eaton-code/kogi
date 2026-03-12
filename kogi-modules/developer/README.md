@@ -2,7 +2,7 @@
 
 - Module ID: kogi.developer
 - Runtime language: go
-- Host entrypoint: `kogi-services/go/services/developer`
+- Host entrypoint: `kogi-network/services/developer`
 
 ## Scope
 Developer tools, API SDK, integrations, extensions.

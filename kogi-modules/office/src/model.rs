@@ -163,7 +163,7 @@ impl OfficeModule {
         OfficeOverview {
             module: "kogi.office".to_string(),
             application: "Kogi Office".to_string(),
-            service: "kogi-services/go/services/office".to_string(),
+            service: "kogi-network/services/office".to_string(),
             systems: vec![
                 "DashboardSystem".to_string(),
                 "PortfolioSystem".to_string(),

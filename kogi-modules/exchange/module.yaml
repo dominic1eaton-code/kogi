@@ -3,7 +3,7 @@ name: Kogi Exchange
 kind: exchange
 version: 0.1.0
 language: go
-entrypoint: kogi-services/go/services/exchange
+entrypoint: kogi-network/services/exchange
 status: active
 capabilities: "Bids, offers, deals, proposals, due diligence, trading."
 integrations: "robinhood,sofi,ethereum,coinbase"

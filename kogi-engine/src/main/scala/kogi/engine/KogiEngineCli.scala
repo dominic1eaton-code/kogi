@@ -24,7 +24,7 @@ object KogiEngineCli {
 
       case "ingest" =>
         val topic       = parsed.options.getOrElse("topic", "engine.ingest")
-        val source      = parsed.options.getOrElse("source", "kogi.services.engine")
+        val source      = parsed.options.getOrElse("source", "kogi.network.engine")
         val target      = parsed.options.getOrElse("target", "kogi.engine")
         val flowId      = parsed.options.getOrElse("flow-id", s"flow-${safeId(topic)}")
         val timestampMs = parsed.options.get("timestamp-ms").flatMap(toLong).getOrElse(System.currentTimeMillis())

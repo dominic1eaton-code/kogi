@@ -3,7 +3,7 @@ name: Kogi Community
 kind: community
 version: 0.1.0
 language: go
-entrypoint: kogi-services/go/services/community
+entrypoint: kogi-network/services/community
 status: active
 capabilities: "Feeds, spaces, rooms, chats, messaging and community graph."
 integrations: "facebook,whatsapp,instagram,youtube,slack,zoom,onlyfans"

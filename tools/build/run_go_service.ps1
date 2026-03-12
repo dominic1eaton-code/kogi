@@ -19,21 +19,21 @@ New-Item -ItemType Directory -Force -Path $env:GOCACHE | Out-Null
 New-Item -ItemType Directory -Force -Path $env:GOMODCACHE | Out-Null
 
 $target = switch ($Service) {
-    'gateway'   { './kogi-services/go/gateway' }
-    'auth'      { './kogi-services/go/services/auth' }
-    'portfolio' { './kogi-services/go/services/portfolio' }
-    'exchange'  { './kogi-services/go/services/exchange' }
-    'ims'       { './kogi-services/go/services/ims' }
-    'office'    { './kogi-services/go/services/office' }
-    'bank'      { './kogi-services/go/services/bank' }
-    'marketplace' { './kogi-services/go/services/marketplace' }
-    'studio'    { './kogi-services/go/services/studio' }
-    'community' { './kogi-services/go/services/community' }
-    'developer' { './kogi-services/go/services/developer' }
-    'profile'   { './kogi-services/go/services/profile' }
-    'organizations' { './kogi-services/go/services/organizations' }
-    'engine'    { './kogi-services/go/services/engine' }
-    'database'  { './kogi-services/go/services/database' }
+    'gateway'   { './kogi-network/gateway' }
+    'auth'      { './kogi-network/services/auth' }
+    'portfolio' { './kogi-network/services/portfolio' }
+    'exchange'  { './kogi-network/services/exchange' }
+    'ims'       { './kogi-network/services/ims' }
+    'office'    { './kogi-network/services/office' }
+    'bank'      { './kogi-network/services/bank' }
+    'marketplace' { './kogi-network/services/marketplace' }
+    'studio'    { './kogi-network/services/studio' }
+    'community' { './kogi-network/services/community' }
+    'developer' { './kogi-network/services/developer' }
+    'profile'   { './kogi-network/services/profile' }
+    'organizations' { './kogi-network/services/organizations' }
+    'engine'    { './kogi-network/services/engine' }
+    'database'  { './kogi-network/services/database' }
 }
 
 if ($Port) {

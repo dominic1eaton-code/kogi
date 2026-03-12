@@ -18,7 +18,7 @@ sqlite3 kogi-database/sqlite/kogi.db < kogi-database/sqlite/seed.sql
 The host reaches PostgreSQL via the database service facade:
 
 ```powershell
-go run ./kogi-services/go/services/database
+go run ./kogi-network/services/database
 ```
 
 The database service delegates CRUD/query/snapshot/backup logic to the Rust `DatabaseSystem` module in `kogi-modules/database`.

@@ -15,7 +15,7 @@ Rust host runtime for Kogi.
 - Reads per-module isolation limits (memory/process/file/resource)
 - Coordinates module network management metadata
 - Publishes module capabilities/integrations metadata and office view registration events
-- Uses kogi-services (gateway + module services + engine/database services) to execute service functions and engine ingest/control
+- Uses kogi-network (gateway + module services + engine/database services) to execute service functions and engine ingest/control
 - Provides an interactive host shell/CLI for checking modules/services/server/engine through host
 
 ## Interactive Shell

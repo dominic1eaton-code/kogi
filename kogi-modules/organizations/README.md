@@ -2,7 +2,7 @@
 
 - Module ID: kogi.organizations
 - Runtime language: go
-- Host entrypoint: `kogi-services/go/services/organizations`
+- Host entrypoint: `kogi-network/services/organizations`
 
 ## Scope
 Collectives, cooperatives, autonomous organizations, and team management.

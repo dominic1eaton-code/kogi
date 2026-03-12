@@ -3,7 +3,7 @@ name: Kogi Organizations
 kind: organizations
 version: 0.1.0
 language: go
-entrypoint: kogi-services/go/services/organizations
+entrypoint: kogi-network/services/organizations
 status: active
 capabilities: "Collectives, cooperatives, autonomous organizations, and team management."
 integrations: "governance-ledger,voting,cap-table"

@@ -641,7 +641,7 @@ pub const Kernel = struct {
             .{ .id = "kogi.host",     .class = .host,     .endpoint = "local://kogi-host",          .net_mgr = "kernel-native"    },
             .{ .id = "kogi.server",   .class = .server,   .endpoint = "http://127.0.0.1:8080/health",.net_mgr = "kogi-go-network" },
             .{ .id = "kogi.engine",   .class = .engine,   .endpoint = "local://kogi-engine",        .net_mgr = "kogi-go-network" },
-            .{ .id = "kogi.services", .class = .services, .endpoint = "http://127.0.0.1:8090/health",.net_mgr = "kogi-go-network" },
+            .{ .id = "kogi.network", .class = .services, .endpoint = "http://127.0.0.1:8090/health",.net_mgr = "kogi-go-network" },
         };
 
         for (components) |c| {
@@ -674,9 +674,9 @@ pub const Kernel = struct {
         try self.resources.acquireProcess(actor, "kogi.server");
         try self.resources.acquireProcess(actor, "kogi.engine");
         try self.resources.acquireFile(actor, "kogi.engine");
-        try self.resources.acquireUnits(actor, "kogi.services", 256);
-        try self.resources.recordIngress(actor, "kogi.services", 4096);
-        try self.resources.recordEgress(actor, "kogi.services", 8192);
+        try self.resources.acquireUnits(actor, "kogi.network", 256);
+        try self.resources.recordIngress(actor, "kogi.network", 4096);
+        try self.resources.recordEgress(actor, "kogi.network", 8192);
     }
 
     /// Register the canonical network managers used by all components.

@@ -7,7 +7,7 @@ Scala data/data-processing engine for Kogi platform-wide flows and host analytic
 - Ingests stream events from kernel, host, server, services, modules, and clients.
 - Processes realtime analytics, recommendations, discovery, exploration, telemetry, search, query planning, and optimization.
 - Produces host/module/system snapshots used by orchestration and UIs.
-- Exposed to the host via the `kogi-services/go/services/engine` control + ingest facade.
+- Exposed to the host via the `kogi-network/services/engine` control + ingest facade.
 
 ## Engines
 - `KogiEngine`: single access point composing all subengines.
@@ -78,13 +78,13 @@ grpcurl -plaintext -d "{}" localhost:9100 kogi.engine.v1.EngineService/Status
 
 grpcurl -plaintext -d "{\"action\":\"start\"}" localhost:9100 kogi.engine.v1.EngineService/Control
 
-grpcurl -plaintext -d "{\"topic\":\"engine.ingest\",\"source\":\"kogi.services.engine\",\"target\":\"kogi.engine\",\"payload\":{\"event_type\":\"demo\"}}" localhost:9100 kogi.engine.v1.EngineService/Ingest
+grpcurl -plaintext -d "{\"topic\":\"engine.ingest\",\"source\":\"kogi.network.engine\",\"target\":\"kogi.engine\",\"payload\":{\"event_type\":\"demo\"}}" localhost:9100 kogi.engine.v1.EngineService/Ingest
 
-grpcurl -plaintext -import-path kogi-contracts/proto -proto kogi_engine.proto localhost:9100 kogi.engine.v1.EngineService/Status
+grpcurl -plaintext -import-path kogi-infra/proto -proto kogi_engine.proto localhost:9100 kogi.engine.v1.EngineService/Status
 
-grpcurl -plaintext -d "{\"action\":\"start\"}"  -import-path kogi-contracts/proto -proto kogi_engine.proto localhost:9100 kogi.engine.v1.EngineService/Control
+grpcurl -plaintext -d "{\"action\":\"start\"}"  -import-path kogi-infra/proto -proto kogi_engine.proto localhost:9100 kogi.engine.v1.EngineService/Control
 
-grpcurl -plaintext -d "{\"topic\":\"engine.ingest\",\"source\":\"kogi.services.engine\",\"target\":\"kogi.engine\",\"payload\":{\"event_type\":\"demo\"}}" -import-path kogi-contracts/proto -proto kogi_engine.proto localhost:9100 kogi.engine.v1.EngineService/Ingest
+grpcurl -plaintext -d "{\"topic\":\"engine.ingest\",\"source\":\"kogi.network.engine\",\"target\":\"kogi.engine\",\"payload\":{\"event_type\":\"demo\"}}" -import-path kogi-infra/proto -proto kogi_engine.proto localhost:9100 kogi.engine.v1.EngineService/Ingest
 
 netstat -ano | findstr 9100
 
@@ -94,7 +94,7 @@ netstat -ano | findstr 9100
 The host calls the engine service for control + ingest. Run it from the Go services workspace:
 
 ```powershell
-go run ./kogi-services/go/services/engine
+go run ./kogi-network/services/engine
 ```
 
 Set `KOGI_ENGINE_CLI` to point at a compiled CLI binary/script, or ensure `sbt` is on `PATH` so the Go engine service can call `KogiEngineCli`.

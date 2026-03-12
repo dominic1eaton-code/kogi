@@ -3,7 +3,7 @@ name: Kogi Bank
 kind: bank
 version: 0.1.0
 language: go
-entrypoint: kogi-services/go/services/bank
+entrypoint: kogi-network/services/bank
 status: active
 capabilities: "Wallets, capital, fundraising, taxes, account management."
 integrations: "stripe,wellsfargo,chase,startupengine,gofundme,patreon"

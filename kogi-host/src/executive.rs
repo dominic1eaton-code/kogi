@@ -319,8 +319,8 @@ impl<B: KernelBridge> HostExecutive<B> {
                 &format!(
                     "{{\"module_count\":{},\"component_count\":{},\
                      \"engine\":\"kogi-engine\",\
-                     \"engine_service\":\"kogi-services/go/services/engine\",\
-                     \"database_service\":\"kogi-services/go/services/database\",\
+                     \"engine_service\":\"kogi-network/services/engine\",\
+                     \"database_service\":\"kogi-network/services/database\",\
                      \"server\":\"kogi-server\",\"gateway\":\"kogi-go-gateway\"}}",
                     self.runtimes.len(),
                     self.components.len()
@@ -662,21 +662,21 @@ impl<B: KernelBridge> HostExecutive<B> {
             ("kogi.host",               ComponentGroup::Host,    "local://kogi-host",            "kernel-native"),
             ("kogi.server",             ComponentGroup::Server,  "http://127.0.0.1:8080/health", "kogi-go-network"),
             ("kogi.engine",             ComponentGroup::Engine,  "local://kogi-engine",          "kogi-go-network"),
-            ("kogi.services.gateway",   ComponentGroup::Gateway, "http://127.0.0.1:8090/health", "kogi-go-network"),
-            ("kogi.services.auth",      ComponentGroup::Service, "http://127.0.0.1:9001/health", "kogi-go-network"),
-            ("kogi.services.portfolio", ComponentGroup::Service, "http://127.0.0.1:9002/health", "kogi-go-network"),
-            ("kogi.services.exchange",  ComponentGroup::Service, "http://127.0.0.1:9004/health", "kogi-go-network"),
-            ("kogi.services.ims",       ComponentGroup::Service, "http://127.0.0.1:9005/health", "kogi-go-network"),
-            ("kogi.services.office",    ComponentGroup::Service, "http://127.0.0.1:9006/health", "kogi-go-network"),
-            ("kogi.services.bank",      ComponentGroup::Service, "http://127.0.0.1:9007/health", "kogi-go-network"),
-            ("kogi.services.marketplace", ComponentGroup::Service, "http://127.0.0.1:9008/health", "kogi-go-network"),
-            ("kogi.services.studio",    ComponentGroup::Service, "http://127.0.0.1:9009/health", "kogi-go-network"),
-            ("kogi.services.community", ComponentGroup::Service, "http://127.0.0.1:9010/health", "kogi-go-network"),
-            ("kogi.services.developer", ComponentGroup::Service, "http://127.0.0.1:9011/health", "kogi-go-network"),
-            ("kogi.services.profile",   ComponentGroup::Service, "http://127.0.0.1:9012/health", "kogi-go-network"),
-            ("kogi.services.organizations", ComponentGroup::Service, "http://127.0.0.1:9013/health", "kogi-go-network"),
-            ("kogi.services.engine",    ComponentGroup::Service, "http://127.0.0.1:9014/health", "kogi-go-network"),
-            ("kogi.services.database",  ComponentGroup::Service, "http://127.0.0.1:9015/health", "kogi-go-network"),
+            ("kogi.network.gateway",   ComponentGroup::Gateway, "http://127.0.0.1:8090/health", "kogi-go-network"),
+            ("kogi.network.auth",      ComponentGroup::Service, "http://127.0.0.1:9001/health", "kogi-go-network"),
+            ("kogi.network.portfolio", ComponentGroup::Service, "http://127.0.0.1:9002/health", "kogi-go-network"),
+            ("kogi.network.exchange",  ComponentGroup::Service, "http://127.0.0.1:9004/health", "kogi-go-network"),
+            ("kogi.network.ims",       ComponentGroup::Service, "http://127.0.0.1:9005/health", "kogi-go-network"),
+            ("kogi.network.office",    ComponentGroup::Service, "http://127.0.0.1:9006/health", "kogi-go-network"),
+            ("kogi.network.bank",      ComponentGroup::Service, "http://127.0.0.1:9007/health", "kogi-go-network"),
+            ("kogi.network.marketplace", ComponentGroup::Service, "http://127.0.0.1:9008/health", "kogi-go-network"),
+            ("kogi.network.studio",    ComponentGroup::Service, "http://127.0.0.1:9009/health", "kogi-go-network"),
+            ("kogi.network.community", ComponentGroup::Service, "http://127.0.0.1:9010/health", "kogi-go-network"),
+            ("kogi.network.developer", ComponentGroup::Service, "http://127.0.0.1:9011/health", "kogi-go-network"),
+            ("kogi.network.profile",   ComponentGroup::Service, "http://127.0.0.1:9012/health", "kogi-go-network"),
+            ("kogi.network.organizations", ComponentGroup::Service, "http://127.0.0.1:9013/health", "kogi-go-network"),
+            ("kogi.network.engine",    ComponentGroup::Service, "http://127.0.0.1:9014/health", "kogi-go-network"),
+            ("kogi.network.database",  ComponentGroup::Service, "http://127.0.0.1:9015/health", "kogi-go-network"),
         ];
 
         for (id, group, endpoint, net_mgr) in cores {
@@ -788,20 +788,20 @@ fn resolve_service_endpoint(entrypoint: &str, kind: &str) -> String {
 
 fn resolve_service_runtime_endpoint(service_id: &str) -> Option<String> {
     match service_id {
-        "kogi.services.auth"          => Some("http://127.0.0.1:9001/api/v1/auth/runtime".to_string()),
-        "kogi.services.portfolio"     => Some("http://127.0.0.1:9002/api/v1/portfolio/runtime".to_string()),
-        "kogi.services.exchange"      => Some("http://127.0.0.1:9004/api/v1/exchange/runtime".to_string()),
-        "kogi.services.ims"           => Some("http://127.0.0.1:9005/api/v1/ims/runtime".to_string()),
-        "kogi.services.office"        => Some("http://127.0.0.1:9006/api/v1/office/runtime".to_string()),
-        "kogi.services.bank"          => Some("http://127.0.0.1:9007/api/v1/bank/runtime".to_string()),
-        "kogi.services.marketplace"   => Some("http://127.0.0.1:9008/api/v1/marketplace/runtime".to_string()),
-        "kogi.services.studio"        => Some("http://127.0.0.1:9009/api/v1/studio/runtime".to_string()),
-        "kogi.services.community"     => Some("http://127.0.0.1:9010/api/v1/community/runtime".to_string()),
-        "kogi.services.developer"     => Some("http://127.0.0.1:9011/api/v1/developer/runtime".to_string()),
-        "kogi.services.profile"       => Some("http://127.0.0.1:9012/api/v1/profile/runtime".to_string()),
-        "kogi.services.organizations" => Some("http://127.0.0.1:9013/api/v1/organizations/runtime".to_string()),
-        "kogi.services.engine"        => Some("http://127.0.0.1:9014/api/v1/engine/runtime".to_string()),
-        "kogi.services.database"      => Some("http://127.0.0.1:9015/api/v1/database/runtime".to_string()),
+        "kogi.network.auth"          => Some("http://127.0.0.1:9001/api/v1/auth/runtime".to_string()),
+        "kogi.network.portfolio"     => Some("http://127.0.0.1:9002/api/v1/portfolio/runtime".to_string()),
+        "kogi.network.exchange"      => Some("http://127.0.0.1:9004/api/v1/exchange/runtime".to_string()),
+        "kogi.network.ims"           => Some("http://127.0.0.1:9005/api/v1/ims/runtime".to_string()),
+        "kogi.network.office"        => Some("http://127.0.0.1:9006/api/v1/office/runtime".to_string()),
+        "kogi.network.bank"          => Some("http://127.0.0.1:9007/api/v1/bank/runtime".to_string()),
+        "kogi.network.marketplace"   => Some("http://127.0.0.1:9008/api/v1/marketplace/runtime".to_string()),
+        "kogi.network.studio"        => Some("http://127.0.0.1:9009/api/v1/studio/runtime".to_string()),
+        "kogi.network.community"     => Some("http://127.0.0.1:9010/api/v1/community/runtime".to_string()),
+        "kogi.network.developer"     => Some("http://127.0.0.1:9011/api/v1/developer/runtime".to_string()),
+        "kogi.network.profile"       => Some("http://127.0.0.1:9012/api/v1/profile/runtime".to_string()),
+        "kogi.network.organizations" => Some("http://127.0.0.1:9013/api/v1/organizations/runtime".to_string()),
+        "kogi.network.engine"        => Some("http://127.0.0.1:9014/api/v1/engine/runtime".to_string()),
+        "kogi.network.database"      => Some("http://127.0.0.1:9015/api/v1/database/runtime".to_string()),
         _ => None,
     }
 }

@@ -2,7 +2,7 @@
 
 - Module ID: `kogi.database`
 - Runtime language: `hybrid-rust-go`
-- Host entrypoint: `kogi-services/go/services/database`
+- Host entrypoint: `kogi-network/services/database`
 - Rust system crate: `kogi-modules/database`
 - Backing database: `kogi-database` (PostgreSQL network + SQLite local)
 
@@ -11,7 +11,7 @@
 
 ## Interfaces
 - Rust binary: `kogi-database-system` (JSON in/out)
-- Go service: `kogi-services/go/services/database` invokes the Rust system for all database operations.
+- Go service: `kogi-network/services/database` invokes the Rust system for all database operations.
 
 ## Environment
 - `KOGI_DATABASE_MODE` / `KOGI_DATABASE_TARGET` (`local` or `network`)

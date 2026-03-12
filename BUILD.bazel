@@ -19,7 +19,7 @@ filegroup(
 
 filegroup(
     name = "go_services",
-    srcs = ["//kogi-services/go:all_srcs"],
+    srcs = ["//kogi-network:all_srcs"],
 )
 
 filegroup(
@@ -58,8 +58,8 @@ filegroup(
 )
 
 filegroup(
-    name = "contracts",
-    srcs = ["//kogi-contracts:all_srcs"],
+    name = "infra",
+    srcs = ["//kogi-infra:all_srcs"],
 )
 
 filegroup(
@@ -75,7 +75,7 @@ filegroup(
         ":mobile_client",
         ":database",
         ":modules",
-        ":contracts",
+        ":infra",
     ],
 )
 
@@ -102,7 +102,7 @@ kogi_build(
 
 kogi_build(
     name = "services_build",
-    commands = ["go build ./kogi-services/go/..."],
+    commands = ["go build ./kogi-network/..."],
     srcs = [":go_services"],
     required_tools = ["go"],
 )
@@ -166,9 +166,9 @@ kogi_build(
 )
 
 kogi_build(
-    name = "contracts_build",
-    commands = ["Get-ChildItem kogi-contracts | Out-Null"],
-    srcs = [":contracts"],
+    name = "infra_build",
+    commands = ["Get-ChildItem kogi-infra | Out-Null"],
+    srcs = [":infra"],
 )
 
 filegroup(
@@ -184,7 +184,7 @@ filegroup(
         ":mobile_android_build",
         ":modules_build",
         ":database_build",
-        ":contracts_build",
+        ":infra_build",
     ],
 )
 
@@ -208,91 +208,91 @@ kogi_run(
 
 kogi_run(
     name = "gateway_run",
-    command = "go run ./kogi-services/go/gateway",
+    command = "go run ./kogi-network/gateway",
     srcs = [":go_services"],
 )
 
 kogi_run(
     name = "auth_run",
-    command = "go run ./kogi-services/go/services/auth",
+    command = "go run ./kogi-network/services/auth",
     srcs = [":go_services"],
 )
 
 kogi_run(
     name = "portfolio_run",
-    command = "go run ./kogi-services/go/services/portfolio",
+    command = "go run ./kogi-network/services/portfolio",
     srcs = [":go_services"],
 )
 
 kogi_run(
     name = "exchange_run",
-    command = "go run ./kogi-services/go/services/exchange",
+    command = "go run ./kogi-network/services/exchange",
     srcs = [":go_services"],
 )
 
 kogi_run(
     name = "ims_run",
-    command = "go run ./kogi-services/go/services/ims",
+    command = "go run ./kogi-network/services/ims",
     srcs = [":go_services"],
 )
 
 kogi_run(
     name = "office_run",
-    command = "go run ./kogi-services/go/services/office",
+    command = "go run ./kogi-network/services/office",
     srcs = [":go_services"],
 )
 
 kogi_run(
     name = "bank_run",
-    command = "go run ./kogi-services/go/services/bank",
+    command = "go run ./kogi-network/services/bank",
     srcs = [":go_services"],
 )
 
 kogi_run(
     name = "marketplace_run",
-    command = "go run ./kogi-services/go/services/marketplace",
+    command = "go run ./kogi-network/services/marketplace",
     srcs = [":go_services"],
 )
 
 kogi_run(
     name = "studio_run",
-    command = "go run ./kogi-services/go/services/studio",
+    command = "go run ./kogi-network/services/studio",
     srcs = [":go_services"],
 )
 
 kogi_run(
     name = "community_run",
-    command = "go run ./kogi-services/go/services/community",
+    command = "go run ./kogi-network/services/community",
     srcs = [":go_services"],
 )
 
 kogi_run(
     name = "developer_run",
-    command = "go run ./kogi-services/go/services/developer",
+    command = "go run ./kogi-network/services/developer",
     srcs = [":go_services"],
 )
 
 kogi_run(
     name = "profile_run",
-    command = "go run ./kogi-services/go/services/profile",
+    command = "go run ./kogi-network/services/profile",
     srcs = [":go_services"],
 )
 
 kogi_run(
     name = "organizations_run",
-    command = "go run ./kogi-services/go/services/organizations",
+    command = "go run ./kogi-network/services/organizations",
     srcs = [":go_services"],
 )
 
 kogi_run(
     name = "engine_service_run",
-    command = "go run ./kogi-services/go/services/engine",
+    command = "go run ./kogi-network/services/engine",
     srcs = [":go_services"],
 )
 
 kogi_run(
     name = "database_service_run",
-    command = "go run ./kogi-services/go/services/database",
+    command = "go run ./kogi-network/services/database",
     srcs = [":go_services"],
 )
 

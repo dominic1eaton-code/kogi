@@ -2,7 +2,7 @@
 
 - Module ID: `kogi.office`
 - Runtime language: `hybrid-rust-go`
-- Host entrypoint: `kogi-services/go/services/office`
+- Host entrypoint: `kogi-network/services/office`
 - Network manager: `kogi-go-network`
 
 ## Scope

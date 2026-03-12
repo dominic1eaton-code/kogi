@@ -3,7 +3,7 @@ name: Kogi Office
 kind: office
 version: 0.1.0
 language: hybrid-rust-go
-entrypoint: kogi-services/go/services/office
+entrypoint: kogi-network/services/office
 status: active
 capabilities: "Dashboard, portfolio, timeline, workspace, assistant, scheduling, governance, work management."
 integrations: "jira,monday,base44,claude,chatgpt,grok,openai,gitlab,github"

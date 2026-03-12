@@ -1,0 +1,337 @@
+openapi: 3.0.3
+info:
+  title: Kogi MVP Server API
+  version: 0.2.0
+servers:
+  - url: http://127.0.0.1:8080
+paths:
+  /health:
+    get:
+      summary: Server liveness
+      responses:
+        "200":
+          description: healthy
+  /api/v1/system:
+    get:
+      summary: Kernel and host summary
+      responses:
+        "200":
+          description: system summary
+  /api/v1/host:
+    get:
+      summary: Host runtime summary
+      responses:
+        "200":
+          description: host summary
+  /api/v1/host/components:
+    get:
+      summary: Host component registry (kernel/host/services/modules)
+      responses:
+        "200":
+          description: host components
+  /api/v1/engine/system:
+    get:
+      summary: Kogi engine ingest and realtime processing summary
+      responses:
+        "200":
+          description: engine system summary
+  /api/v1/engine/runtime:
+    get:
+      summary: Engine service runtime info
+      responses:
+        "200":
+          description: engine service runtime
+  /api/v1/engine/control:
+    post:
+      summary: Control engine service (start/stop/reload)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                action:
+                  type: string
+      responses:
+        "200":
+          description: engine control accepted
+  /api/v1/engine/ingest:
+    post:
+      summary: Ingest payload into engine service
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        "200":
+          description: engine ingest accepted
+  /api/v1/modules:
+    get:
+      summary: Registered module list
+      responses:
+        "200":
+          description: module list
+  /api/v1/messages:
+    post:
+      summary: Relay a message to the host and publish to the gateway
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                topic:
+                  type: string
+                payload:
+                  type: object
+                source:
+                  type: string
+                target:
+                  type: string
+      responses:
+        "200":
+          description: message relay result
+    get:
+      summary: Fetch gateway message history (server subscription bridge)
+      parameters:
+        - in: query
+          name: limit
+          schema:
+            type: integer
+        - in: query
+          name: topic
+          schema:
+            type: string
+      responses:
+        "200":
+          description: gateway message history
+  /api/v1/ims/identities:
+    get:
+      summary: List worker identities with personas, roles, and worker types
+      responses:
+        "200":
+          description: identities
+  /api/v1/ims/profiles:
+    get:
+      summary: List configurable user profiles for each identity
+      responses:
+        "200":
+          description: profiles
+  /api/v1/autonomy/capabilities:
+    get:
+      summary: Worker autonomy abstractions exposed by the platform
+      responses:
+        "200":
+          description: autonomy capabilities
+  /api/v1/kernel/modules/isolation:
+    get:
+      summary: Module isolation memory/process/file/resource state
+      responses:
+        "200":
+          description: module isolation state
+  /api/v1/database/runtime:
+    get:
+      summary: Database service runtime info
+      responses:
+        "200":
+          description: database service runtime
+  /api/v1/database/query:
+    post:
+      summary: Execute a database query via service facade
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                sql:
+                  type: string
+      responses:
+        "200":
+          description: database query result
+  /api/v1/office:
+    get:
+      summary: Office module overview and view registry
+      responses:
+        "200":
+          description: office module overview
+  /api/v1/office/dashboard:
+    get:
+      summary: Office dashboard state
+      responses:
+        "200":
+          description: office dashboard
+  /api/v1/office/dashboard/notifications/ack:
+    post:
+      summary: Acknowledge a dashboard notification
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                notification_id:
+                  type: string
+      responses:
+        "200":
+          description: notification acknowledged
+  /api/v1/office/portfolio:
+    get:
+      summary: Office portfolio tiled/tree/grid and focus state
+      responses:
+        "200":
+          description: office portfolio
+  /api/v1/office/portfolio/items:
+    post:
+      summary: Create or update a portfolio item
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                item_type:
+                  type: string
+                name:
+                  type: string
+                status:
+                  type: string
+      responses:
+        "200":
+          description: portfolio item updated
+  /api/v1/office/timeline:
+    get:
+      summary: Office timeline calendars, schedules, roadmaps, and gantts
+      responses:
+        "200":
+          description: office timeline
+  /api/v1/office/timeline/events:
+    post:
+      summary: Create a timeline event
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                calendar_id:
+                  type: string
+                title:
+                  type: string
+                kind:
+                  type: string
+                scheduled_for:
+                  type: string
+      responses:
+        "200":
+          description: timeline event updated
+  /api/v1/office/workspace:
+    get:
+      summary: Office workspace stories, work packages, and tools
+      responses:
+        "200":
+          description: office workspace
+  /api/v1/office/workspace/stories:
+    post:
+      summary: Create a workspace story
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                points:
+                  type: integer
+      responses:
+        "200":
+          description: workspace story updated
+  /api/v1/office/assistant:
+    get:
+      summary: Office assistant context, recommendations, and subscriptions
+      responses:
+        "200":
+          description: office assistant
+  /api/v1/office/assistant/subscriptions:
+    post:
+      summary: Create an assistant subscription
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                topic:
+                  type: string
+      responses:
+        "200":
+          description: assistant subscription updated
+  /api/v1/screens/unified:
+    get:
+      summary: Unified Kogi platform module and workflow screen series
+      responses:
+        "200":
+          description: unified screen catalog
+  /api/v1/screens/unified/flat:
+    get:
+      summary: Flat line-oriented catalog for lightweight clients
+      responses:
+        "200":
+          description: flat unified screen catalog
+  /api/v1/auth/provision:
+    post:
+      summary: Trigger provisioner flow
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                plan:
+                  type: string
+      responses:
+        "202":
+          description: provisioning queued
+components:
+  schemas:
+    Module:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        kind:
+          type: string
+        version:
+          type: string
+        state:
+          type: string
+        language:
+          type: string
+        entrypoint:
+          type: string
+        network_manager:
+          type: string
+        capabilities:
+          type: array
+          items:
+            type: string
+        integrations:
+          type: array
+          items:
+            type: string

@@ -77,7 +77,7 @@ final class EngineGrpcService(engine: KogiEngine) extends BindableService {
   private val handleIngest = new ServerCalls.UnaryMethod[Struct, Struct] {
     override def invoke(request: Struct, responseObserver: StreamObserver[Struct]): Unit = {
       val topic = readString(request, Seq("topic"), "engine.ingest")
-      val source = readString(request, Seq("source"), "kogi.services.engine")
+      val source = readString(request, Seq("source"), "kogi.network.engine")
       val target = readString(request, Seq("target"), "kogi.engine")
       val flowId = readString(request, Seq("flow_id", "flow-id", "flowId"), s"flow-${safeId(topic)}")
       val timestampMs = readLong(request, Seq("timestamp_ms", "timestamp-ms", "timestampMs"), System.currentTimeMillis())

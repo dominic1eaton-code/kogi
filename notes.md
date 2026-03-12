@@ -25,7 +25,7 @@ when ume+kogi+qala+oru+sambara+imewe+nandi+osyse work together, I can create a s
 
 ---
 
-implement the office module+application+service, updating kogi-services, the kernel, the system, the server, also adding multiple appropriate desktop/web client UI views for the kogi office; adding kogi office features for: 
+implement the office module+application+service, updating kogi-network, the kernel, the system, the server, also adding multiple appropriate desktop/web client UI views for the kogi office; adding kogi office features for: 
 
 dashboard
 - shows currently active projects+programs
@@ -69,7 +69,7 @@ add an interactive an interactive shell / cli to kogi-host for accessing and int
 
 expand kogi-kernel so that it provisions/allocates/manages all of the memory+resources+processes+files+network of the platform components such as the memory+resources+processes+files+network of the engine, the memory+resources+processes+files+network of the modules, the memory+resources+processes+files+network of the services, the memory+resources+processes+files+network of the host, memory+resources+processes+files+network of the server
 
-expand kogi-services so that messages/events/data publishing+subscribing is handled here, as well as messages/events/data gateway management, and also component to component networking+communications management
+expand kogi-network so that messages/events/data publishing+subscribing is handled here, as well as messages/events/data gateway management, and also component to component networking+communications management
 
 ---
 
@@ -159,7 +159,7 @@ Trust Relationship: Pre-configured security agreements, often using protocols li
 
 ---
 
-refactor so that kogi-host runs kogi-kernel and the kogi-modules as well as manages/interacts with the kogi-services, so kogi-host uses the kogi-services to perform their appropriate service function in the host for the platform. Also update kogi-server so that it then runs kogi-host and provides the interface of access to the host system. kogi-clients make requests/responses to the server which then uses kogi-host to get appropriate functionality from the services+modules+kernel.
+refactor so that kogi-host runs kogi-kernel and the kogi-modules as well as manages/interacts with the kogi-network, so kogi-host uses the kogi-network to perform their appropriate service function in the host for the platform. Also update kogi-server so that it then runs kogi-host and provides the interface of access to the host system. kogi-clients make requests/responses to the server which then uses kogi-host to get appropriate functionality from the services+modules+kernel.
 
 create a service for kogi-engine, where kogi-host uses the kogi-engine service to control the engine and process platform data from the modules+kernel.
 
@@ -170,7 +170,7 @@ update all of the documentation
 
 ---
 
-refactor so that kogi-host runs kogi-kernel and the kogi-modules as well as manages/interacts with the kogi-services, so kogi-host uses the kogi-services to perform their appropriate service function in the host for the platform. Also update kogi-server so that it then runs kogi-host and provides the interface of access to the host system. kogi-clients make requests/responses to the server which then uses kogi-host to get appropriate functionality from the services+modules+kernel.
+refactor so that kogi-host runs kogi-kernel and the kogi-modules as well as manages/interacts with the kogi-network, so kogi-host uses the kogi-network to perform their appropriate service function in the host for the platform. Also update kogi-server so that it then runs kogi-host and provides the interface of access to the host system. kogi-clients make requests/responses to the server which then uses kogi-host to get appropriate functionality from the services+modules+kernel.
 
 create a service for kogi-engine, where kogi-host uses the kogi-engine service to control the engine and process platform data from the modules+kernel.
 
@@ -180,7 +180,7 @@ update all of the documentation
 
 ---
 
-refactor kogi-host and kogi-server and kogi-services, where
+refactor kogi-host and kogi-server and kogi-network, where
 
 in kogi-host:
 where app.rs contains HostApp, which is the primary host running host application and has modes such as init+configure+run+pause+shutdown. HostApp also runs+controls+manages the HostModel.
@@ -194,17 +194,17 @@ in kogi-server:
 the server calls HostApp and manages the host through this. kogi-server sends/receives messages to/from and connects kogi-host and the clients. kogi-server sends out messages which are picked up/received by the gateway and this is how data is sent to/from kogi-server (which routes this data/messages to the host) and the module services.
 
 
-in kogi-services:
+in kogi-network:
 each of the go services calls their respective system's code (rust for the kogi-modules and kogi-database, scala for the engine). All of the components can subscribe to messages and publish messages via the gateway.
 
 
-so the clients send/receive messages to/from the kogi-server which then publishes+subscribes messages to the kogi-services gateway and kogi-host.
+so the clients send/receive messages to/from the kogi-server which then publishes+subscribes messages to the kogi-network gateway and kogi-host.
 
 ---
 
 implement a silent mode to all of the services as well as kogi-server, so they can run as background processes, and also provide a way to startup, cycle and shutdown these background processes when ran in silent mode.
 
-also add a debug mode to the kogi-services+gateway and kogi-server and when in debug mode each of the services, the gateway, and kogi-server print messages, such as system state (init, configure, running, shutting down, paused), system status, and any time a message is sent/received to/from these components and when messages are published/subscribed to/from the component
+also add a debug mode to the kogi-network+gateway and kogi-server and when in debug mode each of the services, the gateway, and kogi-server print messages, such as system state (init, configure, running, shutting down, paused), system status, and any time a message is sent/received to/from these components and when messages are published/subscribed to/from the component
 
 ---
 
@@ -266,7 +266,7 @@ Also create a go kogi-service engine service that calls KogiEngine scala command
 
 add a Network module and NetworkSystem.
 
-implement service registry+discovery for kogi-services+gateway+server in the network module:
+implement service registry+discovery for kogi-network+gateway+server in the network module:
 
 
 Service discovery is the automated process of detecting devices and services on a network, crucial for microservices to dynamically find and communicate with each other in changing environments. By using a service registry (e.g., Consul, Eureka, or Kubernetes), services register their IP addresses and ports, eliminating the need for manual configuration and enabling high availability, scaling, and automatic health monitoring. 

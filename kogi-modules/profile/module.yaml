@@ -3,7 +3,7 @@ name: Kogi Profile
 kind: profile
 version: 0.1.0
 language: go
-entrypoint: kogi-services/go/services/profile
+entrypoint: kogi-network/services/profile
 status: active
 capabilities: "Profiles, personas, settings, preferences and configuration."
 integrations: "openid,oauth2"

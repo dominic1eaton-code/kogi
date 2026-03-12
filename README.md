@@ -9,14 +9,14 @@ This repository has been refactored into a multi-language monorepo aligned to th
 - `kogi-kernel` (Zig): low-level kernel orchestration, module registry, scheduler, cache/memory, process/file management, RBAC, mode barrier, FFI.
 - `kogi-host` (Rust): host runtime and system application (HostApp/HostModel/HostSystem) that boots the kernel + modules and orchestrates gateway + module services + engine/database services with an interactive shell.
 - `kogi-server` (Rust): backend server that boots `kogi-host` (HostApp), provides client-facing access, and bridges client messages to the gateway + host.
-- `kogi-services/go` (Go): networking gateway, pub/sub, component communication, plus module, engine, and database service facades.
+- `kogi-network` (Go): networking gateway, pub/sub, component communication, plus module, engine, and database service facades.
 - `kogi-engine` (Scala): platform data/data-processing engine (analytics, telemetry, recommendations/discovery/explore, search, query optimization).
 - `kogi-client/desktop` (Java): desktop client shell.
 - `kogi-client/web` (Angular + TypeScript): web client shell.
 - `kogi-client/mobile` (Kotlin Android + iOS scaffold): mobile/device client infrastructure.
 - `kogi-database` (PostgreSQL): schema, immutable ledger, seed data.
 - `kogi-modules` (service manifests + Rust systems): office, bank, exchange, marketplace, studio, community, developer, profile, organizations, database.
-- `kogi-contracts` (OpenAPI + event topics): shared API/event contracts.
+- `kogi-infra` (OpenAPI + gRPC + event topics): shared API/event contracts.
 
 Existing Zig OS modules remain under `src/os` and are preserved as foundation code.
 
@@ -43,7 +43,7 @@ Common build targets:
 - `bazel build //:engine_build`
 - `bazel build //:modules_build`
 - `bazel build //:database_build`
-- `bazel build //:contracts_build`
+- `bazel build //:infra_build`
 - `bazel build //:desktop_build`
 - `bazel build //:web_build`
 - `bazel build //:mobile_android_build`
@@ -77,7 +77,7 @@ Notes:
 ## Quick Start
 
 ```powershell
-# from repo root (`go.work` maps to `./kogi-services/go`)
+# from repo root (`go.work` maps to `./kogi-network`)
 # existing Zig OS demo
 zig build run
 
@@ -94,28 +94,28 @@ cargo run --manifest-path kogi-host/Cargo.toml -- --once
 cargo run --manifest-path kogi-server/Cargo.toml
 
 # go services
-go run ./kogi-services/go/gateway
-go run ./kogi-services/go/services/auth
-go run ./kogi-services/go/services/portfolio
-go run ./kogi-services/go/services/exchange
-go run ./kogi-services/go/services/ims
-go run ./kogi-services/go/services/office
-go run ./kogi-services/go/services/bank
-go run ./kogi-services/go/services/marketplace
-go run ./kogi-services/go/services/studio
-go run ./kogi-services/go/services/community
-go run ./kogi-services/go/services/developer
-go run ./kogi-services/go/services/profile
-go run ./kogi-services/go/services/organizations
-go run ./kogi-services/go/services/engine
-go run ./kogi-services/go/services/database
+go run ./kogi-network/gateway
+go run ./kogi-network/services/auth
+go run ./kogi-network/services/portfolio
+go run ./kogi-network/services/exchange
+go run ./kogi-network/services/ims
+go run ./kogi-network/services/office
+go run ./kogi-network/services/bank
+go run ./kogi-network/services/marketplace
+go run ./kogi-network/services/studio
+go run ./kogi-network/services/community
+go run ./kogi-network/services/developer
+go run ./kogi-network/services/profile
+go run ./kogi-network/services/organizations
+go run ./kogi-network/services/engine
+go run ./kogi-network/services/database
 # run in silent/debug modes
-go run ./kogi-services/go/gateway --silent
-go run ./kogi-services/go/services/engine --debug
+go run ./kogi-network/gateway --silent
+go run ./kogi-network/services/engine --debug
 # database system (Rust module invoked by the Go database service)
 cargo run --manifest-path kogi-modules/database/Cargo.toml -- --request "{\"action\":\"status\"}"
 # if a default port is occupied
-$env:KOGI_GATEWAY_PORT = "18090"; go run ./kogi-services/go/gateway
+$env:KOGI_GATEWAY_PORT = "18090"; go run ./kogi-network/gateway
 # helper script alternative
 .\tools\build\run_go_service.ps1 -Service gateway -Port 18090
 # background manager (gateway + services + kogi-server)

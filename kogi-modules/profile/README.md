@@ -2,7 +2,7 @@
 
 - Module ID: kogi.profile
 - Runtime language: go
-- Host entrypoint: `kogi-services/go/services/profile`
+- Host entrypoint: `kogi-network/services/profile`
 
 ## Scope
 Profiles, personas, settings, preferences and configuration.

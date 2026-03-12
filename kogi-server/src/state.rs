@@ -171,7 +171,7 @@ impl ServerState {
 
     pub fn host_summary_json(&self) -> String {
         format!(
-            "{{\"host_id\":\"kogi-host-001\",\"booted\":{},\"module_count\":{},\"component_count\":{},\"kernel_mode\":\"{}\",\"host_mode\":\"{}\",\"engine_service\":\"kogi-services/go/services/engine\",\"database_service\":\"kogi-services/go/services/database\"}}",
+            "{{\"host_id\":\"kogi-host-001\",\"booted\":{},\"module_count\":{},\"component_count\":{},\"kernel_mode\":\"{}\",\"host_mode\":\"{}\",\"engine_service\":\"kogi-network/services/engine\",\"database_service\":\"kogi-network/services/database\"}}",
             self.host.booted(),
             self.host.module_count(),
             self.host.component_count(),
@@ -207,7 +207,7 @@ impl ServerState {
 
     pub fn summary_json(&self) -> String {
         format!(
-            "{{\"kernel_mode\":\"{}\",\"host_booted\":{},\"host_mode\":\"{}\",\"module_count\":{},\"component_count\":{},\"identity_count\":{},\"profile_count\":{},\"office_views\":5,\"office_service\":\"kogi-services/go/services/office\",\"engine_service\":\"kogi-services/go/services/engine\",\"database_service\":\"kogi-services/go/services/database\",\"gateway\":\"http://127.0.0.1:8090\",\"data_flow\":\"clients->server->gateway->services/modules + server->host->kernel\"}}",
+            "{{\"kernel_mode\":\"{}\",\"host_booted\":{},\"host_mode\":\"{}\",\"module_count\":{},\"component_count\":{},\"identity_count\":{},\"profile_count\":{},\"office_views\":5,\"office_service\":\"kogi-network/services/office\",\"engine_service\":\"kogi-network/services/engine\",\"database_service\":\"kogi-network/services/database\",\"gateway\":\"http://127.0.0.1:8090\",\"data_flow\":\"clients->server->gateway->services/modules + server->host->kernel\"}}",
             self.kernel_mode,
             self.host.booted(),
             self.host.mode_label(),
@@ -376,7 +376,7 @@ impl ServerState {
             .into_iter()
             .map(|component| component.id)
             .collect::<Vec<_>>();
-        let engine_service = match self.host.fetch_service_runtime("kogi.services.engine") {
+        let engine_service = match self.host.fetch_service_runtime("kogi.network.engine") {
             Ok(payload) => payload,
             Err(err) => format!(
                 "{{\"status\":\"unreachable\",\"error\":\"{}\"}}",
@@ -391,11 +391,11 @@ impl ServerState {
     }
 
     pub fn engine_service_runtime(&self) -> Result<String, HostError> {
-        self.host.fetch_service_runtime("kogi.services.engine")
+        self.host.fetch_service_runtime("kogi.network.engine")
     }
 
     pub fn database_service_runtime(&self) -> Result<String, HostError> {
-        self.host.fetch_service_runtime("kogi.services.database")
+        self.host.fetch_service_runtime("kogi.network.database")
     }
 
     pub fn engine_control(&self, action: &str) -> Result<String, HostError> {
@@ -404,13 +404,13 @@ impl ServerState {
             "send",
             "engine.control.requested",
             "kogi.server",
-            "kogi.services.engine",
+            "kogi.network.engine",
             &payload,
         );
         let _ = self.publish_gateway_event(
             "engine.control.requested",
             &payload,
-            "kogi.services.engine",
+            "kogi.network.engine",
         );
         self.host.engine_control(action)
     }
@@ -433,13 +433,13 @@ impl ServerState {
             "send",
             "database.query.executed",
             "kogi.server",
-            "kogi.services.database",
+            "kogi.network.database",
             &payload,
         );
         let _ = self.publish_gateway_event(
             "database.query.executed",
             &payload,
-            "kogi.services.database",
+            "kogi.network.database",
         );
         self.host.database_query(sql)
     }
