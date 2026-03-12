@@ -35,6 +35,7 @@ $serviceNames = @(
     'community',
     'developer',
     'profile',
+    'providers',
     'organizations',
     'engine',
     'database'

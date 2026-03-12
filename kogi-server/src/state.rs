@@ -1,5 +1,9 @@
 use kogi_host::executive::HostError;
-use kogi_host::{HostApp, HostMessage, HostMessageResult};
+use kogi_host::{
+    HostApp, HostMessage, HostMessageResult, NewAffiliate, NewAffiliateLink, NewProvider,
+    NewProviderDataAsset, NewProviderMetadata, NewProviderPlatform, NewProviderResource,
+    NewProviderVersion,
+};
 use kogi_office_module::{
     to_json, NewAssistantSubscription, NewPortfolioItem, NewTimelineEvent, NewWorkspaceStory,
     OfficeModule,
@@ -170,11 +174,14 @@ impl ServerState {
     }
 
     pub fn host_summary_json(&self) -> String {
+        let provider_totals = self.host.provider_snapshot().totals;
         format!(
-            "{{\"host_id\":\"kogi-host-001\",\"booted\":{},\"module_count\":{},\"component_count\":{},\"kernel_mode\":\"{}\",\"host_mode\":\"{}\",\"engine_service\":\"kogi-network/services/engine\",\"database_service\":\"kogi-network/services/database\"}}",
+            "{{\"host_id\":\"kogi-host-001\",\"booted\":{},\"module_count\":{},\"component_count\":{},\"provider_count\":{},\"platform_count\":{},\"kernel_mode\":\"{}\",\"host_mode\":\"{}\",\"engine_service\":\"kogi-network/services/engine\",\"database_service\":\"kogi-network/services/database\"}}",
             self.host.booted(),
             self.host.module_count(),
             self.host.component_count(),
+            provider_totals.providers,
+            provider_totals.platforms,
             self.kernel_mode,
             self.host.mode_label()
         )
@@ -206,13 +213,16 @@ impl ServerState {
     }
 
     pub fn summary_json(&self) -> String {
+        let provider_totals = self.host.provider_snapshot().totals;
         format!(
-            "{{\"kernel_mode\":\"{}\",\"host_booted\":{},\"host_mode\":\"{}\",\"module_count\":{},\"component_count\":{},\"identity_count\":{},\"profile_count\":{},\"office_views\":5,\"office_service\":\"kogi-network/services/office\",\"engine_service\":\"kogi-network/services/engine\",\"database_service\":\"kogi-network/services/database\",\"gateway\":\"http://127.0.0.1:8090\",\"data_flow\":\"clients->server->gateway->services/modules + server->host->kernel\"}}",
+            "{{\"kernel_mode\":\"{}\",\"host_booted\":{},\"host_mode\":\"{}\",\"module_count\":{},\"component_count\":{},\"provider_count\":{},\"platform_count\":{},\"identity_count\":{},\"profile_count\":{},\"office_views\":5,\"office_service\":\"kogi-network/services/office\",\"engine_service\":\"kogi-network/services/engine\",\"database_service\":\"kogi-network/services/database\",\"gateway\":\"http://127.0.0.1:8090\",\"data_flow\":\"clients->server->gateway->services/modules + server->host->kernel\"}}",
             self.kernel_mode,
             self.host.booted(),
             self.host.mode_label(),
             self.host.module_count(),
             self.host.component_count(),
+            provider_totals.providers,
+            provider_totals.platforms,
             self.identities.len(),
             self.profiles.len(),
         )
@@ -318,6 +328,134 @@ impl ServerState {
 
     pub fn office_assistant_json(&self) -> String {
         to_json(&self.office_module.assistant_snapshot())
+    }
+
+    pub fn providers_snapshot_json(&self) -> String {
+        to_json(&self.host.provider_snapshot())
+    }
+
+    pub fn providers_platforms_json(&self) -> String {
+        let snapshot = self.host.provider_snapshot();
+        to_json(&serde_json::json!({"platforms": snapshot.platforms}))
+    }
+
+    pub fn providers_list_json(&self) -> String {
+        let snapshot = self.host.provider_snapshot();
+        to_json(&serde_json::json!({"providers": snapshot.providers}))
+    }
+
+    pub fn providers_resources_json(&self) -> String {
+        let snapshot = self.host.provider_snapshot();
+        to_json(&serde_json::json!({"resources": snapshot.resources}))
+    }
+
+    pub fn providers_versions_json(&self) -> String {
+        let snapshot = self.host.provider_snapshot();
+        to_json(&serde_json::json!({"versions": snapshot.versions}))
+    }
+
+    pub fn providers_metadata_json(&self) -> String {
+        let snapshot = self.host.provider_snapshot();
+        to_json(&serde_json::json!({"metadata": snapshot.metadata}))
+    }
+
+    pub fn providers_data_assets_json(&self) -> String {
+        let snapshot = self.host.provider_snapshot();
+        to_json(&serde_json::json!({"data_assets": snapshot.data_assets}))
+    }
+
+    pub fn providers_affiliates_json(&self) -> String {
+        let snapshot = self.host.provider_snapshot();
+        to_json(&serde_json::json!({"affiliates": snapshot.affiliates}))
+    }
+
+    pub fn providers_affiliate_links_json(&self) -> String {
+        let snapshot = self.host.provider_snapshot();
+        to_json(&serde_json::json!({"affiliate_links": snapshot.affiliate_links}))
+    }
+
+    pub fn providers_register_platform_json(&mut self, request: NewProviderPlatform) -> String {
+        let platform = self.host.provider_system_mut().register_platform(request);
+        to_json(&serde_json::json!({
+            "ok": true,
+            "platform": platform,
+            "snapshot": self.host.provider_snapshot(),
+        }))
+    }
+
+    pub fn providers_register_json(&mut self, request: NewProvider) -> String {
+        match self.host.provider_system_mut().register_provider(request) {
+            Ok(provider) => to_json(&serde_json::json!({
+                "ok": true,
+                "provider": provider,
+                "snapshot": self.host.provider_snapshot(),
+            })),
+            Err(err) => to_json(&serde_json::json!({"ok": false, "error": err})),
+        }
+    }
+
+    pub fn providers_add_resource_json(&mut self, request: NewProviderResource) -> String {
+        match self.host.provider_system_mut().add_resource(request) {
+            Ok(resource) => to_json(&serde_json::json!({
+                "ok": true,
+                "resource": resource,
+                "snapshot": self.host.provider_snapshot(),
+            })),
+            Err(err) => to_json(&serde_json::json!({"ok": false, "error": err})),
+        }
+    }
+
+    pub fn providers_add_version_json(&mut self, request: NewProviderVersion) -> String {
+        match self.host.provider_system_mut().add_version(request) {
+            Ok(version) => to_json(&serde_json::json!({
+                "ok": true,
+                "version": version,
+                "snapshot": self.host.provider_snapshot(),
+            })),
+            Err(err) => to_json(&serde_json::json!({"ok": false, "error": err})),
+        }
+    }
+
+    pub fn providers_set_metadata_json(&mut self, request: NewProviderMetadata) -> String {
+        match self.host.provider_system_mut().set_metadata(request) {
+            Ok(metadata) => to_json(&serde_json::json!({
+                "ok": true,
+                "metadata": metadata,
+                "snapshot": self.host.provider_snapshot(),
+            })),
+            Err(err) => to_json(&serde_json::json!({"ok": false, "error": err})),
+        }
+    }
+
+    pub fn providers_add_data_asset_json(&mut self, request: NewProviderDataAsset) -> String {
+        match self.host.provider_system_mut().add_data_asset(request) {
+            Ok(data_asset) => to_json(&serde_json::json!({
+                "ok": true,
+                "data_asset": data_asset,
+                "snapshot": self.host.provider_snapshot(),
+            })),
+            Err(err) => to_json(&serde_json::json!({"ok": false, "error": err})),
+        }
+    }
+
+    pub fn providers_register_affiliate_json(&mut self, request: NewAffiliate) -> String {
+        let affiliate = self.host.provider_system_mut().register_affiliate(request);
+        to_json(&serde_json::json!({
+            "ok": true,
+            "affiliate": affiliate,
+            "snapshot": self.host.provider_snapshot(),
+        }))
+    }
+
+    pub fn providers_add_affiliate_link_json(&mut self, request: NewAffiliateLink) -> String {
+        match self.host.provider_system_mut().add_affiliate_link(request) {
+            Ok(link) => to_json(&serde_json::json!({
+                "ok": true,
+                "affiliate_link": link,
+                "snapshot": self.host.provider_snapshot(),
+            })),
+            Err(err) => to_json(&serde_json::json!({"ok": false, "error": err})),
+        }
     }
 
     pub fn office_ack_notification_json(&mut self, notification_id: &str) -> String {

@@ -27,6 +27,23 @@ The server bridges client requests into the host and publishes/subscribes messag
 - `GET /api/v1/office/timeline`
 - `GET /api/v1/office/workspace`
 - `GET /api/v1/office/assistant`
+- `GET /api/v1/providers`
+- `GET /api/v1/providers/platforms`
+- `GET /api/v1/providers/providers`
+- `GET /api/v1/providers/resources`
+- `GET /api/v1/providers/versions`
+- `GET /api/v1/providers/metadata`
+- `GET /api/v1/providers/data`
+- `GET /api/v1/providers/affiliates`
+- `GET /api/v1/providers/affiliate-links`
+- `POST /api/v1/providers/platforms`
+- `POST /api/v1/providers/providers`
+- `POST /api/v1/providers/resources`
+- `POST /api/v1/providers/versions`
+- `POST /api/v1/providers/metadata`
+- `POST /api/v1/providers/data`
+- `POST /api/v1/providers/affiliates`
+- `POST /api/v1/providers/affiliate-links`
 - `GET /api/v1/screens/unified`
 - `GET /api/v1/screens/unified/flat`
 

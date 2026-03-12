@@ -11,6 +11,7 @@ Module manifests and operating scopes consumed by `kogi-host`.
 - kogi.community
 - kogi.developer
 - kogi.profile
+- kogi.providers
 - kogi.organizations
 - kogi.database
 

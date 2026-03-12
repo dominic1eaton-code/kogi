@@ -132,6 +132,42 @@ public final class KogiClient {
         return get("/api/v1/office/assistant");
     }
 
+    public String providersSnapshot() throws IOException, InterruptedException {
+        return get("/api/v1/providers");
+    }
+
+    public String providersPlatforms() throws IOException, InterruptedException {
+        return get("/api/v1/providers/platforms");
+    }
+
+    public String providersList() throws IOException, InterruptedException {
+        return get("/api/v1/providers/providers");
+    }
+
+    public String providersResources() throws IOException, InterruptedException {
+        return get("/api/v1/providers/resources");
+    }
+
+    public String providersVersions() throws IOException, InterruptedException {
+        return get("/api/v1/providers/versions");
+    }
+
+    public String providersMetadata() throws IOException, InterruptedException {
+        return get("/api/v1/providers/metadata");
+    }
+
+    public String providersDataAssets() throws IOException, InterruptedException {
+        return get("/api/v1/providers/data");
+    }
+
+    public String providersAffiliates() throws IOException, InterruptedException {
+        return get("/api/v1/providers/affiliates");
+    }
+
+    public String providersAffiliateLinks() throws IOException, InterruptedException {
+        return get("/api/v1/providers/affiliate-links");
+    }
+
     public String officeAckNotification(String notificationId) throws IOException, InterruptedException {
         String body = "{\"notification_id\":\"" + escape(notificationId) + "\"}";
         return postJson("/api/v1/office/dashboard/notifications/ack", body);
@@ -171,6 +207,162 @@ public final class KogiClient {
     public String officeSubscribeAssistant(String topic) throws IOException, InterruptedException {
         String body = "{\"topic\":\"" + escape(topic) + "\"}";
         return postJson("/api/v1/office/assistant/subscriptions", body);
+    }
+
+    public String providersRegisterPlatform(
+            String name,
+            String kind,
+            String category,
+            String status,
+            String homeUrl,
+            String docsUrl,
+            String supportContact,
+            String tagsJson
+    ) throws IOException, InterruptedException {
+        String body = "{"
+            + "\"name\":\"" + escape(name) + "\","
+            + "\"kind\":\"" + escape(kind) + "\","
+            + "\"category\":\"" + escape(category) + "\","
+            + "\"status\":\"" + escape(status) + "\","
+            + "\"home_url\":\"" + escape(homeUrl) + "\","
+            + "\"docs_url\":\"" + escape(docsUrl) + "\","
+            + "\"support_contact\":\"" + escape(supportContact) + "\","
+            + "\"tags\":" + defaultJson(tagsJson, "[]")
+            + "}";
+        return postJson("/api/v1/providers/platforms", body);
+    }
+
+    public String providersRegister(
+            String name,
+            String platformId,
+            String kind,
+            String status,
+            String owner,
+            String primaryContact,
+            String tagsJson
+    ) throws IOException, InterruptedException {
+        String body = "{"
+            + "\"name\":\"" + escape(name) + "\","
+            + "\"platform_id\":\"" + escape(platformId) + "\","
+            + "\"kind\":\"" + escape(kind) + "\","
+            + "\"status\":\"" + escape(status) + "\","
+            + "\"owner\":\"" + escape(owner) + "\","
+            + "\"primary_contact\":\"" + escape(primaryContact) + "\","
+            + "\"tags\":" + defaultJson(tagsJson, "[]")
+            + "}";
+        return postJson("/api/v1/providers/providers", body);
+    }
+
+    public String providersAddResource(
+            String providerId,
+            String resourceType,
+            String name,
+            String status,
+            String environment,
+            String endpoint,
+            String credentialsRef
+    ) throws IOException, InterruptedException {
+        String body = "{"
+            + "\"provider_id\":\"" + escape(providerId) + "\","
+            + "\"resource_type\":\"" + escape(resourceType) + "\","
+            + "\"name\":\"" + escape(name) + "\","
+            + "\"status\":\"" + escape(status) + "\","
+            + "\"environment\":\"" + escape(environment) + "\","
+            + "\"endpoint\":\"" + escape(endpoint) + "\","
+            + "\"credentials_ref\":\"" + escape(credentialsRef) + "\""
+            + "}";
+        return postJson("/api/v1/providers/resources", body);
+    }
+
+    public String providersAddVersion(
+            String providerId,
+            String version,
+            String status,
+            String releasedAt,
+            String notes,
+            String compatibilityJson
+    ) throws IOException, InterruptedException {
+        String body = "{"
+            + "\"provider_id\":\"" + escape(providerId) + "\","
+            + "\"version\":\"" + escape(version) + "\","
+            + "\"status\":\"" + escape(status) + "\","
+            + "\"released_at\":\"" + escape(releasedAt) + "\","
+            + "\"notes\":\"" + escape(notes) + "\","
+            + "\"compatibility\":" + defaultJson(compatibilityJson, "[]")
+            + "}";
+        return postJson("/api/v1/providers/versions", body);
+    }
+
+    public String providersSetMetadata(
+            String providerId,
+            String key,
+            String value,
+            String scope
+    ) throws IOException, InterruptedException {
+        String body = "{"
+            + "\"provider_id\":\"" + escape(providerId) + "\","
+            + "\"key\":\"" + escape(key) + "\","
+            + "\"value\":\"" + escape(value) + "\","
+            + "\"scope\":\"" + escape(scope) + "\""
+            + "}";
+        return postJson("/api/v1/providers/metadata", body);
+    }
+
+    public String providersAddDataAsset(
+            String providerId,
+            String dataset,
+            String status,
+            int recordCount,
+            String storage,
+            String lastSync
+    ) throws IOException, InterruptedException {
+        String body = "{"
+            + "\"provider_id\":\"" + escape(providerId) + "\","
+            + "\"dataset\":\"" + escape(dataset) + "\","
+            + "\"status\":\"" + escape(status) + "\","
+            + "\"record_count\":" + recordCount + ","
+            + "\"storage\":\"" + escape(storage) + "\","
+            + "\"last_sync\":\"" + escape(lastSync) + "\""
+            + "}";
+        return postJson("/api/v1/providers/data", body);
+    }
+
+    public String providersRegisterAffiliate(
+            String name,
+            String kind,
+            String status,
+            String website,
+            String contact,
+            String tagsJson
+    ) throws IOException, InterruptedException {
+        String body = "{"
+            + "\"name\":\"" + escape(name) + "\","
+            + "\"kind\":\"" + escape(kind) + "\","
+            + "\"status\":\"" + escape(status) + "\","
+            + "\"website\":\"" + escape(website) + "\","
+            + "\"contact\":\"" + escape(contact) + "\","
+            + "\"tags\":" + defaultJson(tagsJson, "[]")
+            + "}";
+        return postJson("/api/v1/providers/affiliates", body);
+    }
+
+    public String providersAddAffiliateLink(
+            String providerId,
+            String affiliateId,
+            String status,
+            String channel,
+            String trackingUrl,
+            String contractRef
+    ) throws IOException, InterruptedException {
+        String body = "{"
+            + "\"provider_id\":\"" + escape(providerId) + "\","
+            + "\"affiliate_id\":\"" + escape(affiliateId) + "\","
+            + "\"status\":\"" + escape(status) + "\","
+            + "\"channel\":\"" + escape(channel) + "\","
+            + "\"tracking_url\":\"" + escape(trackingUrl) + "\","
+            + "\"contract_ref\":\"" + escape(contractRef) + "\""
+            + "}";
+        return postJson("/api/v1/providers/affiliate-links", body);
     }
 
     public String unifiedScreens() throws IOException, InterruptedException {
@@ -213,6 +405,13 @@ public final class KogiClient {
             .replace("\n", "\\n")
             .replace("\r", "\\r")
             .replace("\t", "\\t");
+    }
+
+    private static String defaultJson(String jsonValue, String fallback) {
+        if (jsonValue == null || jsonValue.isEmpty()) {
+            return fallback;
+        }
+        return jsonValue;
     }
 
     private static String urlEncode(String value) {

@@ -1,6 +1,7 @@
 use crate::executive::{ComponentRuntime, HostError, ModuleIsolationSnapshot, ModuleRuntime};
 use crate::host::HostSystem;
 use crate::model::{HostMessage, HostMessageResult, HostModel};
+use crate::provider::{ProviderSnapshot, ProviderSystem};
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub enum HostMode {
@@ -86,6 +87,18 @@ impl HostApp {
 
     pub fn system_mut(&mut self) -> &mut HostSystem {
         self.model.system_mut()
+    }
+
+    pub fn provider_system(&self) -> &ProviderSystem {
+        self.model.system().provider_system()
+    }
+
+    pub fn provider_system_mut(&mut self) -> &mut ProviderSystem {
+        self.model.system_mut().provider_system_mut()
+    }
+
+    pub fn provider_snapshot(&self) -> ProviderSnapshot {
+        self.model.system().provider_snapshot()
     }
 
     pub fn handle_message(&mut self, message: HostMessage) -> HostMessageResult {

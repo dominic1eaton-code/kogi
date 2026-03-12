@@ -5,6 +5,10 @@ use std::io::{Read, Write};
 use std::net::{TcpListener, TcpStream};
 use std::sync::{Arc, Mutex};
 
+use kogi_host::{
+    NewAffiliate, NewAffiliateLink, NewProvider, NewProviderDataAsset, NewProviderMetadata,
+    NewProviderPlatform, NewProviderResource, NewProviderVersion,
+};
 use serde_json::Value;
 use runtime::{env_bool, Runtime};
 use state::ServerState;
@@ -211,6 +215,203 @@ fn route(
             "200 OK",
             "application/json",
             s.office_create_assistant_subscription_json(&topic),
+        );
+    }
+
+    if first_line.starts_with("GET /api/v1/providers/platforms") {
+        let s = state.lock().expect("state lock poisoned");
+        return ("200 OK", "application/json", s.providers_platforms_json());
+    }
+
+    if first_line.starts_with("GET /api/v1/providers/providers") {
+        let s = state.lock().expect("state lock poisoned");
+        return ("200 OK", "application/json", s.providers_list_json());
+    }
+
+    if first_line.starts_with("GET /api/v1/providers/resources") {
+        let s = state.lock().expect("state lock poisoned");
+        return ("200 OK", "application/json", s.providers_resources_json());
+    }
+
+    if first_line.starts_with("GET /api/v1/providers/versions") {
+        let s = state.lock().expect("state lock poisoned");
+        return ("200 OK", "application/json", s.providers_versions_json());
+    }
+
+    if first_line.starts_with("GET /api/v1/providers/metadata") {
+        let s = state.lock().expect("state lock poisoned");
+        return ("200 OK", "application/json", s.providers_metadata_json());
+    }
+
+    if first_line.starts_with("GET /api/v1/providers/data") {
+        let s = state.lock().expect("state lock poisoned");
+        return ("200 OK", "application/json", s.providers_data_assets_json());
+    }
+
+    if first_line.starts_with("GET /api/v1/providers/affiliates") {
+        let s = state.lock().expect("state lock poisoned");
+        return ("200 OK", "application/json", s.providers_affiliates_json());
+    }
+
+    if first_line.starts_with("GET /api/v1/providers/affiliate-links") {
+        let s = state.lock().expect("state lock poisoned");
+        return ("200 OK", "application/json", s.providers_affiliate_links_json());
+    }
+
+    if first_line.starts_with("GET /api/v1/providers") {
+        let s = state.lock().expect("state lock poisoned");
+        return ("200 OK", "application/json", s.providers_snapshot_json());
+    }
+
+    if first_line.starts_with("POST /api/v1/providers/platforms") {
+        let req: NewProviderPlatform = match serde_json::from_str(request_body) {
+            Ok(value) => value,
+            Err(err) => {
+                return (
+                    "400 Bad Request",
+                    "application/json",
+                    format!("{{\"error\":\"{}\"}}", escape_json(&err.to_string())),
+                )
+            }
+        };
+        let mut s = state.lock().expect("state lock poisoned");
+        return (
+            "200 OK",
+            "application/json",
+            s.providers_register_platform_json(req),
+        );
+    }
+
+    if first_line.starts_with("POST /api/v1/providers/providers") {
+        let req: NewProvider = match serde_json::from_str(request_body) {
+            Ok(value) => value,
+            Err(err) => {
+                return (
+                    "400 Bad Request",
+                    "application/json",
+                    format!("{{\"error\":\"{}\"}}", escape_json(&err.to_string())),
+                )
+            }
+        };
+        let mut s = state.lock().expect("state lock poisoned");
+        return (
+            "200 OK",
+            "application/json",
+            s.providers_register_json(req),
+        );
+    }
+
+    if first_line.starts_with("POST /api/v1/providers/resources") {
+        let req: NewProviderResource = match serde_json::from_str(request_body) {
+            Ok(value) => value,
+            Err(err) => {
+                return (
+                    "400 Bad Request",
+                    "application/json",
+                    format!("{{\"error\":\"{}\"}}", escape_json(&err.to_string())),
+                )
+            }
+        };
+        let mut s = state.lock().expect("state lock poisoned");
+        return (
+            "200 OK",
+            "application/json",
+            s.providers_add_resource_json(req),
+        );
+    }
+
+    if first_line.starts_with("POST /api/v1/providers/versions") {
+        let req: NewProviderVersion = match serde_json::from_str(request_body) {
+            Ok(value) => value,
+            Err(err) => {
+                return (
+                    "400 Bad Request",
+                    "application/json",
+                    format!("{{\"error\":\"{}\"}}", escape_json(&err.to_string())),
+                )
+            }
+        };
+        let mut s = state.lock().expect("state lock poisoned");
+        return (
+            "200 OK",
+            "application/json",
+            s.providers_add_version_json(req),
+        );
+    }
+
+    if first_line.starts_with("POST /api/v1/providers/metadata") {
+        let req: NewProviderMetadata = match serde_json::from_str(request_body) {
+            Ok(value) => value,
+            Err(err) => {
+                return (
+                    "400 Bad Request",
+                    "application/json",
+                    format!("{{\"error\":\"{}\"}}", escape_json(&err.to_string())),
+                )
+            }
+        };
+        let mut s = state.lock().expect("state lock poisoned");
+        return (
+            "200 OK",
+            "application/json",
+            s.providers_set_metadata_json(req),
+        );
+    }
+
+    if first_line.starts_with("POST /api/v1/providers/data") {
+        let req: NewProviderDataAsset = match serde_json::from_str(request_body) {
+            Ok(value) => value,
+            Err(err) => {
+                return (
+                    "400 Bad Request",
+                    "application/json",
+                    format!("{{\"error\":\"{}\"}}", escape_json(&err.to_string())),
+                )
+            }
+        };
+        let mut s = state.lock().expect("state lock poisoned");
+        return (
+            "200 OK",
+            "application/json",
+            s.providers_add_data_asset_json(req),
+        );
+    }
+
+    if first_line.starts_with("POST /api/v1/providers/affiliates") {
+        let req: NewAffiliate = match serde_json::from_str(request_body) {
+            Ok(value) => value,
+            Err(err) => {
+                return (
+                    "400 Bad Request",
+                    "application/json",
+                    format!("{{\"error\":\"{}\"}}", escape_json(&err.to_string())),
+                )
+            }
+        };
+        let mut s = state.lock().expect("state lock poisoned");
+        return (
+            "200 OK",
+            "application/json",
+            s.providers_register_affiliate_json(req),
+        );
+    }
+
+    if first_line.starts_with("POST /api/v1/providers/affiliate-links") {
+        let req: NewAffiliateLink = match serde_json::from_str(request_body) {
+            Ok(value) => value,
+            Err(err) => {
+                return (
+                    "400 Bad Request",
+                    "application/json",
+                    format!("{{\"error\":\"{}\"}}", escape_json(&err.to_string())),
+                )
+            }
+        };
+        let mut s = state.lock().expect("state lock poisoned");
+        return (
+            "200 OK",
+            "application/json",
+            s.providers_add_affiliate_link_json(req),
         );
     }
 

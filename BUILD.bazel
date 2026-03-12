@@ -279,6 +279,12 @@ kogi_run(
 )
 
 kogi_run(
+    name = "providers_run",
+    command = "go run ./kogi-network/services/providers",
+    srcs = [":go_services"],
+)
+
+kogi_run(
     name = "organizations_run",
     command = "go run ./kogi-network/services/organizations",
     srcs = [":go_services"],

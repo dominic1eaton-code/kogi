@@ -292,6 +292,280 @@ impl KogiClient {
         )
     }
 
+    pub fn providers_snapshot(&self) -> Result<Value, KogiError> {
+        self.request_json(Method::GET, "/api/v1/providers", Option::<&()>::None)
+    }
+
+    pub fn providers_platforms(&self) -> Result<Value, KogiError> {
+        self.request_json(Method::GET, "/api/v1/providers/platforms", Option::<&()>::None)
+    }
+
+    pub fn providers_list(&self) -> Result<Value, KogiError> {
+        self.request_json(Method::GET, "/api/v1/providers/providers", Option::<&()>::None)
+    }
+
+    pub fn providers_resources(&self) -> Result<Value, KogiError> {
+        self.request_json(Method::GET, "/api/v1/providers/resources", Option::<&()>::None)
+    }
+
+    pub fn providers_versions(&self) -> Result<Value, KogiError> {
+        self.request_json(Method::GET, "/api/v1/providers/versions", Option::<&()>::None)
+    }
+
+    pub fn providers_metadata(&self) -> Result<Value, KogiError> {
+        self.request_json(Method::GET, "/api/v1/providers/metadata", Option::<&()>::None)
+    }
+
+    pub fn providers_data_assets(&self) -> Result<Value, KogiError> {
+        self.request_json(Method::GET, "/api/v1/providers/data", Option::<&()>::None)
+    }
+
+    pub fn providers_affiliates(&self) -> Result<Value, KogiError> {
+        self.request_json(Method::GET, "/api/v1/providers/affiliates", Option::<&()>::None)
+    }
+
+    pub fn providers_affiliate_links(&self) -> Result<Value, KogiError> {
+        self.request_json(Method::GET, "/api/v1/providers/affiliate-links", Option::<&()>::None)
+    }
+
+    pub fn providers_register_platform(
+        &self,
+        name: &str,
+        kind: &str,
+        category: &str,
+        status: &str,
+        home_url: &str,
+        docs_url: &str,
+        support_contact: &str,
+        tags: Vec<String>,
+    ) -> Result<Value, KogiError> {
+        #[derive(Serialize)]
+        struct Body {
+            name: String,
+            kind: String,
+            category: String,
+            status: String,
+            home_url: String,
+            docs_url: String,
+            support_contact: String,
+            tags: Vec<String>,
+        }
+        let body = Body {
+            name: name.to_string(),
+            kind: kind.to_string(),
+            category: category.to_string(),
+            status: status.to_string(),
+            home_url: home_url.to_string(),
+            docs_url: docs_url.to_string(),
+            support_contact: support_contact.to_string(),
+            tags,
+        };
+        self.request_json(Method::POST, "/api/v1/providers/platforms", Some(&body))
+    }
+
+    pub fn providers_register(
+        &self,
+        name: &str,
+        platform_id: &str,
+        kind: &str,
+        status: &str,
+        owner: &str,
+        primary_contact: &str,
+        tags: Vec<String>,
+    ) -> Result<Value, KogiError> {
+        #[derive(Serialize)]
+        struct Body {
+            name: String,
+            platform_id: String,
+            kind: String,
+            status: String,
+            owner: String,
+            primary_contact: String,
+            tags: Vec<String>,
+        }
+        let body = Body {
+            name: name.to_string(),
+            platform_id: platform_id.to_string(),
+            kind: kind.to_string(),
+            status: status.to_string(),
+            owner: owner.to_string(),
+            primary_contact: primary_contact.to_string(),
+            tags,
+        };
+        self.request_json(Method::POST, "/api/v1/providers/providers", Some(&body))
+    }
+
+    pub fn providers_add_resource(
+        &self,
+        provider_id: &str,
+        resource_type: &str,
+        name: &str,
+        status: &str,
+        environment: &str,
+        endpoint: &str,
+        credentials_ref: &str,
+    ) -> Result<Value, KogiError> {
+        #[derive(Serialize)]
+        struct Body {
+            provider_id: String,
+            resource_type: String,
+            name: String,
+            status: String,
+            environment: String,
+            endpoint: String,
+            credentials_ref: String,
+        }
+        let body = Body {
+            provider_id: provider_id.to_string(),
+            resource_type: resource_type.to_string(),
+            name: name.to_string(),
+            status: status.to_string(),
+            environment: environment.to_string(),
+            endpoint: endpoint.to_string(),
+            credentials_ref: credentials_ref.to_string(),
+        };
+        self.request_json(Method::POST, "/api/v1/providers/resources", Some(&body))
+    }
+
+    pub fn providers_add_version(
+        &self,
+        provider_id: &str,
+        version: &str,
+        status: &str,
+        released_at: &str,
+        notes: &str,
+        compatibility: Vec<String>,
+    ) -> Result<Value, KogiError> {
+        #[derive(Serialize)]
+        struct Body {
+            provider_id: String,
+            version: String,
+            status: String,
+            released_at: String,
+            notes: String,
+            compatibility: Vec<String>,
+        }
+        let body = Body {
+            provider_id: provider_id.to_string(),
+            version: version.to_string(),
+            status: status.to_string(),
+            released_at: released_at.to_string(),
+            notes: notes.to_string(),
+            compatibility,
+        };
+        self.request_json(Method::POST, "/api/v1/providers/versions", Some(&body))
+    }
+
+    pub fn providers_set_metadata(
+        &self,
+        provider_id: &str,
+        key: &str,
+        value: &str,
+        scope: &str,
+    ) -> Result<Value, KogiError> {
+        #[derive(Serialize)]
+        struct Body {
+            provider_id: String,
+            key: String,
+            value: String,
+            scope: String,
+        }
+        let body = Body {
+            provider_id: provider_id.to_string(),
+            key: key.to_string(),
+            value: value.to_string(),
+            scope: scope.to_string(),
+        };
+        self.request_json(Method::POST, "/api/v1/providers/metadata", Some(&body))
+    }
+
+    pub fn providers_add_data_asset(
+        &self,
+        provider_id: &str,
+        dataset: &str,
+        status: &str,
+        record_count: u64,
+        storage: &str,
+        last_sync: &str,
+    ) -> Result<Value, KogiError> {
+        #[derive(Serialize)]
+        struct Body {
+            provider_id: String,
+            dataset: String,
+            status: String,
+            record_count: u64,
+            storage: String,
+            last_sync: String,
+        }
+        let body = Body {
+            provider_id: provider_id.to_string(),
+            dataset: dataset.to_string(),
+            status: status.to_string(),
+            record_count,
+            storage: storage.to_string(),
+            last_sync: last_sync.to_string(),
+        };
+        self.request_json(Method::POST, "/api/v1/providers/data", Some(&body))
+    }
+
+    pub fn providers_register_affiliate(
+        &self,
+        name: &str,
+        kind: &str,
+        status: &str,
+        website: &str,
+        contact: &str,
+        tags: Vec<String>,
+    ) -> Result<Value, KogiError> {
+        #[derive(Serialize)]
+        struct Body {
+            name: String,
+            kind: String,
+            status: String,
+            website: String,
+            contact: String,
+            tags: Vec<String>,
+        }
+        let body = Body {
+            name: name.to_string(),
+            kind: kind.to_string(),
+            status: status.to_string(),
+            website: website.to_string(),
+            contact: contact.to_string(),
+            tags,
+        };
+        self.request_json(Method::POST, "/api/v1/providers/affiliates", Some(&body))
+    }
+
+    pub fn providers_add_affiliate_link(
+        &self,
+        provider_id: &str,
+        affiliate_id: &str,
+        status: &str,
+        channel: &str,
+        tracking_url: &str,
+        contract_ref: &str,
+    ) -> Result<Value, KogiError> {
+        #[derive(Serialize)]
+        struct Body {
+            provider_id: String,
+            affiliate_id: String,
+            status: String,
+            channel: String,
+            tracking_url: String,
+            contract_ref: String,
+        }
+        let body = Body {
+            provider_id: provider_id.to_string(),
+            affiliate_id: affiliate_id.to_string(),
+            status: status.to_string(),
+            channel: channel.to_string(),
+            tracking_url: tracking_url.to_string(),
+            contract_ref: contract_ref.to_string(),
+        };
+        self.request_json(Method::POST, "/api/v1/providers/affiliate-links", Some(&body))
+    }
+
     pub fn unified_screens(&self) -> Result<Value, KogiError> {
         self.request_json(Method::GET, "/api/v1/screens/unified", Option::<&()>::None)
     }

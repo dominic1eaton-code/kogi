@@ -19,6 +19,7 @@ Each service is a network facade that can call its underlying system code (Rust 
 - `services/organizations` (port 9013)
 - `services/engine` (port 9014): control + ingest facade for the Scala engine (`KogiEngine` + subengines).
 - `services/database` (port 9015): PostgreSQL interaction facade. Calls the Rust `DatabaseSystem` (`kogi-modules/database`) for CRUD/query/snapshot/backup operations.
+- `services/providers` (port 9016): provider registry and external integration management.
 
 ## Build
 ```powershell

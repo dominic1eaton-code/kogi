@@ -3,12 +3,20 @@ pub mod executive;
 pub mod host;
 pub mod kernel;
 pub mod model;
+pub mod provider;
 pub mod runtime;
 pub mod shell;
 
 pub use app::{HostApp, HostMode};
 pub use host::HostSystem;
 pub use model::{HostMessage, HostMessageResult, HostModel};
+pub use provider::{
+    AffiliateLink, AffiliateRecord, NewAffiliate, NewAffiliateLink, NewProvider,
+    NewProviderDataAsset, NewProviderMetadata, NewProviderPlatform, NewProviderResource,
+    NewProviderVersion, ProviderDataAsset, ProviderMetadataEntry, ProviderPlatform,
+    ProviderRecord, ProviderResource, ProviderSnapshot, ProviderSystem, ProviderTotals,
+    ProviderVersion,
+};
 
 // Default search paths for the module manifest root directory.
 // The first path that exists and contains at least one valid module is used.

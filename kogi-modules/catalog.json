@@ -126,6 +126,20 @@
         "max_resources":  9000
     },
     {
+        "id":  "kogi.providers",
+        "name":  "Kogi Providers",
+        "kind":  "providers",
+        "language":  "go",
+        "entrypoint":  "kogi-network/services/providers",
+        "status":  "active",
+        "isolation_mode":  "isolated_service",
+        "network_manager":  "kogi-go-network",
+        "memory_limit_mb":  512,
+        "max_processes":  72,
+        "max_files":  6000,
+        "max_resources":  12000
+    },
+    {
         "id":  "kogi.database",
         "name":  "Kogi Database",
         "kind":  "database",

@@ -1,10 +1,12 @@
 use crate::executive::{ComponentRuntime, HostError, ModuleIsolationSnapshot};
 use crate::kernel::{FfiKernelStats, KernelBridge};
+use crate::provider::{ProviderSnapshot, ProviderSystem};
 use crate::runtime::{HostRuntime, ModuleRuntime};
 use crate::shell;
 
 pub struct HostSystem {
     runtime: HostRuntime,
+    providers: ProviderSystem,
 }
 
 impl HostSystem {
@@ -13,6 +15,7 @@ impl HostSystem {
     pub fn new() -> Result<Self, HostError> {
         Ok(Self {
             runtime: HostRuntime::new()?,
+            providers: ProviderSystem::mvp(),
         })
     }
 
@@ -32,6 +35,18 @@ impl HostSystem {
         &mut self.runtime
     }
 
+    pub fn provider_system(&self) -> &ProviderSystem {
+        &self.providers
+    }
+
+    pub fn provider_system_mut(&mut self) -> &mut ProviderSystem {
+        &mut self.providers
+    }
+
+    pub fn provider_snapshot(&self) -> ProviderSnapshot {
+        self.providers.snapshot()
+    }
+
     // ── Interactive shell ─────────────────────────────────────────────────────
 
     pub fn run_shell(&mut self) -> Result<(), HostError> {
@@ -45,7 +60,11 @@ impl HostSystem {
     }
 
     pub fn summary_line(&self) -> String {
-        self.runtime.summary_line()
+        format!(
+            "{} providers={}",
+            self.runtime.summary_line(),
+            self.providers.snapshot().totals.providers
+        )
     }
 
     pub fn booted(&self) -> bool {

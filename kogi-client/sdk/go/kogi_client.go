@@ -168,6 +168,160 @@ func (c *Client) OfficeSubscribeAssistant(topic string) (json.RawMessage, error)
 	return c.postJSON("/api/v1/office/assistant/subscriptions", body)
 }
 
+func (c *Client) ProvidersSnapshot() (json.RawMessage, error) {
+	return c.getJSON("/api/v1/providers")
+}
+
+func (c *Client) ProvidersPlatforms() (json.RawMessage, error) {
+	return c.getJSON("/api/v1/providers/platforms")
+}
+
+func (c *Client) ProvidersList() (json.RawMessage, error) {
+	return c.getJSON("/api/v1/providers/providers")
+}
+
+func (c *Client) ProvidersResources() (json.RawMessage, error) {
+	return c.getJSON("/api/v1/providers/resources")
+}
+
+func (c *Client) ProvidersVersions() (json.RawMessage, error) {
+	return c.getJSON("/api/v1/providers/versions")
+}
+
+func (c *Client) ProvidersMetadata() (json.RawMessage, error) {
+	return c.getJSON("/api/v1/providers/metadata")
+}
+
+func (c *Client) ProvidersDataAssets() (json.RawMessage, error) {
+	return c.getJSON("/api/v1/providers/data")
+}
+
+func (c *Client) ProvidersAffiliates() (json.RawMessage, error) {
+	return c.getJSON("/api/v1/providers/affiliates")
+}
+
+func (c *Client) ProvidersAffiliateLinks() (json.RawMessage, error) {
+	return c.getJSON("/api/v1/providers/affiliate-links")
+}
+
+func (c *Client) ProvidersRegisterPlatform(
+	name, kind, category, status, homeURL, docsURL, supportContact string,
+	tags []string,
+) (json.RawMessage, error) {
+	body := map[string]interface{}{
+		"name":            name,
+		"kind":            kind,
+		"category":        category,
+		"status":          status,
+		"home_url":        homeURL,
+		"docs_url":        docsURL,
+		"support_contact": supportContact,
+		"tags":            tags,
+	}
+	return c.postJSON("/api/v1/providers/platforms", body)
+}
+
+func (c *Client) ProvidersRegister(
+	name, platformID, kind, status, owner, primaryContact string,
+	tags []string,
+) (json.RawMessage, error) {
+	body := map[string]interface{}{
+		"name":            name,
+		"platform_id":     platformID,
+		"kind":            kind,
+		"status":          status,
+		"owner":           owner,
+		"primary_contact": primaryContact,
+		"tags":            tags,
+	}
+	return c.postJSON("/api/v1/providers/providers", body)
+}
+
+func (c *Client) ProvidersAddResource(
+	providerID, resourceType, name, status, environment, endpoint, credentialsRef string,
+) (json.RawMessage, error) {
+	body := map[string]interface{}{
+		"provider_id":     providerID,
+		"resource_type":   resourceType,
+		"name":            name,
+		"status":          status,
+		"environment":     environment,
+		"endpoint":        endpoint,
+		"credentials_ref": credentialsRef,
+	}
+	return c.postJSON("/api/v1/providers/resources", body)
+}
+
+func (c *Client) ProvidersAddVersion(
+	providerID, version, status, releasedAt, notes string,
+	compatibility []string,
+) (json.RawMessage, error) {
+	body := map[string]interface{}{
+		"provider_id":   providerID,
+		"version":       version,
+		"status":        status,
+		"released_at":   releasedAt,
+		"notes":         notes,
+		"compatibility": compatibility,
+	}
+	return c.postJSON("/api/v1/providers/versions", body)
+}
+
+func (c *Client) ProvidersSetMetadata(providerID, key, value, scope string) (json.RawMessage, error) {
+	body := map[string]interface{}{
+		"provider_id": providerID,
+		"key":         key,
+		"value":       value,
+		"scope":       scope,
+	}
+	return c.postJSON("/api/v1/providers/metadata", body)
+}
+
+func (c *Client) ProvidersAddDataAsset(
+	providerID, dataset, status string,
+	recordCount int,
+	storage, lastSync string,
+) (json.RawMessage, error) {
+	body := map[string]interface{}{
+		"provider_id":  providerID,
+		"dataset":      dataset,
+		"status":       status,
+		"record_count": recordCount,
+		"storage":      storage,
+		"last_sync":    lastSync,
+	}
+	return c.postJSON("/api/v1/providers/data", body)
+}
+
+func (c *Client) ProvidersRegisterAffiliate(
+	name, kind, status, website, contact string,
+	tags []string,
+) (json.RawMessage, error) {
+	body := map[string]interface{}{
+		"name":    name,
+		"kind":    kind,
+		"status":  status,
+		"website": website,
+		"contact": contact,
+		"tags":    tags,
+	}
+	return c.postJSON("/api/v1/providers/affiliates", body)
+}
+
+func (c *Client) ProvidersAddAffiliateLink(
+	providerID, affiliateID, status, channel, trackingURL, contractRef string,
+) (json.RawMessage, error) {
+	body := map[string]interface{}{
+		"provider_id":  providerID,
+		"affiliate_id": affiliateID,
+		"status":       status,
+		"channel":      channel,
+		"tracking_url": trackingURL,
+		"contract_ref": contractRef,
+	}
+	return c.postJSON("/api/v1/providers/affiliate-links", body)
+}
+
 func (c *Client) UnifiedScreens() (json.RawMessage, error) {
 	return c.getJSON("/api/v1/screens/unified")
 }

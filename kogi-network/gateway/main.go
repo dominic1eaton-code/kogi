@@ -154,7 +154,7 @@ func main() {
 			Services: []string{
 				"auth", "portfolio", "exchange", "ims", "office",
 				"bank", "marketplace", "studio", "community",
-				"developer", "profile", "organizations", "engine", "database",
+				"developer", "profile", "providers", "organizations", "engine", "database",
 			},
 			ComponentCount: len(registry.Components()),
 			TopicCounts:    bus.TopicStats(),
@@ -180,6 +180,7 @@ func main() {
 				"community":     "/services/community",
 				"developer":     "/services/developer",
 				"profile":       "/services/profile",
+				"providers":     "/services/providers",
 				"organizations": "/services/organizations",
 				"engine":        "/services/engine",
 				"database":      "/services/database",
@@ -846,6 +847,7 @@ func seedRegistry(registry *mesh.Registry, bus *eventbus.Bus) {
 		{"kogi.network.community", "9010"},
 		{"kogi.network.developer", "9011"},
 		{"kogi.network.profile", "9012"},
+		{"kogi.network.providers", "9016"},
 		{"kogi.network.organizations", "9013"},
 		{"kogi.network.engine", "9014"},
 		{"kogi.network.database", "9015"},
@@ -896,6 +898,16 @@ func seedRegistry(registry *mesh.Registry, bus *eventbus.Bus) {
 		// Profile
 		"profile.settings.updated": "kogi.network.profile",
 		"profile.persona.updated":  "kogi.network.profile",
+
+		// Providers
+		"provider.platform.registered": "kogi.network.providers",
+		"provider.registered":          "kogi.network.providers",
+		"provider.resource.added":      "kogi.network.providers",
+		"provider.version.published":   "kogi.network.providers",
+		"provider.metadata.updated":    "kogi.network.providers",
+		"provider.data.asset.updated":  "kogi.network.providers",
+		"provider.affiliate.registered": "kogi.network.providers",
+		"provider.affiliate.linked":     "kogi.network.providers",
 
 		// Organizations
 		"organizations.role.updated":      "kogi.network.organizations",

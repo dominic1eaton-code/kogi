@@ -111,6 +111,33 @@ class KogiClient:
     def office_assistant(self) -> Any:
         return self._request_json("GET", "/api/v1/office/assistant")
 
+    def providers_snapshot(self) -> Any:
+        return self._request_json("GET", "/api/v1/providers")
+
+    def providers_platforms(self) -> Any:
+        return self._request_json("GET", "/api/v1/providers/platforms")
+
+    def providers_list(self) -> Any:
+        return self._request_json("GET", "/api/v1/providers/providers")
+
+    def providers_resources(self) -> Any:
+        return self._request_json("GET", "/api/v1/providers/resources")
+
+    def providers_versions(self) -> Any:
+        return self._request_json("GET", "/api/v1/providers/versions")
+
+    def providers_metadata(self) -> Any:
+        return self._request_json("GET", "/api/v1/providers/metadata")
+
+    def providers_data_assets(self) -> Any:
+        return self._request_json("GET", "/api/v1/providers/data")
+
+    def providers_affiliates(self) -> Any:
+        return self._request_json("GET", "/api/v1/providers/affiliates")
+
+    def providers_affiliate_links(self) -> Any:
+        return self._request_json("GET", "/api/v1/providers/affiliate-links")
+
     def office_ack_notification(self, notification_id: str) -> Any:
         return self._request_json(
             "POST",
@@ -151,6 +178,177 @@ class KogiClient:
             "POST",
             "/api/v1/office/assistant/subscriptions",
             {"topic": topic},
+        )
+
+    def providers_register_platform(
+        self,
+        name: str,
+        kind: str,
+        category: str,
+        status: str,
+        home_url: str = "",
+        docs_url: str = "",
+        support_contact: str = "",
+        tags: Optional[list[str]] = None,
+    ) -> Any:
+        return self._request_json(
+            "POST",
+            "/api/v1/providers/platforms",
+            {
+                "name": name,
+                "kind": kind,
+                "category": category,
+                "status": status,
+                "home_url": home_url,
+                "docs_url": docs_url,
+                "support_contact": support_contact,
+                "tags": tags or [],
+            },
+        )
+
+    def providers_register(
+        self,
+        name: str,
+        platform_id: str,
+        kind: str,
+        status: str,
+        owner: str = "",
+        primary_contact: str = "",
+        tags: Optional[list[str]] = None,
+    ) -> Any:
+        return self._request_json(
+            "POST",
+            "/api/v1/providers/providers",
+            {
+                "name": name,
+                "platform_id": platform_id,
+                "kind": kind,
+                "status": status,
+                "owner": owner,
+                "primary_contact": primary_contact,
+                "tags": tags or [],
+            },
+        )
+
+    def providers_add_resource(
+        self,
+        provider_id: str,
+        resource_type: str,
+        name: str,
+        status: str,
+        environment: str = "",
+        endpoint: str = "",
+        credentials_ref: str = "",
+    ) -> Any:
+        return self._request_json(
+            "POST",
+            "/api/v1/providers/resources",
+            {
+                "provider_id": provider_id,
+                "resource_type": resource_type,
+                "name": name,
+                "status": status,
+                "environment": environment,
+                "endpoint": endpoint,
+                "credentials_ref": credentials_ref,
+            },
+        )
+
+    def providers_add_version(
+        self,
+        provider_id: str,
+        version: str,
+        status: str,
+        released_at: str = "",
+        notes: str = "",
+        compatibility: Optional[list[str]] = None,
+    ) -> Any:
+        return self._request_json(
+            "POST",
+            "/api/v1/providers/versions",
+            {
+                "provider_id": provider_id,
+                "version": version,
+                "status": status,
+                "released_at": released_at,
+                "notes": notes,
+                "compatibility": compatibility or [],
+            },
+        )
+
+    def providers_set_metadata(
+        self, provider_id: str, key: str, value: str, scope: str = ""
+    ) -> Any:
+        return self._request_json(
+            "POST",
+            "/api/v1/providers/metadata",
+            {"provider_id": provider_id, "key": key, "value": value, "scope": scope},
+        )
+
+    def providers_add_data_asset(
+        self,
+        provider_id: str,
+        dataset: str,
+        status: str,
+        record_count: int = 0,
+        storage: str = "",
+        last_sync: str = "",
+    ) -> Any:
+        return self._request_json(
+            "POST",
+            "/api/v1/providers/data",
+            {
+                "provider_id": provider_id,
+                "dataset": dataset,
+                "status": status,
+                "record_count": record_count,
+                "storage": storage,
+                "last_sync": last_sync,
+            },
+        )
+
+    def providers_register_affiliate(
+        self,
+        name: str,
+        kind: str,
+        status: str,
+        website: str = "",
+        contact: str = "",
+        tags: Optional[list[str]] = None,
+    ) -> Any:
+        return self._request_json(
+            "POST",
+            "/api/v1/providers/affiliates",
+            {
+                "name": name,
+                "kind": kind,
+                "status": status,
+                "website": website,
+                "contact": contact,
+                "tags": tags or [],
+            },
+        )
+
+    def providers_add_affiliate_link(
+        self,
+        provider_id: str,
+        affiliate_id: str,
+        status: str,
+        channel: str = "",
+        tracking_url: str = "",
+        contract_ref: str = "",
+    ) -> Any:
+        return self._request_json(
+            "POST",
+            "/api/v1/providers/affiliate-links",
+            {
+                "provider_id": provider_id,
+                "affiliate_id": affiliate_id,
+                "status": status,
+                "channel": channel,
+                "tracking_url": tracking_url,
+                "contract_ref": contract_ref,
+            },
         )
 
     def unified_screens(self) -> Any:

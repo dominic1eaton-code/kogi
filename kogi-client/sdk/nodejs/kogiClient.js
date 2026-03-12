@@ -102,6 +102,42 @@ class KogiClient {
     return this.getJson("/api/v1/office/assistant");
   }
 
+  async providersSnapshot() {
+    return this.getJson("/api/v1/providers");
+  }
+
+  async providersPlatforms() {
+    return this.getJson("/api/v1/providers/platforms");
+  }
+
+  async providersList() {
+    return this.getJson("/api/v1/providers/providers");
+  }
+
+  async providersResources() {
+    return this.getJson("/api/v1/providers/resources");
+  }
+
+  async providersVersions() {
+    return this.getJson("/api/v1/providers/versions");
+  }
+
+  async providersMetadata() {
+    return this.getJson("/api/v1/providers/metadata");
+  }
+
+  async providersDataAssets() {
+    return this.getJson("/api/v1/providers/data");
+  }
+
+  async providersAffiliates() {
+    return this.getJson("/api/v1/providers/affiliates");
+  }
+
+  async providersAffiliateLinks() {
+    return this.getJson("/api/v1/providers/affiliate-links");
+  }
+
   async officeAckNotification(notificationId) {
     return this.postJson("/api/v1/office/dashboard/notifications/ack", {
       notification_id: notificationId,
@@ -134,6 +170,149 @@ class KogiClient {
 
   async officeSubscribeAssistant(topic) {
     return this.postJson("/api/v1/office/assistant/subscriptions", { topic });
+  }
+
+  async providersRegisterPlatform(
+    name,
+    kind,
+    category,
+    status,
+    homeUrl = "",
+    docsUrl = "",
+    supportContact = "",
+    tags = [],
+  ) {
+    return this.postJson("/api/v1/providers/platforms", {
+      name,
+      kind,
+      category,
+      status,
+      home_url: homeUrl,
+      docs_url: docsUrl,
+      support_contact: supportContact,
+      tags,
+    });
+  }
+
+  async providersRegister(
+    name,
+    platformId,
+    kind,
+    status,
+    owner = "",
+    primaryContact = "",
+    tags = [],
+  ) {
+    return this.postJson("/api/v1/providers/providers", {
+      name,
+      platform_id: platformId,
+      kind,
+      status,
+      owner,
+      primary_contact: primaryContact,
+      tags,
+    });
+  }
+
+  async providersAddResource(
+    providerId,
+    resourceType,
+    name,
+    status,
+    environment = "",
+    endpoint = "",
+    credentialsRef = "",
+  ) {
+    return this.postJson("/api/v1/providers/resources", {
+      provider_id: providerId,
+      resource_type: resourceType,
+      name,
+      status,
+      environment,
+      endpoint,
+      credentials_ref: credentialsRef,
+    });
+  }
+
+  async providersAddVersion(
+    providerId,
+    version,
+    status,
+    releasedAt = "",
+    notes = "",
+    compatibility = [],
+  ) {
+    return this.postJson("/api/v1/providers/versions", {
+      provider_id: providerId,
+      version,
+      status,
+      released_at: releasedAt,
+      notes,
+      compatibility,
+    });
+  }
+
+  async providersSetMetadata(providerId, key, value, scope = "") {
+    return this.postJson("/api/v1/providers/metadata", {
+      provider_id: providerId,
+      key,
+      value,
+      scope,
+    });
+  }
+
+  async providersAddDataAsset(
+    providerId,
+    dataset,
+    status,
+    recordCount = 0,
+    storage = "",
+    lastSync = "",
+  ) {
+    return this.postJson("/api/v1/providers/data", {
+      provider_id: providerId,
+      dataset,
+      status,
+      record_count: recordCount,
+      storage,
+      last_sync: lastSync,
+    });
+  }
+
+  async providersRegisterAffiliate(
+    name,
+    kind,
+    status,
+    website = "",
+    contact = "",
+    tags = [],
+  ) {
+    return this.postJson("/api/v1/providers/affiliates", {
+      name,
+      kind,
+      status,
+      website,
+      contact,
+      tags,
+    });
+  }
+
+  async providersAddAffiliateLink(
+    providerId,
+    affiliateId,
+    status,
+    channel = "",
+    trackingUrl = "",
+    contractRef = "",
+  ) {
+    return this.postJson("/api/v1/providers/affiliate-links", {
+      provider_id: providerId,
+      affiliate_id: affiliateId,
+      status,
+      channel,
+      tracking_url: trackingUrl,
+      contract_ref: contractRef,
+    });
   }
 
   async unifiedScreens() {

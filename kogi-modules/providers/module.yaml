@@ -1,0 +1,15 @@
+id: kogi.providers
+name: Kogi Providers
+kind: providers
+version: 0.1.0
+language: go
+entrypoint: kogi-network/services/providers
+status: active
+capabilities: "Provider management, platform registry, affiliate registry, resource administration, version control, metadata, and data operations."
+integrations: "oauth2,api-keys,webhooks,affiliates,marketplaces"
+isolation_mode: isolated_service
+network_manager: kogi-go-network
+memory_limit_mb: 512
+max_processes: 72
+max_files: 6000
+max_resources: 12000

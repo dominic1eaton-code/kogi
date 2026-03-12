@@ -1,5 +1,11 @@
 use crate::executive::HostError;
 use crate::host::HostSystem;
+use crate::provider::{
+    to_json as provider_to_json, NewAffiliate, NewAffiliateLink, NewProvider,
+    NewProviderDataAsset, NewProviderMetadata, NewProviderPlatform, NewProviderResource,
+    NewProviderVersion,
+};
+use serde_json::json;
 
 #[derive(Clone, Debug)]
 pub struct HostMessage {
@@ -101,6 +107,106 @@ impl HostModel {
                     .or_else(|| non_json_payload(&message.payload))
                     .unwrap_or_else(|| "select 1".to_string());
                 self.system.database_query(&sql)
+                }
+            ),
+            "provider.snapshot" | "providers.snapshot" => (
+                true,
+                Ok(provider_to_json(&self.system.provider_snapshot()))
+            ),
+            "provider.platform.register" | "providers.platform.register" => (
+                true,
+                {
+                let req: NewProviderPlatform = serde_json::from_str(&message.payload)
+                    .map_err(|err| HostError::Service(err.to_string()))?;
+                let platform = self.system.provider_system_mut().register_platform(req);
+                Ok(provider_to_json(&json!({"platform": platform})))
+                }
+            ),
+            "provider.register" | "providers.register" => (
+                true,
+                {
+                let req: NewProvider = serde_json::from_str(&message.payload)
+                    .map_err(|err| HostError::Service(err.to_string()))?;
+                let provider = self
+                    .system
+                    .provider_system_mut()
+                    .register_provider(req)
+                    .map_err(HostError::Service)?;
+                Ok(provider_to_json(&json!({"provider": provider})))
+                }
+            ),
+            "provider.resource.add" | "providers.resource.add" => (
+                true,
+                {
+                let req: NewProviderResource = serde_json::from_str(&message.payload)
+                    .map_err(|err| HostError::Service(err.to_string()))?;
+                let resource = self
+                    .system
+                    .provider_system_mut()
+                    .add_resource(req)
+                    .map_err(HostError::Service)?;
+                Ok(provider_to_json(&json!({"resource": resource})))
+                }
+            ),
+            "provider.version.add" | "providers.version.add" => (
+                true,
+                {
+                let req: NewProviderVersion = serde_json::from_str(&message.payload)
+                    .map_err(|err| HostError::Service(err.to_string()))?;
+                let version = self
+                    .system
+                    .provider_system_mut()
+                    .add_version(req)
+                    .map_err(HostError::Service)?;
+                Ok(provider_to_json(&json!({"version": version})))
+                }
+            ),
+            "provider.metadata.set" | "providers.metadata.set" => (
+                true,
+                {
+                let req: NewProviderMetadata = serde_json::from_str(&message.payload)
+                    .map_err(|err| HostError::Service(err.to_string()))?;
+                let entry = self
+                    .system
+                    .provider_system_mut()
+                    .set_metadata(req)
+                    .map_err(HostError::Service)?;
+                Ok(provider_to_json(&json!({"metadata": entry})))
+                }
+            ),
+            "provider.data.add" | "providers.data.add" => (
+                true,
+                {
+                let req: NewProviderDataAsset = serde_json::from_str(&message.payload)
+                    .map_err(|err| HostError::Service(err.to_string()))?;
+                let asset = self
+                    .system
+                    .provider_system_mut()
+                    .add_data_asset(req)
+                    .map_err(HostError::Service)?;
+                Ok(provider_to_json(&json!({"data_asset": asset})))
+                }
+            ),
+            "provider.affiliate.register" | "providers.affiliate.register" => (
+                true,
+                {
+                let req: NewAffiliate = serde_json::from_str(&message.payload)
+                    .map_err(|err| HostError::Service(err.to_string()))?;
+                let affiliate = self.system.provider_system_mut().register_affiliate(req);
+                Ok(provider_to_json(&json!({"affiliate": affiliate})))
+                }
+            ),
+            "provider.affiliate.link" | "providers.affiliate.link" => (
+                true,
+                {
+                let req: NewAffiliateLink = serde_json::from_str(&message.payload)
+                    .map_err(|err| HostError::Service(err.to_string()))?;
+                let link = self
+                    .system
+                    .provider_system_mut()
+                    .add_affiliate_link(req)
+                    .map_err(HostError::Service)?;
+                Ok(provider_to_json(&json!({"affiliate_link": link})))
                 }
             ),
             "host.status" => (true, Ok(self.system.summary_line())),
