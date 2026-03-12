@@ -1,6 +1,6 @@
-# Kogi Organizations
+# Kogi Organizations; kogi center
 
-- Module ID: kogi.organizations
+- Module ID: kogi.organizations, kogi.center
 - Runtime language: go
 - Host entrypoint: `kogi-network/services/organizations`
 
