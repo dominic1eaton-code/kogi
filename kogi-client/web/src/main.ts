@@ -1,1595 +1,1717 @@
 import { bootstrapApplication } from '@angular/platform-browser';
 import { CommonModule } from '@angular/common';
-import { Component, computed, inject, signal } from '@angular/core';
-import { HttpClientModule } from '@angular/common/http';
-import { firstValueFrom } from 'rxjs';
-import { ApiService } from './app/core/api.service';
+import { Component, computed, signal } from '@angular/core';
 
-type ViewKind = 'module' | 'workflow';
-type AppMode = 'office' | 'unified' | 'platform' | 'providers';
-type OfficeViewId = 'dashboard' | 'portfolio' | 'timeline' | 'workspace' | 'assistant';
-type PlatformViewId =
-  | 'system'
-  | 'host'
-  | 'host_components'
-  | 'engine'
-  | 'engine_runtime'
-  | 'database'
-  | 'modules'
-  | 'autonomy';
-type ProviderViewId =
-  | 'snapshot'
-  | 'platforms'
-  | 'providers'
-  | 'resources'
-  | 'versions'
-  | 'metadata'
-  | 'data'
-  | 'affiliates'
-  | 'affiliate_links';
+type ScreenId =
+  | 'dashboard'
+  | 'office'
+  | 'portfolio'
+  | 'workspace'
+  | 'timeline'
+  | 'strategy'
+  | 'bank'
+  | 'exchange'
+  | 'marketplace'
+  | 'studio'
+  | 'community'
+  | 'developer'
+  | 'profile'
+  | 'organizations'
+  | 'legal';
 
-interface UnifiedScreen {
-  id: string;
-  title: string;
-  tags?: string[];
-  sections?: string[];
-  module?: string;
-  steps?: string[];
-}
+type Trend = 'up' | 'down' | 'flat';
 
-interface UnifiedScreenCatalog {
-  series: string;
-  version: string;
-  sources: string[];
-  modules: UnifiedScreen[];
-  workflows: UnifiedScreen[];
-}
+type Tone =
+  | 'tone-blue'
+  | 'tone-indigo'
+  | 'tone-teal'
+  | 'tone-emerald'
+  | 'tone-amber'
+  | 'tone-rose'
+  | 'tone-purple'
+  | 'tone-cyan'
+  | 'tone-slate';
 
 interface NavItem {
-  id: string;
-  title: string;
+  id: ScreenId;
+  label: string;
+  icon: string;
 }
 
-interface ViewSpec<T extends string> {
-  id: T;
+interface ScreenMeta {
   title: string;
-  subtitle: string;
-  sections: string[];
-  flows: string[];
-  integrations: string[];
-  quickLinks: string[];
-  endpoint: string;
+  icon: string;
+  tabs: string[];
 }
 
-type OfficeViewSpec = ViewSpec<OfficeViewId>;
-type PlatformViewSpec = ViewSpec<PlatformViewId>;
-type ProviderViewSpec = ViewSpec<ProviderViewId>;
+interface Metric {
+  label: string;
+  value: string;
+  change?: string;
+  trend?: Trend;
+  caption?: string;
+  progress?: number;
+  tone: Tone;
+}
 
-const fallbackCatalog: UnifiedScreenCatalog = {
-  series: 'kogi-unified-screen-system',
-  version: 'v3-reconciled',
-  sources: [
-    'Kogi_Screen_Flows_v2.pdf',
-    'Kogi_Screen_Flows (2).pdf',
-    'Kogi Platform - Screen Flows v2.pdf',
-    'Kogi Platform - Screen Flows v3.pdf',
-  ],
-  modules: [
-    {
-      id: 'home',
-      title: 'Home',
-      tags: ['dashboard', 'profile', 'workspace'],
-      sections: ['Overview Cards', 'Quicklinks', 'Alerts', 'Profile Hub', 'Workspace Hub'],
-    },
-    { id: 'dashboard', title: 'Dashboard', tags: ['overview', 'activity', 'ai'], sections: ['Portfolio Health', 'Quick Access Modules', 'Recent Activity'] },
-    { id: 'office', title: 'Office', tags: ['projects', 'programs', 'portfolio'], sections: ['Programs and Projects', 'Milestones Due', 'Team Capacity', '3rd Party Integrations'] },
-    { id: 'workspace', title: 'Workspace', tags: ['tasks', 'kanban', 'sprints'], sections: ['Kanban Board', 'Calendar', 'Gantt Timeline'] },
-    { id: 'timeline', title: 'Timeline', tags: ['calendar', 'roadmap', 'gantt'], sections: ['Master Timeline', 'Scheduled Events', 'Deadlines'] },
-    { id: 'portfolio', title: 'Portfolio', tags: ['assets', 'solutions', 'artifacts'], sections: ['Portfolio Grid', 'Linked Platforms'] },
-    { id: 'strategy', title: 'Strategy', tags: ['strategy', 'tactics', 'governance'], sections: ['Strategic OKRs', 'Tactical Initiatives', 'Governance'] },
-    { id: 'studio', title: 'Studio', tags: ['ideas', 'prototypes', 'tools'], sections: ['Ideas Grid', 'Testbeds', 'Toolsets'] },
-    { id: 'community', title: 'Community', tags: ['feeds', 'spaces', 'messages'], sections: ['Feeds and Timelines', 'Spaces and Rooms', 'Direct Messages'] },
-    { id: 'developer', title: 'Developer', tags: ['api', 'sdk', 'integrations'], sections: ['API Reference', 'Webhooks', 'Extensions'] },
-    { id: 'profile', title: 'Profiles', tags: ['personas', 'settings', 'skills'], sections: ['Profile Types', 'Personas and Roles', 'Skills and Contact', 'Data and Metadata'] },
-    { id: 'configuration', title: 'Configuration', tags: ['settings', 'parameters', 'policies'], sections: ['Settings', 'Parameters', 'Options', 'Policies'] },
-    { id: 'providers', title: 'Providers', tags: ['registry', 'platforms', 'affiliates'], sections: ['Registry Overview', 'Platform Catalog', 'Resources and Versions', 'Affiliate Links'] },
-    { id: 'organizations', title: 'Center', tags: ['coops', 'collectives', 'teams'], sections: ['Organizations Grid', 'Governance and Proposals', 'Federations'] },
-    { id: 'marketplace', title: 'Marketplace', tags: ['buy', 'sell', 'barter'], sections: ['Marketplace Grid', 'Barter System', 'My Orders'] },
-    { id: 'bank', title: 'Bank', tags: ['wallets', 'finance', 'fundraising'], sections: ['Wallet Types', 'Fundraising and Capital', 'Tax Summary'] },
-    { id: 'exchange', title: 'Exchange', tags: ['bids', 'deals', 'due-diligence'], sections: ['Bids and Offers', 'Deal Pipeline', 'Requests'] },
-    { id: 'network', title: 'Network', tags: ['gateway', 'services', 'discovery'], sections: ['Gateway', 'Service Mesh', 'Registry', 'Discovery'] },
-    { id: 'engine', title: 'Engine', tags: ['data', 'ai', 'pipelines'], sections: ['Ingest Pipelines', 'Optimization', 'Recommendations', 'Telemetry'] },
-    { id: 'host', title: 'Host', tags: ['orchestration', 'runtime', 'kernel'], sections: ['Host Runtime', 'Module Orchestration', 'Kernel Bridge'] },
-    { id: 'server', title: 'Server', tags: ['api', 'routing', 'gateway'], sections: ['API Surface', 'Request Routing', 'Security'] },
-    { id: 'clients', title: 'Clients', tags: ['web', 'desktop', 'mobile'], sections: ['Web Console', 'Desktop Studio', 'Mobile Control'] },
-  ],
-  workflows: [
-    { id: 'asset-transfer', title: 'Asset Transfer', module: 'exchange', tags: ['transfer', 'escrow'], steps: ['Select asset', 'Create transfer terms', 'Assign parties', 'Set escrow controls', 'Finalize settlement'] },
-    { id: 'capital-exchange', title: 'Capital Exchange', module: 'bank', tags: ['capital', 'governance'], steps: ['Open capital request', 'Match contributors', 'Apply governance checks', 'Distribute capital'] },
-    { id: 'community-showcase', title: 'Community Showcase', module: 'community', tags: ['community', 'showcase'], steps: ['Create showcase post', 'Attach artifacts', 'Publish to spaces', 'Track engagement'] },
-    { id: 'coop-governance', title: 'Cooperative Governance', module: 'organizations', tags: ['cooperative', 'voting'], steps: ['Draft proposal', 'Open vote', 'Reach quorum', 'Record outcome'] },
-    { id: 'idea-to-outcome', title: 'Idea to Outcome', module: 'studio', tags: ['idea', 'outcome'], steps: ['Capture idea', 'Prototype', 'Validate', 'Promote to project', 'Track outcome'] },
-    { id: 'idea-tracker', title: 'Idea Tracker', module: 'studio', tags: ['ideas', 'tracker'], steps: ['Capture', 'Score', 'Prioritize', 'Assign owner'] },
-    { id: 'investor-outreach', title: 'Investor Outreach', module: 'bank', tags: ['investor', 'outreach'], steps: ['Build investor list', 'Create pitch flow', 'Schedule outreach', 'Log responses'] },
-    { id: 'labor-market', title: 'Labor Market', module: 'marketplace', tags: ['labor', 'matching'], steps: ['Publish need', 'Match workers', 'Negotiate terms', 'Create engagement'] },
-    { id: 'marketplace-exchange', title: 'Marketplace Exchange', module: 'marketplace', tags: ['marketplace', 'exchange'], steps: ['Create listing', 'Receive offers', 'Open deal', 'Route to exchange settlement'] },
-    { id: 'note-creation', title: 'Note Creation', module: 'studio', tags: ['notes', 'knowledge'], steps: ['Create note', 'Tag context', 'Link profile/project', 'Share'] },
-    { id: 'portfolio-governance', title: 'Portfolio Governance', module: 'portfolio', tags: ['portfolio', 'governance'], steps: ['Review portfolio item', 'Open governance check', 'Approve/reject', 'Log decision'] },
-    { id: 'program-pipeline', title: 'Program Pipeline', module: 'office', tags: ['program', 'pipeline'], steps: ['Define program', 'Create project lanes', 'Track progress', 'Report status'] },
-    { id: 'project-spotlight', title: 'Project Spotlight', module: 'office', tags: ['project', 'spotlight'], steps: ['Select project', 'Assemble metrics', 'Publish summary'] },
-    { id: 'project-workflow', title: 'Project Workflow', module: 'workspace', tags: ['workflow', 'kanban'], steps: ['Backlog', 'In Progress', 'Review', 'Done'] },
-    { id: 'prototype-lifecycle', title: 'Prototype Lifecycle', module: 'studio', tags: ['prototype', 'lifecycle'], steps: ['Prototype', 'Test', 'Iterate', 'Release'] },
-    { id: 'resource-exchange', title: 'Resource Exchange', module: 'exchange', tags: ['resource', 'exchange'], steps: ['Offer resource', 'Request match', 'Validate terms', 'Exchange'] },
-    { id: 'resource-finder', title: 'Resource Finder', module: 'marketplace', tags: ['resource', 'discovery'], steps: ['Set criteria', 'Search', 'Compare', 'Select'] },
-    { id: 'strategy-board', title: 'Strategy Board', module: 'strategy', tags: ['strategy', 'okr'], steps: ['Set objectives', 'Map tactics', 'Assign owners', 'Track KRs'] },
-    { id: 'team-coordination', title: 'Team Coordination', module: 'office', tags: ['team', 'coordination'], steps: ['Create team plan', 'Assign roles', 'Sync cadence', 'Resolve blockers'] },
-    { id: 'tool-builder', title: 'Tool Builder', module: 'developer', tags: ['tooling', 'builder'], steps: ['Define tool spec', 'Build extension', 'Test integration', 'Publish'] },
-    { id: 'toolchain', title: 'Toolchain', module: 'developer', tags: ['toolchain', 'pipeline'], steps: ['Select stack', 'Configure pipeline', 'Validate workflow'] },
-    { id: 'tool-integration', title: 'Tool Integration', module: 'developer', tags: ['integration', 'api'], steps: ['Authorize provider', 'Map data', 'Set webhook', 'Verify sync'] },
-  ],
+interface ActivityItem {
+  event: string;
+  module: string;
+  time: string;
+  status: string;
+  tone: Tone;
+}
+
+interface CardItem {
+  title: string;
+  subtitle?: string;
+  meta?: string;
+  status?: string;
+  tone: Tone;
+  progress?: number;
+  value?: string;
+  members?: string[];
+  tag?: string;
+}
+
+interface TableRow {
+  cells: string[];
+  tone?: Tone;
+  badge?: string;
+  badgeTone?: Tone;
+}
+
+interface ChipItem {
+  label: string;
+  tone: Tone;
+}
+
+interface FeedItem {
+  author: string;
+  message: string;
+  time: string;
+  likes: string;
+}
+
+interface KanbanColumn {
+  title: string;
+  tone: Tone;
+  items: string[];
+}
+
+interface TimelineBar {
+  label: string;
+  tone: Tone;
+  start: number;
+  width: number;
+  icon?: string;
+}
+
+interface GanttRow {
+  label: string;
+  icon?: string;
+  bars: TimelineBar[];
+}
+
+interface ApiRow {
+  method: string;
+  path: string;
+  description: string;
+  tone: Tone;
+}
+
+const NAV_ITEMS: NavItem[] = [
+  { id: 'dashboard',     label: 'Dashboard',     icon: '▦' },
+  { id: 'office',        label: 'Office',        icon: '⊞' },
+  { id: 'portfolio',     label: 'Portfolio',     icon: '⊡' },
+  { id: 'workspace',     label: 'Workspace',     icon: '⚙' },
+  { id: 'timeline',      label: 'Timeline',      icon: '⊟' },
+  { id: 'strategy',      label: 'Strategy',      icon: '◎' },
+  { id: 'bank',          label: 'Bank',          icon: '⊠' },
+  { id: 'exchange',      label: 'Exchange',      icon: '⇄' },
+  { id: 'marketplace',   label: 'Marketplace',   icon: '⊕' },
+  { id: 'studio',        label: 'Studio',        icon: '◈' },
+  { id: 'community',     label: 'Community',     icon: '⊹' },
+  { id: 'developer',     label: 'Developer',     icon: '‹›' },
+  { id: 'profile',       label: 'Profile',       icon: '◯' },
+  { id: 'organizations', label: 'Organizations', icon: '⊛' },
+  { id: 'legal',         label: 'Legal',         icon: '⊖' },
+];
+
+const SCREEN_META: Record<ScreenId, ScreenMeta> = {
+  dashboard:     { title: 'Dashboard',     icon: '▦',  tabs: ['Overview', 'Activity', 'AI'] },
+  office:        { title: 'Office',        icon: '🏢', tabs: ['Projects', 'Programs', 'Portfolio'] },
+  portfolio:     { title: 'Portfolio',     icon: '💼', tabs: ['Assets', 'Solutions', 'Artifacts'] },
+  workspace:     { title: 'Workspace',     icon: '⚙️', tabs: ['Tasks', 'Kanban', 'Sprints'] },
+  timeline:      { title: 'Timeline',      icon: '📅', tabs: ['Calendar', 'Roadmap', 'Gantt'] },
+  strategy:      { title: 'Strategy',      icon: '🎯', tabs: ['Strategy', 'Tactics', 'Governance'] },
+  bank:          { title: 'Bank',          icon: '🏦', tabs: ['Wallets', 'Finance', 'Fundraising'] },
+  exchange:      { title: 'Exchange',      icon: '↔️', tabs: ['Bids', 'Deals', 'Due Diligence'] },
+  marketplace:   { title: 'Marketplace',   icon: '🛍️', tabs: ['Buy', 'Sell', 'Barter'] },
+  studio:        { title: 'Studio',        icon: '🎨', tabs: ['Ideas', 'Prototypes', 'Tools'] },
+  community:     { title: 'Community',     icon: '🌐', tabs: ['Feeds', 'Spaces', 'Messages'] },
+  developer:     { title: 'Developer',     icon: '⚡', tabs: ['API', 'SDK', 'Integrations'] },
+  profile:       { title: 'Profile',       icon: '👤', tabs: ['Personas', 'Settings', 'Config'] },
+  organizations: { title: 'Organizations', icon: '🏛️', tabs: ['Coops', 'Collectives', 'Teams'] },
+  legal:         { title: 'Legal',         icon: '⚖️', tabs: ['IP', 'Contracts', 'Compliance'] },
 };
-
-const officeViewSpecs: ReadonlyArray<OfficeViewSpec> = [
-  {
-    id: 'dashboard',
-    title: 'Office Dashboard',
-    subtitle: 'Active projects/programs, attention, DMs, event feed, personas, quick links',
-    sections: ['Active Projects and Programs', 'Portfolio Attention and Notifications', 'Direct Messages', 'User Event, Community, Marketplace, Exchange Feed', 'Personas and Roles', 'Quick Access Links'],
-    flows: ['Triage attention items', 'Respond to direct messages', 'Open quick links to priority tools'],
-    integrations: ['jira', 'monday', 'openai', 'gitlab', 'github'],
-    quickLinks: ['/office/portfolio', '/office/timeline', '/office/workspace', '/office/assistant'],
-    endpoint: '/api/v1/office/dashboard',
-  },
-  {
-    id: 'portfolio',
-    title: 'Office Portfolio',
-    subtitle: 'Tiled/tree/modular grid + focus view with item containers and metadata',
-    sections: ['Portfolio Grid Modes', 'Item Types (project/program/resource/asset/capital/investment/solution/document/misc/custom)', 'Focus View', 'Binder/Book/Notebook/Playbook/Folders/Files/Version/Metadata'],
-    flows: ['Switch view mode', 'Select focus item', 'Open container and metadata stack'],
-    integrations: ['github', 'gitlab', 'claude', 'chatgpt'],
-    quickLinks: ['/office/portfolio?mode=tiled', '/office/portfolio?mode=tree', '/office/portfolio?mode=modular_grid'],
-    endpoint: '/api/v1/office/portfolio',
-  },
-  {
-    id: 'timeline',
-    title: 'Office Timeline',
-    subtitle: 'Calendars, schedules, roadmaps, gantts, and personal timelines',
-    sections: ['Calendars', 'Schedules', 'Roadmaps', 'Gantts', 'Personal Timelines'],
-    flows: ['Resolve scheduling conflicts', 'Track roadmap milestones', 'Inspect critical path'],
-    integrations: ['jira', 'monday', 'google-calendar'],
-    quickLinks: ['/office/timeline?view=calendar', '/office/timeline?view=gantt'],
-    endpoint: '/api/v1/office/timeline',
-  },
-  {
-    id: 'workspace',
-    title: 'Office Workspace',
-    subtitle: 'Personal work/operations/tactics/strategy/governance with stories and toolchains',
-    sections: ['Personal Work Domains', 'User Stories and Work Packages', 'Content Management System', 'Tools, Toolchains, Toolkits, Toolsets'],
-    flows: ['Prioritize stories', 'Move work packages', 'Open toolchain links'],
-    integrations: ['jira', 'monday', 'github', 'gitlab'],
-    quickLinks: ['/office/workspace?panel=stories', '/office/workspace?panel=tools'],
-    endpoint: '/api/v1/office/workspace',
-  },
-  {
-    id: 'assistant',
-    title: 'Office Assistant',
-    subtitle: 'AI chat/context plus discovery, recommendations, subscriptions, explore, for-you',
-    sections: ['Chat Context Window', 'Discover', 'Recommendations', 'Subscriptions', 'Explore', 'For You'],
-    flows: ['Ask contextual question', 'Apply recommendation', 'Subscribe to updates'],
-    integrations: ['openai', 'chatgpt', 'claude', 'grok'],
-    quickLinks: ['/office/assistant?panel=chat', '/office/assistant?panel=recommendations'],
-    endpoint: '/api/v1/office/assistant',
-  },
-];
-
-const platformViewSpecs: ReadonlyArray<PlatformViewSpec> = [
-  {
-    id: 'system',
-    title: 'Platform System',
-    subtitle: 'Kernel, host, modules, registry totals, and cross-service flow map',
-    sections: ['Kernel + Host Mode', 'Module + Component Counts', 'Provider Registry Totals', 'Data Flow Map'],
-    flows: ['Review active services', 'Confirm data flow', 'Audit health status'],
-    integrations: ['kogi-server', 'kogi-host', 'gateway'],
-    quickLinks: ['/api/v1/system', '/api/v1/host', '/api/v1/modules'],
-    endpoint: '/api/v1/system',
-  },
-  {
-    id: 'host',
-    title: 'Host Summary',
-    subtitle: 'Host runtime, component counts, provider totals, and kernel mode',
-    sections: ['Host Boot Status', 'Component and Module Totals', 'Provider Registry Totals', 'Kernel Mode'],
-    flows: ['Inspect host runtime', 'Verify module orchestration', 'Review provider inventory'],
-    integrations: ['kernel', 'modules', 'services'],
-    quickLinks: ['/api/v1/host', '/api/v1/host/components'],
-    endpoint: '/api/v1/host',
-  },
-  {
-    id: 'host_components',
-    title: 'Host Components',
-    subtitle: 'Kernel-managed components, limits, and network manager assignments',
-    sections: ['Component Inventory', 'Resource Limits', 'Network Managers'],
-    flows: ['Inspect component limits', 'Audit active component set'],
-    integrations: ['kernel', 'network'],
-    quickLinks: ['/api/v1/host/components'],
-    endpoint: '/api/v1/host/components',
-  },
-  {
-    id: 'engine',
-    title: 'Engine Overview',
-    subtitle: 'Data engine status, ingest topics, and capability map',
-    sections: ['Engine Status', 'Capabilities', 'Ingest Topics', 'Flow Map'],
-    flows: ['Review ingest readiness', 'Validate analytics capabilities'],
-    integrations: ['kogi-engine', 'gateway'],
-    quickLinks: ['/api/v1/engine/system', '/api/v1/engine/runtime'],
-    endpoint: '/api/v1/engine/system',
-  },
-  {
-    id: 'engine_runtime',
-    title: 'Engine Runtime',
-    subtitle: 'Service runtime snapshot for the data engine',
-    sections: ['Runtime Status', 'Service Health', 'Latency and Throughput'],
-    flows: ['Ping engine runtime', 'Verify service health'],
-    integrations: ['kogi-engine', 'gateway'],
-    quickLinks: ['/api/v1/engine/runtime'],
-    endpoint: '/api/v1/engine/runtime',
-  },
-  {
-    id: 'database',
-    title: 'Database Runtime',
-    subtitle: 'Database service status and query interface',
-    sections: ['Runtime Status', 'Query Interface', 'Data Store Health'],
-    flows: ['Run validation query', 'Review runtime health'],
-    integrations: ['kogi-database', 'gateway'],
-    quickLinks: ['/api/v1/database/runtime', '/api/v1/database/query'],
-    endpoint: '/api/v1/database/runtime',
-  },
-  {
-    id: 'modules',
-    title: 'Module Registry',
-    subtitle: 'Live module inventory, capabilities, and integration map',
-    sections: ['Module Inventory', 'Capabilities', 'Integrations'],
-    flows: ['Review module versions', 'Verify integration coverage'],
-    integrations: ['kogi-host', 'module services'],
-    quickLinks: ['/api/v1/modules'],
-    endpoint: '/api/v1/modules',
-  },
-  {
-    id: 'autonomy',
-    title: 'Autonomy Capabilities',
-    subtitle: 'System-level autonomy primitives for independent workers',
-    sections: ['Identity Management', 'Workspace Organization', 'Connection Registry', 'Asset Vault'],
-    flows: ['Review autonomy coverage', 'Audit capability list'],
-    integrations: ['kogi-host', 'kogi-engine'],
-    quickLinks: ['/api/v1/autonomy/capabilities'],
-    endpoint: '/api/v1/autonomy/capabilities',
-  },
-];
-
-const providerViewSpecs: ReadonlyArray<ProviderViewSpec> = [
-  {
-    id: 'snapshot',
-    title: 'Provider Snapshot',
-    subtitle: 'Registry totals, active providers, and affiliate links',
-    sections: ['Totals', 'Active Providers', 'Active Platforms', 'Affiliate Links'],
-    flows: ['Review registry health', 'Validate active inventory'],
-    integrations: ['kogi-host', 'provider registry'],
-    quickLinks: ['/api/v1/providers', '/api/v1/providers/platforms'],
-    endpoint: '/api/v1/providers',
-  },
-  {
-    id: 'platforms',
-    title: 'Platforms',
-    subtitle: 'Platform catalog with status, links, and tags',
-    sections: ['Platform Catalog', 'Status Overview', 'Support Contacts'],
-    flows: ['Audit platform coverage', 'Verify platform status'],
-    integrations: ['registry', 'platforms'],
-    quickLinks: ['/api/v1/providers/platforms'],
-    endpoint: '/api/v1/providers/platforms',
-  },
-  {
-    id: 'providers',
-    title: 'Providers',
-    subtitle: 'Provider inventory with owners, tags, and current versions',
-    sections: ['Provider Inventory', 'Owners and Contacts', 'Version Coverage'],
-    flows: ['Review provider status', 'Check version coverage'],
-    integrations: ['registry', 'provider services'],
-    quickLinks: ['/api/v1/providers/providers'],
-    endpoint: '/api/v1/providers/providers',
-  },
-  {
-    id: 'resources',
-    title: 'Provider Resources',
-    subtitle: 'Registered resources, endpoints, and credential refs',
-    sections: ['Resource Inventory', 'Environments', 'Credential References'],
-    flows: ['Inspect resource endpoints', 'Validate credentials'],
-    integrations: ['provider services'],
-    quickLinks: ['/api/v1/providers/resources'],
-    endpoint: '/api/v1/providers/resources',
-  },
-  {
-    id: 'versions',
-    title: 'Provider Versions',
-    subtitle: 'Version control snapshots across providers',
-    sections: ['Version Inventory', 'Release Status', 'Compatibility Matrix'],
-    flows: ['Validate version coverage', 'Review release notes'],
-    integrations: ['provider services'],
-    quickLinks: ['/api/v1/providers/versions'],
-    endpoint: '/api/v1/providers/versions',
-  },
-  {
-    id: 'metadata',
-    title: 'Provider Metadata',
-    subtitle: 'Metadata key-value entries and scopes',
-    sections: ['Metadata Entries', 'Scopes and Policies', 'Update Times'],
-    flows: ['Audit metadata coverage', 'Review scopes'],
-    integrations: ['provider services'],
-    quickLinks: ['/api/v1/providers/metadata'],
-    endpoint: '/api/v1/providers/metadata',
-  },
-  {
-    id: 'data',
-    title: 'Provider Data Assets',
-    subtitle: 'Provider datasets, sync status, and storage locations',
-    sections: ['Datasets', 'Sync Status', 'Storage Locations'],
-    flows: ['Check sync status', 'Validate data coverage'],
-    integrations: ['provider services', 'storage'],
-    quickLinks: ['/api/v1/providers/data'],
-    endpoint: '/api/v1/providers/data',
-  },
-  {
-    id: 'affiliates',
-    title: 'Affiliates',
-    subtitle: 'Affiliate registry entries and partner metadata',
-    sections: ['Affiliate Inventory', 'Partner Metadata', 'Contact Points'],
-    flows: ['Review affiliate status', 'Validate contacts'],
-    integrations: ['provider registry'],
-    quickLinks: ['/api/v1/providers/affiliates'],
-    endpoint: '/api/v1/providers/affiliates',
-  },
-  {
-    id: 'affiliate_links',
-    title: 'Affiliate Links',
-    subtitle: 'Provider-affiliate link status and tracking URLs',
-    sections: ['Link Inventory', 'Channels', 'Tracking URLs'],
-    flows: ['Audit affiliate links', 'Validate tracking configuration'],
-    integrations: ['provider registry'],
-    quickLinks: ['/api/v1/providers/affiliate-links'],
-    endpoint: '/api/v1/providers/affiliate-links',
-  },
-];
-
-function isOfficeViewId(value: string): value is OfficeViewId {
-  return officeViewSpecs.some((x) => x.id === value);
-}
-
-function isPlatformViewId(value: string): value is PlatformViewId {
-  return platformViewSpecs.some((x) => x.id === value);
-}
-
-function isProviderViewId(value: string): value is ProviderViewId {
-  return providerViewSpecs.some((x) => x.id === value);
-}
 
 @Component({
   selector: 'kogi-root',
   standalone: true,
-  imports: [CommonModule, HttpClientModule],
-  providers: [ApiService],
+  imports: [CommonModule],
   template: `
-    <main class="app-root">
-      <header class="topbar">
-        <div class="brand">KOGI<span>OS</span></div>
-        <label class="search">
-          <input
-            [value]="navQuery()"
-            (input)="setNavQuery(($any($event.target)).value)"
-            placeholder="Search modules, views, services" />
-        </label>
-        <div class="top-actions">
-          <button class="ghost" (click)="refreshActive()">Refresh</button>
-          <select [value]="activeProfile()" (change)="setProfile(($any($event.target)).value)">
-            <option *ngFor="let profile of identityProfiles" [value]="profile.id">{{ profile.name }}</option>
-          </select>
+    <div class="app-shell">
+      <!-- ── SIDEBAR ── -->
+      <aside class="sidebar">
+        <div class="brand">KOGI</div>
+        <nav class="nav">
+          <button
+            *ngFor="let item of navItems"
+            type="button"
+            class="nav-item"
+            [class.active]="activeScreen() === item.id"
+            (click)="setScreen(item.id)"
+          >
+            <span class="nav-indicator"></span>
+            <span class="nav-icon">{{ item.icon }}</span>
+            <span>{{ item.label }}</span>
+          </button>
+        </nav>
+        <div class="sidebar-footer">
+          <div class="card sidebar-card">
+            <div class="card-title">System</div>
+            <div class="sidebar-metric">All modules healthy</div>
+            <div class="chip-row">
+              <span class="chip tone-emerald">Online</span>
+              <span class="chip tone-blue">Sync OK</span>
+            </div>
+          </div>
         </div>
-      </header>
+      </aside>
 
-      <section class="workspace-shell">
-        <aside class="icon-rail">
-          <button class="rail-btn active">?</button>
-          <button class="rail-btn">?</button>
-          <button class="rail-btn">?</button>
-          <button class="rail-btn">?</button>
-        </aside>
-
-        <aside class="navigator">
-          <div class="mode-row">
-            <button class="mode-btn" [class.active]="appMode() === 'office'" (click)="setAppMode('office')">Office</button>
-            <button class="mode-btn" [class.active]="appMode() === 'unified'" (click)="setAppMode('unified')">Unified</button>
-          </div>
-
-          <div class="mode-row">
-            <button class="mode-btn" [class.active]="appMode() === 'platform'" (click)="setAppMode('platform')">Platform</button>
-            <button class="mode-btn" [class.active]="appMode() === 'providers'" (click)="setAppMode('providers')">Providers</button>
-          </div>
-
-          <div class="mode-row" *ngIf="appMode() === 'unified'">
-            <button class="mode-btn" [class.active]="viewKind() === 'module'" (click)="setViewKind('module')">Modules</button>
-            <button class="mode-btn" [class.active]="viewKind() === 'workflow'" (click)="setViewKind('workflow')">Workflows</button>
-          </div>
-
-          <p class="label">Views</p>
-          <div class="nav-list">
-            <button
-              *ngFor="let item of navItems()"
-              class="nav-item"
-              [class.active]="isActiveNav(item.id)"
-              (click)="selectNav(item.id)">
-              <span>{{ item.title }}</span>
-            </button>
-          </div>
-        </aside>
-
-        <section class="main-stage">
-          <article class="hero">
-            <div>
-              <h1>{{ activeTitle() }}</h1>
-              <p>{{ activeSubtitle() }}</p>
-            </div>
-            <div class="hero-chip">
-              <span>{{ activeModeLabel() }}</span>
-            </div>
-          </article>
-
-          <section class="meta-row">
-            <article class="metric">
-              <span>Series</span>
-              <strong>{{ activeSeries() }}</strong>
-            </article>
-            <article class="metric">
-              <span>Version</span>
-              <strong>{{ activeVersion() }}</strong>
-            </article>
-            <article class="metric">
-              <span>Visible Views</span>
-              <strong>{{ navItems().length }}</strong>
-            </article>
-            <article class="metric">
-              <span>Endpoint</span>
-              <strong>{{ activeEndpoint() }}</strong>
-            </article>
-          </section>
-
-          <section class="panel-grid">
-            <article class="panel">
-              <h2>Sections</h2>
-              <div class="chips">
-                <span class="chip" *ngFor="let section of displaySections()">{{ section }}</span>
+      <!-- ── MAIN ── -->
+      <main class="main">
+        <!-- ── TOPBAR ── -->
+        <header class="topbar">
+          <div class="topbar-left">
+            <span class="topbar-icon">{{ meta().icon }}</span>
+            <div class="topbar-title-group">
+              <div class="topbar-title">{{ meta().title }}</div>
+              <div class="topbar-tabs">
+                <ng-container *ngFor="let tab of meta().tabs; let i = index; let last = last">
+                  <button class="topbar-tab" [class.active]="i === 0" type="button">{{ tab }}</button>
+                  <span *ngIf="!last" class="topbar-sep">·</span>
+                </ng-container>
               </div>
-            </article>
+            </div>
+          </div>
+          <div class="topbar-actions">
+            <div class="search"><input type="text" placeholder="Search..." /></div>
+            <button class="pill" type="button">PRO</button>
+            <button class="avatar" type="button">J</button>
+          </div>
+        </header>
 
-            <article class="panel">
-              <h2>Flows</h2>
-              <ol>
-                <li *ngFor="let step of displayFlows()">{{ step }}</li>
-              </ol>
-            </article>
+        <!-- ── SCREENS ── -->
+        <section class="content">
+          <ng-container [ngSwitch]="activeScreen()">
 
-            <article class="panel">
-              <h2>{{ appMode() === 'unified' ? 'Tags' : 'Integrations' }}</h2>
-              <div class="chips">
-                <span class="chip chip-alt" *ngFor="let tag of displayTags()">{{ tag }}</span>
+            <!-- ════ DASHBOARD ════ -->
+            <section *ngSwitchCase="'dashboard'" class="screen">
+              <div class="stats-row">
+                <div class="card metric-card" *ngFor="let s of dashboardMetrics" [ngClass]="s.tone">
+                  <div class="metric-label">{{ s.label }}</div>
+                  <div class="metric-value">{{ s.value }}</div>
+                  <div class="metric-meta">
+                    <span *ngIf="s.change" class="trend" [class.up]="s.trend==='up'" [class.down]="s.trend==='down'">{{ s.change }}</span>
+                    <span class="metric-caption">{{ s.caption }}</span>
+                  </div>
+                  <div class="progress" *ngIf="s.progress !== undefined"><span [style.width.%]="s.progress"></span></div>
+                </div>
               </div>
-            </article>
 
-            <article class="panel">
-              <h2>{{ appMode() === 'unified' ? 'Source Files' : 'Quick Links' }}</h2>
-              <ul>
-                <li *ngFor="let link of displayLinks()">{{ link }}</li>
-              </ul>
-            </article>
-          </section>
+              <div class="layout-2">
+                <div class="card">
+                  <div class="card-title">Quick Access — Modules</div>
+                  <div class="quick-grid">
+                    <button *ngFor="let q of dashboardQuickLinks" class="quick-card" type="button" [ngClass]="q.tone">
+                      <span class="quick-icon">{{ q.icon }}</span>
+                      <span class="quick-label">{{ q.label }}</span>
+                    </button>
+                  </div>
+                </div>
 
-          <section class="tool-row">
-            <button (click)="loadSystem()">System</button>
-            <button (click)="loadHostSummary()">Host</button>
-            <button (click)="loadHostComponents()">Host Components</button>
-            <button (click)="loadModulesList()">Modules</button>
-            <button (click)="loadEngineOverview()">Engine</button>
-            <button (click)="loadEngineRuntime()">Engine Runtime</button>
-            <button (click)="loadDatabaseRuntime()">Database</button>
-            <button (click)="loadProvidersSnapshot()">Providers</button>
-            <button (click)="loadProvidersAffiliates()">Affiliates</button>
-            <button (click)="loadIdentities()">IMS Identities</button>
-            <button (click)="loadProfiles()">IMS Profiles</button>
-            <button (click)="loadIsolation()">Module Isolation</button>
-            <button (click)="loadOfficeOverview()">Office Overview</button>
-            <button (click)="loadUnifiedCatalog()">Unified Screens</button>
-          </section>
+                <div class="card">
+                  <div class="card-title">Recent Activity</div>
+                  <div class="table-row table-header" style="--cols: 2.2fr 1fr 1fr 1fr;">
+                    <span>Event</span><span>Module</span><span>Time</span><span>Status</span>
+                  </div>
+                  <div class="table-row" *ngFor="let a of dashboardActivity" style="--cols: 2.2fr 1fr 1fr 1fr;">
+                    <span>{{ a.event }}</span>
+                    <span class="status" [ngClass]="a.tone">{{ a.module }}</span>
+                    <span class="muted">{{ a.time }}</span>
+                    <span class="status tone-emerald">{{ a.status }}</span>
+                  </div>
+                </div>
+              </div>
+            </section>
 
-          <section class="action-row" *ngIf="appMode() === 'office'">
-            <input
-              [value]="actionDraft()"
-              (input)="setActionDraft(($any($event.target)).value)"
-              placeholder="Office action input (id, name, topic)" />
-            <button (click)="ackOfficeNotification()">Ack</button>
-            <button (click)="createOfficePortfolioItem()">Portfolio+</button>
-            <button (click)="createOfficeTimelineEvent()">Timeline+</button>
-            <button (click)="createOfficeWorkspaceStory()">Story+</button>
-            <button (click)="subscribeOfficeAssistant()">Subscribe+</button>
-          </section>
+            <!-- ════ OFFICE ════ -->
+            <section *ngSwitchCase="'office'" class="screen">
+              <div class="stats-row">
+                <div class="card metric-card" *ngFor="let s of officeMetrics" [ngClass]="s.tone">
+                  <div class="metric-label">{{ s.label }}</div>
+                  <div class="metric-value">{{ s.value }}</div>
+                  <div class="metric-meta"><span class="metric-caption">{{ s.caption }}</span></div>
+                  <div class="progress" *ngIf="s.progress !== undefined"><span [style.width.%]="s.progress"></span></div>
+                </div>
+              </div>
 
-          <section class="action-row" *ngIf="appMode() === 'platform'">
-            <input
-              [value]="actionDraft()"
-              (input)="setActionDraft(($any($event.target)).value)"
-              placeholder="Platform action input (engine action or SQL)" />
-            <button (click)="engineControl()">Engine Control</button>
-            <button (click)="engineIngest()">Engine Ingest</button>
-            <button (click)="databaseQuery()">DB Query</button>
-          </section>
+              <div class="layout-2">
+                <div class="stack">
+                  <div class="card">
+                    <div class="card-title">Programs & Projects</div>
+                    <div class="program-grid">
+                      <div class="card sub-card" *ngFor="let p of officePrograms" [ngClass]="p.tone">
+                        <div class="card-title-sm">{{ p.title }}</div>
+                        <div class="card-subtitle">{{ p.subtitle }}</div>
+                        <div class="progress"><span [style.width.%]="p.progress"></span></div>
+                        <div class="avatar-row">
+                          <span class="avatar-chip" *ngFor="let m of p.members">{{ m }}</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="card">
+                    <div class="card-title">Portfolio Assets</div>
+                    <div class="asset-grid">
+                      <button *ngFor="let a of officeAssets" type="button" class="asset-card" [ngClass]="a.tone">
+                        <span class="asset-icon">📁</span>
+                        <span>{{ a.title }}</span>
+                      </button>
+                    </div>
+                  </div>
+                </div>
 
-          <section class="action-row" *ngIf="appMode() === 'providers'">
-            <input
-              [value]="actionDraft()"
-              (input)="setActionDraft(($any($event.target)).value)"
-              placeholder="Provider action input (name|id|extra)" />
-            <button (click)="createProviderPlatform()">Platform+</button>
-            <button (click)="createProvider()">Provider+</button>
-            <button (click)="addProviderResource()">Resource+</button>
-            <button (click)="addProviderVersion()">Version+</button>
-            <button (click)="setProviderMetadata()">Metadata+</button>
-            <button (click)="addProviderDataAsset()">Data+</button>
-            <button (click)="registerAffiliate()">Affiliate+</button>
-            <button (click)="addAffiliateLink()">Affiliate Link+</button>
-          </section>
+                <div class="stack">
+                  <div class="card">
+                    <div class="card-title">3rd Party</div>
+                    <div class="chip-row">
+                      <span class="chip" *ngFor="let c of officeThirdParty" [ngClass]="c.tone">→ {{ c.label }}</span>
+                    </div>
+                  </div>
+                  <div class="card">
+                    <div class="card-title">Team</div>
+                    <div class="list">
+                      <div class="list-item" *ngFor="let t of officeTeam">
+                        <div class="avatar-chip">{{ t.title }}</div>
+                        <div class="list-body">
+                          <div class="list-title">{{ t.subtitle }}</div>
+                          <div class="list-meta">{{ t.meta }}</div>
+                        </div>
+                        <span class="status tone-emerald">Active</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <!-- ════ PORTFOLIO ════ -->
+            <section *ngSwitchCase="'portfolio'" class="screen">
+              <div class="stats-row">
+                <div class="card metric-card" *ngFor="let s of portfolioMetrics" [ngClass]="s.tone">
+                  <div class="metric-label">{{ s.label }}</div>
+                  <div class="metric-value">{{ s.value }}</div>
+                  <div class="metric-meta"><span class="metric-caption">{{ s.caption }}</span></div>
+                </div>
+              </div>
+
+              <div class="card">
+                <div class="card-title">Portfolio Grid — Modular Tile View</div>
+                <div class="portfolio-grid">
+                  <div class="portfolio-item" *ngFor="let p of portfolioItems" [ngClass]="p.tone">
+                    <div class="portfolio-tag">{{ p.subtitle }}</div>
+                    <div class="portfolio-name">{{ p.title }}</div>
+                    <span class="status" [ngClass]="p.tone">{{ p.status }}</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="card">
+                <div class="card-title">Linked Platforms</div>
+                <div class="chip-row">
+                  <span class="chip" *ngFor="let c of portfolioPlatforms" [ngClass]="c.tone">→ {{ c.label }}</span>
+                </div>
+              </div>
+            </section>
+
+            <!-- ════ WORKSPACE ════ -->
+            <section *ngSwitchCase="'workspace'" class="screen">
+              <div class="stats-row">
+                <div class="card metric-card" *ngFor="let s of workspaceMetrics" [ngClass]="s.tone">
+                  <div class="metric-label">{{ s.label }}</div>
+                  <div class="metric-value">{{ s.value }}</div>
+                  <div class="metric-meta"><span class="metric-caption">{{ s.caption }}</span></div>
+                  <div class="progress" *ngIf="s.progress !== undefined"><span [style.width.%]="s.progress"></span></div>
+                </div>
+              </div>
+
+              <div class="layout-2">
+                <div class="stack">
+                  <div class="card">
+                    <div class="card-title">Kanban Board</div>
+                    <div class="kanban">
+                      <div class="kanban-col" *ngFor="let col of workspaceKanban" [ngClass]="col.tone">
+                        <div class="kanban-title">{{ col.title }}</div>
+                        <div class="kanban-item" *ngFor="let task of col.items">{{ task }}</div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="card">
+                    <div class="card-title">Gantt Timeline</div>
+                    <div class="gantt">
+                      <div class="gantt-row" *ngFor="let row of workspaceGantt">
+                        <div class="gantt-label">{{ row.label }}</div>
+                        <div class="gantt-track">
+                          <span *ngFor="let bar of row.bars" class="gantt-bar" [ngClass]="bar.tone" [style.left.%]="bar.start" [style.width.%]="bar.width"></span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="stack">
+                  <div class="card">
+                    <div class="card-title">Calendar</div>
+                    <div class="list">
+                      <div class="list-item" *ngFor="let e of workspaceCalendar">
+                        <div class="avatar-chip" style="border-radius:4px;width:8px;padding:0;" [ngClass]="e.tone" style="background:var(--tone);width:3px;min-width:3px;border-radius:2px;"></div>
+                        <div class="list-body">
+                          <div class="list-title">{{ e.title }}</div>
+                          <div class="list-meta">{{ e.subtitle }}</div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="card">
+                    <div class="card-title">Roadmaps</div>
+                    <div class="progress-list">
+                      <div class="progress-item" *ngFor="let r of workspaceRoadmaps">
+                        <div class="progress-meta"><span>{{ r.title }}</span><span class="muted">{{ r.meta }}</span></div>
+                        <div class="progress" [ngClass]="r.tone"><span [style.width.%]="r.progress"></span></div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <!-- ════ TIMELINE ════ -->
+            <section *ngSwitchCase="'timeline'" class="screen">
+              <div class="stats-row">
+                <div class="card metric-card" *ngFor="let s of timelineMetrics" [ngClass]="s.tone">
+                  <div class="metric-label">{{ s.label }}</div>
+                  <div class="metric-value">{{ s.value }}</div>
+                  <div class="metric-meta"><span class="metric-caption">{{ s.caption }}</span></div>
+                  <div class="progress" *ngIf="s.progress !== undefined"><span [style.width.%]="s.progress"></span></div>
+                </div>
+              </div>
+
+              <div class="card">
+                <div class="card-title">Master Timeline — Q1 2026</div>
+                <div class="gantt">
+                  <div class="gantt-row" *ngFor="let row of timelineMaster">
+                    <div class="gantt-label">
+                      <span style="margin-right:5px;font-size:10px;color:var(--text-2)">{{ row.icon }}</span>{{ row.label }}
+                    </div>
+                    <div class="gantt-track">
+                      <span *ngFor="let bar of row.bars" class="gantt-bar" [ngClass]="bar.tone" [style.left.%]="bar.start" [style.width.%]="bar.width"></span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="layout-2">
+                <div class="card">
+                  <div class="card-title">Scheduled Events</div>
+                  <div class="event-grid">
+                    <div class="card sub-card" *ngFor="let e of timelineEvents" [ngClass]="e.tone">
+                      <div class="card-subtitle">{{ e.meta }}</div>
+                      <div class="card-title-sm">{{ e.title }}</div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="stack">
+                  <div class="card">
+                    <div class="card-title">Roadmap Progress</div>
+                    <div class="progress-list">
+                      <div class="progress-item" *ngFor="let r of timelineRoadmap">
+                        <div class="progress-meta"><span>{{ r.title }}</span><span class="muted">{{ r.meta }}</span></div>
+                        <div class="progress" [ngClass]="r.tone"><span [style.width.%]="r.progress"></span></div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="card">
+                    <div class="card-title">Next Deadlines</div>
+                    <div class="list">
+                      <div class="list-item" *ngFor="let d of timelineDeadlines">
+                        <span class="status" [ngClass]="d.tone" style="width:6px;height:6px;border-radius:50%;background:var(--tone);display:inline-block;flex-shrink:0;padding:0;margin-right:2px;"></span>
+                        <div class="list-body">
+                          <div class="list-title">{{ d.title }}</div>
+                          <div class="list-meta">{{ d.subtitle }}</div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <!-- ════ STRATEGY ════ -->
+            <section *ngSwitchCase="'strategy'" class="screen">
+              <div class="stats-row">
+                <div class="card metric-card" *ngFor="let s of strategyMetrics" [ngClass]="s.tone">
+                  <div class="metric-label">{{ s.label }}</div>
+                  <div class="metric-value">{{ s.value }}</div>
+                  <div class="metric-meta"><span class="metric-caption">{{ s.caption }}</span></div>
+                  <div class="progress" *ngIf="s.progress !== undefined"><span [style.width.%]="s.progress"></span></div>
+                </div>
+              </div>
+
+              <div class="card">
+                <div class="card-title">Strategy Tree</div>
+                <div class="strategy-grid">
+                  <div class="card sub-card" *ngFor="let t of strategyTree" [ngClass]="t.tone">
+                    <div class="card-subtitle">{{ t.subtitle }}</div>
+                    <div class="card-title-sm">{{ t.title }}</div>
+                    <div class="card-meta" *ngIf="t.meta">{{ t.meta }}</div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="layout-2">
+                <div class="card">
+                  <div class="card-title">Tactics & Operations</div>
+                  <div class="tactic-grid">
+                    <div class="card sub-card" *ngFor="let t of strategyTactics" [ngClass]="t.tone">
+                      <div class="card-title-sm">{{ t.title }}</div>
+                      <div class="card-subtitle">{{ t.subtitle }}</div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="stack">
+                  <div class="card">
+                    <div class="card-title">Governance</div>
+                    <div class="list">
+                      <div class="list-item" *ngFor="let g of strategyGovernance">
+                        <div class="list-body">
+                          <div class="list-title">{{ g.title }}</div>
+                          <div class="list-meta">{{ g.subtitle }}</div>
+                        </div>
+                        <span class="status" [ngClass]="g.tone">{{ g.meta }}</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="card">
+                    <div class="card-title">OKR Progress</div>
+                    <div class="progress-list">
+                      <div class="progress-item" *ngFor="let o of strategyOkrs">
+                        <div class="progress-meta"><span>{{ o.title }}</span><span class="muted">{{ o.meta }}</span></div>
+                        <div class="progress" [ngClass]="o.tone"><span [style.width.%]="o.progress"></span></div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <!-- ════ BANK ════ -->
+            <section *ngSwitchCase="'bank'" class="screen">
+              <div class="stats-row">
+                <div class="card metric-card" *ngFor="let s of bankMetrics" [ngClass]="s.tone">
+                  <div class="metric-label">{{ s.label }}</div>
+                  <div class="metric-value">{{ s.value }}</div>
+                  <div class="metric-meta">
+                    <span *ngIf="s.change" class="trend" [class.up]="s.trend==='up'" [class.down]="s.trend==='down'">{{ s.change }}</span>
+                    <span class="metric-caption">{{ s.caption }}</span>
+                  </div>
+                  <div class="progress" *ngIf="s.progress !== undefined"><span [style.width.%]="s.progress"></span></div>
+                </div>
+              </div>
+
+              <div class="layout-2">
+                <div class="stack">
+                  <div class="card">
+                    <div class="card-title">Wallet Types</div>
+                    <div class="wallet-grid">
+                      <div class="card sub-card" *ngFor="let w of bankWallets" [ngClass]="w.tone">
+                        <div class="card-subtitle" style="font-size:18px;margin-bottom:6px;">{{ w.tag }}</div>
+                        <div class="card-title-sm">{{ w.title }}</div>
+                        <div class="metric-value" style="font-size:18px;margin:4px 0;">{{ w.value }}</div>
+                        <div class="card-meta">{{ w.subtitle }}</div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="card">
+                    <div class="card-title">Fundraising & Capital</div>
+                    <div class="fund-grid">
+                      <div class="card sub-card" *ngFor="let f of bankFundraising" [ngClass]="f.tone">
+                        <div class="card-title-sm">{{ f.title }}</div>
+                        <div class="metric-value" style="font-size:16px;margin:4px 0;">{{ f.value }}</div>
+                        <div class="progress"><span [style.width.%]="f.progress"></span></div>
+                        <div class="card-meta" style="margin-top:4px;">{{ f.meta }}</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="stack">
+                  <div class="card">
+                    <div class="card-title">Linked Platforms</div>
+                    <div class="chip-row">
+                      <span class="chip" *ngFor="let c of bankPlatforms" [ngClass]="c.tone">→ {{ c.label }}</span>
+                    </div>
+                  </div>
+                  <div class="card">
+                    <div class="card-title">Transactions</div>
+                    <div class="list">
+                      <div class="list-item" *ngFor="let t of bankTransactions">
+                        <div class="list-body"><div class="list-title">{{ t.title }}</div></div>
+                        <span class="status" [ngClass]="t.tone">{{ t.meta }}</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="card">
+                    <div class="card-title">Tax Summary</div>
+                    <div class="tax-grid">
+                      <div class="card sub-card" *ngFor="let t of bankTaxes" [ngClass]="t.tone">
+                        <div class="card-subtitle" style="font-size:9px;text-transform:uppercase;letter-spacing:0.08em;">{{ t.subtitle }}</div>
+                        <div class="metric-value" style="font-size:16px;margin-top:4px;">{{ t.value }}</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <!-- ════ EXCHANGE ════ -->
+            <section *ngSwitchCase="'exchange'" class="screen">
+              <div class="stats-row">
+                <div class="card metric-card" *ngFor="let s of exchangeMetrics" [ngClass]="s.tone">
+                  <div class="metric-label">{{ s.label }}</div>
+                  <div class="metric-value">{{ s.value }}</div>
+                  <div class="metric-meta"><span class="metric-caption">{{ s.caption }}</span></div>
+                </div>
+              </div>
+
+              <div class="layout-2">
+                <div class="stack">
+                  <div class="card">
+                    <div class="card-title">Bids & Offers</div>
+                    <div class="table-row table-header" style="--cols: 2fr 1fr 1fr 1fr 1.5fr;">
+                      <span>Item</span><span>Type</span><span>Value</span><span>Status</span><span>Counterparty</span>
+                    </div>
+                    <div class="table-row" *ngFor="let r of exchangeBids" style="--cols: 2fr 1fr 1fr 1fr 1.5fr;">
+                      <span>{{ r.cells[0] }}</span>
+                      <span class="muted">{{ r.cells[1] }}</span>
+                      <span class="muted">{{ r.cells[2] }}</span>
+                      <span class="status" [ngClass]="r.badgeTone">{{ r.badge }}</span>
+                      <span class="muted">{{ r.cells[4] }}</span>
+                    </div>
+                  </div>
+                  <div class="card">
+                    <div class="card-title">Deal Pipeline</div>
+                    <div class="deal-grid">
+                      <div class="card sub-card" *ngFor="let d of exchangePipeline" [ngClass]="d.tone">
+                        <div class="card-title-sm">{{ d.title }}</div>
+                        <div class="card-subtitle">{{ d.subtitle }}</div>
+                        <div class="metric-value" style="font-size:16px;margin:4px 0;">{{ d.value }}</div>
+                        <div class="progress"><span [style.width.%]="d.progress"></span></div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="stack">
+                  <div class="card">
+                    <div class="card-title">Requests</div>
+                    <div class="list">
+                      <div class="list-item" *ngFor="let r of exchangeRequests">
+                        <div class="list-body">
+                          <div class="list-title">{{ r.title }}</div>
+                          <div class="list-meta">{{ r.subtitle }}</div>
+                        </div>
+                        <span class="status" [ngClass]="r.tone">{{ r.meta }}</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="card">
+                    <div class="card-title">Linked Platforms</div>
+                    <div class="chip-row">
+                      <span class="chip" *ngFor="let c of exchangePlatforms" [ngClass]="c.tone">→ {{ c.label }}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <!-- ════ MARKETPLACE ════ -->
+            <section *ngSwitchCase="'marketplace'" class="screen">
+              <div class="stats-row">
+                <div class="card metric-card" *ngFor="let s of marketplaceMetrics" [ngClass]="s.tone">
+                  <div class="metric-label">{{ s.label }}</div>
+                  <div class="metric-value">{{ s.value }}</div>
+                  <div class="metric-meta">
+                    <span *ngIf="s.change" class="trend" [class.up]="s.trend==='up'" [class.down]="s.trend==='down'">{{ s.change }}</span>
+                    <span class="metric-caption">{{ s.caption }}</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="layout-2">
+                <div class="card">
+                  <div class="card-title">Marketplace — Modular Grid</div>
+                  <div class="market-grid">
+                    <div class="card sub-card" *ngFor="let m of marketplaceItems" [ngClass]="m.tone">
+                      <div class="card-subtitle" style="font-size:9px;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px;">{{ m.tag }}</div>
+                      <div class="card-title-sm">{{ m.title }}</div>
+                      <div style="margin-top:6px;font-weight:700;color:var(--tone,var(--text));">{{ m.value }}</div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="stack">
+                  <div class="card">
+                    <div class="card-title">Barter System</div>
+                    <div class="list">
+                      <div class="list-item" *ngFor="let b of marketplaceBarter">
+                        <div class="list-body">
+                          <div class="list-title">{{ b.title }}</div>
+                          <div class="list-meta">{{ b.subtitle }}</div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="card">
+                    <div class="card-title">My Orders</div>
+                    <div class="list">
+                      <div class="list-item" *ngFor="let o of marketplaceOrders">
+                        <div class="list-body">
+                          <div class="list-title">{{ o.title }}</div>
+                          <div class="list-meta">{{ o.subtitle }}</div>
+                        </div>
+                        <span class="muted">{{ o.value }}</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="card">
+                    <div class="card-title">Linked Platforms</div>
+                    <div class="chip-row">
+                      <span class="chip" *ngFor="let c of marketplacePlatforms" [ngClass]="c.tone">→ {{ c.label }}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <!-- ════ STUDIO ════ -->
+            <section *ngSwitchCase="'studio'" class="screen">
+              <div class="stats-row">
+                <div class="card metric-card" *ngFor="let s of studioMetrics" [ngClass]="s.tone">
+                  <div class="metric-label">{{ s.label }}</div>
+                  <div class="metric-value">{{ s.value }}</div>
+                  <div class="metric-meta"><span class="metric-caption">{{ s.caption }}</span></div>
+                  <div class="progress" *ngIf="s.progress !== undefined"><span [style.width.%]="s.progress"></span></div>
+                </div>
+              </div>
+
+              <div class="layout-2">
+                <div class="stack">
+                  <div class="card">
+                    <div class="card-title">Ideas & Concepts — Modular Grid</div>
+                    <div class="studio-grid">
+                      <div class="card sub-card" *ngFor="let i of studioIdeas" [ngClass]="i.tone">
+                        <div class="card-subtitle" style="font-size:9px;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px;">{{ i.tag }}</div>
+                        <div class="card-title-sm">{{ i.title }}</div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="card">
+                    <div class="card-title">Testing & Testbeds</div>
+                    <div class="studio-grid">
+                      <div class="card sub-card" *ngFor="let t of studioTestbeds" [ngClass]="t.tone">
+                        <div class="card-subtitle" style="font-size:9px;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px;">Testbed</div>
+                        <div class="card-title-sm">{{ t.title }}</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="stack">
+                  <div class="card">
+                    <div class="card-title">Toolsets & Toolkits</div>
+                    <div class="list">
+                      <div class="list-item" *ngFor="let t of studioToolsets">
+                        <div class="list-body">
+                          <div class="list-title">{{ t.title }}</div>
+                          <div class="list-meta">{{ t.subtitle }}</div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="card">
+                    <div class="card-title">Files & Notes</div>
+                    <div class="asset-grid" style="grid-template-columns:repeat(2,1fr);">
+                      <button *ngFor="let f of studioFiles" type="button" class="asset-card" [ngClass]="f.tone">
+                        <span class="asset-icon">📒</span>
+                        <span>{{ f.title }}</span>
+                      </button>
+                    </div>
+                  </div>
+                  <div class="card">
+                    <div class="card-title">Linked Platforms</div>
+                    <div class="chip-row">
+                      <span class="chip" *ngFor="let c of studioPlatforms" [ngClass]="c.tone">→ {{ c.label }}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <!-- ════ COMMUNITY ════ -->
+            <section *ngSwitchCase="'community'" class="screen">
+              <div class="stats-row">
+                <div class="card metric-card" *ngFor="let s of communityMetrics" [ngClass]="s.tone">
+                  <div class="metric-label">{{ s.label }}</div>
+                  <div class="metric-value">{{ s.value }}</div>
+                  <div class="metric-meta"><span class="metric-caption">{{ s.caption }}</span></div>
+                </div>
+              </div>
+
+              <div class="layout-2">
+                <div class="card">
+                  <div class="card-title">Feeds & Timelines</div>
+                  <div class="feed-list">
+                    <div class="feed-item" *ngFor="let f of communityFeeds">
+                      <div class="avatar-chip">{{ f.author.charAt(0) }}</div>
+                      <div class="feed-body">
+                        <div class="feed-author">{{ f.author }} <span class="feed-time" style="font-weight:400;">{{ f.time }}</span></div>
+                        <div class="feed-message">{{ f.message }}</div>
+                        <div class="feed-meta">♥ {{ f.likes }} · <span>Reply</span> · <span>Share</span></div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="stack">
+                  <div class="card">
+                    <div class="card-title">Spaces & Rooms</div>
+                    <div class="list">
+                      <div class="list-item" *ngFor="let s of communitySpaces">
+                        <div class="list-body">
+                          <div class="list-title">{{ s.title }}</div>
+                          <div class="list-meta">{{ s.subtitle }}</div>
+                        </div>
+                        <span style="font-size:11px;color:var(--text-2);">→</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="card">
+                    <div class="card-title">DMs</div>
+                    <div class="list">
+                      <div class="list-item" *ngFor="let d of communityDms">
+                        <div class="avatar-chip">{{ d.title.charAt(0) }}</div>
+                        <div class="list-body">
+                          <div class="list-title">{{ d.title }}</div>
+                          <div class="list-meta">{{ d.subtitle }}</div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="card">
+                    <div class="card-title">Linked Platforms</div>
+                    <div class="chip-row">
+                      <span class="chip" *ngFor="let c of communityPlatforms" [ngClass]="c.tone">→ {{ c.label }}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <!-- ════ DEVELOPER ════ -->
+            <section *ngSwitchCase="'developer'" class="screen">
+              <div class="stats-row">
+                <div class="card metric-card" *ngFor="let s of developerMetrics" [ngClass]="s.tone">
+                  <div class="metric-label">{{ s.label }}</div>
+                  <div class="metric-value">{{ s.value }}</div>
+                  <div class="metric-meta"><span class="metric-caption">{{ s.caption }}</span></div>
+                  <div class="progress" *ngIf="s.progress !== undefined"><span [style.width.%]="s.progress"></span></div>
+                </div>
+              </div>
+
+              <div class="layout-2">
+                <div class="stack">
+                  <div class="card">
+                    <div class="card-title">API Reference</div>
+                    <div class="api-list">
+                      <div class="api-row" *ngFor="let r of developerApi">
+                        <span class="api-method" [ngClass]="r.tone">{{ r.method }}</span>
+                        <span class="api-path">{{ r.path }}</span>
+                        <span class="api-desc">{{ r.description }}</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="card">
+                    <div class="card-title">Extensions & Integrations</div>
+                    <div class="extension-grid">
+                      <div class="card sub-card" *ngFor="let e of developerExtensions" [ngClass]="e.tone">
+                        <div class="card-title-sm">{{ e.title }}</div>
+                        <div class="card-subtitle">{{ e.subtitle }}</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="stack">
+                  <div class="card">
+                    <div class="card-title">API Keys</div>
+                    <div class="list">
+                      <div class="list-item" *ngFor="let k of developerKeys">
+                        <div class="list-body">
+                          <div class="list-title">{{ k.title }}</div>
+                          <div class="list-meta">{{ k.subtitle }}</div>
+                        </div>
+                        <span class="status" [ngClass]="k.tone">{{ k.meta }}</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="card">
+                    <div class="card-title">SDKs</div>
+                    <div class="chip-row">
+                      <span class="chip" *ngFor="let s of developerSdks" [ngClass]="s.tone">{{ s.label }}</span>
+                    </div>
+                  </div>
+                  <div class="card">
+                    <div class="card-title">Webhooks</div>
+                    <div class="list">
+                      <div class="list-item" *ngFor="let w of developerWebhooks">
+                        <div class="list-body">
+                          <div class="list-title">{{ w.title }}</div>
+                          <div class="list-meta">{{ w.subtitle }}</div>
+                        </div>
+                        <span class="status" [ngClass]="w.tone">{{ w.meta }}</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <!-- ════ PROFILE ════ -->
+            <section *ngSwitchCase="'profile'" class="screen">
+              <div class="profile-header">
+                <div class="card profile-card">
+                  <div class="avatar-lg">J</div>
+                  <div class="profile-info">
+                    <div class="profile-name">Jordan Chen</div>
+                    <div class="profile-title">Independent Technology Consultant</div>
+                    <div class="chip-row">
+                      <span class="chip tone-amber">Pro</span>
+                      <span class="chip tone-emerald">Verified</span>
+                      <span class="chip tone-rose">Builder</span>
+                    </div>
+                  </div>
+                </div>
+                <div class="stats-row profile-stats">
+                  <div class="card metric-card" *ngFor="let s of profileMetrics" [ngClass]="s.tone">
+                    <div class="metric-label">{{ s.label }}</div>
+                    <div class="metric-value">{{ s.value }}</div>
+                    <div class="metric-meta"><span class="metric-caption">{{ s.caption }}</span></div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="card">
+                <div class="card-title">Personas & Roles</div>
+                <div class="persona-grid">
+                  <div class="card sub-card" *ngFor="let p of profilePersonas" [ngClass]="p.tone">
+                    <div class="card-subtitle" style="font-size:18px;margin-bottom:4px;">{{ p.tag }}</div>
+                    <div class="card-title-sm">{{ p.title }}</div>
+                    <div class="card-meta">{{ p.subtitle }}</div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="card">
+                <div class="card-title">Settings & Configuration</div>
+                <div class="settings-grid">
+                  <button *ngFor="let s of profileSettings" type="button" class="asset-card" [ngClass]="s.tone">
+                    {{ s.title }}
+                  </button>
+                </div>
+              </div>
+
+              <div class="card">
+                <div class="card-title">Activity & Stats</div>
+                <div class="stats-row">
+                  <div class="card metric-card" *ngFor="let s of profileStats" [ngClass]="s.tone">
+                    <div class="metric-label">{{ s.label }}</div>
+                    <div class="metric-value">{{ s.value }}</div>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <!-- ════ ORGANIZATIONS ════ -->
+            <section *ngSwitchCase="'organizations'" class="screen">
+              <div class="stats-row">
+                <div class="card metric-card" *ngFor="let s of orgMetrics" [ngClass]="s.tone">
+                  <div class="metric-label">{{ s.label }}</div>
+                  <div class="metric-value">{{ s.value }}</div>
+                  <div class="metric-meta"><span class="metric-caption">{{ s.caption }}</span></div>
+                </div>
+              </div>
+
+              <div class="layout-2">
+                <div class="stack">
+                  <div class="card">
+                    <div class="card-title">Organizations — Modular Grid</div>
+                    <div class="org-grid">
+                      <div class="card sub-card" *ngFor="let o of orgCards" [ngClass]="o.tone">
+                        <div class="card-subtitle" style="font-size:18px;margin-bottom:6px;">⊞</div>
+                        <div class="card-title-sm">{{ o.title }}</div>
+                        <div class="card-meta">{{ o.subtitle }}</div>
+                        <div class="card-meta">{{ o.meta }}</div>
+                        <span class="status" [ngClass]="o.tone" style="margin-top:4px;display:block;">{{ o.status }}</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="card">
+                    <div class="card-title">Governance & Proposals</div>
+                    <div class="table-row table-header" style="--cols: 2fr 1fr 1fr 1fr;">
+                      <span>Proposal</span><span>Org</span><span>Votes</span><span>Status</span>
+                    </div>
+                    <div class="table-row" *ngFor="let r of orgProposals" style="--cols: 2fr 1fr 1fr 1fr;">
+                      <span>{{ r.cells[0] }}</span>
+                      <span class="muted">{{ r.cells[1] }}</span>
+                      <span class="muted">{{ r.cells[2] }}</span>
+                      <span class="status" [ngClass]="r.badgeTone">{{ r.badge }}</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="stack">
+                  <div class="card">
+                    <div class="card-title">My Roles</div>
+                    <div class="list">
+                      <div class="list-item" *ngFor="let r of orgRoles">
+                        <div class="list-body">
+                          <div class="list-title">{{ r.title }}</div>
+                          <div class="list-meta" style="color:var(--tone,var(--text-2));">{{ r.subtitle }}</div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="card">
+                    <div class="card-title">Cap Tables</div>
+                    <div class="list">
+                      <div class="list-item" *ngFor="let c of orgCapTables">
+                        <span class="avatar-chip" [ngClass]="c.tone" style="background:var(--tone-bg);color:var(--tone);border-color:var(--tone-border);">{{ c.title }}</span>
+                        <div class="list-body"><div class="list-title">{{ c.subtitle }}</div></div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <!-- ════ LEGAL ════ -->
+            <section *ngSwitchCase="'legal'" class="screen">
+              <div class="stats-row">
+                <div class="card metric-card" *ngFor="let s of legalMetrics" [ngClass]="s.tone">
+                  <div class="metric-label">{{ s.label }}</div>
+                  <div class="metric-value">{{ s.value }}</div>
+                  <div class="metric-meta"><span class="metric-caption">{{ s.caption }}</span></div>
+                </div>
+              </div>
+
+              <div class="layout-2">
+                <div class="stack">
+                  <div class="card">
+                    <div class="card-title">IP & Trademarks</div>
+                    <div class="legal-grid">
+                      <div class="card sub-card" *ngFor="let ip of legalIp" [ngClass]="ip.tone">
+                        <div class="card-subtitle" style="font-size:9px;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px;">{{ ip.tag }}</div>
+                        <div class="card-title-sm">{{ ip.title }}</div>
+                        <span class="status" [ngClass]="ip.tone" style="margin-top:6px;display:inline-block;padding:2px 6px;background:var(--tone-bg);border:1px solid var(--tone-border);border-radius:3px;font-size:10px;">{{ ip.status }}</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="card">
+                    <div class="card-title">Contracts & Agreements</div>
+                    <div class="table-row table-header" style="--cols: 2fr 1.5fr 0.8fr 1fr 1fr;">
+                      <span>Contract</span><span>Party</span><span>Value</span><span>Expires</span><span>Status</span>
+                    </div>
+                    <div class="table-row" *ngFor="let r of legalContracts" style="--cols: 2fr 1.5fr 0.8fr 1fr 1fr;">
+                      <span>{{ r.cells[0] }}</span>
+                      <span class="muted">{{ r.cells[1] }}</span>
+                      <span style="color:var(--amber);">{{ r.cells[2] }}</span>
+                      <span class="muted">{{ r.cells[3] }}</span>
+                      <span class="status" [ngClass]="r.badgeTone">{{ r.badge }}</span>
+                    </div>
+                  </div>
+                  <div class="card">
+                    <div class="card-title">Compliance & Audit</div>
+                    <div class="legal-grid" style="grid-template-columns:repeat(3,1fr);">
+                      <div class="card sub-card" *ngFor="let c of legalCompliance" [ngClass]="c.tone">
+                        <div class="card-title-sm">{{ c.title }}</div>
+                        <span class="status" [ngClass]="c.tone" style="margin-top:4px;display:block;font-size:10.5px;">{{ c.subtitle }}</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="stack">
+                  <div class="card">
+                    <div class="card-title">Upcoming</div>
+                    <div class="list">
+                      <div class="list-item" *ngFor="let u of legalUpcoming">
+                        <div class="list-body">
+                          <div class="list-title">{{ u.title }}</div>
+                          <div class="list-meta" style="color:var(--tone,var(--text-2));">{{ u.subtitle }}</div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="card">
+                    <div class="card-title">Quick Actions</div>
+                    <div class="action-list">
+                      <button *ngFor="let a of legalActions" type="button" class="action-button" [ngClass]="a.tone">
+                        {{ a.title }}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+          </ng-container>
         </section>
-
-        <aside class="insights">
-          <h3>Realtime Payload</h3>
-          <pre>{{ payload() }}</pre>
-        </aside>
-      </section>
-    </main>
+      </main>
+    </div>
   `,
-  styles: [
-    `
-    :host { display: block; min-height: 100vh; }
-    * { box-sizing: border-box; }
-    .app-root {
-      min-height: 100vh;
-      color: #e4eeff;
-      background:
-        radial-gradient(1200px 500px at 10% -10%, rgba(61, 130, 255, .28), transparent 60%),
-        radial-gradient(1000px 700px at 95% 10%, rgba(23, 214, 255, .18), transparent 60%),
-        #070b17;
-      font-family: "Space Grotesk", "Manrope", "Segoe UI", sans-serif;
-      padding: 16px;
-    }
-    .topbar {
-      display: grid;
-      grid-template-columns: 170px 1fr auto;
-      gap: 14px;
-      align-items: center;
-      background: linear-gradient(90deg, rgba(9, 22, 58, .88), rgba(8, 17, 42, .88));
-      border: 1px solid rgba(98, 144, 255, .3);
-      border-radius: 16px;
-      padding: 12px;
-      margin-bottom: 14px;
-      backdrop-filter: blur(6px);
-    }
-    .brand {
-      font-size: 1.34rem;
-      font-weight: 800;
-      letter-spacing: .12rem;
-      color: #91c5ff;
-    }
-    .brand span {
-      color: #49e2ff;
-      margin-left: 4px;
-    }
-    .search input {
-      width: 100%;
-      border: 1px solid rgba(115, 151, 245, .35);
-      border-radius: 10px;
-      background: rgba(6, 16, 41, .78);
-      color: #dbe9ff;
-      padding: 11px 12px;
-      outline: none;
-    }
-    .top-actions {
-      display: flex;
-      gap: 10px;
-      align-items: center;
-    }
-    .ghost {
-      border: 1px solid rgba(106, 146, 255, .42);
-      color: #b5d8ff;
-      background: rgba(14, 30, 73, .6);
-      border-radius: 10px;
-      padding: 9px 12px;
-      cursor: pointer;
-    }
-    select {
-      border: 1px solid rgba(115, 151, 245, .35);
-      border-radius: 10px;
-      background: rgba(6, 16, 41, .78);
-      color: #dbe9ff;
-      padding: 9px 10px;
-    }
-    .workspace-shell {
-      display: grid;
-      grid-template-columns: 58px 250px 1fr 330px;
-      gap: 12px;
-      min-height: calc(100vh - 102px);
-    }
-    .icon-rail, .navigator, .main-stage, .insights {
-      border: 1px solid rgba(87, 123, 210, .35);
-      background: linear-gradient(160deg, rgba(11, 24, 60, .82), rgba(7, 16, 40, .92));
-      border-radius: 14px;
-      backdrop-filter: blur(4px);
-    }
-    .icon-rail {
-      padding: 10px 8px;
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-    }
-    .rail-btn {
-      border: 1px solid rgba(117, 155, 252, .26);
-      background: rgba(20, 40, 86, .55);
-      color: #91b8ff;
-      border-radius: 10px;
-      height: 42px;
-      cursor: pointer;
-      font-size: 1.02rem;
-    }
-    .rail-btn.active { color: #1f1010; background: linear-gradient(135deg, #5be5ff, #5cb4ff); }
-
-    .navigator {
-      padding: 12px;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-    }
-    .mode-row {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 8px;
-    }
-    .mode-btn {
-      border: 1px solid rgba(123, 157, 243, .28);
-      background: rgba(13, 27, 68, .7);
-      color: #a7c7ff;
-      border-radius: 10px;
-      padding: 8px;
-      cursor: pointer;
-    }
-    .mode-btn.active {
-      color: #041223;
-      font-weight: 700;
-      background: linear-gradient(135deg, #6deaff, #70bdff);
-    }
-    .label {
-      margin: 2px 0 0;
-      text-transform: uppercase;
-      letter-spacing: .08rem;
-      font-size: .72rem;
-      color: #82b3ff;
-    }
-    .nav-list {
-      display: flex;
-      flex-direction: column;
-      gap: 7px;
-      overflow: auto;
-      padding-right: 3px;
-    }
-    .nav-item {
-      border: 1px solid rgba(114, 145, 235, .24);
-      background: rgba(13, 27, 68, .7);
-      color: #c6dcff;
-      border-radius: 10px;
-      padding: 9px;
-      text-align: left;
-      cursor: pointer;
-      font-size: .9rem;
-    }
-    .nav-item.active {
-      border-color: rgba(82, 229, 255, .6);
-      box-shadow: inset 0 0 0 1px rgba(45, 226, 255, .44);
-      background: linear-gradient(135deg, rgba(22, 53, 120, .85), rgba(21, 77, 137, .85));
-    }
-
-    .main-stage {
-      padding: 14px;
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-      overflow: auto;
-    }
-    .hero {
-      display: flex;
-      justify-content: space-between;
-      gap: 12px;
-      align-items: center;
-      border: 1px solid rgba(116, 154, 248, .24);
-      border-radius: 14px;
-      background: linear-gradient(140deg, rgba(12, 32, 82, .86), rgba(10, 50, 96, .86));
-      padding: 14px;
-    }
-    .hero h1 { margin: 0; font-size: 1.9rem; font-weight: 700; letter-spacing: .01rem; }
-    .hero p { margin: 5px 0 0; color: #b3cbf7; }
-    .hero-chip {
-      border: 1px solid rgba(80, 232, 255, .42);
-      border-radius: 999px;
-      padding: 7px 12px;
-      color: #79eaff;
-      background: rgba(15, 69, 120, .55);
-      font-size: .82rem;
-      white-space: nowrap;
-    }
-    .meta-row {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-      gap: 10px;
-    }
-    .metric {
-      border: 1px solid rgba(112, 145, 235, .22);
-      border-radius: 12px;
-      background: rgba(11, 24, 58, .8);
-      padding: 10px;
-    }
-    .metric span { display: block; font-size: .75rem; color: #8eb4ee; }
-    .metric strong { display: block; margin-top: 4px; color: #8ef0ff; font-size: 1.04rem; font-weight: 600; }
-    .panel-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-      gap: 10px;
-    }
-    .panel {
-      border: 1px solid rgba(111, 143, 232, .22);
-      border-radius: 12px;
-      background: rgba(11, 24, 58, .82);
-      padding: 12px;
-    }
-    .panel h2 {
-      margin: 0 0 9px;
-      font-size: .95rem;
-      letter-spacing: .02rem;
-      color: #d5e6ff;
-    }
-    .chips {
-      display: flex;
-      gap: 7px;
-      flex-wrap: wrap;
-    }
-    .chip {
-      border: 1px solid rgba(105, 148, 243, .28);
-      border-radius: 999px;
-      padding: 4px 10px;
-      font-size: .78rem;
-      color: #b7d6ff;
-      background: rgba(18, 55, 109, .6);
-    }
-    .chip-alt {
-      color: #85f2ff;
-      border-color: rgba(72, 214, 255, .4);
-      background: rgba(8, 83, 123, .5);
-    }
-    ol, ul {
-      margin: 0;
-      padding-left: 17px;
-      color: #c3dafd;
-    }
-    li + li { margin-top: 3px; }
-    .tool-row, .action-row {
-      display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
-    }
-    .tool-row button, .action-row button {
-      border: 1px solid rgba(112, 146, 240, .32);
-      border-radius: 10px;
-      background: rgba(17, 37, 82, .8);
-      color: #c3ddff;
-      padding: 8px 11px;
-      cursor: pointer;
-    }
-    .action-row input {
-      min-width: 230px;
-      border: 1px solid rgba(112, 146, 240, .32);
-      border-radius: 10px;
-      background: rgba(9, 22, 52, .88);
-      color: #dbe9ff;
-      padding: 8px 10px;
-      outline: none;
-    }
-    .insights {
-      padding: 12px;
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-      overflow: hidden;
-    }
-    .insights h3 {
-      margin: 0;
-      color: #b8d4ff;
-      font-size: .95rem;
-      letter-spacing: .03rem;
-    }
-    pre {
-      margin: 0;
-      flex: 1;
-      min-height: 180px;
-      overflow: auto;
-      border-radius: 10px;
-      border: 1px solid rgba(113, 147, 237, .3);
-      background: rgba(6, 14, 35, .95);
-      color: #cde1ff;
-      padding: 11px;
-      white-space: pre-wrap;
-      font-size: .79rem;
-      line-height: 1.35;
-      font-family: "JetBrains Mono", "Cascadia Code", monospace;
-    }
-
-    @media (max-width: 1320px) {
-      .workspace-shell { grid-template-columns: 54px 220px 1fr; }
-      .insights { grid-column: 1 / -1; min-height: 230px; }
-    }
-    @media (max-width: 980px) {
-      .topbar { grid-template-columns: 1fr; }
-      .workspace-shell { grid-template-columns: 1fr; }
-      .icon-rail {
-        flex-direction: row;
-        justify-content: center;
-      }
-      .navigator { max-height: 300px; }
-    }
-    `,
-  ],
 })
 export class AppComponent {
-  private readonly api = inject(ApiService);
+  readonly navItems = NAV_ITEMS;
+  readonly activeScreen = signal<ScreenId>('dashboard');
+  readonly meta = computed(() => SCREEN_META[this.activeScreen()]);
 
-  readonly identityProfiles = [
-    { id: 'personal', name: 'Personal Profile' },
-    { id: 'work', name: 'Work Profile' },
-    { id: 'business', name: 'Business Profile' },
-    { id: 'community', name: 'Community Profile' },
+  setScreen(id: ScreenId): void { this.activeScreen.set(id); }
+
+  // ── DASHBOARD ───────────────────────────────────────────────────────────────
+  readonly dashboardMetrics: Metric[] = [
+    { label: 'Portfolio Health', value: '87%', change: '4%', trend: 'up', caption: '3 at risk', progress: 87, tone: 'tone-blue' },
+    { label: 'Active Projects',  value: '12',  change: '2%', trend: 'up', caption: 'Concurrent', tone: 'tone-teal' },
+    { label: 'Net Revenue',      value: '$24.8K', change: '11%', trend: 'up', caption: 'This month', tone: 'tone-emerald' },
+    { label: 'AI Credits',       value: '8,420',  change: '2%', trend: 'down', caption: 'Remaining', progress: 66, tone: 'tone-purple' },
   ];
 
-  readonly catalog = signal<UnifiedScreenCatalog>(fallbackCatalog);
-  readonly appMode = signal<AppMode>('office');
-  readonly viewKind = signal<ViewKind>('module');
-  readonly activeUnifiedId = signal('dashboard');
-  readonly activeOfficeId = signal<OfficeViewId>('dashboard');
-  readonly activePlatformId = signal<PlatformViewId>('system');
-  readonly activeProviderId = signal<ProviderViewId>('snapshot');
-  readonly activeProfile = signal('work');
-  readonly payload = signal('Select a view from the left sidebar.');
-  readonly actionDraft = signal('');
-  readonly navQuery = signal('');
+  readonly dashboardQuickLinks = [
+    { label: 'Office',      icon: '🏢', tone: 'tone-blue'    },
+    { label: 'Portfolio',   icon: '💼', tone: 'tone-purple'  },
+    { label: 'Bank',        icon: '🏦', tone: 'tone-emerald' },
+    { label: 'Exchange',    icon: '↔️', tone: 'tone-amber'   },
+    { label: 'Marketplace', icon: '🛍️', tone: 'tone-teal'   },
+    { label: 'Studio',      icon: '🎨', tone: 'tone-indigo'  },
+    { label: 'Community',   icon: '🌐', tone: 'tone-rose'    },
+    { label: 'Developer',   icon: '⚡', tone: 'tone-cyan'    },
+  ];
 
-  readonly activeUnifiedItems = computed(() =>
-    this.viewKind() === 'module' ? this.catalog().modules : this.catalog().workflows,
-  );
+  readonly dashboardActivity: ActivityItem[] = [
+    { event: 'Payment received — $3,200', module: 'Exchange',  time: '2 min ago',  status: 'Active', tone: 'tone-emerald' },
+    { event: 'New proposal: Brand Redesign', module: 'Studio',  time: '14 min ago', status: 'Active', tone: 'tone-blue'    },
+    { event: 'Project milestone hit',     module: 'Office',    time: '1 hr ago',   status: 'Active', tone: 'tone-purple'  },
+    { event: 'Community post: 24 reactions', module: 'Community', time: '2 hr ago', status: 'Active', tone: 'tone-rose'   },
+    { event: 'Token distribution complete', module: 'Bank',    time: '5 hr ago',   status: 'Active', tone: 'tone-teal'    },
+  ];
 
-  readonly activeUnifiedScreen = computed(() =>
-    this.activeUnifiedItems().find((screen) => screen.id === this.activeUnifiedId()),
-  );
+  // ── OFFICE ──────────────────────────────────────────────────────────────────
+  readonly officeMetrics: Metric[] = [
+    { label: 'Programs',      value: '4',   caption: '2 delayed',    tone: 'tone-blue' },
+    { label: 'Projects',      value: '18',  caption: '12 active',    tone: 'tone-teal', progress: 70 },
+    { label: 'Milestones Due',value: '6',   caption: 'Next 7 days',  tone: 'tone-amber' },
+    { label: 'Team Capacity', value: '73%', caption: '-5%',          tone: 'tone-emerald', progress: 73 },
+  ];
 
-  readonly activeOfficeSpec = computed(() =>
-    officeViewSpecs.find((x) => x.id === this.activeOfficeId()) ?? officeViewSpecs[0],
-  );
+  readonly officePrograms: CardItem[] = [
+    { title: 'Alpha Platform',  subtitle: 'In Progress · 8/12', tone: 'tone-blue',   progress: 67, members: ['A','A','A'] },
+    { title: 'Beta Campaign',   subtitle: 'Planning · 2/6',     tone: 'tone-teal',   progress: 33, members: ['A','A','A'] },
+    { title: 'Gamma Research',  subtitle: 'On Hold · 5/5',      tone: 'tone-emerald',progress: 100,members: ['A','A','A'] },
+    { title: 'Delta Ops',       subtitle: 'In Progress · 11/15',tone: 'tone-amber',  progress: 73, members: ['A','A','A'] },
+    { title: 'Epsilon Design',  subtitle: 'Active · 3/8',       tone: 'tone-purple', progress: 38, members: ['A','A','A'] },
+    { title: 'Zeta Legal',      subtitle: 'Review · 7/9',       tone: 'tone-rose',   progress: 78, members: ['A','A','A'] },
+  ];
 
-  readonly activePlatformSpec = computed(() =>
-    platformViewSpecs.find((x) => x.id === this.activePlatformId()) ?? platformViewSpecs[0],
-  );
+  readonly officeAssets: CardItem[] = [
+    { title: 'Projects',    tone: 'tone-blue'    },
+    { title: 'Programs',    tone: 'tone-teal'    },
+    { title: 'Assets',      tone: 'tone-purple'  },
+    { title: 'Solutions',   tone: 'tone-emerald' },
+    { title: 'Artifacts',   tone: 'tone-indigo'  },
+    { title: 'Resources',   tone: 'tone-rose'    },
+    { title: 'Blueprints',  tone: 'tone-amber'   },
+    { title: 'APIs',        tone: 'tone-cyan'    },
+    { title: 'Components',  tone: 'tone-blue'    },
+    { title: 'Datasets',    tone: 'tone-teal'    },
+  ];
 
-  readonly activeProviderSpec = computed(() =>
-    providerViewSpecs.find((x) => x.id === this.activeProviderId()) ?? providerViewSpecs[0],
-  );
+  readonly officeThirdParty: ChipItem[] = [
+    { label: 'Jira',   tone: 'tone-blue'   },
+    { label: 'Monday', tone: 'tone-amber'  },
+    { label: 'GitHub', tone: 'tone-indigo' },
+    { label: 'GitLab', tone: 'tone-rose'   },
+    { label: 'Notion', tone: 'tone-teal'   },
+  ];
 
-  readonly navItems = computed<NavItem[]>(() => {
-    const raw = this.appMode() === 'office'
-      ? officeViewSpecs.map((x) => ({ id: x.id, title: x.title }))
-      : this.appMode() === 'platform'
-        ? platformViewSpecs.map((x) => ({ id: x.id, title: x.title }))
-        : this.appMode() === 'providers'
-          ? providerViewSpecs.map((x) => ({ id: x.id, title: x.title }))
-          : this.activeUnifiedItems().map((x) => ({ id: x.id, title: x.title }));
+  readonly officeTeam: CardItem[] = [
+    { title: 'J', subtitle: 'Jordan C.',  meta: '3 active projects', tone: 'tone-blue'    },
+    { title: 'M', subtitle: 'Maria S.',   meta: '3 active projects', tone: 'tone-emerald' },
+    { title: 'D', subtitle: 'Devon P.',   meta: '3 active projects', tone: 'tone-amber'   },
+    { title: 'P', subtitle: 'Priya N.',   meta: '3 active projects', tone: 'tone-rose'    },
+  ];
 
-    const query = this.navQuery().trim().toLowerCase();
-    if (!query) {
-      return raw;
-    }
-    return raw.filter((x) => x.title.toLowerCase().includes(query));
-  });
+  // ── PORTFOLIO ────────────────────────────────────────────────────────────────
+  readonly portfolioMetrics: Metric[] = [
+    { label: 'Projects',  value: '12', caption: 'Active',   tone: 'tone-blue'    },
+    { label: 'Programs',  value: '4',  caption: 'Operating',tone: 'tone-teal'    },
+    { label: 'Assets',    value: '28', caption: 'Managed',  tone: 'tone-purple'  },
+    { label: 'Solutions', value: '7',  caption: 'Live',     tone: 'tone-emerald' },
+    { label: 'Artifacts', value: '15', caption: 'Ready',    tone: 'tone-indigo'  },
+  ];
 
-  readonly activeTitle = computed(() => {
-    if (this.appMode() === 'office') {
-      return this.activeOfficeSpec().title;
-    }
-    if (this.appMode() === 'platform') {
-      return this.activePlatformSpec().title;
-    }
-    if (this.appMode() === 'providers') {
-      return this.activeProviderSpec().title;
-    }
-    return this.activeUnifiedScreen()?.title ?? 'Kogi';
-  });
+  readonly portfolioItems: CardItem[] = [
+    { title: 'Brand Identity System', subtitle: 'Design',   status: 'Active',    tone: 'tone-purple'  },
+    { title: 'API Gateway v2',        subtitle: 'Dev',      status: 'Released',  tone: 'tone-teal'    },
+    { title: 'Market Research',       subtitle: 'Research', status: 'Draft',     tone: 'tone-amber'   },
+    { title: 'CRM Integration',       subtitle: 'Solution', status: 'Active',    tone: 'tone-emerald' },
+    { title: 'UI Component Lib',      subtitle: 'Asset',    status: 'Active',    tone: 'tone-rose'    },
+    { title: 'Tokenomics Model',      subtitle: 'Finance',  status: 'Review',    tone: 'tone-cyan'    },
+    { title: 'Legal Templates',       subtitle: 'Legal',    status: 'Active',    tone: 'tone-rose'    },
+    { title: 'Analytics Dashboard',   subtitle: 'Dev',      status: 'Active',    tone: 'tone-indigo'  },
+    { title: 'Product Roadmap',       subtitle: 'Strategy', status: 'Active',    tone: 'tone-blue'    },
+    { title: 'Mobile App MVP',        subtitle: 'Dev',      status: 'Building',  tone: 'tone-purple'  },
+    { title: 'Content Strategy',      subtitle: 'Marketing',status: 'Draft',     tone: 'tone-amber'   },
+    { title: 'Partnership Deck',      subtitle: 'Sales',    status: 'Active',    tone: 'tone-amber'   },
+  ];
 
-  readonly activeSubtitle = computed(() => {
-    if (this.appMode() === 'office') {
-      return this.activeOfficeSpec().subtitle;
-    }
-    if (this.appMode() === 'platform') {
-      return this.activePlatformSpec().subtitle;
-    }
-    if (this.appMode() === 'providers') {
-      return this.activeProviderSpec().subtitle;
-    }
-    return this.viewKind() === 'module'
-      ? 'Unified module screen from reconciled v2/v3 docs.'
-      : 'Unified workflow screen from reconciled v2/v3 docs.';
-  });
+  readonly portfolioPlatforms: ChipItem[] = [
+    { label: 'Behance',      tone: 'tone-blue'   },
+    { label: 'GitHub',       tone: 'tone-indigo' },
+    { label: 'Dribbble',     tone: 'tone-rose'   },
+    { label: 'Figma',        tone: 'tone-purple' },
+    { label: 'Notion',       tone: 'tone-teal'   },
+    { label: 'Google Drive', tone: 'tone-cyan'   },
+  ];
 
-  readonly activeSeries = computed(() => {
-    if (this.appMode() === 'office') {
-      return 'kogi-office-application';
-    }
-    if (this.appMode() === 'platform') {
-      return 'kogi-platform-architecture';
-    }
-    if (this.appMode() === 'providers') {
-      return 'kogi-provider-registry';
-    }
-    return this.catalog().series;
-  });
+  // ── WORKSPACE ───────────────────────────────────────────────────────────────
+  readonly workspaceMetrics: Metric[] = [
+    { label: 'Open Tasks',    value: '34', caption: '8 overdue',   tone: 'tone-blue'    },
+    { label: 'Sprints Active',value: '3',  caption: '2 on track',  tone: 'tone-teal', progress: 60 },
+    { label: 'Blocked',       value: '5',  caption: 'Needs action',tone: 'tone-amber'   },
+    { label: 'Done This Week',value: '21', caption: '+15%',        tone: 'tone-emerald' },
+  ];
 
-  readonly activeVersion = computed(() => {
-    if (this.appMode() === 'office') {
-      return 'v0.3.0';
-    }
-    if (this.appMode() === 'platform') {
-      return 'v1.0.0';
-    }
-    if (this.appMode() === 'providers') {
-      return 'v0.2.0';
-    }
-    return this.catalog().version;
-  });
+  readonly workspaceKanban: KanbanColumn[] = [
+    { title: 'Backlog',     tone: 'tone-blue',    items: ['Auth redesign','Payment flow','API docs','Onboard UX'] },
+    { title: 'In Progress', tone: 'tone-amber',   items: ['Mobile nav','Token calc','Legal review','Test suite'] },
+    { title: 'Review',      tone: 'tone-purple',  items: ['Brand deck','Coop model','RFC-009','Data model'] },
+    { title: 'Done',        tone: 'tone-emerald', items: ['Login fix','CSV export','Error states','Docs v2'] },
+  ];
 
-  readonly activeEndpoint = computed(() => {
-    if (this.appMode() === 'office') {
-      return this.activeOfficeSpec().endpoint;
-    }
-    if (this.appMode() === 'platform') {
-      return this.activePlatformSpec().endpoint;
-    }
-    if (this.appMode() === 'providers') {
-      return this.activeProviderSpec().endpoint;
-    }
-    return '/api/v1/screens/unified';
-  });
+  readonly workspaceCalendar: CardItem[] = [
+    { title: 'Client sync 10am', subtitle: 'Mon Mar 10',  tone: 'tone-blue'   },
+    { title: 'Sprint review 3pm',subtitle: 'Mon Mar 10',  tone: 'tone-teal'   },
+    { title: 'Payment due',      subtitle: 'Tue Mar 11',  tone: 'tone-amber'  },
+    { title: 'Board meeting',    subtitle: 'Wed Mar 12',  tone: 'tone-rose'   },
+    { title: 'Milestone delivery',subtitle: 'Thu Mar 13', tone: 'tone-purple' },
+  ];
 
-  constructor() {
-    void this.loadOfficeView();
-  }
+  readonly workspaceRoadmaps: Array<{ title: string; meta: string; progress: number; tone: Tone }> = [
+    { title: 'Q1 2026 — Foundation', meta: '65%', progress: 65, tone: 'tone-blue'  },
+    { title: 'Q2 2026 — Growth',     meta: '33%', progress: 33, tone: 'tone-teal'  },
+    { title: 'Q3 2026 — Scale',      meta: '12%', progress: 12, tone: 'tone-rose'  },
+  ];
 
-  activeModeLabel(): string {
-    switch (this.appMode()) {
-      case 'office':
-        return 'Office Runtime';
-      case 'platform':
-        return 'Platform Runtime';
-      case 'providers':
-        return 'Provider Registry';
-      default:
-        return 'Unified Runtime';
-    }
-  }
+  readonly workspaceGantt: GanttRow[] = [
+    { label: 'Alpha Platform',  bars: [{ label: 'A', tone: 'tone-blue',    start: 5,  width: 55 }] },
+    { label: 'Beta Campaign',   bars: [{ label: 'B', tone: 'tone-amber',   start: 30, width: 40 }] },
+    { label: 'Gamma Research',  bars: [{ label: 'G', tone: 'tone-emerald', start: 5,  width: 70 }] },
+    { label: 'Delta Ops',       bars: [{ label: 'D', tone: 'tone-purple',  start: 40, width: 35 }] },
+    { label: 'Epsilon Design',  bars: [{ label: 'E', tone: 'tone-rose',    start: 55, width: 30 }] },
+  ];
 
-  setProfile(profileId: string): void {
-    this.activeProfile.set(profileId);
-  }
+  // ── TIMELINE ────────────────────────────────────────────────────────────────
+  readonly timelineMetrics: Metric[] = [
+    { label: 'Milestones',      value: '24',  caption: 'Q1 2026',        tone: 'tone-blue'    },
+    { label: 'Scheduled Events',value: '18',  caption: 'Next 30 days',   tone: 'tone-teal'    },
+    { label: 'Overdue Items',   value: '3',   caption: 'Needs attention', tone: 'tone-rose'    },
+    { label: 'Completion Rate', value: '78%', caption: 'This quarter',   tone: 'tone-emerald', progress: 78 },
+  ];
 
-  setNavQuery(value: string): void {
-    this.navQuery.set(value);
-  }
+  readonly timelineMaster: GanttRow[] = [
+    { label: 'Platform MVP',    icon: '✓', bars: [{ label: '', tone: 'tone-blue',    start: 2,  width: 48 }] },
+    { label: 'Design System',   icon: '✓', bars: [{ label: '', tone: 'tone-purple',  start: 20, width: 52 }] },
+    { label: 'API v1 Launch',   icon: '□', bars: [{ label: '', tone: 'tone-emerald', start: 35, width: 38 }] },
+    { label: 'Beta Onboarding', icon: '□', bars: [{ label: '', tone: 'tone-amber',   start: 45, width: 45 }] },
+    { label: 'Legal Review',    icon: '⚐', bars: [{ label: '', tone: 'tone-rose',    start: 28, width: 28 }] },
+    { label: 'Exchange Module', icon: '□', bars: [{ label: '', tone: 'tone-cyan',    start: 58, width: 40 }] },
+    { label: 'Community Beta',  icon: '□', bars: [{ label: '', tone: 'tone-rose',    start: 65, width: 33 }] },
+    { label: 'AI Agent v1',     icon: '□', bars: [{ label: '', tone: 'tone-purple',  start: 52, width: 46 }] },
+  ];
 
-  setActionDraft(value: string): void {
-    this.actionDraft.set(value);
-  }
+  readonly timelineEvents: CardItem[] = [
+    { title: 'Client Sync',      meta: 'Mon Mar 10', tone: 'tone-rose'    },
+    { title: 'Sprint Review',    meta: 'Mon Mar 10', tone: 'tone-blue'    },
+    { title: 'Board Meeting',    meta: 'Wed Mar 12', tone: 'tone-amber'   },
+    { title: 'Milestone Gate',   meta: 'Fri Mar 14', tone: 'tone-rose'    },
+    { title: 'Tax Filing Due',   meta: 'Mar 22',     tone: 'tone-teal'    },
+    { title: 'Q1 Close',         meta: 'Mar 31',     tone: 'tone-purple'  },
+  ];
 
-  setAppMode(mode: AppMode): void {
-    this.appMode.set(mode);
-    if (mode === 'office') {
-      this.activeOfficeId.set('dashboard');
-      void this.loadOfficeView();
-      return;
-    }
-    if (mode === 'platform') {
-      this.activePlatformId.set('system');
-      void this.loadPlatformView();
-      return;
-    }
-    if (mode === 'providers') {
-      this.activeProviderId.set('snapshot');
-      void this.loadProviderView();
-      return;
-    }
-    const first = this.activeUnifiedItems()[0];
-    this.activeUnifiedId.set(first?.id ?? '');
-    void this.loadUnifiedCatalog();
-  }
+  readonly timelineRoadmap: Array<{ title: string; meta: string; progress: number; tone: Tone }> = [
+    { title: 'Q1 Foundation', meta: '65%', progress: 65, tone: 'tone-blue'   },
+    { title: 'Q2 Growth',     meta: '30%', progress: 30, tone: 'tone-teal'   },
+    { title: 'Q3 Scale',      meta: '10%', progress: 10, tone: 'tone-amber'  },
+    { title: 'Q4 Expand',     meta: '0%',  progress: 0,  tone: 'tone-purple' },
+  ];
 
-  setViewKind(kind: ViewKind): void {
-    this.viewKind.set(kind);
-    const first = this.activeUnifiedItems()[0];
-    this.activeUnifiedId.set(first?.id ?? '');
-  }
+  readonly timelineDeadlines: CardItem[] = [
+    { title: 'Legal Review', subtitle: 'In 7 days',  tone: 'tone-rose'   },
+    { title: 'API Launch',   subtitle: 'In 11 days', tone: 'tone-emerald'},
+    { title: 'Board Deck',   subtitle: 'In 18 days', tone: 'tone-amber'  },
+    { title: 'Q1 Close',     subtitle: 'In 21 days', tone: 'tone-blue'   },
+  ];
 
-  isActiveNav(id: string): boolean {
-    if (this.appMode() === 'office') {
-      return id === this.activeOfficeId();
-    }
-    if (this.appMode() === 'platform') {
-      return id === this.activePlatformId();
-    }
-    if (this.appMode() === 'providers') {
-      return id === this.activeProviderId();
-    }
-    return id === this.activeUnifiedId();
-  }
+  // ── STRATEGY ────────────────────────────────────────────────────────────────
+  readonly strategyMetrics: Metric[] = [
+    { label: 'Strategic OKRs',       value: '5',  caption: '3 on track',       tone: 'tone-purple', progress: 60 },
+    { label: 'Tactical Initiatives', value: '18', caption: '11 active',        tone: 'tone-blue'    },
+    { label: 'Ops Processes',        value: '24', caption: 'Documented',       tone: 'tone-emerald' },
+    { label: 'Governance Items',     value: '7',  caption: '2 pending vote',   tone: 'tone-amber'   },
+  ];
 
-  selectNav(id: string): void {
-    if (this.appMode() === 'office' && isOfficeViewId(id)) {
-      this.activeOfficeId.set(id);
-      void this.loadOfficeView();
-      return;
-    }
-    if (this.appMode() === 'platform' && isPlatformViewId(id)) {
-      this.activePlatformId.set(id);
-      void this.loadPlatformView();
-      return;
-    }
-    if (this.appMode() === 'providers' && isProviderViewId(id)) {
-      this.activeProviderId.set(id);
-      void this.loadProviderView();
-      return;
-    }
-    this.activeUnifiedId.set(id);
-  }
+  readonly strategyTree: CardItem[] = [
+    { title: 'Be the OS for independent work',       subtitle: 'Vision',    tone: 'tone-blue'   },
+    { title: 'Unify tools · empower workers',         subtitle: 'Mission',   tone: 'tone-teal'   },
+    { title: 'Reach 50K users by Q4',                subtitle: 'Obj 1',     tone: 'tone-emerald'},
+    { title: '$1M ARR by Q3',                        subtitle: 'Obj 2',     tone: 'tone-amber'  },
+    { title: 'Community 10K members',                subtitle: 'Obj 3',     tone: 'tone-purple' },
+    { title: 'NPS > 60',                             subtitle: 'Key Result', tone: 'tone-rose'   },
+  ];
 
-  displaySections(): string[] {
-    if (this.appMode() === 'office') {
-      return this.activeOfficeSpec().sections;
-    }
-    if (this.appMode() === 'platform') {
-      return this.activePlatformSpec().sections;
-    }
-    if (this.appMode() === 'providers') {
-      return this.activeProviderSpec().sections;
-    }
-    return this.activeUnifiedScreen()?.sections ?? [];
-  }
+  readonly strategyTactics: CardItem[] = [
+    { title: 'Pricing Experiments', subtitle: 'Tactical · Active', tone: 'tone-blue'    },
+    { title: 'Onboarding Funnel',   subtitle: 'Tactical · Active', tone: 'tone-teal'    },
+    { title: 'Partnership Program', subtitle: 'Tactical · Active', tone: 'tone-emerald' },
+    { title: 'Content Marketing',   subtitle: 'Tactical · Active', tone: 'tone-purple'  },
+    { title: 'API Integrations',    subtitle: 'Tactical · Active', tone: 'tone-blue'    },
+    { title: 'Support Playbook',    subtitle: 'Tactical · Active', tone: 'tone-amber'   },
+    { title: 'Legal Frameworks',    subtitle: 'Tactical · Active', tone: 'tone-rose'    },
+    { title: 'Data Infrastructure', subtitle: 'Tactical · Active', tone: 'tone-cyan'    },
+  ];
 
-  displayFlows(): string[] {
-    if (this.appMode() === 'office') {
-      return this.activeOfficeSpec().flows;
-    }
-    if (this.appMode() === 'platform') {
-      return this.activePlatformSpec().flows;
-    }
-    if (this.appMode() === 'providers') {
-      return this.activeProviderSpec().flows;
-    }
-    return this.activeUnifiedScreen()?.steps ?? [];
-  }
+  readonly strategyGovernance: CardItem[] = [
+    { title: 'RFC-009',        subtitle: 'Under Review',   meta: 'Review',  tone: 'tone-amber'  },
+    { title: 'Equity Policy',  subtitle: 'Approved',       meta: 'Approved',tone: 'tone-emerald'},
+    { title: 'Data Retention', subtitle: 'Pending Vote',   meta: 'Vote',    tone: 'tone-rose'   },
+    { title: 'Member Charter', subtitle: 'Draft',          meta: 'Draft',   tone: 'tone-teal'   },
+  ];
 
-  displayTags(): string[] {
-    if (this.appMode() === 'office') {
-      return this.activeOfficeSpec().integrations;
-    }
-    if (this.appMode() === 'platform') {
-      return this.activePlatformSpec().integrations;
-    }
-    if (this.appMode() === 'providers') {
-      return this.activeProviderSpec().integrations;
-    }
-    return this.activeUnifiedScreen()?.tags ?? [];
-  }
+  readonly strategyOkrs: Array<{ title: string; meta: string; progress: number; tone: Tone }> = [
+    { title: 'User Growth', meta: '78%', progress: 78, tone: 'tone-blue'    },
+    { title: 'Revenue',     meta: '45%', progress: 45, tone: 'tone-emerald' },
+    { title: 'Community',   meta: '62%', progress: 62, tone: 'tone-rose'    },
+  ];
 
-  displayLinks(): string[] {
-    if (this.appMode() === 'office') {
-      return this.activeOfficeSpec().quickLinks;
-    }
-    if (this.appMode() === 'platform') {
-      return this.activePlatformSpec().quickLinks;
-    }
-    if (this.appMode() === 'providers') {
-      return this.activeProviderSpec().quickLinks;
-    }
-    return this.catalog().sources;
-  }
+  // ── BANK ────────────────────────────────────────────────────────────────────
+  readonly bankMetrics: Metric[] = [
+    { label: 'Total Balance', value: '$142,800', change: '8%',  trend: 'up',   caption: 'All wallets',  tone: 'tone-emerald' },
+    { label: 'Operations',    value: '$28,400',  caption: 'Ops Wallet',         tone: 'tone-blue',    progress: 55 },
+    { label: 'Investments',   value: '$89,200',  change: '12%', trend: 'up',   caption: 'Portfolio',   tone: 'tone-purple'  },
+    { label: 'Trading',       value: '$18,300',  change: '3%',  trend: 'down', caption: 'Exchange',    tone: 'tone-amber'   },
+    { label: 'Personal',      value: '$6,900',   caption: 'Spending',           tone: 'tone-teal',    progress: 30 },
+  ];
 
-  async refreshActive(): Promise<void> {
-    if (this.appMode() === 'office') {
-      await this.loadOfficeView();
-      return;
-    }
-    if (this.appMode() === 'platform') {
-      await this.loadPlatformView();
-      return;
-    }
-    if (this.appMode() === 'providers') {
-      await this.loadProviderView();
-      return;
-    }
-    await this.loadUnifiedCatalog();
-  }
+  readonly bankWallets: CardItem[] = [
+    { tag: '💳', title: 'Personal Spending', value: '$6,900',   subtitle: 'Daily · bills',           tone: 'tone-teal'    },
+    { tag: '💼', title: 'Operations',        value: '$28,400',  subtitle: 'Payroll · tools',         tone: 'tone-blue'    },
+    { tag: '📈', title: 'Investment',        value: '$89,200',  subtitle: 'Stocks · bonds',          tone: 'tone-purple'  },
+    { tag: '🔄', title: 'Trading',           value: '$18,300',  subtitle: 'Crypto · tokens',         tone: 'tone-amber'   },
+    { tag: '🛍️', title: 'Marketplace',      value: '$4,200',   subtitle: 'Purchases',               tone: 'tone-rose'    },
+    { tag: '🏛️', title: 'Coop Pool',        value: '$124,500', subtitle: 'Collective capital',      tone: 'tone-indigo'  },
+  ];
 
-  async loadUnifiedCatalog(): Promise<void> {
-    try {
-      const data = await firstValueFrom(this.api.unifiedScreens()) as UnifiedScreenCatalog;
-      if (Array.isArray(data.modules) && Array.isArray(data.workflows)) {
-        this.catalog.set(data);
-        if (!this.activeUnifiedItems().some((x) => x.id === this.activeUnifiedId())) {
-          this.activeUnifiedId.set(this.activeUnifiedItems()[0]?.id ?? '');
-        }
-        this.payload.set('Unified screen catalog synced from server.');
-        return;
-      }
-      this.payload.set('Server catalog invalid format; using fallback catalog.');
-    } catch (err) {
-      this.payload.set(`catalog sync failed: ${String(err)} (fallback in use)`);
-    }
-  }
+  readonly bankFundraising: CardItem[] = [
+    { title: 'Seed Round',      value: '$450K raised', progress: 72, meta: '72% of goal', tone: 'tone-blue'    },
+    { title: 'Community Bond',  value: '$120K raised', progress: 48, meta: '48% of goal', tone: 'tone-emerald' },
+    { title: 'Equipment Lease', value: '$28K raised',  progress: 90, meta: '90% of goal', tone: 'tone-amber'   },
+  ];
 
-  async loadOfficeOverview(): Promise<void> {
-    try {
-      const data = await firstValueFrom(this.api.officeOverview());
-      this.payload.set(JSON.stringify(data, null, 2));
-    } catch (err) {
-      this.payload.set(`request failed: ${String(err)}`);
-    }
-  }
+  readonly bankPlatforms: ChipItem[] = [
+    { label: 'Stripe',     tone: 'tone-blue'   },
+    { label: 'Wells Fargo',tone: 'tone-rose'   },
+    { label: 'Chase',      tone: 'tone-indigo' },
+    { label: 'GoFundMe',   tone: 'tone-emerald'},
+    { label: 'Patreon',    tone: 'tone-amber'  },
+  ];
 
-  async loadOfficeView(): Promise<void> {
-    try {
-      const data = await this.fetchOfficeView(this.activeOfficeId());
-      this.payload.set(JSON.stringify(data, null, 2));
-    } catch (err) {
-      this.payload.set(`office view request failed: ${String(err)}`);
-    }
-  }
+  readonly bankTransactions: CardItem[] = [
+    { title: 'Stripe payout',      meta: '+$3,200', tone: 'tone-emerald' },
+    { title: 'Tool subscription',  meta: '-$49',    tone: 'tone-rose'    },
+    { title: 'Coop distribution',  meta: '+$840',   tone: 'tone-emerald' },
+    { title: 'Tax payment',        meta: '-$2,100', tone: 'tone-rose'    },
+    { title: 'Invoice paid',       meta: '+$8,400', tone: 'tone-emerald' },
+  ];
 
-  private async fetchOfficeView(viewId: OfficeViewId): Promise<unknown> {
-    switch (viewId) {
-      case 'dashboard':
-        return firstValueFrom(this.api.officeDashboard());
-      case 'portfolio':
-        return firstValueFrom(this.api.officePortfolio());
-      case 'timeline':
-        return firstValueFrom(this.api.officeTimeline());
-      case 'workspace':
-        return firstValueFrom(this.api.officeWorkspace());
-      case 'assistant':
-        return firstValueFrom(this.api.officeAssistant());
-      default:
-        return firstValueFrom(this.api.officeOverview());
-    }
-  }
+  readonly bankTaxes: CardItem[] = [
+    { title: 'Taxes', subtitle: 'Income Tax',  value: '$18,400', tone: 'tone-rose'    },
+    { title: 'Self Employed', subtitle: 'Self Employed', value: '$4,200',  tone: 'tone-amber'   },
+    { title: 'Deductions',    subtitle: 'Deductions',    value: '-$6,800', tone: 'tone-emerald' },
+    { title: 'Estimated',     subtitle: 'Estimated',     value: '$15,800', tone: 'tone-blue'    },
+  ];
 
-  async loadPlatformView(): Promise<void> {
-    try {
-      const data = await this.fetchPlatformView(this.activePlatformId());
-      this.payload.set(JSON.stringify(data, null, 2));
-    } catch (err) {
-      this.payload.set(`platform view request failed: ${String(err)}`);
-    }
-  }
+  // ── EXCHANGE ────────────────────────────────────────────────────────────────
+  readonly exchangeMetrics: Metric[] = [
+    { label: 'Active Bids',  value: '12', caption: '3 expiring', tone: 'tone-blue'    },
+    { label: 'Offers Out',   value: '8',  caption: '$24K value', tone: 'tone-purple'  },
+    { label: 'Closed Deals', value: '5',  caption: 'This month', tone: 'tone-emerald' },
+    { label: 'Pipeline',     value: '$142K', caption: 'Total value', tone: 'tone-amber' },
+  ];
 
-  private async fetchPlatformView(viewId: PlatformViewId): Promise<unknown> {
-    switch (viewId) {
-      case 'system':
-        return firstValueFrom(this.api.systemSummary());
-      case 'host':
-        return firstValueFrom(this.api.hostSummary());
-      case 'host_components':
-        return firstValueFrom(this.api.hostComponents());
-      case 'engine':
-        return firstValueFrom(this.api.engineOverview());
-      case 'engine_runtime':
-        return firstValueFrom(this.api.engineRuntime());
-      case 'database':
-        return firstValueFrom(this.api.databaseRuntime());
-      case 'modules':
-        return firstValueFrom(this.api.modulesList());
-      case 'autonomy':
-        return firstValueFrom(this.api.autonomyCapabilities());
-      default:
-        return firstValueFrom(this.api.systemSummary());
-    }
-  }
+  readonly exchangeBids: TableRow[] = [
+    { cells: ['Design System License', 'Offer',   '$12K',  'Active',  'Acme Corp'],      badge: 'Active',  badgeTone: 'tone-emerald' },
+    { cells: ['API Access Token',       'Bid',    '$3,500','Pending', 'StartupXYZ'],      badge: 'Pending', badgeTone: 'tone-amber'   },
+    { cells: ['Brand Strategy Pack',    'Offer',  '$8K',   'Active',  'DevDAO'],          badge: 'Active',  badgeTone: 'tone-emerald' },
+    { cells: ['UX Audit Service',       'Bid',    '$5K',   'Review',  'Invest Club'],     badge: 'Review',  badgeTone: 'tone-purple'  },
+    { cells: ['Full-Stack Dev Sprint',  'Offer',  '$15K',  'Expiring','TechCorp Inc.'],   badge: 'Expiring',badgeTone: 'tone-rose'    },
+  ];
 
-  async loadProviderView(): Promise<void> {
-    try {
-      const data = await this.fetchProviderView(this.activeProviderId());
-      this.payload.set(JSON.stringify(data, null, 2));
-    } catch (err) {
-      this.payload.set(`provider view request failed: ${String(err)}`);
-    }
-  }
+  readonly exchangePipeline: CardItem[] = [
+    { title: 'Acme Contract',  subtitle: 'Design + Dev', value: '$28K', progress: 75, tone: 'tone-blue'    },
+    { title: 'DevDAO Sprint',  subtitle: 'Engineering',  value: '$48K', progress: 50, tone: 'tone-purple'  },
+    { title: 'Brand Package',  subtitle: 'Branding',     value: '$18K', progress: 90, tone: 'tone-emerald' },
+    { title: 'Startup Deal',   subtitle: 'Strategy',     value: '$12K', progress: 30, tone: 'tone-amber'   },
+  ];
 
-  private async fetchProviderView(viewId: ProviderViewId): Promise<unknown> {
-    switch (viewId) {
-      case 'snapshot':
-        return firstValueFrom(this.api.providersSnapshot());
-      case 'platforms':
-        return firstValueFrom(this.api.providersPlatforms());
-      case 'providers':
-        return firstValueFrom(this.api.providersList());
-      case 'resources':
-        return firstValueFrom(this.api.providersResources());
-      case 'versions':
-        return firstValueFrom(this.api.providersVersions());
-      case 'metadata':
-        return firstValueFrom(this.api.providersMetadata());
-      case 'data':
-        return firstValueFrom(this.api.providersDataAssets());
-      case 'affiliates':
-        return firstValueFrom(this.api.providersAffiliates());
-      case 'affiliate_links':
-        return firstValueFrom(this.api.providersAffiliateLinks());
-      default:
-        return firstValueFrom(this.api.providersSnapshot());
-    }
-  }
+  readonly exchangeRequests: CardItem[] = [
+    { title: 'Due Diligence Review', subtitle: 'Acme Corp',     meta: 'Pending', tone: 'tone-amber'   },
+    { title: 'Contract Signed',      subtitle: 'DevDAO',        meta: 'Done',    tone: 'tone-emerald' },
+    { title: 'Proposal Sent',        subtitle: 'Invest Club',   meta: 'Sent',    tone: 'tone-blue'    },
+  ];
 
-  async ackOfficeNotification(): Promise<void> {
-    const notificationId = this.actionDraft().trim() || 'notif-001';
-    try {
-      const data = await firstValueFrom(this.api.officeAckNotification(notificationId));
-      this.payload.set(JSON.stringify(data, null, 2));
-      await this.loadOfficeView();
-    } catch (err) {
-      this.payload.set(`office action failed: ${String(err)}`);
-    }
-  }
+  readonly exchangePlatforms: ChipItem[] = [
+    { label: 'AngelList', tone: 'tone-blue'    },
+    { label: 'Deel',      tone: 'tone-emerald' },
+    { label: 'Upwork',    tone: 'tone-amber'   },
+    { label: 'Toptal',    tone: 'tone-purple'  },
+  ];
 
-  async createOfficePortfolioItem(): Promise<void> {
-    const name = this.actionDraft().trim() || 'Office Generated Item';
-    try {
-      const data = await firstValueFrom(
-        this.api.officeCreatePortfolioItem('project', name, 'active'),
-      );
-      this.payload.set(JSON.stringify(data, null, 2));
-      this.activeOfficeId.set('portfolio');
-      await this.loadOfficeView();
-    } catch (err) {
-      this.payload.set(`office action failed: ${String(err)}`);
-    }
-  }
+  // ── MARKETPLACE ─────────────────────────────────────────────────────────────
+  readonly marketplaceMetrics: Metric[] = [
+    { label: 'Listed Items',   value: '284', caption: 'Skills · Assets', tone: 'tone-blue'    },
+    { label: 'Active Orders',  value: '18',  caption: '$24K value',      tone: 'tone-teal'    },
+    { label: 'Barter Offers',  value: '12',  caption: 'Active trades',   tone: 'tone-amber'   },
+    { label: 'My Sales',       value: '$8,400', change: '18%', trend: 'up', caption: '',      tone: 'tone-emerald' },
+    { label: 'My Purchases',   value: '$2,100', caption: 'This month',   tone: 'tone-purple'  },
+  ];
 
-  async createOfficeTimelineEvent(): Promise<void> {
-    const title = this.actionDraft().trim() || 'Office Timeline Event';
-    try {
-      const data = await firstValueFrom(
-        this.api.officeCreateTimelineEvent('cal-work', title, 'milestone', '2026-03-12T18:00:00Z'),
-      );
-      this.payload.set(JSON.stringify(data, null, 2));
-      this.activeOfficeId.set('timeline');
-      await this.loadOfficeView();
-    } catch (err) {
-      this.payload.set(`office action failed: ${String(err)}`);
-    }
-  }
+  readonly marketplaceItems: CardItem[] = [
+    { tag: 'Labor',    title: 'Full-Stack Dev',  value: '$120/hr',  tone: 'tone-blue'    },
+    { tag: 'Asset',    title: 'Logo Design',     value: '$250',     tone: 'tone-purple'  },
+    { tag: 'Service',  title: 'Brand Strategy',  value: '$3,500',   tone: 'tone-teal'    },
+    { tag: 'Artifact', title: 'React Template',  value: '$89',      tone: 'tone-amber'   },
+    { tag: 'Labor',    title: 'Data Analysis',   value: '$85/hr',   tone: 'tone-blue'    },
+    { tag: 'Service',  title: 'Legal Review',    value: '$200/hr',  tone: 'tone-rose'    },
+    { tag: 'Barter',   title: 'Office Chair',    value: 'Trade',    tone: 'tone-emerald' },
+    { tag: 'Asset',    title: '3D Models Pack',  value: '$149',     tone: 'tone-cyan'    },
+    { tag: 'Labor',    title: 'Content Writing', value: '$0.12/wd', tone: 'tone-indigo'  },
+    { tag: 'Resource', title: 'API Access',      value: '$29/mo',   tone: 'tone-teal'    },
+    { tag: 'Barter',   title: 'Photography Kit', value: 'Trade',    tone: 'tone-purple'  },
+    { tag: 'Service',  title: 'Copywriting',     value: '$1,200',   tone: 'tone-rose'    },
+  ];
 
-  async createOfficeWorkspaceStory(): Promise<void> {
-    const title = this.actionDraft().trim() || 'As a worker, I can execute office flows';
-    try {
-      const data = await firstValueFrom(this.api.officeCreateWorkspaceStory(title, 5));
-      this.payload.set(JSON.stringify(data, null, 2));
-      this.activeOfficeId.set('workspace');
-      await this.loadOfficeView();
-    } catch (err) {
-      this.payload.set(`office action failed: ${String(err)}`);
-    }
-  }
+  readonly marketplaceBarter: CardItem[] = [
+    { title: 'Camera gear',    subtitle: 'Want: Laptop',      tone: 'tone-amber'  },
+    { title: 'Adobe License',  subtitle: 'Want: Web dev',     tone: 'tone-blue'   },
+    { title: 'Studio Time',    subtitle: 'Want: Design work', tone: 'tone-purple' },
+  ];
 
-  async subscribeOfficeAssistant(): Promise<void> {
-    const topic = this.actionDraft().trim() || 'office.dashboard.alerts';
-    try {
-      const data = await firstValueFrom(this.api.officeSubscribeAssistant(topic));
-      this.payload.set(JSON.stringify(data, null, 2));
-      this.activeOfficeId.set('assistant');
-      await this.loadOfficeView();
-    } catch (err) {
-      this.payload.set(`office action failed: ${String(err)}`);
-    }
-  }
+  readonly marketplaceOrders: CardItem[] = [
+    { title: 'Brand Package', subtitle: 'Active',    value: '$3,500', tone: 'tone-blue'   },
+    { title: 'Dev Hours',     subtitle: 'Delivered', value: '$1,200', tone: 'tone-emerald'},
+    { title: 'Legal Review',  subtitle: 'Pending',   value: '$200',   tone: 'tone-amber'  },
+  ];
 
-  async engineControl(): Promise<void> {
-    const action = this.actionDraft().trim() || 'start';
-    try {
-      const data = await firstValueFrom(this.api.engineControl(action));
-      this.payload.set(JSON.stringify(data, null, 2));
-    } catch (err) {
-      this.payload.set(`engine control failed: ${String(err)}`);
-    }
-  }
+  readonly marketplacePlatforms: ChipItem[] = [
+    { label: 'Behance', tone: 'tone-blue'   },
+    { label: 'Upwork',  tone: 'tone-teal'   },
+    { label: 'Fiverr',  tone: 'tone-rose'   },
+    { label: 'Etsy',    tone: 'tone-amber'  },
+  ];
 
-  async engineIngest(): Promise<void> {
-    const raw = this.actionDraft().trim();
-    let payload: unknown = { source: 'web', note: raw || 'manual ingest' };
-    if (raw.startsWith('{') || raw.startsWith('[')) {
-      try {
-        payload = JSON.parse(raw);
-      } catch {
-        payload = { source: 'web', note: raw };
-      }
-    }
-    try {
-      const data = await firstValueFrom(this.api.engineIngest(payload));
-      this.payload.set(JSON.stringify(data, null, 2));
-    } catch (err) {
-      this.payload.set(`engine ingest failed: ${String(err)}`);
-    }
-  }
+  // ── STUDIO ──────────────────────────────────────────────────────────────────
+  readonly studioMetrics: Metric[] = [
+    { label: 'Ideas',            value: '42',  caption: 'In development', tone: 'tone-purple'  },
+    { label: 'Prototypes',       value: '8',   caption: '3 testing',      tone: 'tone-blue',    progress: 38 },
+    { label: 'Published Assets', value: '24',  caption: 'Available',      tone: 'tone-emerald' },
+    { label: 'Notes / Binders',  value: '138', caption: 'Organized',      tone: 'tone-amber'   },
+  ];
 
-  async databaseQuery(): Promise<void> {
-    const sql = this.actionDraft().trim() || 'select 1';
-    try {
-      const data = await firstValueFrom(this.api.databaseQuery(sql));
-      this.payload.set(JSON.stringify(data, null, 2));
-    } catch (err) {
-      this.payload.set(`database query failed: ${String(err)}`);
-    }
-  }
+  readonly studioIdeas: CardItem[] = [
+    { tag: 'Prototype',  title: 'Mobile App Concept', tone: 'tone-blue'    },
+    { tag: 'Blueprint',  title: 'Tokenomics v3',      tone: 'tone-purple'  },
+    { tag: 'Mockup',     title: 'Landing Page',       tone: 'tone-rose'    },
+    { tag: 'Design',     title: 'AI Agent UX',        tone: 'tone-amber'   },
+    { tag: 'Document',   title: 'API Spec v2',        tone: 'tone-teal'    },
+    { tag: 'Asset',      title: 'Brand System',       tone: 'tone-emerald' },
+    { tag: 'Draft',      title: 'Community RFC',      tone: 'tone-cyan'    },
+    { tag: 'Blueprint',  title: 'Data Schema',        tone: 'tone-indigo'  },
+  ];
 
-  async createProviderPlatform(): Promise<void> {
-    const parts = this.parseDraft();
-    const name = parts[0] ?? 'New Platform';
-    const kind = parts[1] ?? 'platform';
-    const category = parts[2] ?? 'general';
-    try {
-      const data = await firstValueFrom(this.api.providersCreatePlatform(name, kind, category, 'active'));
-      this.payload.set(JSON.stringify(data, null, 2));
-      await this.loadProviderView();
-    } catch (err) {
-      this.payload.set(`provider platform create failed: ${String(err)}`);
-    }
-  }
+  readonly studioTestbeds: CardItem[] = [
+    { title: 'A/B Test: Onboarding',tone: 'tone-blue'   },
+    { title: 'Perf Benchmark',       tone: 'tone-teal'   },
+    { title: 'API Load Test',        tone: 'tone-amber'  },
+    { title: 'UX Usability Study',   tone: 'tone-purple' },
+    { title: 'Payment Flow Test',    tone: 'tone-rose'   },
+    { title: 'AI Prompt Eval',       tone: 'tone-cyan'   },
+  ];
 
-  async createProvider(): Promise<void> {
-    const parts = this.parseDraft();
-    const name = parts[0] ?? 'New Provider';
-    const platformId = parts[1] ?? 'platform-001';
-    const kind = parts[2] ?? 'api';
-    try {
-      const data = await firstValueFrom(
-        this.api.providersCreateProvider(name, platformId, kind, 'active'),
-      );
-      this.payload.set(JSON.stringify(data, null, 2));
-      await this.loadProviderView();
-    } catch (err) {
-      this.payload.set(`provider create failed: ${String(err)}`);
-    }
-  }
+  readonly studioToolsets: CardItem[] = [
+    { title: 'Design Tools', subtitle: 'Figma · Framer',          tone: 'tone-purple' },
+    { title: 'Dev Stack',    subtitle: 'Node · React · PG',        tone: 'tone-blue'   },
+    { title: 'AI Toolkit',   subtitle: 'Claude · GPT · Grok',      tone: 'tone-emerald'},
+    { title: 'Analytics',    subtitle: 'Posthog · Mixpanel',       tone: 'tone-amber'  },
+  ];
 
-  async addProviderResource(): Promise<void> {
-    const parts = this.parseDraft();
-    const providerId = parts[0] ?? 'provider-001';
-    const resourceType = parts[1] ?? 'api';
-    const name = parts[2] ?? 'primary-resource';
-    try {
-      const data = await firstValueFrom(
-        this.api.providersAddResource(providerId, resourceType, name, 'active'),
-      );
-      this.payload.set(JSON.stringify(data, null, 2));
-      await this.loadProviderView();
-    } catch (err) {
-      this.payload.set(`provider resource failed: ${String(err)}`);
-    }
-  }
+  readonly studioFiles: CardItem[] = [
+    { title: 'Binders',  tone: 'tone-blue'    },
+    { title: 'Books',    tone: 'tone-purple'  },
+    { title: 'Content',  tone: 'tone-teal'    },
+    { title: 'Files',    tone: 'tone-amber'   },
+  ];
 
-  async addProviderVersion(): Promise<void> {
-    const parts = this.parseDraft();
-    const providerId = parts[0] ?? 'provider-001';
-    const version = parts[1] ?? 'v1';
-    const status = parts[2] ?? 'stable';
-    try {
-      const data = await firstValueFrom(
-        this.api.providersAddVersion(providerId, version, status),
-      );
-      this.payload.set(JSON.stringify(data, null, 2));
-      await this.loadProviderView();
-    } catch (err) {
-      this.payload.set(`provider version failed: ${String(err)}`);
-    }
-  }
+  readonly studioPlatforms: ChipItem[] = [
+    { label: 'Google Drive', tone: 'tone-blue'   },
+    { label: 'Figma',        tone: 'tone-purple' },
+    { label: 'Notion',       tone: 'tone-teal'   },
+    { label: 'MS Teams',     tone: 'tone-indigo' },
+  ];
 
-  async setProviderMetadata(): Promise<void> {
-    const parts = this.parseDraft();
-    const providerId = parts[0] ?? 'provider-001';
-    const key = parts[1] ?? 'region';
-    const value = parts[2] ?? 'us';
-    try {
-      const data = await firstValueFrom(
-        this.api.providersSetMetadata(providerId, key, value, 'general'),
-      );
-      this.payload.set(JSON.stringify(data, null, 2));
-      await this.loadProviderView();
-    } catch (err) {
-      this.payload.set(`provider metadata failed: ${String(err)}`);
-    }
-  }
+  // ── COMMUNITY ───────────────────────────────────────────────────────────────
+  readonly communityMetrics: Metric[] = [
+    { label: 'Members',       value: '8,420', caption: '+12%',          tone: 'tone-rose'   },
+    { label: 'Active Spaces', value: '34',    caption: '12 rooms open', tone: 'tone-teal'   },
+    { label: 'Posts Today',   value: '284',   caption: '+18% vs yesterday', tone: 'tone-purple' },
+    { label: 'DMs Unread',    value: '7',     caption: 'Priority',      tone: 'tone-amber'  },
+  ];
 
-  async addProviderDataAsset(): Promise<void> {
-    const parts = this.parseDraft();
-    const providerId = parts[0] ?? 'provider-001';
-    const dataset = parts[1] ?? 'dataset';
-    const status = parts[2] ?? 'active';
-    const recordCount = parts[3] ? Number(parts[3]) : 0;
-    try {
-      const data = await firstValueFrom(
-        this.api.providersAddDataAsset(providerId, dataset, status, Number.isNaN(recordCount) ? 0 : recordCount),
-      );
-      this.payload.set(JSON.stringify(data, null, 2));
-      await this.loadProviderView();
-    } catch (err) {
-      this.payload.set(`provider data asset failed: ${String(err)}`);
-    }
-  }
+  readonly communityFeeds: FeedItem[] = [
+    { author: 'Jordan C.', message: 'New project launched! Brand redesign for a VC-backed startup 🚀', time: '2min ago', likes: '12' },
+    { author: 'Maria S.',  message: 'Coop milestone: $1M ARR achieved 🎉 Proud of our 35-member team!', time: '8min ago', likes: '48' },
+    { author: 'Devon P.',  message: 'Side project update: photography clients ×3 this week!',           time: '22min ago',likes: '23' },
+    { author: 'Priya N.',  message: 'Investment club vote: 87% approve new property acquisition',       time: '1hr ago',  likes: '31' },
+  ];
 
-  async registerAffiliate(): Promise<void> {
-    const parts = this.parseDraft();
-    const name = parts[0] ?? 'New Affiliate';
-    const kind = parts[1] ?? 'partner';
-    const status = parts[2] ?? 'active';
-    try {
-      const data = await firstValueFrom(
-        this.api.providersRegisterAffiliate(name, kind, status),
-      );
-      this.payload.set(JSON.stringify(data, null, 2));
-      await this.loadProviderView();
-    } catch (err) {
-      this.payload.set(`affiliate register failed: ${String(err)}`);
-    }
-  }
+  readonly communitySpaces: CardItem[] = [
+    { title: '⊞ #Office',   subtitle: '21 online', tone: 'tone-blue'   },
+    { title: '🎯 #Finance', subtitle: '18 online', tone: 'tone-emerald'},
+    { title: '🎨 #Studio',  subtitle: '31 online', tone: 'tone-purple' },
+    { title: '🌐 #General', subtitle: '12 online', tone: 'tone-cyan'   },
+    { title: '🏛️ #Coops',  subtitle: '9 online',  tone: 'tone-rose'   },
+  ];
 
-  async addAffiliateLink(): Promise<void> {
-    const parts = this.parseDraft();
-    const providerId = parts[0] ?? 'provider-001';
-    const affiliateId = parts[1] ?? 'affiliate-001';
-    const status = parts[2] ?? 'active';
-    try {
-      const data = await firstValueFrom(
-        this.api.providersAddAffiliateLink(providerId, affiliateId, status),
-      );
-      this.payload.set(JSON.stringify(data, null, 2));
-      await this.loadProviderView();
-    } catch (err) {
-      this.payload.set(`affiliate link failed: ${String(err)}`);
-    }
-  }
+  readonly communityDms: CardItem[] = [
+    { title: 'Jordan C.', subtitle: 'Hey, quick question...', tone: 'tone-blue'    },
+    { title: 'Maria S.',  subtitle: 'Hey, quick question...', tone: 'tone-emerald' },
+    { title: 'Devon P.',  subtitle: 'Hey, quick question...', tone: 'tone-amber'   },
+  ];
 
-  async loadSystem(): Promise<void> {
-    try {
-      const data = await firstValueFrom(this.api.systemSummary());
-      this.payload.set(JSON.stringify(data, null, 2));
-    } catch (err) {
-      this.payload.set(`request failed: ${String(err)}`);
-    }
-  }
+  readonly communityPlatforms: ChipItem[] = [
+    { label: 'Slack',     tone: 'tone-purple'  },
+    { label: 'Zoom',      tone: 'tone-emerald' },
+    { label: 'Discord',   tone: 'tone-blue'    },
+    { label: 'WhatsApp',  tone: 'tone-amber'   },
+  ];
 
-  async loadHostSummary(): Promise<void> {
-    try {
-      const data = await firstValueFrom(this.api.hostSummary());
-      this.payload.set(JSON.stringify(data, null, 2));
-    } catch (err) {
-      this.payload.set(`request failed: ${String(err)}`);
-    }
-  }
+  // ── DEVELOPER ───────────────────────────────────────────────────────────────
+  readonly developerMetrics: Metric[] = [
+    { label: 'API Calls (30d)', value: '284K',  caption: '+34%',        tone: 'tone-purple' },
+    { label: 'Active Keys',     value: '5',     caption: '2 production', tone: 'tone-blue'   },
+    { label: 'Webhooks',        value: '12',    caption: '8 active',     tone: 'tone-teal',  progress: 66 },
+    { label: 'SDK Downloads',   value: '1,240', caption: '+28%',        tone: 'tone-indigo' },
+  ];
 
-  async loadHostComponents(): Promise<void> {
-    try {
-      const data = await firstValueFrom(this.api.hostComponents());
-      this.payload.set(JSON.stringify(data, null, 2));
-    } catch (err) {
-      this.payload.set(`request failed: ${String(err)}`);
-    }
-  }
+  readonly developerApi: ApiRow[] = [
+    { method: 'POST',   path: '/api/v1/portfolio',      description: 'Create portfolio item',  tone: 'tone-emerald' },
+    { method: 'GET',    path: '/api/v1/projects',        description: 'List all projects',      tone: 'tone-blue'    },
+    { method: 'PUT',    path: '/api/v1/exchange/bids',   description: 'Update a bid',           tone: 'tone-amber'   },
+    { method: 'DELETE', path: '/api/v1/wallet/tokens',   description: 'Remove token',           tone: 'tone-rose'    },
+    { method: 'POST',   path: '/api/v1/community/post',  description: 'Create community post',  tone: 'tone-purple'  },
+    { method: 'GET',    path: '/api/v1/ai/context',      description: 'Get AI context window',  tone: 'tone-cyan'    },
+  ];
 
-  async loadEngineOverview(): Promise<void> {
-    try {
-      const data = await firstValueFrom(this.api.engineOverview());
-      this.payload.set(JSON.stringify(data, null, 2));
-    } catch (err) {
-      this.payload.set(`request failed: ${String(err)}`);
-    }
-  }
+  readonly developerExtensions: CardItem[] = [
+    { title: 'Webhooks',      subtitle: 'Automation hooks',   tone: 'tone-blue'   },
+    { title: 'OAuth 2.0',     subtitle: 'Identity + access',  tone: 'tone-emerald'},
+    { title: 'Zapier',        subtitle: 'Workflow',           tone: 'tone-amber'  },
+    { title: 'n8n',           subtitle: 'Pipelines',          tone: 'tone-purple' },
+    { title: 'Slack Bot',     subtitle: 'Chat ops',           tone: 'tone-teal'   },
+    { title: 'GitHub Action', subtitle: 'CI/CD',              tone: 'tone-indigo' },
+    { title: 'Chrome Ext',    subtitle: 'Browser tools',      tone: 'tone-rose'   },
+    { title: 'VS Code Ext',   subtitle: 'Dev experience',     tone: 'tone-cyan'   },
+  ];
 
-  async loadEngineRuntime(): Promise<void> {
-    try {
-      const data = await firstValueFrom(this.api.engineRuntime());
-      this.payload.set(JSON.stringify(data, null, 2));
-    } catch (err) {
-      this.payload.set(`request failed: ${String(err)}`);
-    }
-  }
+  readonly developerKeys: CardItem[] = [
+    { title: 'prod_k1_****', subtitle: 'Production', meta: 'Active', tone: 'tone-emerald' },
+    { title: 'dev_k2_****',  subtitle: 'Development',meta: 'Active', tone: 'tone-blue'    },
+    { title: 'test_k3_****', subtitle: 'Testing',    meta: 'Active', tone: 'tone-amber'   },
+  ];
 
-  async loadDatabaseRuntime(): Promise<void> {
-    try {
-      const data = await firstValueFrom(this.api.databaseRuntime());
-      this.payload.set(JSON.stringify(data, null, 2));
-    } catch (err) {
-      this.payload.set(`request failed: ${String(err)}`);
-    }
-  }
+  readonly developerSdks: ChipItem[] = [
+    { label: 'Node.js', tone: 'tone-emerald' },
+    { label: 'Python',  tone: 'tone-blue'    },
+    { label: 'Go',      tone: 'tone-teal'    },
+    { label: 'Rust',    tone: 'tone-amber'   },
+  ];
 
-  async loadModulesList(): Promise<void> {
-    try {
-      const data = await firstValueFrom(this.api.modulesList());
-      this.payload.set(JSON.stringify(data, null, 2));
-    } catch (err) {
-      this.payload.set(`request failed: ${String(err)}`);
-    }
-  }
+  readonly developerWebhooks: CardItem[] = [
+    { title: 'portfolio.created', subtitle: 'Active', meta: 'Live', tone: 'tone-emerald' },
+    { title: 'payment.received',  subtitle: 'Active', meta: 'Live', tone: 'tone-blue'    },
+    { title: 'bid.accepted',      subtitle: 'Active', meta: 'Live', tone: 'tone-amber'   },
+    { title: 'project.updated',   subtitle: 'Active', meta: 'Live', tone: 'tone-purple'  },
+  ];
 
-  async loadProvidersSnapshot(): Promise<void> {
-    try {
-      const data = await firstValueFrom(this.api.providersSnapshot());
-      this.payload.set(JSON.stringify(data, null, 2));
-    } catch (err) {
-      this.payload.set(`request failed: ${String(err)}`);
-    }
-  }
+  // ── PROFILE ─────────────────────────────────────────────────────────────────
+  readonly profileMetrics: Metric[] = [
+    { label: 'Reputation',    value: '94/100', caption: '+3%',        tone: 'tone-amber'   },
+    { label: 'Network',       value: '1,240',  caption: 'Connections',tone: 'tone-purple'  },
+    { label: 'Projects Done', value: '48',     caption: '+8%',        tone: 'tone-blue'    },
+    { label: 'Earnings YTD',  value: '$186K',  caption: '+22%',       tone: 'tone-emerald' },
+  ];
 
-  async loadProvidersAffiliates(): Promise<void> {
-    try {
-      const data = await firstValueFrom(this.api.providersAffiliates());
-      this.payload.set(JSON.stringify(data, null, 2));
-    } catch (err) {
-      this.payload.set(`request failed: ${String(err)}`);
-    }
-  }
+  readonly profilePersonas: CardItem[] = [
+    { tag: '🧑‍💻', title: 'Developer',  subtitle: 'Full-stack · Node · React', tone: 'tone-blue'    },
+    { tag: '🎨',  title: 'Designer',   subtitle: 'Brand · UX · Systems',      tone: 'tone-purple'  },
+    { tag: '📊',  title: 'Strategist', subtitle: 'Product · Growth',          tone: 'tone-emerald' },
+  ];
 
-  async loadIdentities(): Promise<void> {
-    try {
-      const data = await firstValueFrom(this.api.identities());
-      this.payload.set(JSON.stringify(data, null, 2));
-    } catch (err) {
-      this.payload.set(`request failed: ${String(err)}`);
-    }
-  }
+  readonly profileSettings: CardItem[] = [
+    { title: 'Preferences',   tone: 'tone-amber'   },
+    { title: 'Notifications', tone: 'tone-purple'  },
+    { title: 'Privacy',       tone: 'tone-rose'    },
+    { title: 'Security',      tone: 'tone-emerald' },
+    { title: 'Billing',       tone: 'tone-amber'   },
+    { title: 'Integrations',  tone: 'tone-teal'    },
+    { title: 'AI Config',     tone: 'tone-indigo'  },
+    { title: 'Data Export',   tone: 'tone-cyan'    },
+  ];
 
-  async loadProfiles(): Promise<void> {
-    try {
-      const data = await firstValueFrom(this.api.profiles());
-      this.payload.set(JSON.stringify(data, null, 2));
-    } catch (err) {
-      this.payload.set(`request failed: ${String(err)}`);
-    }
-  }
+  readonly profileStats: Metric[] = [
+    { label: 'Messages',      value: '284', tone: 'tone-rose'   },
+    { label: 'Proposals',     value: '18',  tone: 'tone-blue'   },
+    { label: 'Contributions', value: '142', tone: 'tone-indigo' },
+    { label: 'Reviews',       value: '37',  tone: 'tone-amber'  },
+    { label: 'Referrals',     value: '12',  tone: 'tone-emerald'},
+  ];
 
-  async loadIsolation(): Promise<void> {
-    try {
-      const data = await firstValueFrom(this.api.moduleIsolation());
-      this.payload.set(JSON.stringify(data, null, 2));
-    } catch (err) {
-      this.payload.set(`request failed: ${String(err)}`);
-    }
-  }
+  // ── ORGANIZATIONS ────────────────────────────────────────────────────────────
+  readonly orgMetrics: Metric[] = [
+    { label: 'Organizations', value: '4',   caption: 'Member of',      tone: 'tone-rose'    },
+    { label: 'Collectives',   value: '2',   caption: 'Co-founded',     tone: 'tone-blue'    },
+    { label: 'Teams',         value: '3',   caption: 'Active',         tone: 'tone-teal'    },
+    { label: 'Total Members', value: '186', caption: 'Across all orgs',tone: 'tone-emerald' },
+  ];
 
-  private parseDraft(): string[] {
-    return this.actionDraft()
-      .split('|')
-      .map((part) => part.trim())
-      .filter((part) => part.length > 0);
-  }
+  readonly orgCards: CardItem[] = [
+    { title: 'Delivery Coop',      subtitle: 'Worker Cooperative',  meta: '35 members', status: 'Active',  tone: 'tone-emerald' },
+    { title: 'Design Collective',  subtitle: 'Creative Collective', meta: '12 members', status: 'Active',  tone: 'tone-purple'  },
+    { title: 'Invest Club',        subtitle: 'Investment Club',     meta: '22 members', status: 'Active',  tone: 'tone-blue'    },
+    { title: 'Dev DAO',            subtitle: 'Autonomous Org',      meta: '88 members', status: 'Active',  tone: 'tone-indigo'  },
+    { title: 'Consulting Network', subtitle: 'Professional Network',meta: '18 members', status: 'Pending', tone: 'tone-amber'   },
+    { title: 'Art Cooperative',    subtitle: 'Creative Cooperative',meta: '7 members',  status: 'Forming', tone: 'tone-rose'    },
+  ];
+
+  readonly orgProposals: TableRow[] = [
+    { cells: ['New vehicle fleet','Delivery Coop','32/35','Passed'], badge: 'Passed', badgeTone: 'tone-emerald' },
+    { cells: ['Q2 Budget',        'Invest Club',  '18/22','Active'], badge: 'Active', badgeTone: 'tone-blue'    },
+    { cells: ['Member Charter',   'Dev DAO',      '72/88','Active'], badge: 'Active', badgeTone: 'tone-purple'  },
+    { cells: ['Rate increase',    'Design Coll.', '9/12', 'Draft'],  badge: 'Draft',  badgeTone: 'tone-amber'   },
+  ];
+
+  readonly orgRoles: CardItem[] = [
+    { title: 'Delivery Coop',  subtitle: 'Co-Founder', tone: 'tone-emerald' },
+    { title: 'Invest Club',    subtitle: 'Organizer',   tone: 'tone-blue'    },
+    { title: 'Dev DAO',        subtitle: 'Member',      tone: 'tone-indigo'  },
+    { title: 'Design Coll.',   subtitle: 'Member',      tone: 'tone-purple'  },
+  ];
+
+  readonly orgCapTables: CardItem[] = [
+    { title: 'JC', subtitle: '18.5%', tone: 'tone-blue'    },
+    { title: 'MS', subtitle: '14.2%', tone: 'tone-emerald' },
+    { title: 'DP', subtitle: '8.8%',  tone: 'tone-amber'   },
+    { title: 'PN', subtitle: '6.4%',  tone: 'tone-rose'    },
+  ];
+
+  // ── LEGAL ────────────────────────────────────────────────────────────────────
+  readonly legalMetrics: Metric[] = [
+    { label: 'Active Contracts',value: '14',   caption: '3 expiring soon',  tone: 'tone-rose'    },
+    { label: 'IP Assets',       value: '8',    caption: 'Patents · TM · CR',tone: 'tone-purple'  },
+    { label: 'Compliance Items',value: '6',    caption: '2 action needed',  tone: 'tone-amber'   },
+    { label: 'Audit Status',    value: 'Clean',caption: 'Last: Mar 2026',   tone: 'tone-emerald' },
+  ];
+
+  readonly legalIp: CardItem[] = [
+    { tag: 'Trademark', title: 'Kogi™',      status: 'Registered', tone: 'tone-rose'    },
+    { tag: 'Patent',    title: 'Kogi OS',    status: 'Pending',    tone: 'tone-amber'   },
+    { tag: 'Copyright', title: 'Logo System',status: 'Active',     tone: 'tone-emerald' },
+    { tag: 'Copyright', title: 'API Spec',   status: 'Active',     tone: 'tone-rose'    },
+  ];
+
+  readonly legalContracts: TableRow[] = [
+    { cells: ['MSA — TechCorp', 'TechCorp Inc.', '$120K',  'Dec 2026','Active'],   badge: 'Active',   badgeTone: 'tone-emerald' },
+    { cells: ['NDA — StartupX', 'StartupX LLC',  '—',      'Jun 2026','Active'],   badge: 'Active',   badgeTone: 'tone-emerald' },
+    { cells: ['Coop Charter',   'Members (35)',   '—',      '—',       'Active'],   badge: 'Active',   badgeTone: 'tone-emerald' },
+    { cells: ['Dev Contract',   'DevDAO',         '$48K',   'Mar 2026','Expiring'], badge: 'Expiring', badgeTone: 'tone-amber'   },
+    { cells: ['License Agmt.',  '3rd Party',      '$8K/yr', 'Dec 2026','Active'],   badge: 'Active',   badgeTone: 'tone-emerald' },
+  ];
+
+  readonly legalCompliance: CardItem[] = [
+    { title: 'GDPR Compliance', subtitle: 'Complete',     tone: 'tone-emerald' },
+    { title: 'SOC 2 Type II',   subtitle: 'In Progress',  tone: 'tone-amber'   },
+    { title: 'Tax Compliance',  subtitle: 'Complete',     tone: 'tone-emerald' },
+    { title: 'AML / KYC',       subtitle: 'Review Needed',tone: 'tone-rose'    },
+    { title: 'Data Residency',  subtitle: 'Complete',     tone: 'tone-teal'    },
+    { title: 'IP Audit',        subtitle: 'Scheduled',    tone: 'tone-blue'    },
+  ];
+
+  readonly legalUpcoming: CardItem[] = [
+    { title: 'DevDAO Contract expires', subtitle: 'In 7 days',  tone: 'tone-rose'   },
+    { title: 'IP Audit scheduled',      subtitle: 'In 14 days', tone: 'tone-blue'   },
+    { title: 'Q1 Tax filing',           subtitle: 'In 22 days', tone: 'tone-amber'  },
+    { title: 'NDA renewal',             subtitle: 'In 45 days', tone: 'tone-purple' },
+  ];
+
+  readonly legalActions: CardItem[] = [
+    { title: 'Draft NDA',       tone: 'tone-blue'   },
+    { title: 'Submit Patent',   tone: 'tone-amber'  },
+    { title: 'Renew Contract',  tone: 'tone-rose'   },
+    { title: 'File Compliance', tone: 'tone-emerald'},
+  ];
 }
 
 bootstrapApplication(AppComponent).catch((err) => console.error(err));

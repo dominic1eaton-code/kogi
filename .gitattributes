@@ -1,3 +1,4 @@
 # @copyright 2024 Kogi Inc. All rights reserved.
 # @license MIT
 # @author Kogi Team <
+/kogi-client/desktop_electron/kogi-desktop-win32-x64/kogi-desktop.exe filter=lfs diff=lfs merge=lfs -text

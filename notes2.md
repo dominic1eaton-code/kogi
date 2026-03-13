@@ -41,6 +41,7 @@ community
     - chat
     - message
     - rooms
+    - resource sharing, resource access, resource shared economics
 
 exchange
     - exchange: portfolios, skills, resources, labors, workers, gigs, tasks, jobs, deals, etc...
@@ -361,4 +362,31 @@ the real estate mastermind offering, real estate investment playbook, and real e
 
 ---
 
+
+
 implement a ProviderSystem AND add a providers kogi-module and provider service,for handling all 3rd party tools+platforms+services+affiliates. have a provider management system and a platform registry and providerresource management+administration, provider version control, provider metadata, provider data management
+
+extend the providerSystem to also manage affiliates and affiliate links, affiliate links can be created by and for a provider on the kogi platform, and affiliates register with the provider registry.
+
+affiliate links, affiliate discount links+codes
+
+make sure users cant use multiple affiliate links
+affiliate link commissions tracking and payouts/credits
+
+
+---
+
+kogi provides an operating system for users for who a wide variety of activities, projects and assets and things that they do, and offloads the work that they would normally be doing manually, to coordinate their "life portfolios", into a single unified system, helping them condense and consolidate their worklives and have better overall balance in life. The kogi platform supports "portffolio planning" where once a user has setup and input all of the things they have going on in their lives, into their platform, they can use the platform to evaluate the state of their "life portfolio", where they can make improvements, help them better track metrics and optimize components of their portfolio+activities+projects+assets, help users better plan and strategize their portfolios.
+
+whether a user wants to plan a vacation, start a new podcast series, write a book, or start a business, the kogi platform can help a user organize all of these activities into manageable portfolios of executio, that can be optimized, shared with a larger community, be resourced and supported in a marketplace, have portfolio assets and resources exchanged, and be designed in the kogi-studio.
+
+
+---
+
+kogi ~ emerald green
+qala ~ navy blue
+ume ~ royal purple
+sambara ~ saffron orange
+imewe ~ walnut brown
+nandi ~ jet black
+
