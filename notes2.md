@@ -390,3 +390,9 @@ sambara ~ saffron orange
 imewe ~ walnut brown
 nandi ~ jet black
 
+---
+
+postgresql ~ remote storage
+sqlite3 ~ local storage
+
+kafka+redis ~ cache storage
