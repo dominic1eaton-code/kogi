@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KOGI · Community</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap');
+  *{margin:0;padding:0;box-sizing:border-box;}
+  :root{
+    --bg:#080b10;--bg2:#0d1117;--bg3:#111820;--bg4:#161e28;
+    --border:#1e2d3d;--border2:#243344;
+    --teal:#00c9a7;--teal2:#009e84;--teal-dim:#00c9a720;
+    --amber:#f5a623;--amber-dim:#f5a62318;
+    --purple:#8b5cf6;--purple-dim:#8b5cf615;
+    --pink:#e83e8c;--pink-dim:#e83e8c18;
+    --green:#22c55e;--red:#ef4444;--blue:#3b82f6;--blue-dim:#3b82f615;
+    --gold:#d4a017;--gold-dim:#d4a01718;
+    --text:#e2e8f0;--text2:#94a3b8;--text3:#4a6280;
+    --mono:'IBM Plex Mono',monospace;--sans:'IBM Plex Sans',sans-serif;
+  }
+  body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:12px;display:flex;height:100vh;overflow:hidden;}
+
+  /* SIDEBAR */
+  .sidebar{width:168px;background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0;}
+  .logo{padding:12px 14px;border-bottom:1px solid var(--border);font-family:var(--mono);font-size:13px;font-weight:600;letter-spacing:3px;color:var(--teal);}
+  .nav-section{padding:8px 0;}
+  .nav-label{padding:4px 14px 2px;font-size:9px;letter-spacing:2px;color:var(--text3);text-transform:uppercase;}
+  .nav-item{padding:5px 14px;color:var(--text2);cursor:pointer;font-size:11px;display:flex;align-items:center;gap:6px;border-left:2px solid transparent;position:relative;}
+  .nav-item:hover{color:var(--text);background:var(--bg3);}
+  .nav-item.active{color:var(--teal);border-left-color:var(--teal);background:var(--teal-dim);}
+  .nav-item .dot{width:5px;height:5px;border-radius:50%;background:currentColor;opacity:.6;}
+  .nav-badge{position:absolute;right:10px;background:var(--red);color:#fff;font-size:8px;font-family:var(--mono);padding:1px 4px;border-radius:8px;min-width:14px;text-align:center;}
+  .nav-divider{height:1px;background:var(--border);margin:6px 0;}
+
+  /* MAIN */
+  .main{flex:1;display:flex;overflow:hidden;}
+
+  /* TOPBAR */
+  .topbar{padding:8px 16px;background:var(--bg2);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;}
+  .topbar-title{font-family:var(--mono);font-size:13px;font-weight:500;color:var(--text);}
+  .topbar-search{flex:1;max-width:300px;background:var(--bg3);border:1px solid var(--border);border-radius:3px;padding:4px 10px;color:var(--text2);font-family:var(--mono);font-size:11px;outline:none;}
+  .topbar-actions{margin-left:auto;display:flex;gap:6px;align-items:center;}
+  .btn{padding:4px 10px;border-radius:3px;font-family:var(--mono);font-size:10px;cursor:pointer;border:1px solid var(--border2);background:var(--bg3);color:var(--text2);}
+  .btn.primary{background:var(--teal2);border-color:var(--teal);color:#000;font-weight:600;}
+  .btn.amber{background:var(--amber-dim);border-color:var(--amber);color:var(--amber);}
+  .badge-dot{width:7px;height:7px;border-radius:50%;background:var(--teal);flex-shrink:0;}
+  .presence-dot{width:8px;height:8px;border-radius:50%;background:var(--green);box-shadow:0 0 4px var(--green);}
+
+  /* CENTER COLUMN */
+  .center-col{flex:1;display:flex;flex-direction:column;overflow:hidden;border-right:1px solid var(--border);}
+  .feed-tabs{display:flex;border-bottom:1px solid var(--border);background:var(--bg2);padding:0 16px;}
+  .feed-tab{padding:8px 14px;font-size:10px;font-family:var(--mono);color:var(--text3);cursor:pointer;border-bottom:2px solid transparent;}
+  .feed-tab.active{color:var(--teal);border-bottom-color:var(--teal);}
+  .feed-tab:hover{color:var(--text2);}
+
+  .feed{flex:1;overflow-y:auto;padding:14px;}
+
+  /* COMPOSE */
+  .compose-box{background:var(--bg2);border:1px solid var(--border);border-radius:4px;padding:10px 12px;margin-bottom:12px;}
+  .compose-top{display:flex;align-items:center;gap:8px;margin-bottom:8px;}
+  .compose-avatar{width:28px;height:28px;border-radius:50%;background:var(--teal-dim);border:1px solid var(--teal2);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:var(--teal);flex-shrink:0;}
+  .compose-input{flex:1;background:var(--bg3);border:1px solid var(--border);border-radius:3px;padding:7px 10px;font-family:var(--sans);font-size:11px;color:var(--text3);outline:none;}
+  .compose-actions{display:flex;gap:6px;justify-content:flex-end;}
+  .compose-action{font-size:9px;font-family:var(--mono);color:var(--text3);cursor:pointer;padding:2px 6px;border-radius:2px;border:1px solid var(--border);}
+  .compose-action:hover{color:var(--text2);border-color:var(--border2);}
+
+  /* POST CARD */
+  .post{background:var(--bg2);border:1px solid var(--border);border-radius:4px;margin-bottom:10px;overflow:hidden;}
+  .post:hover{border-color:var(--border2);}
+  .post-header{display:flex;align-items:flex-start;gap:10px;padding:10px 12px;}
+  .post-avatar{width:32px;height:32px;border-radius:50%;background:var(--bg4);border:1px solid var(--border2);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;}
+  .post-meta{flex:1;}
+  .post-author{font-size:11px;font-weight:600;color:var(--text);display:flex;align-items:center;gap:5px;}
+  .post-role{font-size:9px;color:var(--text3);}
+  .post-time{font-size:9px;color:var(--text3);font-family:var(--mono);}
+  .post-type-badge{font-size:8px;font-family:var(--mono);padding:1px 5px;border-radius:2px;}
+  .post-type-badge.showcase{background:var(--teal-dim);color:var(--teal);border:1px solid var(--teal2);}
+  .post-type-badge.milestone{background:var(--purple-dim);color:var(--purple);}
+  .post-type-badge.update{background:var(--amber-dim);color:var(--amber);}
+  .post-type-badge.article{background:var(--blue-dim);color:var(--blue);}
+  .post-type-badge.campaign{background:var(--gold-dim);color:var(--gold);}
+  .post-body{padding:0 12px 10px;}
+  .post-text{font-size:11px;color:var(--text2);line-height:1.6;margin-bottom:8px;}
+  .post-text .hashtag{color:var(--teal);cursor:pointer;}
+  .post-text .mention{color:var(--purple);cursor:pointer;}
+  .post-text strong{color:var(--text);}
+
+  /* PORTFOLIO EMBED */
+  .portfolio-embed{background:var(--bg3);border:1px solid var(--border);border-radius:3px;padding:10px 12px;display:flex;align-items:center;gap:10px;cursor:pointer;margin-bottom:8px;}
+  .portfolio-embed:hover{border-color:var(--teal2);}
+  .embed-icon{width:32px;height:32px;border-radius:3px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0;}
+  .embed-icon.asset{background:var(--teal-dim);color:var(--teal);}
+  .embed-icon.project{background:var(--purple-dim);color:var(--purple);}
+  .embed-icon.program{background:var(--amber-dim);color:var(--amber);}
+  .embed-title{font-size:11px;font-weight:500;color:var(--text);margin-bottom:2px;}
+  .embed-meta{font-size:9px;color:var(--text3);}
+  .embed-right{margin-left:auto;text-align:right;}
+  .embed-val{font-family:var(--mono);font-size:11px;color:var(--teal);}
+  .embed-stat{font-size:8px;color:var(--text3);}
+
+  /* MEDIA STRIP */
+  .post-media{display:flex;gap:4px;margin-bottom:8px;}
+  .media-thumb{flex:1;height:80px;background:var(--bg4);border-radius:3px;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:18px;}
+
+  /* REACTION BAR */
+  .reaction-bar{display:flex;align-items:center;gap:12px;padding:7px 12px;border-top:1px solid var(--border);background:var(--bg3);}
+  .reaction{display:flex;align-items:center;gap:4px;font-size:10px;color:var(--text3);cursor:pointer;padding:2px 5px;border-radius:3px;}
+  .reaction:hover{background:var(--bg4);color:var(--text2);}
+  .reaction.active{color:var(--teal);}
+  .reaction .emoji{font-size:12px;}
+  .reaction .count{font-family:var(--mono);font-size:9px;}
+  .reaction-spacer{flex:1;}
+  .post-space-tag{font-size:9px;font-family:var(--mono);color:var(--text3);padding:1px 6px;border-radius:2px;border:1px solid var(--border);}
+
+  /* CAMPAIGN EMBED */
+  .campaign-embed{background:var(--bg3);border:1px solid var(--gold-dim);border-left:3px solid var(--gold);border-radius:3px;padding:10px 12px;margin-bottom:8px;}
+  .ce-header{display:flex;align-items:center;gap:8px;margin-bottom:6px;}
+  .ce-title{font-size:11px;font-weight:500;color:var(--text);}
+  .ce-type{font-size:8px;font-family:var(--mono);padding:1px 5px;border-radius:2px;background:var(--gold-dim);color:var(--gold);}
+  .ce-bar{height:5px;background:var(--bg4);border-radius:3px;overflow:hidden;margin-bottom:4px;}
+  .ce-fill{height:100%;background:var(--gold);border-radius:3px;}
+  .ce-meta{display:flex;justify-content:space-between;font-size:9px;color:var(--text3);}
+  .ce-meta span{color:var(--text2);font-family:var(--mono);}
+
+  /* RIGHT SIDEBAR */
+  .right-col{width:260px;background:var(--bg2);border-left:1px solid var(--border);overflow-y:auto;flex-shrink:0;}
+  .right-section{border-bottom:1px solid var(--border);padding:10px 12px;}
+  .rs-title{font-family:var(--mono);font-size:9px;text-transform:uppercase;letter-spacing:1.5px;color:var(--text3);margin-bottom:8px;}
+  .suggested-space{display:flex;align-items:center;gap:8px;padding:5px 0;cursor:pointer;}
+  .suggested-space:hover .ss-name{color:var(--teal);}
+  .ss-icon{width:22px;height:22px;border-radius:3px;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;flex-shrink:0;}
+  .ss-name{font-size:10px;color:var(--text2);}
+  .ss-meta{font-size:9px;color:var(--text3);}
+  .ss-join{margin-left:auto;font-size:8px;font-family:var(--mono);color:var(--teal);cursor:pointer;padding:1px 5px;border:1px solid var(--teal2);border-radius:2px;}
+  .trending-tag{display:flex;align-items:center;justify-content:space-between;padding:4px 0;cursor:pointer;}
+  .tt-name{font-size:10px;color:var(--text2);}
+  .tt-count{font-family:var(--mono);font-size:9px;color:var(--text3);}
+  .who-to-follow{display:flex;align-items:center;gap:7px;padding:5px 0;}
+  .wtf-avatar{width:24px;height:24px;border-radius:50%;background:var(--bg4);border:1px solid var(--border2);display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:600;flex-shrink:0;}
+  .wtf-name{font-size:10px;color:var(--text2);flex:1;}
+  .wtf-role{font-size:8px;color:var(--text3);}
+  .wtf-follow{font-size:8px;font-family:var(--mono);color:var(--teal);cursor:pointer;padding:1px 6px;border:1px solid var(--teal2);border-radius:2px;}
+
+  ::-webkit-scrollbar{width:4px;height:4px;}
+  ::-webkit-scrollbar-track{background:var(--bg);}
+  ::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px;}
+</style>
+</head>
+<body>
+
+<div class="sidebar">
+  <div class="logo">KOGI</div>
+  <div class="nav-section">
+    <div class="nav-label">Main</div>
+    <div class="nav-item"><span class="dot"></span>Home</div>
+    <div class="nav-item"><span class="dot"></span>Office</div>
+    <div class="nav-item"><span class="dot"></span>Portfolio</div>
+  </div>
+  <div class="nav-divider"></div>
+  <div class="nav-section">
+    <div class="nav-label">Community</div>
+    <div class="nav-item active"><span class="dot"></span>Feed<span class="nav-badge">4</span></div>
+    <div class="nav-item"><span class="dot"></span>Spaces</div>
+    <div class="nav-item"><span class="dot"></span>Rooms<span class="nav-badge">12</span></div>
+    <div class="nav-item"><span class="dot"></span>Messages<span class="nav-badge">3</span></div>
+    <div class="nav-item"><span class="dot"></span>Events</div>
+    <div class="nav-item"><span class="dot"></span>Showcase</div>
+    <div class="nav-item"><span class="dot"></span>Organizations</div>
+  </div>
+  <div class="nav-divider"></div>
+  <div class="nav-section">
+    <div class="nav-label">My Spaces</div>
+    <div class="nav-item"><div class="dot" style="background:var(--teal)"></div>Design Guild</div>
+    <div class="nav-item"><div class="dot" style="background:var(--purple)"></div>Alpha Platform</div>
+    <div class="nav-item"><div class="dot" style="background:var(--amber)"></div>Freelance Devs</div>
+    <div class="nav-item"><div class="dot" style="background:var(--pink)"></div>Pamoja Network</div>
+  </div>
+  <div class="nav-divider"></div>
+  <div class="nav-section">
+    <div class="nav-label">Economy</div>
+    <div class="nav-item"><span class="dot"></span>Exchange</div>
+    <div class="nav-item"><span class="dot"></span>Marketplace</div>
+  </div>
+</div>
+
+<div class="main">
+  <div style="flex:1;display:flex;flex-direction:column;overflow:hidden;">
+    <div class="topbar">
+      <div class="topbar-title">Community</div>
+      <input class="topbar-search" placeholder="search posts, spaces, people, topics..." />
+      <div class="topbar-actions">
+        <button class="btn">Explore</button>
+        <button class="btn amber">+ New Post</button>
+        <div class="presence-dot"></div>
+        <div class="badge-dot"></div>
+      </div>
+    </div>
+
+    <div style="display:flex;flex:1;overflow:hidden;">
+      <div class="center-col">
+        <div class="feed-tabs">
+          <div class="feed-tab active">For You</div>
+          <div class="feed-tab">Following</div>
+          <div class="feed-tab">Spaces</div>
+          <div class="feed-tab">Showcase</div>
+          <div class="feed-tab">Trending</div>
+          <div class="feed-tab">Marketplace</div>
+        </div>
+
+        <div class="feed">
+          <!-- COMPOSE -->
+          <div class="compose-box">
+            <div class="compose-top">
+              <div class="compose-avatar">YO</div>
+              <input class="compose-input" placeholder="Share an update, showcase work, or post to your community..." />
+            </div>
+            <div class="compose-actions">
+              <div class="compose-action">📎 Attach</div>
+              <div class="compose-action">🔗 Portfolio</div>
+              <div class="compose-action">📅 Schedule</div>
+              <div class="compose-action"># Topics</div>
+              <button class="btn primary" style="font-size:9px;">Post</button>
+            </div>
+          </div>
+
+          <!-- POST 1 — Showcase -->
+          <div class="post">
+            <div class="post-header">
+              <div class="post-avatar" style="color:var(--teal)">JC</div>
+              <div class="post-meta">
+                <div class="post-author">Jordan Chen <span class="post-type-badge showcase">SHOWCASE</span></div>
+                <div class="post-role">Senior Brand Designer · @jordanchen</div>
+              </div>
+              <div class="post-time">2h ago</div>
+            </div>
+            <div class="post-body">
+              <div class="post-text">
+                Just shipped <strong>Brand Identity System v2.0</strong> — 18 months of iteration, 12 versions, and one complete design philosophy finally crystallized. Full logo system, motion guidelines, and dark/light token sets. Available on the marketplace now. <span class="hashtag">#BrandDesign</span> <span class="hashtag">#DesignSystem</span> <span class="hashtag">#Kogi</span>
+              </div>
+              <div class="portfolio-embed">
+                <div class="embed-icon asset">A</div>
+                <div>
+                  <div class="embed-title">Brand Identity System v2.0</div>
+                  <div class="embed-meta">Asset · v2.4 · Published · Full IP License</div>
+                </div>
+                <div class="embed-right">
+                  <div class="embed-val">$12,400</div>
+                  <div class="embed-stat">142 followers · 94 AI Score</div>
+                </div>
+              </div>
+              <div class="post-media">
+                <div class="media-thumb">🎨</div>
+                <div class="media-thumb">✏️</div>
+                <div class="media-thumb">🎯</div>
+              </div>
+            </div>
+            <div class="reaction-bar">
+              <div class="reaction active"><span class="emoji">👏</span><span class="count">48</span></div>
+              <div class="reaction"><span class="emoji">💡</span><span class="count">24</span></div>
+              <div class="reaction"><span class="emoji">🔖</span><span class="count">19</span></div>
+              <div class="reaction"><span class="emoji">💬</span><span class="count">12</span></div>
+              <div class="reaction"><span class="emoji">↗</span><span class="count">Share</span></div>
+              <div class="reaction-spacer"></div>
+              <span class="post-space-tag">Design Guild</span>
+            </div>
+          </div>
+
+          <!-- POST 2 — Milestone -->
+          <div class="post">
+            <div class="post-header">
+              <div class="post-avatar" style="color:var(--purple)">PS</div>
+              <div class="post-meta">
+                <div class="post-author">Priya Singh <span class="post-type-badge milestone">MILESTONE</span></div>
+                <div class="post-role">Full-Stack Engineer · @priyasingh</div>
+              </div>
+              <div class="post-time">5h ago</div>
+            </div>
+            <div class="post-body">
+              <div class="post-text">
+                Milestone 3 complete on <span class="mention">@AlphaPlatform</span> — the distributed event streaming layer is live, handling 2.8M events/day with sub-12ms p99 latency. Kafka → Flink → PostgreSQL pipeline fully operational. <span class="hashtag">#Engineering</span> <span class="hashtag">#Kafka</span>
+              </div>
+              <div class="portfolio-embed">
+                <div class="embed-icon project">P</div>
+                <div>
+                  <div class="embed-title">Alpha Platform — Data Infrastructure</div>
+                  <div class="embed-meta">Program · Active · Milestone 3/5 · 78% complete</div>
+                </div>
+                <div class="embed-right">
+                  <div class="embed-val">$142K</div>
+                  <div class="embed-stat">Budget · 89% health score</div>
+                </div>
+              </div>
+            </div>
+            <div class="reaction-bar">
+              <div class="reaction"><span class="emoji">🔥</span><span class="count">62</span></div>
+              <div class="reaction"><span class="emoji">💡</span><span class="count">31</span></div>
+              <div class="reaction"><span class="emoji">🔖</span><span class="count">14</span></div>
+              <div class="reaction"><span class="emoji">💬</span><span class="count">8</span></div>
+              <div class="reaction"><span class="emoji">↗</span><span class="count">Share</span></div>
+              <div class="reaction-spacer"></div>
+              <span class="post-space-tag">Alpha Platform</span>
+            </div>
+          </div>
+
+          <!-- POST 3 — Campaign -->
+          <div class="post">
+            <div class="post-header">
+              <div class="post-avatar" style="color:var(--gold)">PF</div>
+              <div class="post-meta">
+                <div class="post-author">Pamoja Federation <span class="post-type-badge campaign">CAMPAIGN</span></div>
+                <div class="post-role">Organization · @pamoja</div>
+              </div>
+              <div class="post-time">8h ago</div>
+            </div>
+            <div class="post-body">
+              <div class="post-text">
+                Our <strong>Seed Round — Series Pre-A</strong> is 89% funded. $450K of $500K raised from 29 backers. 19 days remaining. This round funds platform infrastructure, team expansion, and cooperative tooling. Join as an early backer. <span class="hashtag">#Fundraising</span> <span class="hashtag">#Equity</span>
+              </div>
+              <div class="campaign-embed">
+                <div class="ce-header">
+                  <div class="ce-title">Alpha Platform — Seed Round Pre-A</div>
+                  <span class="ce-type">EQUITY · 8% · $6.25M val.</span>
+                </div>
+                <div class="ce-bar"><div class="ce-fill" style="width:89%"></div></div>
+                <div class="ce-meta"><span>$450K raised</span> of <span>$500K goal</span> · <span>19 days left</span> · <span>29 backers</span></div>
+              </div>
+            </div>
+            <div class="reaction-bar">
+              <div class="reaction"><span class="emoji">🚀</span><span class="count">84</span></div>
+              <div class="reaction"><span class="emoji">💰</span><span class="count">29</span></div>
+              <div class="reaction"><span class="emoji">🔖</span><span class="count">41</span></div>
+              <div class="reaction"><span class="emoji">💬</span><span class="count">22</span></div>
+              <div class="reaction"><span class="emoji">↗</span><span class="count">Share</span></div>
+              <div class="reaction-spacer"></div>
+              <span class="post-space-tag">Pamoja Network</span>
+            </div>
+          </div>
+
+          <!-- POST 4 — Article -->
+          <div class="post">
+            <div class="post-header">
+              <div class="post-avatar" style="color:var(--amber)">MB</div>
+              <div class="post-meta">
+                <div class="post-author">Marcus Brown <span class="post-type-badge article">ARTICLE</span></div>
+                <div class="post-role">Growth Strategist · @marcusbrown</div>
+              </div>
+              <div class="post-time">1d ago</div>
+            </div>
+            <div class="post-body">
+              <div class="post-text">
+                <strong>The independent worker economy is restructuring capital.</strong> When 3 cooperatives pool $500K in collective resources, the leverage dynamics change entirely. I broke down our community fund model and how we distribute returns. <span class="hashtag">#CoopEconomics</span> <span class="hashtag">#IndependentWork</span>
+              </div>
+            </div>
+            <div class="reaction-bar">
+              <div class="reaction"><span class="emoji">💡</span><span class="count">112</span></div>
+              <div class="reaction"><span class="emoji">👏</span><span class="count">67</span></div>
+              <div class="reaction"><span class="emoji">🔖</span><span class="count">58</span></div>
+              <div class="reaction"><span class="emoji">💬</span><span class="count">34</span></div>
+              <div class="reaction"><span class="emoji">↗</span><span class="count">Share</span></div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- RIGHT SIDEBAR -->
+      <div class="right-col">
+        <div class="right-section">
+          <div class="rs-title">Suggested Spaces</div>
+          <div class="suggested-space">
+            <div class="ss-icon" style="background:var(--blue-dim);color:var(--blue)">🛠</div>
+            <div><div class="ss-name">Open Source Builders</div><div class="ss-meta">4,240 members · Engineering</div></div>
+            <div class="ss-join">+ Join</div>
+          </div>
+          <div class="suggested-space">
+            <div class="ss-icon" style="background:var(--pink-dim);color:var(--pink)">✦</div>
+            <div><div class="ss-name">Creative Collective</div><div class="ss-meta">1,820 members · Design</div></div>
+            <div class="ss-join">+ Join</div>
+          </div>
+          <div class="suggested-space">
+            <div class="ss-icon" style="background:var(--purple-dim);color:var(--purple)">⊞</div>
+            <div><div class="ss-name">Worker Co-op Guild</div><div class="ss-meta">892 members · Cooperative</div></div>
+            <div class="ss-join">+ Join</div>
+          </div>
+          <div class="suggested-space">
+            <div class="ss-icon" style="background:var(--gold-dim);color:var(--gold)">◈</div>
+            <div><div class="ss-name">Indie Finance Club</div><div class="ss-meta">680 members · Finance</div></div>
+            <div class="ss-join">+ Join</div>
+          </div>
+        </div>
+        <div class="right-section">
+          <div class="rs-title">Trending Topics</div>
+          <div class="trending-tag"><div class="tt-name">#DesignSystem</div><div class="tt-count">342 posts</div></div>
+          <div class="trending-tag"><div class="tt-name">#IndependentWork</div><div class="tt-count">218 posts</div></div>
+          <div class="trending-tag"><div class="tt-name">#CoopEconomics</div><div class="tt-count">184 posts</div></div>
+          <div class="trending-tag"><div class="tt-name">#OpenSource</div><div class="tt-count">161 posts</div></div>
+          <div class="trending-tag"><div class="tt-name">#KogiExchange</div><div class="tt-count">134 posts</div></div>
+          <div class="trending-tag"><div class="tt-name">#FreelanceLife</div><div class="tt-count">97 posts</div></div>
+        </div>
+        <div class="right-section">
+          <div class="rs-title">People to Follow</div>
+          <div class="who-to-follow">
+            <div class="wtf-avatar" style="color:var(--pink)">SN</div>
+            <div><div class="wtf-name">Sofia Navarro</div><div class="wtf-role">Data Scientist · ML/AI</div></div>
+            <div class="wtf-follow">Follow</div>
+          </div>
+          <div class="who-to-follow">
+            <div class="wtf-avatar" style="color:var(--blue)">TJ</div>
+            <div><div class="wtf-name">Tom James</div><div class="wtf-role">Legal Counsel · IP</div></div>
+            <div class="wtf-follow">Follow</div>
+          </div>
+          <div class="who-to-follow">
+            <div class="wtf-avatar" style="color:var(--green)">AK</div>
+            <div><div class="wtf-name">Asha Kim</div><div class="wtf-role">Product Lead · Platform</div></div>
+            <div class="wtf-follow">Follow</div>
+          </div>
+        </div>
+        <div class="right-section">
+          <div class="rs-title">Your Activity</div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <div style="background:var(--bg3);border:1px solid var(--border);border-radius:3px;padding:7px 10px;flex:1;min-width:80px;">
+              <div style="font-size:8px;color:var(--text3);margin-bottom:3px;">POSTS</div>
+              <div style="font-family:var(--mono);font-size:16px;color:var(--teal);">18</div>
+            </div>
+            <div style="background:var(--bg3);border:1px solid var(--border);border-radius:3px;padding:7px 10px;flex:1;min-width:80px;">
+              <div style="font-size:8px;color:var(--text3);margin-bottom:3px;">FOLLOWERS</div>
+              <div style="font-family:var(--mono);font-size:16px;color:var(--amber);">142</div>
+            </div>
+            <div style="background:var(--bg3);border:1px solid var(--border);border-radius:3px;padding:7px 10px;flex:1;min-width:80px;">
+              <div style="font-size:8px;color:var(--text3);margin-bottom:3px;">REACH</div>
+              <div style="font-family:var(--mono);font-size:16px;color:var(--purple);">8.4K</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>KOGI — Group Economics</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap');
+  :root {
+    --bg-primary: #0a0c10; --bg-secondary: #0f1117; --bg-card: #131820; --bg-card2: #161c26;
+    --border: #1e2535; --border2: #252d3d; --text-primary: #d4dbe8; --text-secondary: #7a8599; --text-muted: #4a5568;
+    --accent-gold: #c8a84b; --accent-gold-dim: #6b5a2a; --accent-teal: #2a9d8f; --accent-teal-dim: #1a4a45;
+    --accent-rose: #c94b6b; --accent-rose-dim: #5a1e2d; --accent-blue: #3b82f6; --accent-blue-dim: #1e3a5f;
+    --accent-green: #4caf7d; --accent-green-dim: #1a3d2a; --accent-purple: #8b5cf6; --accent-orange: #e87c3a;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'IBM Plex Sans', sans-serif; background: var(--bg-primary); color: var(--text-primary); font-size: 11px; display: flex; height: 100vh; overflow: hidden; }
+  .sidebar { width: 168px; background: var(--bg-secondary); border-right: 1px solid var(--border); flex-shrink: 0; }
+  .sidebar-logo { padding: 12px 14px; border-bottom: 1px solid var(--border); }
+  .logo-text { font-family: 'IBM Plex Mono', monospace; font-weight: 600; font-size: 13px; letter-spacing: 0.15em; color: var(--accent-gold); }
+  .sidebar-nav { padding: 8px 0; }
+  .nav-section { padding: 6px 14px 2px; font-size: 9px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.1em; }
+  .nav-item { padding: 5px 14px; display: flex; align-items: center; gap: 7px; color: var(--text-secondary); font-size: 10.5px; border-left: 2px solid transparent; }
+  .nav-item.active { color: var(--accent-gold); border-left-color: var(--accent-gold); background: rgba(200,168,75,0.06); }
+  .nav-dot { width: 5px; height: 5px; border-radius: 50%; background: currentColor; }
+  .main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+  .topbar { height: 44px; border-bottom: 1px solid var(--border); display: flex; align-items: center; padding: 0 18px; gap: 12px; background: var(--bg-secondary); flex-shrink: 0; }
+  .page-title { font-family: 'IBM Plex Mono', monospace; font-size: 12px; font-weight: 500; }
+  .breadcrumb { color: var(--text-muted); font-size: 10px; }
+  .breadcrumb span { color: var(--text-secondary); }
+  .topbar-right { margin-left: auto; display: flex; align-items: center; gap: 8px; }
+  .search-bar { background: var(--bg-card); border: 1px solid var(--border); border-radius: 4px; padding: 4px 10px; font-size: 10px; color: var(--text-secondary); width: 160px; }
+  .btn { padding: 4px 10px; border-radius: 3px; font-size: 10px; font-weight: 500; border: none; font-family: 'IBM Plex Sans', sans-serif; cursor: pointer; }
+  .btn-primary { background: var(--accent-gold); color: #0a0c10; }
+  .btn-ghost { background: transparent; border: 1px solid var(--border2); color: var(--text-secondary); }
+  .avatar-sm { width: 22px; height: 22px; border-radius: 50%; background: var(--accent-gold-dim); display: flex; align-items: center; justify-content: center; font-size: 9px; font-weight: 600; color: var(--accent-gold); }
+  .content { flex: 1; overflow-y: auto; padding: 16px 18px; display: flex; flex-direction: column; gap: 12px; }
+  .stat-row { display: flex; gap: 10px; }
+  .stat-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 4px; padding: 10px 14px; flex: 1; }
+  .stat-label { font-size: 9px; color: var(--text-muted); letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 4px; }
+  .stat-value { font-family: 'IBM Plex Mono', monospace; font-size: 18px; font-weight: 500; line-height: 1; }
+  .stat-value.gold { color: var(--accent-gold); } .stat-value.teal { color: var(--accent-teal); } .stat-value.green { color: var(--accent-green); }
+  .stat-sub { font-size: 9px; color: var(--text-muted); margin-top: 3px; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+  .grid-2 { display: grid; grid-template-columns: 1.4fr 1fr; gap: 10px; }
+  .card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 4px; padding: 12px 14px; }
+  .card-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+  .card-title { font-size: 10px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; }
+  .card-action { font-size: 9px; color: var(--accent-gold); cursor: pointer; }
+  .section-label { font-size: 9px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-muted); font-weight: 600; margin-bottom: 6px; }
+  .campaign-card { background: var(--bg-card2); border: 1px solid var(--border2); border-radius: 4px; padding: 11px 13px; margin-bottom: 8px; }
+  .campaign-card:last-child { margin-bottom: 0; }
+  .campaign-header { display: flex; align-items: flex-start; gap: 8px; margin-bottom: 8px; }
+  .campaign-type { width: 28px; height: 28px; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 12px; flex-shrink: 0; }
+  .campaign-name { font-size: 11px; font-weight: 600; margin-bottom: 2px; }
+  .campaign-org { font-size: 9px; color: var(--text-muted); }
+  .campaign-status { margin-left: auto; }
+  .badge { padding: 2px 6px; border-radius: 2px; font-size: 8.5px; font-weight: 600; }
+  .badge-live { background: var(--accent-green-dim); color: var(--accent-green); }
+  .badge-close { background: var(--accent-rose-dim); color: var(--accent-rose); }
+  .badge-success { background: var(--accent-teal-dim); color: var(--accent-teal); }
+  .badge-plan { background: var(--accent-blue-dim); color: var(--accent-blue); }
+  .progress-container { margin-bottom: 6px; }
+  .progress-bar { height: 5px; background: var(--border); border-radius: 3px; overflow: hidden; }
+  .progress-fill { height: 100%; border-radius: 3px; }
+  .campaign-numbers { display: flex; justify-content: space-between; margin-top: 3px; }
+  .cam-raised { font-family: 'IBM Plex Mono', monospace; font-size: 12px; font-weight: 600; color: var(--accent-gold); }
+  .cam-goal { font-size: 9px; color: var(--text-muted); }
+  .cam-pct { font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: var(--accent-green); }
+  .campaign-meta { display: flex; gap: 10px; font-size: 9px; color: var(--text-muted); margin-top:4px; }
+  .campaign-meta span { color: var(--text-secondary); }
+  .campaign-actions { display: flex; gap: 5px; margin-top: 7px; }
+  .c-btn { padding: 3px 9px; border-radius: 2px; font-size: 9px; border: none; cursor: pointer; font-family: 'IBM Plex Sans', sans-serif; }
+  .c-btn-invest { background: var(--accent-gold); color: #0a0c10; font-weight: 600; }
+  .c-btn-donate { background: var(--accent-green-dim); color: var(--accent-green); border: 1px solid rgba(76,175,125,0.3); }
+  .c-btn-view { background: transparent; border: 1px solid var(--border2); color: var(--text-secondary); }
+  .investor-row { display: flex; align-items: center; gap: 7px; padding: 5px 0; border-bottom: 1px solid var(--border); }
+  .investor-row:last-child { border-bottom: none; }
+  .inv-avatar { width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 8px; font-weight: 700; }
+  .inv-name { font-size: 10px; font-weight: 500; flex: 1; }
+  .inv-amount { font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: var(--accent-gold); }
+  .inv-type { font-size: 8.5px; color: var(--text-muted); }
+  .returns-row { display: flex; justify-content: space-between; padding: 5px 0; border-bottom: 1px solid var(--border); }
+  .returns-row:last-child { border-bottom: none; }
+  .returns-label { font-size: 10px; color: var(--text-secondary); }
+  .returns-val { font-family: 'IBM Plex Mono', monospace; font-size: 11px; font-weight: 500; }
+  ::-webkit-scrollbar { width: 4px; } ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+  .divider { width: 1px; background: var(--border); height: 16px; margin: 0 4px; }
+  .mono { font-family: 'IBM Plex Mono', monospace; }
+</style>
+</head>
+<body>
+<div class="sidebar">
+  <div class="sidebar-logo"><div class="logo-text">KOGI</div></div>
+  <div class="sidebar-nav">
+    <div class="nav-section">Main</div>
+    <div class="nav-item"><div class="nav-dot"></div>Home</div>
+    <div class="nav-item"><div class="nav-dot"></div>Office</div>
+    <div class="nav-item active"><div class="nav-dot"></div>Community</div>
+    <div class="nav-item"><div class="nav-dot"></div>Marketplace</div>
+    <div class="nav-item active"><div class="nav-dot"></div>Exchange</div>
+    <div class="nav-item active"><div class="nav-dot"></div>Bank</div>
+    <div class="nav-section">Economics</div>
+    <div class="nav-item active"><div class="nav-dot"></div>Group Economics</div>
+    <div class="nav-item"><div class="nav-dot"></div>Equity Crowdfunding</div>
+    <div class="nav-item"><div class="nav-dot"></div>Donations</div>
+    <div class="nav-item"><div class="nav-dot"></div>Revenue Sharing</div>
+  </div>
+</div>
+
+<div class="main">
+  <div class="topbar">
+    <div class="page-title">Group Economics</div>
+    <div class="breadcrumb">Community <span>/ Economics / Equity Crowdfunding + Donations</span></div>
+    <div class="topbar-right">
+      <input class="search-bar" placeholder="Search campaigns..." />
+      <button class="btn btn-ghost">My Investments</button>
+      <button class="btn btn-primary">+ Launch Campaign</button>
+      <div class="divider"></div>
+      <div class="avatar-sm">JC</div>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <div class="stat-row">
+      <div class="stat-card"><div class="stat-label">Total Raised</div><div class="stat-value gold">$450K</div><div class="stat-sub">All campaigns combined</div></div>
+      <div class="stat-card"><div class="stat-label">Active Campaigns</div><div class="stat-value teal">12</div><div class="stat-sub">7 equity · 5 donation</div></div>
+      <div class="stat-card"><div class="stat-label">Community Investors</div><div class="stat-value">284</div><div class="stat-sub">Unique backers</div></div>
+      <div class="stat-card"><div class="stat-label">Avg Campaign Success</div><div class="stat-value green">78%</div><div class="stat-sub">Funded to goal</div></div>
+      <div class="stat-card"><div class="stat-label">Your Portfolio</div><div class="stat-value gold">$12K</div><div class="stat-sub">3 investments active</div></div>
+    </div>
+
+    <div class="grid-2">
+
+      <!-- CAMPAIGNS -->
+      <div class="card" style="grid-row:span 2;">
+        <div class="card-header">
+          <div class="card-title">Live Campaigns</div>
+          <div style="display:flex;gap:6px;">
+            <button class="btn btn-ghost" style="font-size:9px;padding:3px 7px;">Equity</button>
+            <button class="btn btn-ghost" style="font-size:9px;padding:3px 7px;">Donation</button>
+            <div class="card-action">All →</div>
+          </div>
+        </div>
+
+        <div class="campaign-card" style="border-color:rgba(200,168,75,0.3);">
+          <div class="campaign-header">
+            <div class="campaign-type" style="background:var(--accent-gold-dim);color:var(--accent-gold);">◆</div>
+            <div style="flex:1;">
+              <div class="campaign-name">Pamoja Platform — Series A Round</div>
+              <div class="campaign-org">Pamoja Capital LLC · Equity · Reg CF</div>
+            </div>
+            <span class="badge badge-live">Live · 14d left</span>
+          </div>
+          <div class="progress-container">
+            <div class="progress-bar"><div class="progress-fill" style="width:72%;background:var(--accent-gold);"></div></div>
+            <div class="campaign-numbers">
+              <div><div class="cam-raised">$360,000</div><div class="cam-goal">of $500K goal</div></div>
+              <div class="cam-pct">72%</div>
+            </div>
+          </div>
+          <div class="campaign-meta"><span>248</span> investors · Min <span>$500</span> · Equity: <span>0.1–2%</span></div>
+          <div class="campaign-actions">
+            <button class="c-btn c-btn-invest">Invest Now</button>
+            <button class="c-btn c-btn-view">View Terms</button>
+            <button class="c-btn c-btn-view">Due Diligence</button>
+          </div>
+        </div>
+
+        <div class="campaign-card" style="border-color:rgba(76,175,125,0.3);">
+          <div class="campaign-header">
+            <div class="campaign-type" style="background:var(--accent-green-dim);color:var(--accent-green);">♻</div>
+            <div style="flex:1;">
+              <div class="campaign-name">Worker Cooperative Fund — Q2</div>
+              <div class="campaign-org">Worker-Owned Creative Coop · Revenue Share</div>
+            </div>
+            <span class="badge badge-live">Live · 28d left</span>
+          </div>
+          <div class="progress-container">
+            <div class="progress-bar"><div class="progress-fill" style="width:54%;background:var(--accent-green);"></div></div>
+            <div class="campaign-numbers">
+              <div><div class="cam-raised">$54,000</div><div class="cam-goal">of $100K goal</div></div>
+              <div class="cam-pct">54%</div>
+            </div>
+          </div>
+          <div class="campaign-meta"><span>89</span> investors · Min <span>$250</span> · Returns: <span>8–12% revenue share</span></div>
+          <div class="campaign-actions">
+            <button class="c-btn c-btn-invest">Invest</button>
+            <button class="c-btn c-btn-view">Terms</button>
+          </div>
+        </div>
+
+        <div class="campaign-card" style="border-color:rgba(42,157,143,0.3);">
+          <div class="campaign-header">
+            <div class="campaign-type" style="background:var(--accent-teal-dim);color:var(--accent-teal);">◈</div>
+            <div style="flex:1;">
+              <div class="campaign-name">Open Source Infrastructure Fund</div>
+              <div class="campaign-org">Pamoja Protocol DAO · Community Donation</div>
+            </div>
+            <span class="badge badge-live">Live · Always Open</span>
+          </div>
+          <div class="progress-container">
+            <div class="progress-bar"><div class="progress-fill" style="width:88%;background:var(--accent-teal);"></div></div>
+            <div class="campaign-numbers">
+              <div><div class="cam-raised">$26,400</div><div class="cam-goal">of $30K this quarter</div></div>
+              <div class="cam-pct">88%</div>
+            </div>
+          </div>
+          <div class="campaign-meta"><span>412</span> donors · Any amount · <span>Tax receipt available</span></div>
+          <div class="campaign-actions">
+            <button class="c-btn c-btn-donate">Donate</button>
+            <button class="c-btn c-btn-view">Impact Report</button>
+          </div>
+        </div>
+
+        <div class="campaign-card">
+          <div class="campaign-header">
+            <div class="campaign-type" style="background:var(--accent-rose-dim);color:var(--accent-rose);">♡</div>
+            <div style="flex:1;">
+              <div class="campaign-name">Community Health Emergency Fund</div>
+              <div class="campaign-org">Freelance Dev Collective · Mutual Aid</div>
+            </div>
+            <span class="badge badge-close">Urgent · 3d left</span>
+          </div>
+          <div class="progress-container">
+            <div class="progress-bar"><div class="progress-fill" style="width:91%;background:var(--accent-rose);"></div></div>
+            <div class="campaign-numbers">
+              <div><div class="cam-raised" style="color:var(--accent-rose);">$18,200</div><div class="cam-goal">of $20K goal</div></div>
+              <div class="cam-pct" style="color:var(--accent-rose);">91%</div>
+            </div>
+          </div>
+          <div class="campaign-meta"><span>284</span> donors · Any amount · Emergency mutual aid</div>
+          <div class="campaign-actions">
+            <button class="c-btn c-btn-donate">Donate Now</button>
+            <button class="c-btn c-btn-view">Details</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- TOP INVESTORS + MY PORTFOLIO -->
+      <div style="display:flex;flex-direction:column;gap:10px;">
+        <div class="card">
+          <div class="card-header"><div class="card-title">Top Community Investors</div><div class="card-action">Leaderboard →</div></div>
+          <div class="investor-row">
+            <div class="inv-avatar" style="background:rgba(200,168,75,0.15);color:var(--accent-gold);">JC</div>
+            <div style="flex:1;"><div class="inv-name">Jordan Chen</div><div class="inv-type">3 investments · Equity + Revenue Share</div></div>
+            <div class="inv-amount">$12,000</div>
+          </div>
+          <div class="investor-row">
+            <div class="inv-avatar" style="background:rgba(139,92,246,0.15);color:var(--accent-purple);">AM</div>
+            <div style="flex:1;"><div class="inv-name">Amara M.</div><div class="inv-type">2 investments · Lead Investor</div></div>
+            <div class="inv-amount">$25,000</div>
+          </div>
+          <div class="investor-row">
+            <div class="inv-avatar" style="background:rgba(42,157,143,0.15);color:var(--accent-teal);">PK</div>
+            <div style="flex:1;"><div class="inv-name">Priya K.</div><div class="inv-type">4 investments · Diversified</div></div>
+            <div class="inv-amount">$8,500</div>
+          </div>
+          <div class="investor-row">
+            <div class="inv-avatar" style="background:rgba(232,124,58,0.15);color:var(--accent-orange);">KW</div>
+            <div style="flex:1;"><div class="inv-name">Kwame W.</div><div class="inv-type">1 investment · Revenue Share</div></div>
+            <div class="inv-amount">$5,000</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header"><div class="card-title">My Investment Returns</div><div class="card-action">Full Portfolio →</div></div>
+          <div class="returns-row"><div class="returns-label">Total Invested</div><div class="returns-val" style="color:var(--text-primary);">$12,000</div></div>
+          <div class="returns-row"><div class="returns-label">Current Value</div><div class="returns-val" style="color:var(--accent-gold);">$13,840</div></div>
+          <div class="returns-row"><div class="returns-label">Total Return</div><div class="returns-val" style="color:var(--accent-green);">+$1,840 (15.3%)</div></div>
+          <div class="returns-row"><div class="returns-label">Revenue Share Paid</div><div class="returns-val" style="color:var(--accent-teal);">$420</div></div>
+          <div style="margin-top:8px;padding-top:8px;border-top:1px solid var(--border);">
+            <div class="section-label">Donations Given — All Time</div>
+            <div class="mono" style="font-size:14px;color:var(--accent-teal);font-weight:500;">$2,840</div>
+            <div style="font-size:9px;color:var(--text-muted);margin-top:2px;">14 campaigns · 3 mutual aid funds</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+</div>
+</body>
+</html>

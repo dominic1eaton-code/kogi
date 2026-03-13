@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KOGI · Deal Room</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap');
+  *{margin:0;padding:0;box-sizing:border-box;}
+  :root{
+    --bg:#080b10;--bg2:#0d1117;--bg3:#111820;--bg4:#161e28;
+    --border:#1e2d3d;--border2:#243344;
+    --teal:#00c9a7;--teal2:#009e84;--teal-dim:#00c9a720;
+    --amber:#f5a623;--amber-dim:#f5a62318;
+    --purple:#8b5cf6;--purple-dim:#8b5cf615;
+    --pink:#e83e8c;--pink-dim:#e83e8c15;
+    --green:#22c55e;--red:#ef4444;--blue:#3b82f6;
+    --text:#e2e8f0;--text2:#94a3b8;--text3:#4a6280;
+    --mono:'IBM Plex Mono',monospace;--sans:'IBM Plex Sans',sans-serif;
+  }
+  body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:12px;display:flex;height:100vh;overflow:hidden;}
+  .sidebar{width:168px;background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0;}
+  .logo{padding:12px 14px;border-bottom:1px solid var(--border);font-family:var(--mono);font-size:13px;font-weight:600;letter-spacing:3px;color:var(--teal);}
+  .nav-section{padding:8px 0;}
+  .nav-label{padding:4px 14px 2px;font-size:9px;letter-spacing:2px;color:var(--text3);text-transform:uppercase;}
+  .nav-item{padding:5px 14px;color:var(--text2);cursor:pointer;font-size:11px;display:flex;align-items:center;gap:6px;border-left:2px solid transparent;}
+  .nav-item:hover{color:var(--text);background:var(--bg3);}
+  .nav-item.active{color:var(--teal);border-left-color:var(--teal);background:var(--teal-dim);}
+  .nav-item .dot{width:5px;height:5px;border-radius:50%;background:currentColor;opacity:.6;}
+  .nav-divider{height:1px;background:var(--border);margin:6px 0;}
+  .main{flex:1;display:flex;flex-direction:column;overflow:hidden;}
+  .topbar{display:flex;align-items:center;gap:10px;padding:8px 16px;background:var(--bg2);border-bottom:1px solid var(--border);}
+  .topbar-title{font-family:var(--mono);font-size:12px;font-weight:500;color:var(--text);display:flex;align-items:center;gap:6px;}
+  .topbar-title .crumb{color:var(--text3);}
+  .topbar-actions{margin-left:auto;display:flex;gap:6px;align-items:center;}
+  .btn{padding:4px 10px;border-radius:3px;font-family:var(--mono);font-size:10px;cursor:pointer;border:1px solid var(--border2);background:var(--bg3);color:var(--text2);}
+  .btn.primary{background:var(--teal2);border-color:var(--teal);color:#000;font-weight:600;}
+  .btn.amber{background:var(--amber-dim);border-color:var(--amber);color:var(--amber);}
+  .btn.purple{background:var(--purple-dim);border-color:var(--purple);color:var(--purple);}
+  .btn.red{background:#ef444415;border-color:var(--red);color:var(--red);}
+  .badge-dot{width:7px;height:7px;border-radius:50%;background:var(--teal);}
+
+  /* DEAL HEADER */
+  .deal-header{background:var(--bg2);border-bottom:1px solid var(--border);padding:10px 16px;display:flex;align-items:center;gap:12px;}
+  .deal-parties{display:flex;align-items:center;gap:8px;}
+  .party-avatar{width:28px;height:28px;border-radius:50%;background:var(--bg4);border:1px solid var(--border2);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:600;flex-shrink:0;}
+  .party-name{font-size:11px;font-weight:500;color:var(--text);}
+  .party-role{font-size:9px;color:var(--text3);}
+  .deal-sep{font-size:16px;color:var(--text3);}
+  .deal-meta{margin-left:16px;}
+  .deal-title-main{font-size:13px;font-weight:600;color:var(--text);margin-bottom:2px;}
+  .deal-meta-row{display:flex;gap:10px;}
+  .deal-meta-item{font-size:9px;color:var(--text3);}
+  .deal-meta-item span{color:var(--text2);font-family:var(--mono);}
+  .deal-status-badge{padding:3px 9px;border-radius:2px;font-size:9px;font-family:var(--mono);}
+  .deal-status-badge.escrow{background:var(--purple-dim);color:var(--purple);border:1px solid var(--purple);}
+  .deal-actions{margin-left:auto;display:flex;gap:6px;}
+  .deal-val{font-family:var(--mono);font-size:16px;font-weight:600;color:var(--teal);margin-right:8px;}
+
+  /* LAYOUT */
+  .layout{flex:1;display:flex;overflow:hidden;}
+
+  /* CHAT PANEL */
+  .chat-panel{flex:1;display:flex;flex-direction:column;border-right:1px solid var(--border);}
+  .chat-messages{flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:10px;}
+  .msg{display:flex;gap:8px;max-width:85%;}
+  .msg.outgoing{align-self:flex-end;flex-direction:row-reverse;}
+  .msg-avatar{width:24px;height:24px;border-radius:50%;background:var(--bg4);border:1px solid var(--border2);display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:600;flex-shrink:0;}
+  .msg-body{flex:1;}
+  .msg-meta{font-size:9px;color:var(--text3);margin-bottom:3px;}
+  .msg.outgoing .msg-meta{text-align:right;}
+  .msg-bubble{background:var(--bg3);border:1px solid var(--border);border-radius:3px;padding:8px 10px;font-size:11px;color:var(--text2);line-height:1.5;}
+  .msg.outgoing .msg-bubble{background:var(--bg4);border-color:var(--border2);}
+  .msg-system{align-self:center;background:var(--bg3);border:1px solid var(--border);border-radius:3px;padding:5px 12px;font-size:9px;font-family:var(--mono);color:var(--text3);text-align:center;}
+  .msg-system.teal{border-color:var(--teal2);color:var(--teal);background:var(--teal-dim);}
+  .msg-system.amber{border-color:var(--amber);color:var(--amber);background:var(--amber-dim);}
+  .chat-input-area{padding:10px 14px;background:var(--bg2);border-top:1px solid var(--border);display:flex;gap:8px;align-items:flex-end;}
+  .chat-input{flex:1;background:var(--bg3);border:1px solid var(--border);border-radius:3px;padding:8px 10px;color:var(--text2);font-family:var(--sans);font-size:11px;outline:none;resize:none;min-height:36px;}
+  .chat-tools{display:flex;gap:4px;}
+  .chat-tool{width:28px;height:28px;border-radius:3px;background:var(--bg3);border:1px solid var(--border);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:10px;color:var(--text3);}
+
+  /* RIGHT PANELS */
+  .right-col{width:320px;display:flex;flex-direction:column;overflow:hidden;}
+
+  /* PROPOSAL PANEL */
+  .proposal-panel{background:var(--bg2);border-bottom:1px solid var(--border);padding:10px 12px;}
+  .section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;}
+  .section-title{font-family:var(--mono);font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:1.5px;}
+  .prop-version{font-size:9px;font-family:var(--mono);color:var(--text3);}
+  .prop-field{display:flex;justify-content:space-between;padding:3px 0;border-bottom:1px solid var(--border);}
+  .prop-field:last-child{border-bottom:none;}
+  .prop-key{font-size:9px;color:var(--text3);}
+  .prop-val{font-size:9px;font-family:var(--mono);color:var(--text2);}
+  .prop-val.highlight{color:var(--teal);}
+  .milestone-list{margin-top:8px;}
+  .milestone{display:flex;align-items:center;gap:8px;padding:5px 6px;background:var(--bg3);border-radius:3px;margin-bottom:4px;}
+  .milestone-num{width:18px;height:18px;border-radius:50%;background:var(--bg4);border:1px solid var(--border2);display:flex;align-items:center;justify-content:center;font-size:8px;font-family:var(--mono);color:var(--text3);}
+  .milestone-info{flex:1;}
+  .milestone-name{font-size:9px;color:var(--text2);}
+  .milestone-date{font-size:8px;color:var(--text3);}
+  .milestone-amount{font-family:var(--mono);font-size:9px;color:var(--teal);}
+  .milestone-status{font-size:8px;padding:1px 4px;border-radius:2px;}
+  .milestone-status.locked{background:var(--purple-dim);color:var(--purple);}
+  .milestone-status.pending{background:var(--amber-dim);color:var(--amber);}
+  .milestone-status.done{background:#22c55e15;color:var(--green);}
+
+  /* ESCROW WIDGET */
+  .escrow-panel{background:var(--bg2);border-bottom:1px solid var(--border);padding:10px 12px;}
+  .escrow-bar{background:var(--bg4);height:6px;border-radius:3px;margin:8px 0;overflow:hidden;display:flex;}
+  .escrow-fill-released{height:100%;background:var(--green);}
+  .escrow-fill-locked{height:100%;background:var(--purple);}
+  .escrow-fill-remaining{height:100%;background:var(--bg3);}
+  .escrow-legend{display:flex;gap:10px;margin-bottom:4px;}
+  .legend-item{display:flex;align-items:center;gap:4px;font-size:8px;color:var(--text3);}
+  .legend-dot{width:6px;height:6px;border-radius:50%;}
+
+  /* ACTIVITY LOG */
+  .activity-log{flex:1;overflow-y:auto;padding:10px 12px;}
+  .log-entry{display:flex;align-items:flex-start;gap:6px;padding:5px 0;border-bottom:1px solid var(--border);}
+  .log-entry:last-child{border-bottom:none;}
+  .log-icon{width:16px;height:16px;border-radius:2px;display:flex;align-items:center;justify-content:center;font-size:8px;flex-shrink:0;margin-top:1px;}
+  .log-icon.teal{background:var(--teal-dim);color:var(--teal);}
+  .log-icon.amber{background:var(--amber-dim);color:var(--amber);}
+  .log-icon.purple{background:var(--purple-dim);color:var(--purple);}
+  .log-icon.green{background:#22c55e15;color:var(--green);}
+  .log-text{flex:1;font-size:9px;color:var(--text2);line-height:1.4;}
+  .log-time{font-family:var(--mono);font-size:8px;color:var(--text3);white-space:nowrap;}
+
+  /* OBA PANEL */
+  .oba-panel{background:var(--bg3);border-bottom:1px solid var(--border);padding:10px 12px;}
+  .oba-header{display:flex;align-items:center;gap:6px;margin-bottom:7px;}
+  .oba-indicator{width:8px;height:8px;border-radius:50%;background:var(--teal);box-shadow:0 0 6px var(--teal);}
+  .oba-title{font-family:var(--mono);font-size:9px;color:var(--teal);text-transform:uppercase;letter-spacing:1.5px;}
+  .oba-bubble{background:var(--bg4);border:1px solid var(--border2);border-radius:3px;padding:8px 10px;font-size:10px;color:var(--text2);line-height:1.5;border-left:2px solid var(--teal);}
+  .oba-actions{display:flex;gap:5px;margin-top:7px;}
+  .oba-btn{padding:3px 8px;border-radius:2px;font-size:8px;font-family:var(--mono);border:1px solid var(--border);background:var(--bg4);color:var(--text3);cursor:pointer;}
+  .oba-btn:hover{color:var(--teal);border-color:var(--teal2);}
+
+  ::-webkit-scrollbar{width:4px;height:4px;}
+  ::-webkit-scrollbar-track{background:var(--bg);}
+  ::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px;}
+</style>
+</head>
+<body>
+
+<div class="sidebar">
+  <div class="logo">KOGI</div>
+  <div class="nav-section">
+    <div class="nav-label">Main</div>
+    <div class="nav-item"><span class="dot"></span>Home</div>
+    <div class="nav-item"><span class="dot"></span>Office</div>
+    <div class="nav-item"><span class="dot"></span>Portfolio</div>
+  </div>
+  <div class="nav-divider"></div>
+  <div class="nav-section">
+    <div class="nav-label">Economy</div>
+    <div class="nav-item active"><span class="dot"></span>Exchange</div>
+    <div class="nav-item"><span class="dot"></span>Marketplace</div>
+    <div class="nav-item"><span class="dot"></span>Bank</div>
+  </div>
+  <div class="nav-divider"></div>
+  <div class="nav-section">
+    <div class="nav-label">Exchange</div>
+    <div class="nav-item"><span class="dot"></span>Labor Market</div>
+    <div class="nav-item"><span class="dot"></span>Commodities</div>
+    <div class="nav-item"><span class="dot"></span>Financial</div>
+    <div class="nav-item active"><span class="dot"></span>Deal Rooms</div>
+    <div class="nav-item"><span class="dot"></span>Capital</div>
+    <div class="nav-item"><span class="dot"></span>Resources</div>
+    <div class="nav-item"><span class="dot"></span>Asset Transfer</div>
+  </div>
+  <div class="nav-divider"></div>
+  <div class="nav-section">
+    <div class="nav-label">Platform</div>
+    <div class="nav-item"><span class="dot"></span>Community</div>
+    <div class="nav-item"><span class="dot"></span>Organizations</div>
+  </div>
+</div>
+
+<div class="main">
+  <div class="topbar">
+    <div class="topbar-title"><span class="crumb">Exchange / Deal Rooms /</span> Brand Identity System v2.0</div>
+    <div class="topbar-actions">
+      <button class="btn">DD Report</button>
+      <button class="btn red">Dispute</button>
+      <button class="btn amber">Counter</button>
+      <button class="btn purple">Fund Escrow</button>
+      <button class="btn primary">Approve Delivery</button>
+      <div class="badge-dot"></div>
+    </div>
+  </div>
+
+  <!-- DEAL HEADER BAR -->
+  <div class="deal-header">
+    <div class="deal-parties">
+      <div>
+        <div style="display:flex;align-items:center;gap:6px;">
+          <div class="party-avatar" style="color:var(--blue);border-color:var(--blue)">YO</div>
+          <div>
+            <div class="party-name">You (Buyer)</div>
+            <div class="party-role">Requesting brand identity</div>
+          </div>
+        </div>
+      </div>
+      <div class="deal-sep">⟺</div>
+      <div>
+        <div style="display:flex;align-items:center;gap:6px;">
+          <div class="party-avatar" style="color:var(--teal)">JC</div>
+          <div>
+            <div class="party-name">Jordan Chen (Seller)</div>
+            <div class="party-role">Senior Brand Designer · 4.9★</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="deal-meta">
+      <div class="deal-title-main">Brand Identity System v2.0</div>
+      <div class="deal-meta-row">
+        <div class="deal-meta-item">Opened <span>Mar 3</span></div>
+        <div class="deal-meta-item">Deadline <span>Apr 14</span></div>
+        <div class="deal-meta-item">Milestones <span>3</span></div>
+        <div class="deal-meta-item">Proposals <span>v2</span></div>
+      </div>
+    </div>
+    <span class="deal-status-badge escrow">Escrow Active</span>
+    <div class="deal-val">$12,400</div>
+    <div class="deal-actions">
+      <button class="btn">Files</button>
+      <button class="btn">Timeline</button>
+    </div>
+  </div>
+
+  <div class="layout">
+    <!-- CHAT -->
+    <div class="chat-panel">
+      <div class="chat-messages">
+        <div class="msg-system">Deal Room opened · Mar 3, 2026 · #DR-2281</div>
+
+        <div class="msg">
+          <div class="msg-avatar" style="color:var(--blue)">YO</div>
+          <div class="msg-body">
+            <div class="msg-meta">You · Mar 3, 10:14am</div>
+            <div class="msg-bubble">Hi Jordan — I'm looking to completely refresh the brand for Alpha Platform. We need a full identity system: logo, type, color, iconography, and usage guidelines. Ideally delivered in phases over 6 weeks. Budget is around $12K.</div>
+          </div>
+        </div>
+
+        <div class="msg">
+          <div class="msg-avatar" style="color:var(--teal)">JC</div>
+          <div class="msg-body">
+            <div class="msg-meta">Jordan Chen · Mar 3, 11:32am</div>
+            <div class="msg-bubble">Thanks for reaching out! I've worked on several similar SaaS identity systems. Happy to break this into three milestones: Research + Strategy, Core Identity, and Full System Delivery. I'll send a formal proposal.</div>
+          </div>
+        </div>
+
+        <div class="msg-system teal">Proposal v1 submitted by Jordan Chen · Mar 4</div>
+
+        <div class="msg outgoing">
+          <div class="msg-avatar" style="color:var(--blue)">YO</div>
+          <div class="msg-body">
+            <div class="msg-meta">You · Mar 5, 9:05am</div>
+            <div class="msg-bubble">Proposal looks solid. One ask — can we add motion guidelines to the third milestone? Also, could Milestone 2 come in a bit earlier (Apr 2 instead of Apr 7)?</div>
+          </div>
+        </div>
+
+        <div class="msg">
+          <div class="msg-avatar" style="color:var(--teal)">JC</div>
+          <div class="msg-body">
+            <div class="msg-meta">Jordan Chen · Mar 5, 11:00am</div>
+            <div class="msg-bubble">Absolutely — motion guidelines are in my scope. Apr 2 works. I'll revise the proposal with those changes and adjust Milestone 3 budget slightly to cover the animation work (+$400). Sending v2 now.</div>
+          </div>
+        </div>
+
+        <div class="msg-system teal">Proposal v2 submitted · $12,400 · Mar 5, 11:22am</div>
+        <div class="msg-system amber">You accepted Proposal v2 · Mar 6, 9:15am</div>
+        <div class="msg-system" style="color:var(--purple);border-color:var(--purple);background:var(--purple-dim);">Escrow funded · $12,400 locked · Mar 6, 9:40am</div>
+
+        <div class="msg">
+          <div class="msg-avatar" style="color:var(--teal)">JC</div>
+          <div class="msg-body">
+            <div class="msg-meta">Jordan Chen · Mar 8, 2:00pm</div>
+            <div class="msg-bubble">Milestone 1 complete — Research & Strategy deck is uploaded to the vault. This covers competitive analysis, brand archetype, tone-of-voice, and initial direction options. Ready for your review.</div>
+          </div>
+        </div>
+
+        <div class="msg-system teal">Milestone 1 submitted for review · $3,800 pending release</div>
+      </div>
+
+      <div class="chat-input-area">
+        <textarea class="chat-input" placeholder="Write a message... or ask Oba to draft a response"></textarea>
+        <div class="chat-tools">
+          <div class="chat-tool">📎</div>
+          <div class="chat-tool" style="color:var(--teal)">★</div>
+        </div>
+        <button class="btn primary">Send</button>
+      </div>
+    </div>
+
+    <!-- RIGHT COL -->
+    <div class="right-col">
+      <!-- OBA -->
+      <div class="oba-panel">
+        <div class="oba-header">
+          <div class="oba-indicator"></div>
+          <div class="oba-title">Oba · AI Assistant</div>
+        </div>
+        <div class="oba-bubble">Milestone 1 is ready for review. Jordan's strategy deck looks well-structured and on-scope. Recommend approving Milestone 1 to release $3,800 and keep the project moving. Milestone 2 (Core Identity) is due Apr 2 — 24 days away.</div>
+        <div class="oba-actions">
+          <div class="oba-btn">Draft Response</div>
+          <div class="oba-btn">Compare Terms</div>
+          <div class="oba-btn">Risk Summary</div>
+          <div class="oba-btn">DD Report</div>
+        </div>
+      </div>
+
+      <!-- PROPOSAL -->
+      <div class="proposal-panel">
+        <div class="section-header">
+          <div class="section-title">Proposal v2 — Accepted</div>
+          <div class="prop-version">Mar 5, 2026</div>
+        </div>
+        <div class="prop-field"><div class="prop-key">Scope</div><div class="prop-val">Full Brand Identity System</div></div>
+        <div class="prop-field"><div class="prop-key">Timeline</div><div class="prop-val">Mar 8 → Apr 14 (6 wks)</div></div>
+        <div class="prop-field"><div class="prop-key">Total Price</div><div class="prop-val highlight">$12,400</div></div>
+        <div class="prop-field"><div class="prop-key">Pricing Model</div><div class="prop-val">Fixed · Milestone-gated</div></div>
+        <div class="prop-field"><div class="prop-key">Revisions</div><div class="prop-val">2 per milestone</div></div>
+        <div class="prop-field"><div class="prop-key">IP Transfer</div><div class="prop-val">Full on final payment</div></div>
+        <div class="milestone-list">
+          <div class="milestone">
+            <div class="milestone-num">1</div>
+            <div class="milestone-info">
+              <div class="milestone-name">Research & Strategy</div>
+              <div class="milestone-date">Due Mar 15</div>
+            </div>
+            <div class="milestone-amount">$3,800</div>
+            <span class="milestone-status pending">Pending Approval</span>
+          </div>
+          <div class="milestone">
+            <div class="milestone-num">2</div>
+            <div class="milestone-info">
+              <div class="milestone-name">Core Identity System</div>
+              <div class="milestone-date">Due Apr 2</div>
+            </div>
+            <div class="milestone-amount">$5,200</div>
+            <span class="milestone-status locked">Locked</span>
+          </div>
+          <div class="milestone">
+            <div class="milestone-num">3</div>
+            <div class="milestone-info">
+              <div class="milestone-name">Full System + Motion</div>
+              <div class="milestone-date">Due Apr 14</div>
+            </div>
+            <div class="milestone-amount">$3,400</div>
+            <span class="milestone-status locked">Locked</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- ESCROW -->
+      <div class="escrow-panel">
+        <div class="section-header">
+          <div class="section-title">Escrow Status</div>
+          <div style="font-family:var(--mono);font-size:9px;color:var(--purple);">$12,400 Locked</div>
+        </div>
+        <div class="escrow-legend">
+          <div class="legend-item"><div class="legend-dot" style="background:var(--green)"></div>Released $0</div>
+          <div class="legend-item"><div class="legend-dot" style="background:var(--purple)"></div>Pending $3,800</div>
+          <div class="legend-item"><div class="legend-dot" style="background:var(--text3)"></div>Locked $8,600</div>
+        </div>
+        <div class="escrow-bar">
+          <div class="escrow-fill-released" style="width:0%"></div>
+          <div class="escrow-fill-locked" style="width:31%"></div>
+          <div class="escrow-fill-remaining" style="width:69%"></div>
+        </div>
+        <div style="display:flex;justify-content:space-between;font-size:8px;color:var(--text3);">
+          <span>$0 released</span><span style="color:var(--purple)">$3,800 pending review</span><span>$8,600 locked</span>
+        </div>
+      </div>
+
+      <!-- ACTIVITY LOG -->
+      <div class="activity-log">
+        <div class="section-header">
+          <div class="section-title">Activity Log</div>
+        </div>
+        <div class="log-entry">
+          <div class="log-icon purple">$</div>
+          <div class="log-text">Milestone 1 submitted for review — $3,800 pending</div>
+          <div class="log-time">Mar 8</div>
+        </div>
+        <div class="log-entry">
+          <div class="log-icon green">✓</div>
+          <div class="log-text">Escrow funded · $12,400 locked in kogi-bank</div>
+          <div class="log-time">Mar 6</div>
+        </div>
+        <div class="log-entry">
+          <div class="log-icon teal">✓</div>
+          <div class="log-text">Proposal v2 accepted by buyer</div>
+          <div class="log-time">Mar 6</div>
+        </div>
+        <div class="log-entry">
+          <div class="log-icon amber">⟳</div>
+          <div class="log-text">Proposal v2 submitted by Jordan Chen</div>
+          <div class="log-time">Mar 5</div>
+        </div>
+        <div class="log-entry">
+          <div class="log-icon amber">⟳</div>
+          <div class="log-text">Proposal v1 submitted · Counter-requested</div>
+          <div class="log-time">Mar 4</div>
+        </div>
+        <div class="log-entry">
+          <div class="log-icon teal">+</div>
+          <div class="log-text">Deal Room opened · Inquiry sent</div>
+          <div class="log-time">Mar 3</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KOGI · Capital Exchange</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap');
+  *{margin:0;padding:0;box-sizing:border-box;}
+  :root{
+    --bg:#080b10;--bg2:#0d1117;--bg3:#111820;--bg4:#161e28;
+    --border:#1e2d3d;--border2:#243344;
+    --teal:#00c9a7;--teal2:#009e84;--teal-dim:#00c9a720;
+    --amber:#f5a623;--amber-dim:#f5a62318;
+    --purple:#8b5cf6;--purple-dim:#8b5cf615;
+    --pink:#e83e8c;--pink-dim:#e83e8c15;
+    --green:#22c55e;--red:#ef4444;--blue:#3b82f6;
+    --text:#e2e8f0;--text2:#94a3b8;--text3:#4a6280;
+    --mono:'IBM Plex Mono',monospace;--sans:'IBM Plex Sans',sans-serif;
+  }
+  body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:12px;display:flex;height:100vh;overflow:hidden;}
+  .sidebar{width:168px;background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0;}
+  .logo{padding:12px 14px;border-bottom:1px solid var(--border);font-family:var(--mono);font-size:13px;font-weight:600;letter-spacing:3px;color:var(--teal);}
+  .nav-section{padding:8px 0;}
+  .nav-label{padding:4px 14px 2px;font-size:9px;letter-spacing:2px;color:var(--text3);text-transform:uppercase;}
+  .nav-item{padding:5px 14px;color:var(--text2);cursor:pointer;font-size:11px;display:flex;align-items:center;gap:6px;border-left:2px solid transparent;}
+  .nav-item:hover{color:var(--text);background:var(--bg3);}
+  .nav-item.active{color:var(--teal);border-left-color:var(--teal);background:var(--teal-dim);}
+  .nav-item .dot{width:5px;height:5px;border-radius:50%;background:currentColor;opacity:.6;}
+  .nav-divider{height:1px;background:var(--border);margin:6px 0;}
+  .main{flex:1;display:flex;flex-direction:column;overflow:hidden;}
+  .topbar{display:flex;align-items:center;gap:10px;padding:8px 16px;background:var(--bg2);border-bottom:1px solid var(--border);}
+  .topbar-title{font-family:var(--mono);font-size:12px;font-weight:500;color:var(--text);display:flex;align-items:center;gap:6px;}
+  .topbar-title .crumb{color:var(--text3);}
+  .topbar-actions{margin-left:auto;display:flex;gap:6px;align-items:center;}
+  .btn{padding:4px 10px;border-radius:3px;font-family:var(--mono);font-size:10px;cursor:pointer;border:1px solid var(--border2);background:var(--bg3);color:var(--text2);}
+  .btn.primary{background:var(--teal2);border-color:var(--teal);color:#000;font-weight:600;}
+  .btn.amber{background:var(--amber-dim);border-color:var(--amber);color:var(--amber);}
+  .btn.purple{background:var(--purple-dim);border-color:var(--purple);color:var(--purple);}
+  .badge-dot{width:7px;height:7px;border-radius:50%;background:var(--teal);}
+  .stats-row{display:flex;border-bottom:1px solid var(--border);background:var(--bg2);}
+  .stat-box{flex:1;padding:10px 16px;border-right:1px solid var(--border);}
+  .stat-box:last-child{border-right:none;}
+  .stat-label{font-size:9px;letter-spacing:1.5px;color:var(--text3);text-transform:uppercase;margin-bottom:4px;}
+  .stat-value{font-family:var(--mono);font-size:18px;font-weight:600;}
+  .stat-value.teal{color:var(--teal);}
+  .stat-value.amber{color:var(--amber);}
+  .stat-value.purple{color:var(--purple);}
+  .stat-value.default{color:var(--text);}
+  .stat-sub{font-size:9px;color:var(--text3);margin-top:2px;}
+  .stat-sub .up{color:var(--green);}
+
+  /* CONTENT */
+  .content{flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:12px;}
+
+  /* SECTION */
+  .section-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;}
+  .section-row.two{grid-template-columns:2fr 1fr;}
+  .section-row.full{grid-template-columns:1fr;}
+
+  .card{background:var(--bg2);border:1px solid var(--border);border-radius:4px;}
+  .card-header{padding:8px 12px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:6px;}
+  .card-title{font-family:var(--mono);font-size:10px;font-weight:500;letter-spacing:1px;color:var(--text2);text-transform:uppercase;}
+  .card-badge{margin-left:auto;font-family:var(--mono);font-size:9px;padding:2px 6px;border-radius:2px;}
+  .card-badge.teal{background:var(--teal-dim);color:var(--teal);border:1px solid var(--teal2);}
+  .card-badge.amber{background:var(--amber-dim);color:var(--amber);}
+  .card-badge.purple{background:var(--purple-dim);color:var(--purple);}
+
+  /* CAMPAIGN CARDS */
+  .campaign-list{display:flex;flex-direction:column;gap:0;}
+  .campaign-item{padding:10px 12px;border-bottom:1px solid var(--border);cursor:pointer;}
+  .campaign-item:last-child{border-bottom:none;}
+  .campaign-item:hover{background:var(--bg3);}
+  .ci-top{display:flex;align-items:center;gap:8px;margin-bottom:7px;}
+  .ci-icon{width:28px;height:28px;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0;}
+  .ci-icon.equity{background:var(--purple-dim);color:var(--purple);}
+  .ci-icon.revshare{background:var(--amber-dim);color:var(--amber);}
+  .ci-icon.bond{background:var(--teal-dim);color:var(--teal);}
+  .ci-icon.fund{background:#22c55e15;color:var(--green);}
+  .ci-name{font-size:11px;font-weight:500;color:var(--text);flex:1;}
+  .ci-type{font-size:9px;font-family:var(--mono);padding:1px 5px;border-radius:2px;}
+  .ci-type.equity{color:var(--purple);background:var(--purple-dim);}
+  .ci-type.revshare{color:var(--amber);background:var(--amber-dim);}
+  .ci-type.bond{color:var(--teal);background:var(--teal-dim);}
+  .ci-type.fund{color:var(--green);background:#22c55e15;}
+  .ci-progress{margin-bottom:5px;}
+  .ci-prog-bar{height:4px;background:var(--bg4);border-radius:2px;overflow:hidden;margin-bottom:3px;}
+  .ci-prog-fill{height:100%;border-radius:2px;}
+  .ci-prog-meta{display:flex;justify-content:space-between;font-size:9px;}
+  .ci-prog-raised{color:var(--text2);font-family:var(--mono);}
+  .ci-prog-goal{color:var(--text3);}
+  .ci-footer{display:flex;gap:10px;}
+  .ci-stat{font-size:9px;color:var(--text3);}
+  .ci-stat span{color:var(--text2);font-family:var(--mono);}
+  .ci-deadline{margin-left:auto;font-size:9px;font-family:var(--mono);}
+  .ci-deadline.hot{color:var(--red);}
+  .ci-deadline.ok{color:var(--text3);}
+
+  /* INSTRUMENT TABLE */
+  .instr-row{display:flex;align-items:center;padding:6px 12px;border-bottom:1px solid var(--border);gap:8px;cursor:pointer;}
+  .instr-row:last-child{border-bottom:none;}
+  .instr-row:hover{background:var(--bg3);}
+  .instr-type{width:80px;font-size:9px;font-family:var(--mono);font-weight:600;}
+  .instr-type.equity{color:var(--purple);}
+  .instr-type.revshare{color:var(--amber);}
+  .instr-type.note{color:var(--blue);}
+  .instr-type.bond{color:var(--teal);}
+  .instr-name{flex:1;font-size:10px;color:var(--text2);}
+  .instr-val{font-family:var(--mono);font-size:10px;font-weight:500;}
+  .instr-change{font-family:var(--mono);font-size:9px;padding:1px 5px;border-radius:2px;margin-left:6px;}
+  .instr-change.up{background:#22c55e15;color:var(--green);}
+  .instr-change.down{background:#ef444415;color:var(--red);}
+
+  /* MY PORTFOLIO INVESTMENTS */
+  .inv-row{display:flex;align-items:center;padding:6px 12px;border-bottom:1px solid var(--border);gap:8px;}
+  .inv-row:last-child{border-bottom:none;}
+  .inv-name{flex:1;font-size:10px;color:var(--text2);}
+  .inv-type{font-size:9px;font-family:var(--mono);color:var(--text3);}
+  .inv-amount{font-family:var(--mono);font-size:10px;color:var(--teal);}
+  .inv-return{font-size:9px;font-family:var(--mono);padding:1px 5px;border-radius:2px;}
+  .inv-return.pos{background:#22c55e15;color:var(--green);}
+  .inv-return.neg{background:#ef444415;color:var(--red);}
+  .inv-stage{font-size:9px;font-family:var(--mono);color:var(--text3);}
+
+  /* BACKER ROW */
+  .backer-row{display:flex;align-items:center;padding:5px 12px;border-bottom:1px solid var(--border);gap:8px;}
+  .backer-row:last-child{border-bottom:none;}
+  .backer-avatar{width:20px;height:20px;border-radius:50%;background:var(--bg4);border:1px solid var(--border2);display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:600;flex-shrink:0;}
+  .backer-name{flex:1;font-size:10px;color:var(--text2);}
+  .backer-amount{font-family:var(--mono);font-size:10px;color:var(--amber);}
+  .backer-pct{font-size:9px;color:var(--text3);}
+
+  ::-webkit-scrollbar{width:4px;height:4px;}
+  ::-webkit-scrollbar-track{background:var(--bg);}
+  ::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px;}
+</style>
+</head>
+<body>
+
+<div class="sidebar">
+  <div class="logo">KOGI</div>
+  <div class="nav-section">
+    <div class="nav-label">Main</div>
+    <div class="nav-item"><span class="dot"></span>Home</div>
+    <div class="nav-item"><span class="dot"></span>Office</div>
+    <div class="nav-item"><span class="dot"></span>Portfolio</div>
+  </div>
+  <div class="nav-divider"></div>
+  <div class="nav-section">
+    <div class="nav-label">Economy</div>
+    <div class="nav-item active"><span class="dot"></span>Exchange</div>
+    <div class="nav-item"><span class="dot"></span>Marketplace</div>
+    <div class="nav-item"><span class="dot"></span>Bank</div>
+  </div>
+  <div class="nav-divider"></div>
+  <div class="nav-section">
+    <div class="nav-label">Exchange</div>
+    <div class="nav-item"><span class="dot"></span>Labor Market</div>
+    <div class="nav-item"><span class="dot"></span>Commodities</div>
+    <div class="nav-item"><span class="dot"></span>Financial</div>
+    <div class="nav-item"><span class="dot"></span>Deal Rooms</div>
+    <div class="nav-item active"><span class="dot"></span>Capital</div>
+    <div class="nav-item"><span class="dot"></span>Resources</div>
+    <div class="nav-item"><span class="dot"></span>Asset Transfer</div>
+  </div>
+  <div class="nav-divider"></div>
+  <div class="nav-section">
+    <div class="nav-label">Platform</div>
+    <div class="nav-item"><span class="dot"></span>Community</div>
+    <div class="nav-item"><span class="dot"></span>Organizations</div>
+  </div>
+</div>
+
+<div class="main">
+  <div class="topbar">
+    <div class="topbar-title"><span class="crumb">Exchange /</span> Capital Exchange</div>
+    <div class="topbar-actions">
+      <button class="btn">My Investments</button>
+      <button class="btn purple">+ Launch Round</button>
+      <button class="btn primary">+ Invest</button>
+      <div class="badge-dot"></div>
+    </div>
+  </div>
+
+  <div class="stats-row">
+    <div class="stat-box">
+      <div class="stat-label">Total Raised (Network)</div>
+      <div class="stat-value amber">$124,500</div>
+      <div class="stat-sub"><span class="up">+31%</span> this quarter</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-label">Active Campaigns</div>
+      <div class="stat-value default">6</div>
+      <div class="stat-sub">2 equity · 2 rev-share · 2 bonds</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-label">My Invested Capital</div>
+      <div class="stat-value teal">$450K</div>
+      <div class="stat-sub">12 positions active</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-label">Portfolio Return</div>
+      <div class="stat-value" style="color:var(--green)">+18.4%</div>
+      <div class="stat-sub">IRR · 24mo avg</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-label">Funding Deadline</div>
+      <div class="stat-value amber">Apr 1</div>
+      <div class="stat-sub">Seed Round — Alpha Platform</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-label">Avg Campaign Fill</div>
+      <div class="stat-value teal">73%</div>
+      <div class="stat-sub">3 fully funded YTD</div>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <!-- ACTIVE CAMPAIGNS + INSTRUMENTS -->
+    <div class="section-row two">
+
+      <!-- ACTIVE CAMPAIGNS -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Active Campaigns</div>
+          <span class="card-badge purple">6 Live</span>
+        </div>
+        <div class="campaign-list">
+          <div class="campaign-item">
+            <div class="ci-top">
+              <div class="ci-icon equity">E</div>
+              <div class="ci-name">Alpha Platform — Seed Round Series Pre-A</div>
+              <span class="ci-type equity">EQUITY</span>
+            </div>
+            <div class="ci-progress">
+              <div class="ci-prog-bar"><div class="ci-prog-fill" style="width:89%;background:var(--purple)"></div></div>
+              <div class="ci-prog-meta">
+                <span class="ci-prog-raised">$450K raised</span>
+                <span class="ci-prog-goal">of $500K goal</span>
+              </div>
+            </div>
+            <div class="ci-footer">
+              <div class="ci-stat">Backers <span>29</span></div>
+              <div class="ci-stat">Equity <span>8%</span></div>
+              <div class="ci-stat">Valuation <span>$6.25M</span></div>
+              <div class="ci-deadline hot">19 days left</div>
+            </div>
+          </div>
+          <div class="campaign-item">
+            <div class="ci-top">
+              <div class="ci-icon revshare">R</div>
+              <div class="ci-name">Community Growth Fund — Revenue Share Pool</div>
+              <span class="ci-type revshare">REV SHARE</span>
+            </div>
+            <div class="ci-progress">
+              <div class="ci-prog-bar"><div class="ci-prog-fill" style="width:62%;background:var(--amber)"></div></div>
+              <div class="ci-prog-meta">
+                <span class="ci-prog-raised">$62,000 raised</span>
+                <span class="ci-prog-goal">of $100K goal</span>
+              </div>
+            </div>
+            <div class="ci-footer">
+              <div class="ci-stat">Backers <span>14</span></div>
+              <div class="ci-stat">Rev Share <span>12%</span></div>
+              <div class="ci-stat">Term <span>36mo</span></div>
+              <div class="ci-deadline ok">41 days left</div>
+            </div>
+          </div>
+          <div class="campaign-item">
+            <div class="ci-top">
+              <div class="ci-icon bond">B</div>
+              <div class="ci-name">Vehicle Pool — Community Bond Series A</div>
+              <span class="ci-type bond">BOND</span>
+            </div>
+            <div class="ci-progress">
+              <div class="ci-prog-bar"><div class="ci-prog-fill" style="width:48%;background:var(--teal)"></div></div>
+              <div class="ci-prog-meta">
+                <span class="ci-prog-raised">$120,000 raised</span>
+                <span class="ci-prog-goal">of $250K goal</span>
+              </div>
+            </div>
+            <div class="ci-footer">
+              <div class="ci-stat">Backers <span>8</span></div>
+              <div class="ci-stat">Interest <span>6.5%</span></div>
+              <div class="ci-stat">Term <span>24mo</span></div>
+              <div class="ci-deadline ok">60 days left</div>
+            </div>
+          </div>
+          <div class="campaign-item">
+            <div class="ci-top">
+              <div class="ci-icon fund">F</div>
+              <div class="ci-name">Worker Collective Mutual Aid Fund</div>
+              <span class="ci-type fund">FUND</span>
+            </div>
+            <div class="ci-progress">
+              <div class="ci-prog-bar"><div class="ci-prog-fill" style="width:34%;background:var(--green)"></div></div>
+              <div class="ci-prog-meta">
+                <span class="ci-prog-raised">$8,500 raised</span>
+                <span class="ci-prog-goal">of $25K goal</span>
+              </div>
+            </div>
+            <div class="ci-footer">
+              <div class="ci-stat">Backers <span>42</span></div>
+              <div class="ci-stat">Type <span>Donation</span></div>
+              <div class="ci-stat">Ongoing</div>
+              <div class="ci-deadline ok">Rolling</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- RIGHT COL -->
+      <div style="display:flex;flex-direction:column;gap:12px;">
+
+        <!-- FINANCIAL INSTRUMENTS -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">Instruments Watchlist</div>
+            <span class="card-badge teal">Live</span>
+          </div>
+          <div class="instr-row">
+            <div class="instr-type equity">EQUITY</div>
+            <div class="instr-name">Alpha Platform — Pre-A</div>
+            <div class="instr-val" style="color:var(--purple)">$6.25M val</div>
+            <span class="instr-change up">↑ +4.2%</span>
+          </div>
+          <div class="instr-row">
+            <div class="instr-type revshare">REV SHARE</div>
+            <div class="instr-name">Community Growth — Rev Pool</div>
+            <div class="instr-val" style="color:var(--amber)">12% / 36mo</div>
+            <span class="instr-change up">↑ +2.1%</span>
+          </div>
+          <div class="instr-row">
+            <div class="instr-type note">CONV NOTE</div>
+            <div class="instr-name">Data Infrastructure Project</div>
+            <div class="instr-val" style="color:var(--blue)">$50K · 18mo</div>
+            <span class="instr-change down">↓ -0.4%</span>
+          </div>
+          <div class="instr-row">
+            <div class="instr-type bond">BOND</div>
+            <div class="instr-name">Vehicle Pool Community Bond</div>
+            <div class="instr-val" style="color:var(--teal)">6.5% · 24mo</div>
+            <span class="instr-change up">↑ stable</span>
+          </div>
+        </div>
+
+        <!-- TOP BACKERS -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">Alpha Platform — Top Backers</div>
+            <span class="card-badge amber">$450K raised</span>
+          </div>
+          <div class="backer-row">
+            <div class="backer-avatar" style="color:var(--amber)">MR</div>
+            <div class="backer-name">Marcus & Rina Ventures</div>
+            <div class="backer-amount">$125,000</div>
+            <div class="backer-pct">2.5% eq.</div>
+          </div>
+          <div class="backer-row">
+            <div class="backer-avatar" style="color:var(--teal)">NF</div>
+            <div class="backer-name">Nkrumah Fund</div>
+            <div class="backer-amount">$100,000</div>
+            <div class="backer-pct">2.0% eq.</div>
+          </div>
+          <div class="backer-row">
+            <div class="backer-avatar" style="color:var(--purple)">JP</div>
+            <div class="backer-name">Jordan Park (Angel)</div>
+            <div class="backer-amount">$75,000</div>
+            <div class="backer-pct">1.5% eq.</div>
+          </div>
+          <div class="backer-row">
+            <div class="backer-avatar" style="color:var(--pink)">AS</div>
+            <div class="backer-name">Asha Singh (Angel)</div>
+            <div class="backer-amount">$50,000</div>
+            <div class="backer-pct">1.0% eq.</div>
+          </div>
+          <div class="backer-row">
+            <div class="backer-avatar" style="color:var(--text2)">+24</div>
+            <div class="backer-name" style="color:var(--text3)">24 additional backers</div>
+            <div class="backer-amount">$100,000</div>
+            <div class="backer-pct">2.0% eq.</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- MY PORTFOLIO POSITIONS -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">My Capital Positions</div>
+        <span class="card-badge teal">$450K deployed · +18.4% IRR</span>
+      </div>
+      <div class="instr-row">
+        <div class="instr-type equity">EQUITY</div>
+        <div class="instr-name">Alpha Platform — Seed (2024)</div>
+        <div class="instr-val" style="color:var(--purple)">$50,000 in</div>
+        <div style="font-size:9px;color:var(--text3);margin-left:8px;flex:1;">0.8% stake · Current val ~$81K</div>
+        <span class="instr-change up">+62%</span>
+      </div>
+      <div class="instr-row">
+        <div class="instr-type revshare">REV SHARE</div>
+        <div class="instr-name">Community Growth Fund (2025)</div>
+        <div class="instr-val" style="color:var(--amber)">$25,000 in</div>
+        <div style="font-size:9px;color:var(--text3);margin-left:8px;flex:1;">12% rev · $4,200 received YTD</div>
+        <span class="instr-change up">+16.8%</span>
+      </div>
+      <div class="instr-row">
+        <div class="instr-type bond">BOND</div>
+        <div class="instr-name">Vehicle Pool Bond Series A (2025)</div>
+        <div class="instr-val" style="color:var(--teal)">$40,000 in</div>
+        <div style="font-size:9px;color:var(--text3);margin-left:8px;flex:1;">6.5% · $2,600 interest YTD</div>
+        <span class="instr-change up">+6.5%</span>
+      </div>
+      <div class="instr-row">
+        <div class="instr-type note">CONV NOTE</div>
+        <div class="instr-name">Data Infrastructure — Convertible Note</div>
+        <div class="instr-val" style="color:var(--blue)">$30,000 in</div>
+        <div style="font-size:9px;color:var(--text3);margin-left:8px;flex:1;">Converts at Series A · 20% discount</div>
+        <span class="instr-change up">Pending</span>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+</body>
+</html>

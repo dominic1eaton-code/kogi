@@ -11,10 +11,14 @@ final class KogiEngine(
     val riskEngine: RiskEngine = new RiskEngine(),
     analyticsEngineOverride: AnalyticsEngine = null,
     telemetryEngineOverride: TelemetryEngine = null,
+    policyEngineOverride: PolicyEngine = null,
     val optimizationEngine: OptimizationEngine = new OptimizationEngine(),
     val searchEngine: SearchEngine = new SearchEngine(),
     val queryEngine: QueryEngine = new QueryEngine(),
     val matchEngine: MatchEngine = new MatchEngine(),
+    allocationEngineOverride: AllocationEngine = null,
+    incentiveEngineOverride: IncentiveEngine = null,
+    gameEngineOverride: GameEngine = null,
     initialGraphEdges: Seq[GraphEdge] = Seq.empty,
     initialGraphNodes: Seq[GraphNode] = Seq.empty
 ) {
@@ -29,7 +33,28 @@ final class KogiEngine(
     if (telemetryEngineOverride != null) telemetryEngineOverride
     else new TelemetryEngine(analyticsEngine = analyticsEngine)
 
+  val policyEngine: PolicyEngine =
+    if (policyEngineOverride != null) policyEngineOverride
+    else new PolicyEngine()
+
   private var controlMode: String = "stopped"
+
+  val allocationEngine: AllocationEngine =
+    if (allocationEngineOverride != null) allocationEngineOverride
+    else new AllocationEngine(matchEngine = matchEngine)
+
+  val incentiveEngine: IncentiveEngine =
+    if (incentiveEngineOverride != null) incentiveEngineOverride
+    else new IncentiveEngine()
+
+  val gameEngine: GameEngine =
+    if (gameEngineOverride != null) gameEngineOverride
+    else new GameEngine(
+      matchEngine = matchEngine,
+      allocationEngineOverride = allocationEngine,
+      incentiveEngineOverride = incentiveEngine
+    )
+
 
   // ------------------------------------------------------------------
   // GraphEngine – mutable; rebuilt in-place when edges/nodes are added.
@@ -303,4 +328,38 @@ final class KogiEngine(
   def matchProfilesToResources(profiles: Seq[Profile], resources: Seq[Resource]): Map[Profile, Seq[Resource]] = {
     matchEngine.matchProfilesToResources(profiles, resources)
   }
+
+  def allocate(request: AllocationRequest): GameAllocationResult =
+    allocationEngine.allocate(request)
+
+  def scoreAllocation(request: AllocationRequest): List[ScoredBid] =
+    allocationEngine.score(request)
+
+  def incentiveApply(event: IncentiveEvent, applyStreakMultiplier: Boolean = false): IncentiveUpdate =
+    incentiveEngine.applyEvent(event, applyStreakMultiplier)
+
+  def incentiveProfile(participantId: String): Option[IncentiveProfile] =
+    incentiveEngine.profile(participantId)
+
+  def incentiveLedger(limit: Int = 200): List[KpLedgerEntry] =
+    incentiveEngine.ledgerEntries(limit)
+
+  def gameRegisterParticipant(subject: UserSubject, reputation: Double = 50.0, kp: Double = 0.0): Unit =
+    gameEngine.registerParticipant(subject, reputation, kp)
+
+  def gameUpsertListing(listing: GameListing): Unit =
+    gameEngine.upsertListing(listing)
+
+  def gameSubmitBid(bid: GameBid): GameBid =
+    gameEngine.submitBid(bid)
+
+  def gameAllocateListing(listingId: String, limit: Int = 1): GameAllocationResult =
+    gameEngine.allocateListing(listingId, limit)
+
+  def gameSnapshot(): GameSnapshot =
+    gameEngine.snapshot()
 }
+
+
+
+

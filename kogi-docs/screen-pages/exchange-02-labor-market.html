@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KOGI · Labor Market</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap');
+  *{margin:0;padding:0;box-sizing:border-box;}
+  :root{
+    --bg:#080b10;--bg2:#0d1117;--bg3:#111820;--bg4:#161e28;
+    --border:#1e2d3d;--border2:#243344;
+    --teal:#00c9a7;--teal2:#009e84;--teal-dim:#00c9a720;
+    --amber:#f5a623;--amber-dim:#f5a62318;
+    --purple:#8b5cf6;--purple-dim:#8b5cf615;
+    --pink:#e83e8c;--pink-dim:#e83e8c15;
+    --green:#22c55e;--red:#ef4444;--blue:#3b82f6;
+    --text:#e2e8f0;--text2:#94a3b8;--text3:#4a6280;
+    --mono:'IBM Plex Mono',monospace;--sans:'IBM Plex Sans',sans-serif;
+  }
+  body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:12px;display:flex;height:100vh;overflow:hidden;}
+  .sidebar{width:168px;background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0;}
+  .logo{padding:12px 14px;border-bottom:1px solid var(--border);font-family:var(--mono);font-size:13px;font-weight:600;letter-spacing:3px;color:var(--teal);}
+  .nav-section{padding:8px 0;}
+  .nav-label{padding:4px 14px 2px;font-size:9px;letter-spacing:2px;color:var(--text3);text-transform:uppercase;}
+  .nav-item{padding:5px 14px;color:var(--text2);cursor:pointer;font-size:11px;display:flex;align-items:center;gap:6px;border-left:2px solid transparent;}
+  .nav-item:hover{color:var(--text);background:var(--bg3);}
+  .nav-item.active{color:var(--teal);border-left-color:var(--teal);background:var(--teal-dim);}
+  .nav-item .dot{width:5px;height:5px;border-radius:50%;background:currentColor;opacity:.6;}
+  .nav-divider{height:1px;background:var(--border);margin:6px 0;}
+  .main{flex:1;display:flex;flex-direction:column;overflow:hidden;}
+  .topbar{display:flex;align-items:center;gap:10px;padding:8px 16px;background:var(--bg2);border-bottom:1px solid var(--border);}
+  .topbar-title{font-family:var(--mono);font-size:13px;font-weight:500;color:var(--text);display:flex;align-items:center;gap:6px;}
+  .topbar-title .crumb{color:var(--text3);}
+  .topbar-search{flex:1;max-width:320px;background:var(--bg3);border:1px solid var(--border);border-radius:3px;padding:4px 10px;color:var(--text2);font-family:var(--mono);font-size:11px;outline:none;}
+  .topbar-actions{margin-left:auto;display:flex;gap:6px;align-items:center;}
+  .btn{padding:4px 10px;border-radius:3px;font-family:var(--mono);font-size:10px;cursor:pointer;border:1px solid var(--border2);background:var(--bg3);color:var(--text2);}
+  .btn.primary{background:var(--teal2);border-color:var(--teal);color:#000;font-weight:600;}
+  .btn.amber{background:var(--amber-dim);border-color:var(--amber);color:var(--amber);}
+  .badge-dot{width:7px;height:7px;border-radius:50%;background:var(--teal);}
+  .stats-row{display:flex;border-bottom:1px solid var(--border);background:var(--bg2);}
+  .stat-box{flex:1;padding:10px 16px;border-right:1px solid var(--border);}
+  .stat-box:last-child{border-right:none;}
+  .stat-label{font-size:9px;letter-spacing:1.5px;color:var(--text3);text-transform:uppercase;margin-bottom:4px;}
+  .stat-value{font-family:var(--mono);font-size:18px;font-weight:600;color:var(--text);}
+  .stat-value.teal{color:var(--teal);}
+  .stat-value.amber{color:var(--amber);}
+  .stat-sub{font-size:9px;color:var(--text3);margin-top:2px;}
+  .stat-sub .up{color:var(--green);}
+
+  /* FILTER BAR */
+  .filter-bar{display:flex;align-items:center;gap:8px;padding:8px 16px;background:var(--bg2);border-bottom:1px solid var(--border);}
+  .filter-label{font-size:9px;color:var(--text3);letter-spacing:1px;text-transform:uppercase;margin-right:4px;}
+  .filter-chip{padding:3px 9px;border-radius:12px;font-size:9px;font-family:var(--mono);border:1px solid var(--border2);color:var(--text3);cursor:pointer;}
+  .filter-chip.active{border-color:var(--teal);color:var(--teal);background:var(--teal-dim);}
+  .filter-chip:hover{border-color:var(--border2);color:var(--text2);}
+  .filter-sep{width:1px;height:16px;background:var(--border);margin:0 4px;}
+
+  /* LAYOUT */
+  .layout{flex:1;display:flex;overflow:hidden;}
+
+  /* WORKER LIST */
+  .worker-panel{width:320px;border-right:1px solid var(--border);overflow-y:auto;background:var(--bg2);flex-shrink:0;}
+  .panel-header{padding:8px 12px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+  .panel-title{font-family:var(--mono);font-size:10px;color:var(--text2);text-transform:uppercase;letter-spacing:1px;}
+  .panel-count{font-family:var(--mono);font-size:10px;color:var(--teal);}
+  .worker-card{padding:10px 12px;border-bottom:1px solid var(--border);cursor:pointer;}
+  .worker-card:hover{background:var(--bg3);}
+  .worker-card.selected{background:var(--bg3);border-left:2px solid var(--teal);}
+  .wc-top{display:flex;align-items:center;gap:8px;margin-bottom:6px;}
+  .wc-avatar{width:28px;height:28px;border-radius:50%;background:var(--bg4);border:1px solid var(--border2);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:600;flex-shrink:0;}
+  .wc-name{font-size:11px;font-weight:500;color:var(--text);}
+  .wc-role{font-size:9px;color:var(--text3);}
+  .wc-meta{margin-left:auto;text-align:right;}
+  .wc-rate{font-family:var(--mono);font-size:11px;color:var(--teal);}
+  .wc-avail{font-size:9px;color:var(--text3);}
+  .wc-tags{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:5px;}
+  .wc-tag{padding:1px 5px;border-radius:2px;font-size:8px;background:var(--bg4);color:var(--text3);border:1px solid var(--border);}
+  .wc-stats{display:flex;gap:10px;}
+  .wc-stat{font-size:9px;color:var(--text3);}
+  .wc-stat span{color:var(--text2);font-family:var(--mono);}
+  .wc-score{margin-left:auto;font-family:var(--mono);font-size:9px;padding:2px 5px;border-radius:2px;}
+  .wc-score.high{background:#22c55e15;color:var(--green);}
+  .wc-score.med{background:var(--amber-dim);color:var(--amber);}
+
+  /* MAIN PANEL */
+  .main-panel{flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:12px;}
+
+  /* DETAIL CARD */
+  .detail-card{background:var(--bg2);border:1px solid var(--border);border-radius:4px;}
+  .detail-header{padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:flex-start;gap:12px;}
+  .detail-avatar{width:40px;height:40px;border-radius:50%;background:var(--bg4);border:2px solid var(--teal2);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:var(--teal);flex-shrink:0;}
+  .detail-name{font-size:14px;font-weight:600;color:var(--text);margin-bottom:2px;}
+  .detail-title{font-size:11px;color:var(--text3);}
+  .detail-badges{display:flex;gap:5px;margin-top:6px;}
+  .detail-badge{padding:2px 7px;border-radius:2px;font-size:9px;font-family:var(--mono);}
+  .detail-badge.teal{background:var(--teal-dim);color:var(--teal);border:1px solid var(--teal2);}
+  .detail-badge.amber{background:var(--amber-dim);color:var(--amber);}
+  .detail-badge.green{background:#22c55e15;color:var(--green);}
+  .detail-actions{margin-left:auto;display:flex;gap:6px;align-items:flex-start;}
+  .detail-rate{text-align:right;}
+  .detail-rate-val{font-family:var(--mono);font-size:18px;font-weight:600;color:var(--teal);}
+  .detail-rate-label{font-size:9px;color:var(--text3);}
+
+  /* SKILLS GRID */
+  .skills-grid{display:flex;flex-wrap:wrap;gap:5px;padding:10px 16px;border-bottom:1px solid var(--border);}
+  .skill-tag{padding:3px 8px;border-radius:2px;font-size:9px;font-family:var(--mono);}
+  .skill-tag.primary{background:var(--teal-dim);color:var(--teal);border:1px solid var(--teal2);}
+  .skill-tag.secondary{background:var(--bg4);color:var(--text2);border:1px solid var(--border);}
+
+  /* METRICS ROW */
+  .metrics-row{display:flex;gap:0;border-bottom:1px solid var(--border);}
+  .metric{flex:1;padding:10px 16px;border-right:1px solid var(--border);}
+  .metric:last-child{border-right:none;}
+  .metric-label{font-size:9px;color:var(--text3);letter-spacing:1px;text-transform:uppercase;margin-bottom:3px;}
+  .metric-value{font-family:var(--mono);font-size:14px;font-weight:600;}
+  .metric-value.teal{color:var(--teal);}
+  .metric-value.green{color:var(--green);}
+  .metric-sub{font-size:9px;color:var(--text3);margin-top:1px;}
+
+  /* PORTFOLIO LINKS */
+  .portfolio-links{padding:10px 16px;border-bottom:1px solid var(--border);}
+  .portfolio-title{font-size:9px;color:var(--text3);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:7px;}
+  .portfolio-items{display:flex;gap:6px;flex-wrap:wrap;}
+  .portfolio-item{background:var(--bg3);border:1px solid var(--border);border-radius:3px;padding:6px 10px;font-size:9px;cursor:pointer;}
+  .portfolio-item-name{color:var(--text2);font-weight:500;margin-bottom:2px;}
+  .portfolio-item-meta{color:var(--text3);}
+
+  /* REQUIREMENTS */
+  .req-card{background:var(--bg2);border:1px solid var(--border);border-radius:4px;}
+  .req-row{display:flex;align-items:center;padding:8px 12px;border-bottom:1px solid var(--border);gap:8px;cursor:pointer;}
+  .req-row:last-child{border-bottom:none;}
+  .req-row:hover{background:var(--bg3);}
+  .req-type{width:52px;font-size:9px;font-family:var(--mono);font-weight:600;text-transform:uppercase;}
+  .req-type.rfp{color:var(--amber);}
+  .req-type.gig{color:var(--teal);}
+  .req-type.contract{color:var(--purple);}
+  .req-info{flex:1;}
+  .req-name{font-size:10px;color:var(--text);}
+  .req-meta{font-size:9px;color:var(--text3);}
+  .req-budget{font-family:var(--mono);font-size:10px;color:var(--text2);}
+  .req-count{font-size:9px;color:var(--text3);margin-right:4px;}
+  .req-match{font-family:var(--mono);font-size:9px;padding:2px 5px;border-radius:2px;background:var(--teal-dim);color:var(--teal);}
+
+  ::-webkit-scrollbar{width:4px;height:4px;}
+  ::-webkit-scrollbar-track{background:var(--bg);}
+  ::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px;}
+</style>
+</head>
+<body>
+
+<div class="sidebar">
+  <div class="logo">KOGI</div>
+  <div class="nav-section">
+    <div class="nav-label">Main</div>
+    <div class="nav-item"><span class="dot"></span>Home</div>
+    <div class="nav-item"><span class="dot"></span>Office</div>
+    <div class="nav-item"><span class="dot"></span>Portfolio</div>
+  </div>
+  <div class="nav-divider"></div>
+  <div class="nav-section">
+    <div class="nav-label">Economy</div>
+    <div class="nav-item active"><span class="dot"></span>Exchange</div>
+    <div class="nav-item"><span class="dot"></span>Marketplace</div>
+    <div class="nav-item"><span class="dot"></span>Bank</div>
+  </div>
+  <div class="nav-divider"></div>
+  <div class="nav-section">
+    <div class="nav-label">Exchange</div>
+    <div class="nav-item active"><span class="dot"></span>Labor Market</div>
+    <div class="nav-item"><span class="dot"></span>Commodities</div>
+    <div class="nav-item"><span class="dot"></span>Financial</div>
+    <div class="nav-item"><span class="dot"></span>Deal Rooms</div>
+    <div class="nav-item"><span class="dot"></span>Capital</div>
+    <div class="nav-item"><span class="dot"></span>Resources</div>
+    <div class="nav-item"><span class="dot"></span>Asset Transfer</div>
+  </div>
+  <div class="nav-divider"></div>
+  <div class="nav-section">
+    <div class="nav-label">Platform</div>
+    <div class="nav-item"><span class="dot"></span>Community</div>
+    <div class="nav-item"><span class="dot"></span>Organizations</div>
+  </div>
+</div>
+
+<div class="main">
+  <div class="topbar">
+    <div class="topbar-title"><span class="crumb">Exchange /</span> Labor Market</div>
+    <input class="topbar-search" placeholder="search workers, skills, gigs, contracts..." />
+    <div class="topbar-actions">
+      <button class="btn">RFP Board</button>
+      <button class="btn amber">+ Post Requirement</button>
+      <button class="btn primary">+ Hire Worker</button>
+      <div class="badge-dot"></div>
+    </div>
+  </div>
+
+  <div class="stats-row">
+    <div class="stat-box">
+      <div class="stat-label">Active Workers</div>
+      <div class="stat-value teal">284</div>
+      <div class="stat-sub"><span class="up">+22</span> this week</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-label">Open Requirements</div>
+      <div class="stat-value">48</div>
+      <div class="stat-sub">12 RFPs · 36 gigs</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-label">Avg Hourly Rate</div>
+      <div class="stat-value amber">$94/hr</div>
+      <div class="stat-sub"><span class="up">+6%</span> vs last month</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-label">Active Contracts</div>
+      <div class="stat-value">28</div>
+      <div class="stat-sub">$134,500 contract value</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-label">AI Match Score</div>
+      <div class="stat-value teal">91%</div>
+      <div class="stat-sub">MatchEngine active</div>
+    </div>
+  </div>
+
+  <div class="filter-bar">
+    <span class="filter-label">Type</span>
+    <span class="filter-chip active">All</span>
+    <span class="filter-chip">Gig</span>
+    <span class="filter-chip">Contract</span>
+    <span class="filter-chip">Retainer</span>
+    <span class="filter-chip">Consulting</span>
+    <div class="filter-sep"></div>
+    <span class="filter-label">Skills</span>
+    <span class="filter-chip">Design</span>
+    <span class="filter-chip">Engineering</span>
+    <span class="filter-chip">Strategy</span>
+    <span class="filter-chip">Legal</span>
+    <span class="filter-chip">Finance</span>
+    <div class="filter-sep"></div>
+    <span class="filter-label">Rate</span>
+    <span class="filter-chip">Any</span>
+    <span class="filter-chip">Under $50</span>
+    <span class="filter-chip">$50–$150</span>
+    <span class="filter-chip">$150+</span>
+  </div>
+
+  <div class="layout">
+    <!-- WORKER LIST -->
+    <div class="worker-panel">
+      <div class="panel-header">
+        <div class="panel-title">AI-Matched Workers</div>
+        <div class="panel-count">284 results</div>
+      </div>
+      <!-- Worker 1 -->
+      <div class="worker-card selected">
+        <div class="wc-top">
+          <div class="wc-avatar" style="color:var(--teal)">JC</div>
+          <div>
+            <div class="wc-name">Jordan Chen</div>
+            <div class="wc-role">Brand Designer · Visual Identity</div>
+          </div>
+          <div class="wc-meta">
+            <div class="wc-rate">$124/hr</div>
+            <div class="wc-avail">Available now</div>
+          </div>
+        </div>
+        <div class="wc-tags">
+          <span class="wc-tag">Brand Identity</span>
+          <span class="wc-tag">Figma</span>
+          <span class="wc-tag">Motion Design</span>
+          <span class="wc-tag">UI/UX</span>
+        </div>
+        <div class="wc-stats">
+          <div class="wc-stat">Jobs <span>48</span></div>
+          <div class="wc-stat">Rating <span>4.9</span></div>
+          <div class="wc-stat">On-time <span>98%</span></div>
+          <div class="wc-score high">96% match</div>
+        </div>
+      </div>
+      <!-- Worker 2 -->
+      <div class="worker-card">
+        <div class="wc-top">
+          <div class="wc-avatar" style="color:var(--amber)">PS</div>
+          <div>
+            <div class="wc-name">Priya Singh</div>
+            <div class="wc-role">Full-Stack Engineer · Platform</div>
+          </div>
+          <div class="wc-meta">
+            <div class="wc-rate">$145/hr</div>
+            <div class="wc-avail">Free in 2 wks</div>
+          </div>
+        </div>
+        <div class="wc-tags">
+          <span class="wc-tag">React</span>
+          <span class="wc-tag">Go</span>
+          <span class="wc-tag">PostgreSQL</span>
+          <span class="wc-tag">Kafka</span>
+        </div>
+        <div class="wc-stats">
+          <div class="wc-stat">Jobs <span>62</span></div>
+          <div class="wc-stat">Rating <span>4.8</span></div>
+          <div class="wc-stat">On-time <span>94%</span></div>
+          <div class="wc-score high">91% match</div>
+        </div>
+      </div>
+      <!-- Worker 3 -->
+      <div class="worker-card">
+        <div class="wc-top">
+          <div class="wc-avatar" style="color:var(--purple)">MB</div>
+          <div>
+            <div class="wc-name">Marcus Brown</div>
+            <div class="wc-role">Growth Strategist · Community</div>
+          </div>
+          <div class="wc-meta">
+            <div class="wc-rate">$95/hr</div>
+            <div class="wc-avail">Available now</div>
+          </div>
+        </div>
+        <div class="wc-tags">
+          <span class="wc-tag">GTM</span>
+          <span class="wc-tag">Community</span>
+          <span class="wc-tag">Analytics</span>
+        </div>
+        <div class="wc-stats">
+          <div class="wc-stat">Jobs <span>34</span></div>
+          <div class="wc-stat">Rating <span>4.7</span></div>
+          <div class="wc-stat">On-time <span>96%</span></div>
+          <div class="wc-score high">88% match</div>
+        </div>
+      </div>
+      <!-- Worker 4 -->
+      <div class="worker-card">
+        <div class="wc-top">
+          <div class="wc-avatar" style="color:var(--pink)">SN</div>
+          <div>
+            <div class="wc-name">Sofia Navarro</div>
+            <div class="wc-role">Data Scientist · ML/AI</div>
+          </div>
+          <div class="wc-meta">
+            <div class="wc-rate">$178/hr</div>
+            <div class="wc-avail">Free in 3 wks</div>
+          </div>
+        </div>
+        <div class="wc-tags">
+          <span class="wc-tag">Python</span>
+          <span class="wc-tag">Scala</span>
+          <span class="wc-tag">TensorFlow</span>
+        </div>
+        <div class="wc-stats">
+          <div class="wc-stat">Jobs <span>29</span></div>
+          <div class="wc-stat">Rating <span>5.0</span></div>
+          <div class="wc-stat">On-time <span>100%</span></div>
+          <div class="wc-score high">84% match</div>
+        </div>
+      </div>
+      <!-- Worker 5 -->
+      <div class="worker-card">
+        <div class="wc-top">
+          <div class="wc-avatar" style="color:var(--blue)">TJ</div>
+          <div>
+            <div class="wc-name">Tom James</div>
+            <div class="wc-role">Legal Counsel · IP & Contracts</div>
+          </div>
+          <div class="wc-meta">
+            <div class="wc-rate">$220/hr</div>
+            <div class="wc-avail">Available now</div>
+          </div>
+        </div>
+        <div class="wc-tags">
+          <span class="wc-tag">IP Law</span>
+          <span class="wc-tag">SaaS Contracts</span>
+          <span class="wc-tag">Compliance</span>
+        </div>
+        <div class="wc-stats">
+          <div class="wc-stat">Jobs <span>41</span></div>
+          <div class="wc-stat">Rating <span>4.9</span></div>
+          <div class="wc-stat">On-time <span>97%</span></div>
+          <div class="wc-score med">79% match</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MAIN PANEL -->
+    <div class="main-panel">
+      <!-- WORKER DETAIL -->
+      <div class="detail-card">
+        <div class="detail-header">
+          <div class="detail-avatar">JC</div>
+          <div>
+            <div class="detail-name">Jordan Chen</div>
+            <div class="detail-title">Senior Brand Designer · Visual Identity Specialist · San Francisco, CA</div>
+            <div class="detail-badges">
+              <span class="detail-badge teal">Available Now</span>
+              <span class="detail-badge green">96% Match</span>
+              <span class="detail-badge amber">Top Rated</span>
+              <span class="detail-badge teal">48 Completed Jobs</span>
+            </div>
+          </div>
+          <div class="detail-actions">
+            <button class="btn">Message</button>
+            <button class="btn amber">Save</button>
+            <button class="btn primary">Propose</button>
+          </div>
+          <div class="detail-rate">
+            <div class="detail-rate-val">$124/hr</div>
+            <div class="detail-rate-label">Hourly rate</div>
+            <div class="detail-rate-label" style="color:var(--teal);margin-top:3px;">$740–$4,960/day+</div>
+          </div>
+        </div>
+        <div class="skills-grid">
+          <span class="skill-tag primary">Brand Identity</span>
+          <span class="skill-tag primary">Visual Design</span>
+          <span class="skill-tag primary">Figma</span>
+          <span class="skill-tag secondary">Motion Design</span>
+          <span class="skill-tag secondary">UI/UX</span>
+          <span class="skill-tag secondary">Typography</span>
+          <span class="skill-tag secondary">Illustration</span>
+          <span class="skill-tag secondary">Design Systems</span>
+          <span class="skill-tag secondary">Adobe Creative Suite</span>
+          <span class="skill-tag secondary">Prototyping</span>
+        </div>
+        <div class="metrics-row">
+          <div class="metric">
+            <div class="metric-label">Jobs Done</div>
+            <div class="metric-value teal">48</div>
+            <div class="metric-sub">All-time</div>
+          </div>
+          <div class="metric">
+            <div class="metric-label">Rating</div>
+            <div class="metric-value" style="color:var(--amber)">4.9 / 5</div>
+            <div class="metric-sub">124 reviews</div>
+          </div>
+          <div class="metric">
+            <div class="metric-label">On-time Rate</div>
+            <div class="metric-value green">98%</div>
+            <div class="metric-sub">47 of 48</div>
+          </div>
+          <div class="metric">
+            <div class="metric-label">Repeat Hire</div>
+            <div class="metric-value teal">64%</div>
+            <div class="metric-sub">Clients return</div>
+          </div>
+          <div class="metric">
+            <div class="metric-label">AI Rep Score</div>
+            <div class="metric-value" style="color:var(--purple)">94/100</div>
+            <div class="metric-sub">kogi-engine</div>
+          </div>
+        </div>
+        <div class="portfolio-links">
+          <div class="portfolio-title">Portfolio Work (Public)</div>
+          <div class="portfolio-items">
+            <div class="portfolio-item">
+              <div class="portfolio-item-name">Brand Identity System</div>
+              <div class="portfolio-item-meta">Asset · Published · v2.4</div>
+            </div>
+            <div class="portfolio-item">
+              <div class="portfolio-item-name">Design System — Alpha Platform</div>
+              <div class="portfolio-item-meta">Asset · Published · v1.8</div>
+            </div>
+            <div class="portfolio-item">
+              <div class="portfolio-item-name">Visual Identity Playbook</div>
+              <div class="portfolio-item-meta">Book · Marketplace listing</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- OPEN REQUIREMENTS -->
+      <div class="req-card">
+        <div class="panel-header">
+          <div class="panel-title">Open Requirements (RFP / Gig Board)</div>
+          <div class="panel-count">48 open</div>
+        </div>
+        <div class="req-row">
+          <div class="req-type rfp">RFP</div>
+          <div class="req-info">
+            <div class="req-name">Platform Visual Redesign — Web + Mobile</div>
+            <div class="req-meta">Design · Brand · 10–12 weeks · Remote</div>
+          </div>
+          <div class="req-budget">$28,000–$40,000</div>
+          <span class="req-count">12 proposals</span>
+          <span class="req-match">96% fit</span>
+        </div>
+        <div class="req-row">
+          <div class="req-type gig">GIG</div>
+          <div class="req-info">
+            <div class="req-name">Brand Style Guide — SaaS Startup</div>
+            <div class="req-meta">Brand · 2–3 weeks · Fixed price</div>
+          </div>
+          <div class="req-budget">$8,000</div>
+          <span class="req-count">4 proposals</span>
+          <span class="req-match">91% fit</span>
+        </div>
+        <div class="req-row">
+          <div class="req-type contract">CONTRACT</div>
+          <div class="req-info">
+            <div class="req-name">Design Lead — Community Platform (3mo Retainer)</div>
+            <div class="req-meta">Design · Leadership · Ongoing · $9,000/mo</div>
+          </div>
+          <div class="req-budget">$9,000/mo</div>
+          <span class="req-count">2 proposals</span>
+          <span class="req-match">88% fit</span>
+        </div>
+        <div class="req-row">
+          <div class="req-type gig">GIG</div>
+          <div class="req-info">
+            <div class="req-name">App Icon Set + Onboarding Illustrations</div>
+            <div class="req-meta">Illustration · 1 week · Fixed price</div>
+          </div>
+          <div class="req-budget">$2,400</div>
+          <span class="req-count">7 proposals</span>
+          <span class="req-match">84% fit</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

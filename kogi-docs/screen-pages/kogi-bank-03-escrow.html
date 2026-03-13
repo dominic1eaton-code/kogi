@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KOGI · Escrow Management</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@300;400;500;600&display=swap');
+  :root {
+    --bg: #080c10; --bg2: #0d1117; --bg3: #121820; --bg4: #1a2230;
+    --border: #1e2d3d; --border2: #243040;
+    --text: #c8d8e8; --text2: #7a9ab8; --text3: #4a6a88;
+    --green: #00e5a0; --teal: #00b8cc; --gold: #e8a020; --red: #e84060; --purple: #9060e8; --blue: #2080e8;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 13px; display: flex; height: 100vh; overflow: hidden; }
+  .nav { width: 160px; background: var(--bg2); border-right: 1px solid var(--border); display: flex; flex-direction: column; padding: 16px 0; flex-shrink: 0; }
+  .nav-logo { padding: 0 16px 20px; font-family: 'Space Mono', monospace; font-size: 16px; font-weight: 700; color: var(--green); letter-spacing: 2px; }
+  .nav-section { padding: 4px 16px 2px; font-size: 9px; letter-spacing: 1.5px; color: var(--text3); text-transform: uppercase; margin-top: 8px; }
+  .nav-item { padding: 7px 16px; color: var(--text2); font-size: 12px; cursor: pointer; display: flex; align-items: center; gap: 8px; border-left: 2px solid transparent; }
+  .nav-item.active { color: var(--green); border-left-color: var(--green); background: rgba(0,229,160,0.05); }
+  .nav-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--text3); flex-shrink: 0; }
+  .nav-item.active .nav-dot { background: var(--green); }
+  .main { flex: 1; overflow-y: auto; }
+  .topbar { display: flex; align-items: center; justify-content: space-between; padding: 12px 20px; background: var(--bg2); border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 10; }
+  .topbar-left { display: flex; align-items: center; gap: 12px; }
+  .topbar-title { font-family: 'Space Mono', monospace; font-size: 13px; }
+  .topbar-sub { font-size: 11px; color: var(--text3); }
+  .topbar-right { display: flex; align-items: center; gap: 8px; }
+  .badge { background: var(--bg4); border: 1px solid var(--border2); border-radius: 4px; padding: 3px 8px; font-size: 11px; color: var(--text2); }
+  .badge.green { border-color: var(--green); color: var(--green); background: rgba(0,229,160,0.05); }
+  .badge.gold { border-color: var(--gold); color: var(--gold); background: rgba(232,160,32,0.05); }
+  .avatar { width: 28px; height: 28px; border-radius: 50%; background: linear-gradient(135deg, var(--teal), var(--purple)); display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 600; color: #fff; }
+  .content { padding: 18px 20px; }
+  .num { font-family: 'Space Mono', monospace; }
+  .panel { background: var(--bg3); border: 1px solid var(--border); border-radius: 6px; padding: 14px; margin-bottom: 12px; }
+  .panel-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+  .panel-title { font-size: 11px; font-weight: 600; color: var(--text2); text-transform: uppercase; letter-spacing: 1px; }
+  .panel-action { font-size: 10px; color: var(--teal); cursor: pointer; }
+  .divider { height: 1px; background: var(--border); margin: 10px 0; }
+  .tag { display: inline-block; font-size: 9px; padding: 2px 6px; border-radius: 3px; }
+  .tag.green { background: rgba(0,229,160,0.12); color: var(--green); }
+  .tag.gold { background: rgba(232,160,32,0.12); color: var(--gold); }
+  .tag.red { background: rgba(232,64,96,0.12); color: var(--red); }
+  .tag.teal { background: rgba(0,184,204,0.12); color: var(--teal); }
+  .tag.purple { background: rgba(144,96,232,0.12); color: var(--purple); }
+  .stat-row { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin-bottom: 16px; }
+  .stat-card { background: var(--bg3); border: 1px solid var(--border); border-radius: 6px; padding: 12px 14px; }
+  .stat-label { font-size: 10px; color: var(--text3); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px; }
+  .stat-val { font-family: 'Space Mono', monospace; font-size: 16px; font-weight: 700; }
+  .stat-sub { font-size: 10px; color: var(--text3); margin-top: 2px; }
+  .grid-32 { display: grid; grid-template-columns: 1fr 1.5fr; gap: 12px; }
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; }
+
+  /* ESCROW CARDS */
+  .esc-card { background: var(--bg4); border: 1px solid var(--border2); border-radius: 6px; padding: 14px; margin-bottom: 8px; cursor: pointer; transition: border-color 0.15s; }
+  .esc-card:hover { border-color: var(--gold); }
+  .esc-card.selected { border-color: var(--gold); background: rgba(232,160,32,0.04); }
+  .esc-card-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; }
+  .esc-card-name { font-size: 13px; font-weight: 500; color: var(--text); margin-bottom: 2px; }
+  .esc-card-id { font-size: 10px; color: var(--text3); }
+  .esc-card-amount { font-family: 'Space Mono', monospace; font-size: 16px; font-weight: 700; color: var(--gold); }
+  .esc-card-status { margin-top: 2px; }
+  .esc-parties { display: flex; gap: 10px; margin-bottom: 8px; }
+  .esc-party { background: var(--bg3); border: 1px solid var(--border); border-radius: 4px; padding: 5px 8px; font-size: 11px; color: var(--text2); flex: 1; }
+  .esc-party-role { font-size: 9px; color: var(--text3); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 2px; }
+  .esc-milestone { display: flex; align-items: center; gap: 6px; padding: 4px 0; border-bottom: 1px solid rgba(30,45,61,0.5); font-size: 11px; }
+  .esc-milestone:last-child { border-bottom: none; }
+  .esc-ms-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .esc-ms-dot.done { background: var(--green); }
+  .esc-ms-dot.active { background: var(--gold); box-shadow: 0 0 6px var(--gold); }
+  .esc-ms-dot.pending { background: var(--bg4); border: 1px solid var(--text3); }
+  .esc-ms-label { flex: 1; color: var(--text); }
+  .esc-ms-amount { font-family: 'Space Mono', monospace; font-size: 11px; color: var(--text2); }
+
+  /* TIMELINE / FLOW */
+  .flow-step { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 12px; }
+  .flow-line { display: flex; flex-direction: column; align-items: center; gap: 0; }
+  .flow-circle { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; flex-shrink: 0; }
+  .flow-circle.done { background: rgba(0,229,160,0.15); border: 1px solid var(--green); color: var(--green); }
+  .flow-circle.active { background: rgba(232,160,32,0.15); border: 1px solid var(--gold); color: var(--gold); }
+  .flow-circle.pending { background: var(--bg4); border: 1px solid var(--border2); color: var(--text3); }
+  .flow-connector { width: 1px; height: 24px; background: var(--border); margin: 2px 0; }
+  .flow-content { padding-top: 4px; }
+  .flow-title { font-size: 12px; font-weight: 500; color: var(--text); margin-bottom: 2px; }
+  .flow-desc { font-size: 10px; color: var(--text3); }
+  .flow-date { font-size: 10px; color: var(--text2); }
+  .mini-stat { display: flex; justify-content: space-between; padding: 5px 0; border-bottom: 1px solid rgba(30,45,61,0.5); }
+  .mini-stat:last-child { border-bottom: none; }
+  .mini-stat-label { font-size: 11px; color: var(--text2); }
+  .mini-stat-val { font-family: 'Space Mono', monospace; font-size: 11px; color: var(--text); }
+  .btn { display: inline-flex; align-items: center; gap: 6px; padding: 7px 14px; border-radius: 4px; font-size: 12px; cursor: pointer; font-family: 'DM Sans', sans-serif; font-weight: 500; }
+  .btn-gold { background: rgba(232,160,32,0.12); border: 1px solid var(--gold); color: var(--gold); }
+  .btn-green { background: rgba(0,229,160,0.12); border: 1px solid var(--green); color: var(--green); }
+  .btn-red { background: rgba(232,64,96,0.12); border: 1px solid var(--red); color: var(--red); }
+  .btn-ghost { background: var(--bg4); border: 1px solid var(--border); color: var(--text2); }
+  ::-webkit-scrollbar { width: 4px; }
+  ::-webkit-scrollbar-track { background: var(--bg2); }
+  ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+</style>
+</head>
+<body>
+<nav class="nav">
+  <div class="nav-logo">KOGI</div>
+  <div class="nav-section">Platform</div>
+  <div class="nav-item"><div class="nav-dot"></div>Home</div>
+  <div class="nav-item"><div class="nav-dot"></div>Office</div>
+  <div class="nav-section">Finance</div>
+  <div class="nav-item active"><div class="nav-dot"></div>Bank</div>
+  <div class="nav-item"><div class="nav-dot"></div>Exchange</div>
+  <div class="nav-item"><div class="nav-dot"></div>Marketplace</div>
+  <div class="nav-section">Community</div>
+  <div class="nav-item"><div class="nav-dot"></div>Community</div>
+  <div class="nav-item"><div class="nav-dot"></div>Organizations</div>
+  <div class="nav-section">Dev</div>
+  <div class="nav-item"><div class="nav-dot"></div>Developer</div>
+  <div class="nav-item"><div class="nav-dot"></div>Profile</div>
+</nav>
+<div class="main">
+  <div class="topbar">
+    <div class="topbar-left">
+      <div>
+        <div class="topbar-title">⬡ Bank · Escrow</div>
+        <div class="topbar-sub">KESC · Multi-party Escrow & Deal Settlement</div>
+      </div>
+      <div class="badge gold">4 Active</div>
+      <div class="badge">$18,300 Locked</div>
+    </div>
+    <div class="topbar-right">
+      <div class="badge" style="color:var(--green);border-color:var(--green);background:rgba(0,229,160,0.05)">+ New Escrow</div>
+      <div class="avatar">JC</div>
+    </div>
+  </div>
+
+  <div class="content">
+    <!-- STATS ROW -->
+    <div class="stat-row">
+      <div class="stat-card">
+        <div class="stat-label">Total Locked</div>
+        <div class="stat-val" style="color:var(--gold)">$18,300</div>
+        <div class="stat-sub">4 active escrows</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Pending Release</div>
+        <div class="stat-val" style="color:var(--green)">$13,900</div>
+        <div class="stat-sub">Milestone met · 3 deals</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Dispute Rate</div>
+        <div class="stat-val" style="color:var(--text)">0%</div>
+        <div class="stat-sub">0 disputes · all time</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Avg Release Time</div>
+        <div class="stat-val" style="color:var(--teal)">3.2d</div>
+        <div class="stat-sub">From milestone completion</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Total Released YTD</div>
+        <div class="stat-val" style="color:var(--purple)">$64,200</div>
+        <div class="stat-sub">28 deals settled</div>
+      </div>
+    </div>
+
+    <!-- MAIN GRID -->
+    <div class="grid-32">
+      <!-- ESCROW LIST -->
+      <div>
+        <div class="panel" style="margin-bottom:12px">
+          <div class="panel-header">
+            <div class="panel-title">Active Escrow Accounts</div>
+            <div class="panel-action">Filter</div>
+          </div>
+
+          <div class="esc-card selected">
+            <div class="esc-card-top">
+              <div>
+                <div class="esc-card-name">Brand Identity System 2.0</div>
+                <div class="esc-card-id">ESC-044 · Deal #44 · kogi-marketplace</div>
+              </div>
+              <div style="text-align:right">
+                <div class="esc-card-amount">$4,200</div>
+                <div class="esc-card-status"><span class="tag gold">Locked · Milestone 2 Active</span></div>
+              </div>
+            </div>
+            <div class="esc-parties">
+              <div class="esc-party">
+                <div class="esc-party-role">Depositor</div>
+                Acme Corp
+              </div>
+              <div class="esc-party">
+                <div class="esc-party-role">Beneficiary</div>
+                Jordan Chen
+              </div>
+              <div class="esc-party">
+                <div class="esc-party-role">Arbiter</div>
+                Kogi Platform
+              </div>
+            </div>
+          </div>
+
+          <div class="esc-card">
+            <div class="esc-card-top">
+              <div>
+                <div class="esc-card-name">API Integration Package</div>
+                <div class="esc-card-id">ESC-045 · Deal #45 · kogi-marketplace</div>
+              </div>
+              <div style="text-align:right">
+                <div class="esc-card-amount">$12,400</div>
+                <div class="esc-card-status"><span class="tag teal">Pending Deposit</span></div>
+              </div>
+            </div>
+            <div class="esc-parties">
+              <div class="esc-party"><div class="esc-party-role">Depositor</div>FinTech Labs</div>
+              <div class="esc-party"><div class="esc-party-role">Beneficiary</div>Jordan Chen</div>
+              <div class="esc-party"><div class="esc-party-role">Arbiter</div>Kogi Platform</div>
+            </div>
+          </div>
+
+          <div class="esc-card">
+            <div class="esc-card-top">
+              <div>
+                <div class="esc-card-name">Mobile App MVP</div>
+                <div class="esc-card-id">ESC-038 · Deal #38 · kogi-marketplace</div>
+              </div>
+              <div style="text-align:right">
+                <div class="esc-card-amount">$1,500</div>
+                <div class="esc-card-status"><span class="tag green">Release Ready</span></div>
+              </div>
+            </div>
+            <div class="esc-parties">
+              <div class="esc-party"><div class="esc-party-role">Depositor</div>NovaTech</div>
+              <div class="esc-party"><div class="esc-party-role">Beneficiary</div>Jordan Chen</div>
+              <div class="esc-party"><div class="esc-party-role">Arbiter</div>Kogi Platform</div>
+            </div>
+          </div>
+
+          <div class="esc-card">
+            <div class="esc-card-top">
+              <div>
+                <div class="esc-card-name">Data Pipeline Audit</div>
+                <div class="esc-card-id">ESC-046 · Deal #46 · kogi-exchange</div>
+              </div>
+              <div style="text-align:right">
+                <div class="esc-card-amount">$200</div>
+                <div class="esc-card-status"><span class="tag gold">Locked · In Progress</span></div>
+              </div>
+            </div>
+            <div class="esc-parties">
+              <div class="esc-party"><div class="esc-party-role">Depositor</div>DataStream Co</div>
+              <div class="esc-party"><div class="esc-party-role">Beneficiary</div>Jordan Chen</div>
+              <div class="esc-party"><div class="esc-party-role">Arbiter</div>Kogi Platform</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SELECTED ESCROW DETAIL -->
+      <div>
+        <div class="panel" style="margin-bottom:10px">
+          <div class="panel-header">
+            <div class="panel-title">ESC-044 · Brand Identity System 2.0</div>
+            <div style="display:flex;gap:6px">
+              <div class="btn btn-gold">Release</div>
+              <div class="btn btn-ghost">Dispute</div>
+            </div>
+          </div>
+
+          <div style="margin-bottom:12px">
+            <div style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px">Milestone Progress</div>
+            <div class="esc-milestone">
+              <div class="esc-ms-dot done"></div>
+              <div class="esc-ms-label">1 · Initial Concept & Research</div>
+              <div class="esc-ms-amount" style="color:var(--green)">$840 ✓</div>
+            </div>
+            <div class="esc-milestone">
+              <div class="esc-ms-dot active"></div>
+              <div class="esc-ms-label" style="color:var(--gold)">2 · Logo System & Brand Guidelines</div>
+              <div class="esc-ms-amount" style="color:var(--gold)">$1,680 ●</div>
+            </div>
+            <div class="esc-milestone">
+              <div class="esc-ms-dot pending"></div>
+              <div class="esc-ms-label">3 · Digital Asset Package</div>
+              <div class="esc-ms-amount">$1,260 ○</div>
+            </div>
+            <div class="esc-milestone">
+              <div class="esc-ms-dot pending"></div>
+              <div class="esc-ms-label">4 · Final Delivery & Handoff</div>
+              <div class="esc-ms-amount">$420 ○</div>
+            </div>
+          </div>
+
+          <div style="height:4px;background:var(--bg4);border-radius:2px;overflow:hidden;margin-bottom:4px">
+            <div style="width:45%;height:100%;background:linear-gradient(90deg,var(--green),var(--gold));border-radius:2px"></div>
+          </div>
+          <div style="font-size:10px;color:var(--text3)">45% of funds released · $1,890 of $4,200</div>
+        </div>
+
+        <div class="panel" style="margin-bottom:10px">
+          <div class="panel-header">
+            <div class="panel-title">Escrow Lifecycle</div>
+          </div>
+          <div class="flow-step">
+            <div class="flow-line">
+              <div class="flow-circle done">✓</div>
+              <div class="flow-connector"></div>
+            </div>
+            <div class="flow-content">
+              <div class="flow-title">Escrow Created</div>
+              <div class="flow-date">Mar 01, 2026 · 09:14 UTC</div>
+              <div class="flow-desc">Acme Corp deposited $4,200 · Deal #44 initiated</div>
+            </div>
+          </div>
+          <div class="flow-step">
+            <div class="flow-line">
+              <div class="flow-circle done">✓</div>
+              <div class="flow-connector"></div>
+            </div>
+            <div class="flow-content">
+              <div class="flow-title">Milestone 1 Approved</div>
+              <div class="flow-date">Mar 05, 2026 · 14:22 UTC</div>
+              <div class="flow-desc">$840 released to Jordan Chen · KWLT-001</div>
+            </div>
+          </div>
+          <div class="flow-step">
+            <div class="flow-line">
+              <div class="flow-circle active">2</div>
+              <div class="flow-connector"></div>
+            </div>
+            <div class="flow-content">
+              <div class="flow-title" style="color:var(--gold)">Milestone 2 · In Review</div>
+              <div class="flow-date">Mar 10, 2026 · 11:00 UTC — Active</div>
+              <div class="flow-desc">Logo system submitted · Awaiting client approval</div>
+            </div>
+          </div>
+          <div class="flow-step">
+            <div class="flow-line">
+              <div class="flow-circle pending">3</div>
+              <div class="flow-connector"></div>
+            </div>
+            <div class="flow-content">
+              <div class="flow-title">Milestone 3</div>
+              <div class="flow-desc">Digital assets package</div>
+            </div>
+          </div>
+          <div class="flow-step">
+            <div class="flow-line">
+              <div class="flow-circle pending">4</div>
+            </div>
+            <div class="flow-content">
+              <div class="flow-title">Final Delivery</div>
+              <div class="flow-desc">Est. Mar 25, 2026</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-header">
+            <div class="panel-title">Escrow Details</div>
+          </div>
+          <div class="mini-stat"><span class="mini-stat-label">Escrow ID</span><span class="mini-stat-val">ESC-044</span></div>
+          <div class="mini-stat"><span class="mini-stat-label">Total Value</span><span class="mini-stat-val" style="color:var(--gold)">$4,200.00</span></div>
+          <div class="mini-stat"><span class="mini-stat-label">Released</span><span class="mini-stat-val" style="color:var(--green)">$840.00</span></div>
+          <div class="mini-stat"><span class="mini-stat-label">Remaining</span><span class="mini-stat-val">$3,360.00</span></div>
+          <div class="mini-stat"><span class="mini-stat-label">Platform Fee</span><span class="mini-stat-val">2.5% · $105.00</span></div>
+          <div class="mini-stat"><span class="mini-stat-label">Expiry</span><span class="mini-stat-val">Apr 30, 2026</span></div>
+          <div class="mini-stat"><span class="mini-stat-label">State Machine</span><span class="mini-stat-val">KESC · Rust</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

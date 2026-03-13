@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KOGI · Spaces</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap');
+  *{margin:0;padding:0;box-sizing:border-box;}
+  :root{
+    --bg:#080b10;--bg2:#0d1117;--bg3:#111820;--bg4:#161e28;
+    --border:#1e2d3d;--border2:#243344;
+    --teal:#00c9a7;--teal2:#009e84;--teal-dim:#00c9a720;
+    --amber:#f5a623;--amber-dim:#f5a62318;
+    --purple:#8b5cf6;--purple-dim:#8b5cf615;
+    --pink:#e83e8c;--pink-dim:#e83e8c18;
+    --green:#22c55e;--red:#ef4444;--blue:#3b82f6;--blue-dim:#3b82f615;
+    --gold:#d4a017;--gold-dim:#d4a01718;
+    --text:#e2e8f0;--text2:#94a3b8;--text3:#4a6280;
+    --mono:'IBM Plex Mono',monospace;--sans:'IBM Plex Sans',sans-serif;
+  }
+  body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:12px;display:flex;height:100vh;overflow:hidden;}
+  .sidebar{width:168px;background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0;}
+  .logo{padding:12px 14px;border-bottom:1px solid var(--border);font-family:var(--mono);font-size:13px;font-weight:600;letter-spacing:3px;color:var(--teal);}
+  .nav-section{padding:8px 0;}
+  .nav-label{padding:4px 14px 2px;font-size:9px;letter-spacing:2px;color:var(--text3);text-transform:uppercase;}
+  .nav-item{padding:5px 14px;color:var(--text2);cursor:pointer;font-size:11px;display:flex;align-items:center;gap:6px;border-left:2px solid transparent;position:relative;}
+  .nav-item:hover{color:var(--text);background:var(--bg3);}
+  .nav-item.active{color:var(--teal);border-left-color:var(--teal);background:var(--teal-dim);}
+  .nav-item .dot{width:5px;height:5px;border-radius:50%;background:currentColor;opacity:.6;}
+  .nav-divider{height:1px;background:var(--border);margin:6px 0;}
+  .main{flex:1;display:flex;flex-direction:column;overflow:hidden;}
+  .topbar{padding:8px 16px;background:var(--bg2);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;}
+  .topbar-title{font-family:var(--mono);font-size:13px;font-weight:500;color:var(--text);}
+  .topbar-title .crumb{color:var(--text3);}
+  .topbar-search{flex:1;max-width:320px;background:var(--bg3);border:1px solid var(--border);border-radius:3px;padding:4px 10px;color:var(--text2);font-family:var(--mono);font-size:11px;outline:none;}
+  .topbar-actions{margin-left:auto;display:flex;gap:6px;}
+  .btn{padding:4px 10px;border-radius:3px;font-family:var(--mono);font-size:10px;cursor:pointer;border:1px solid var(--border2);background:var(--bg3);color:var(--text2);}
+  .btn.primary{background:var(--teal2);border-color:var(--teal);color:#000;font-weight:600;}
+
+  /* FILTER BAR */
+  .filter-bar{display:flex;align-items:center;gap:8px;padding:8px 16px;background:var(--bg2);border-bottom:1px solid var(--border);flex-wrap:wrap;}
+  .filter-label{font-size:9px;color:var(--text3);letter-spacing:1px;text-transform:uppercase;}
+  .filter-chip{padding:3px 9px;border-radius:12px;font-size:9px;font-family:var(--mono);border:1px solid var(--border2);color:var(--text3);cursor:pointer;}
+  .filter-chip.active{border-color:var(--teal);color:var(--teal);background:var(--teal-dim);}
+
+  /* SECTION HEADER */
+  .section-row{display:flex;align-items:center;padding:10px 16px 6px;gap:8px;}
+  .section-title{font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:1.5px;color:var(--text3);}
+  .section-more{margin-left:auto;font-size:9px;color:var(--teal);cursor:pointer;font-family:var(--mono);}
+
+  /* CONTENT */
+  .content{flex:1;overflow-y:auto;padding:0 16px 16px;}
+
+  /* MY SPACES ROW */
+  .my-spaces{display:flex;gap:10px;margin-bottom:4px;}
+  .my-space-card{background:var(--bg2);border:1px solid var(--border);border-radius:4px;padding:10px 12px;flex:1;cursor:pointer;position:relative;overflow:hidden;}
+  .my-space-card:hover{border-color:var(--border2);}
+  .my-space-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;}
+  .my-space-card.teal::before{background:var(--teal);}
+  .my-space-card.purple::before{background:var(--purple);}
+  .my-space-card.amber::before{background:var(--amber);}
+  .my-space-card.pink::before{background:var(--pink);}
+  .msc-icon{font-size:16px;margin-bottom:5px;}
+  .msc-name{font-size:11px;font-weight:600;color:var(--text);margin-bottom:2px;}
+  .msc-type{font-size:9px;color:var(--text3);}
+  .msc-stats{display:flex;gap:8px;margin-top:6px;}
+  .msc-stat{font-size:9px;color:var(--text3);}
+  .msc-stat span{color:var(--text2);font-family:var(--mono);}
+  .msc-unread{position:absolute;top:10px;right:10px;background:var(--teal);color:#000;font-size:8px;font-family:var(--mono);padding:1px 5px;border-radius:8px;}
+
+  /* SPACE GRID */
+  .space-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:4px;}
+  .space-card{background:var(--bg2);border:1px solid var(--border);border-radius:4px;overflow:hidden;cursor:pointer;}
+  .space-card:hover{border-color:var(--border2);}
+  .sc-banner{height:48px;display:flex;align-items:center;justify-content:center;font-size:20px;position:relative;}
+  .sc-body{padding:10px 12px;}
+  .sc-header{display:flex;align-items:flex-start;gap:8px;margin-bottom:6px;}
+  .sc-icon{width:30px;height:30px;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;border:2px solid var(--bg);flex-shrink:0;}
+  .sc-name{font-size:11px;font-weight:600;color:var(--text);}
+  .sc-handle{font-size:9px;color:var(--text3);}
+  .sc-type-badge{margin-left:auto;font-size:8px;font-family:var(--mono);padding:1px 5px;border-radius:2px;}
+  .sc-desc{font-size:10px;color:var(--text3);line-height:1.4;margin-bottom:7px;}
+  .sc-tags{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:7px;}
+  .sc-tag{font-size:8px;padding:1px 5px;border-radius:2px;background:var(--bg4);color:var(--text3);border:1px solid var(--border);}
+  .sc-footer{display:flex;align-items:center;gap:8px;}
+  .sc-members{font-size:9px;color:var(--text3);}
+  .sc-members span{color:var(--text2);font-family:var(--mono);}
+  .sc-activity{font-size:9px;color:var(--text3);}
+  .sc-join-btn{margin-left:auto;font-size:8px;font-family:var(--mono);padding:2px 7px;border-radius:2px;cursor:pointer;border:1px solid var(--border2);background:var(--bg3);color:var(--text3);}
+  .sc-join-btn.joined{border-color:var(--teal2);color:var(--teal);background:var(--teal-dim);}
+
+  /* AVATARS ROW */
+  .avatar-stack{display:flex;}
+  .avatar-stack .av{width:16px;height:16px;border-radius:50%;background:var(--bg4);border:1px solid var(--bg2);display:flex;align-items:center;justify-content:center;font-size:7px;font-weight:700;margin-left:-4px;}
+  .avatar-stack .av:first-child{margin-left:0;}
+
+  ::-webkit-scrollbar{width:4px;height:4px;}
+  ::-webkit-scrollbar-track{background:var(--bg);}
+  ::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px;}
+</style>
+</head>
+<body>
+
+<div class="sidebar">
+  <div class="logo">KOGI</div>
+  <div class="nav-section">
+    <div class="nav-label">Community</div>
+    <div class="nav-item"><span class="dot"></span>Feed</div>
+    <div class="nav-item active"><span class="dot"></span>Spaces</div>
+    <div class="nav-item"><span class="dot"></span>Rooms</div>
+    <div class="nav-item"><span class="dot"></span>Messages</div>
+    <div class="nav-item"><span class="dot"></span>Events</div>
+    <div class="nav-item"><span class="dot"></span>Showcase</div>
+    <div class="nav-item"><span class="dot"></span>Organizations</div>
+  </div>
+  <div class="nav-divider"></div>
+  <div class="nav-section">
+    <div class="nav-label">My Spaces</div>
+    <div class="nav-item"><div class="dot" style="background:var(--teal)"></div>Design Guild</div>
+    <div class="nav-item"><div class="dot" style="background:var(--purple)"></div>Alpha Platform</div>
+    <div class="nav-item"><div class="dot" style="background:var(--amber)"></div>Freelance Devs</div>
+    <div class="nav-item"><div class="dot" style="background:var(--pink)"></div>Pamoja Network</div>
+  </div>
+  <div class="nav-divider"></div>
+  <div class="nav-section">
+    <div class="nav-label">Economy</div>
+    <div class="nav-item"><span class="dot"></span>Exchange</div>
+    <div class="nav-item"><span class="dot"></span>Marketplace</div>
+  </div>
+</div>
+
+<div class="main">
+  <div class="topbar">
+    <div class="topbar-title"><span class="crumb">Community /</span> Spaces</div>
+    <input class="topbar-search" placeholder="search spaces, communities, collectives..." />
+    <div class="topbar-actions">
+      <button class="btn">Browse All</button>
+      <button class="btn primary">+ Create Space</button>
+    </div>
+  </div>
+
+  <div class="filter-bar">
+    <span class="filter-label">Type</span>
+    <span class="filter-chip active">All</span>
+    <span class="filter-chip">Community</span>
+    <span class="filter-chip">Team</span>
+    <span class="filter-chip">Collective</span>
+    <span class="filter-chip">Cooperative</span>
+    <span class="filter-chip">DAO</span>
+    <span class="filter-chip">Guild</span>
+    <span class="filter-chip">Project Space</span>
+  </div>
+
+  <div class="content">
+
+    <!-- MY SPACES -->
+    <div class="section-row">
+      <div class="section-title">My Spaces</div>
+      <div class="section-more">Manage all →</div>
+    </div>
+    <div class="my-spaces">
+      <div class="my-space-card teal">
+        <div class="msc-unread">3</div>
+        <div class="msc-icon">🎨</div>
+        <div class="msc-name">Design Guild</div>
+        <div class="msc-type">Guild · Member</div>
+        <div class="msc-stats">
+          <div class="msc-stat">Members <span>420</span></div>
+          <div class="msc-stat">Rooms <span>12</span></div>
+        </div>
+      </div>
+      <div class="my-space-card purple">
+        <div class="msc-icon">⚡</div>
+        <div class="msc-name">Alpha Platform</div>
+        <div class="msc-type">Project Space · Owner</div>
+        <div class="msc-stats">
+          <div class="msc-stat">Members <span>18</span></div>
+          <div class="msc-stat">Active <span>8</span></div>
+        </div>
+      </div>
+      <div class="my-space-card amber">
+        <div class="msc-icon">💻</div>
+        <div class="msc-name">Freelance Devs</div>
+        <div class="msc-type">Collective · Member</div>
+        <div class="msc-stats">
+          <div class="msc-stat">Members <span>1,240</span></div>
+          <div class="msc-stat">Rooms <span>24</span></div>
+        </div>
+      </div>
+      <div class="my-space-card pink">
+        <div class="msc-icon">🌍</div>
+        <div class="msc-name">Pamoja Network</div>
+        <div class="msc-type">Federation · Contributor</div>
+        <div class="msc-stats">
+          <div class="msc-stat">Members <span>4,820</span></div>
+          <div class="msc-stat">Orgs <span>34</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RECOMMENDED -->
+    <div class="section-row">
+      <div class="section-title">Recommended for You</div>
+      <div class="section-more">See more →</div>
+    </div>
+    <div class="space-grid">
+
+      <div class="space-card">
+        <div class="sc-banner" style="background:linear-gradient(135deg,#3b82f620,#0d1117)">🛠</div>
+        <div class="sc-body">
+          <div class="sc-header">
+            <div class="sc-icon" style="background:var(--blue-dim);color:var(--blue)">OS</div>
+            <div><div class="sc-name">Open Source Builders</div><div class="sc-handle">@oss-builders</div></div>
+            <span class="sc-type-badge" style="background:var(--blue-dim);color:var(--blue)">COLLECTIVE</span>
+          </div>
+          <div class="sc-desc">A collaborative space for open-source contributors — libraries, tools, protocols, and the infrastructure that powers independent work.</div>
+          <div class="sc-tags"><span class="sc-tag">Engineering</span><span class="sc-tag">Open Source</span><span class="sc-tag">Tools</span></div>
+          <div class="sc-footer">
+            <div class="sc-members">Members <span>4,240</span></div>
+            <div class="sc-activity" style="color:var(--green)">● Active</div>
+            <div class="sc-join-btn">+ Join</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="space-card">
+        <div class="sc-banner" style="background:linear-gradient(135deg,#8b5cf620,#0d1117)">⚖</div>
+        <div class="sc-body">
+          <div class="sc-header">
+            <div class="sc-icon" style="background:var(--purple-dim);color:var(--purple)">WC</div>
+            <div><div class="sc-name">Worker Co-op Guild</div><div class="sc-handle">@workcoop</div></div>
+            <span class="sc-type-badge" style="background:var(--purple-dim);color:var(--purple)">COOP</span>
+          </div>
+          <div class="sc-desc">Member-owned economic cooperative for independent workers. Pooled resources, shared tooling, collective bargaining power, and mutual aid.</div>
+          <div class="sc-tags"><span class="sc-tag">Cooperative</span><span class="sc-tag">Economics</span><span class="sc-tag">Mutual Aid</span></div>
+          <div class="sc-footer">
+            <div class="sc-members">Members <span>892</span></div>
+            <div class="sc-activity" style="color:var(--green)">● Active</div>
+            <div class="sc-join-btn">+ Join</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="space-card">
+        <div class="sc-banner" style="background:linear-gradient(135deg,#e83e8c18,#0d1117)">✦</div>
+        <div class="sc-body">
+          <div class="sc-header">
+            <div class="sc-icon" style="background:var(--pink-dim);color:var(--pink)">CC</div>
+            <div><div class="sc-name">Creative Collective</div><div class="sc-handle">@creative-co</div></div>
+            <span class="sc-type-badge" style="background:var(--pink-dim);color:var(--pink)">COLLECTIVE</span>
+          </div>
+          <div class="sc-desc">Designers, artists, brand builders, and creative directors. Portfolio showcases, collaboration opps, and critique sessions every Friday.</div>
+          <div class="sc-tags"><span class="sc-tag">Design</span><span class="sc-tag">Branding</span><span class="sc-tag">Art</span></div>
+          <div class="sc-footer">
+            <div class="sc-members">Members <span>1,820</span></div>
+            <div class="sc-activity" style="color:var(--green)">● Active</div>
+            <div class="sc-join-btn">+ Join</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="space-card">
+        <div class="sc-banner" style="background:linear-gradient(135deg,#d4a01718,#0d1117)">◈</div>
+        <div class="sc-body">
+          <div class="sc-header">
+            <div class="sc-icon" style="background:var(--gold-dim);color:var(--gold)">IF</div>
+            <div><div class="sc-name">Indie Finance Club</div><div class="sc-handle">@indie-finance</div></div>
+            <span class="sc-type-badge" style="background:var(--gold-dim);color:var(--gold)">CLUB</span>
+          </div>
+          <div class="sc-desc">Investment strategies for solo workers. Personal finance, portfolio building, tax optimization, equity participation, and community bonds.</div>
+          <div class="sc-tags"><span class="sc-tag">Finance</span><span class="sc-tag">Investing</span><span class="sc-tag">Tax</span></div>
+          <div class="sc-footer">
+            <div class="sc-members">Members <span>680</span></div>
+            <div class="sc-activity" style="color:var(--amber)">● Moderate</div>
+            <div class="sc-join-btn">+ Join</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="space-card">
+        <div class="sc-banner" style="background:linear-gradient(135deg,#00c9a720,#0d1117)">🔬</div>
+        <div class="sc-body">
+          <div class="sc-header">
+            <div class="sc-icon" style="background:var(--teal-dim);color:var(--teal)">RS</div>
+            <div><div class="sc-name">Research & Data Guild</div><div class="sc-handle">@research-guild</div></div>
+            <span class="sc-type-badge" style="background:var(--teal-dim);color:var(--teal)">GUILD</span>
+          </div>
+          <div class="sc-desc">Data scientists, researchers, and analysts. Shared datasets, analysis pipelines, peer review, and publishing independent research work.</div>
+          <div class="sc-tags"><span class="sc-tag">Data Science</span><span class="sc-tag">Research</span><span class="sc-tag">AI/ML</span></div>
+          <div class="sc-footer">
+            <div class="sc-members">Members <span>540</span></div>
+            <div class="sc-activity" style="color:var(--green)">● Active</div>
+            <div class="sc-join-btn">+ Join</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="space-card">
+        <div class="sc-banner" style="background:linear-gradient(135deg,#22c55e15,#0d1117)">⚡</div>
+        <div class="sc-body">
+          <div class="sc-header">
+            <div class="sc-icon" style="background:#22c55e15;color:var(--green)">PB</div>
+            <div><div class="sc-name">Protocol Builders DAO</div><div class="sc-handle">@protocol-dao</div></div>
+            <span class="sc-type-badge" style="background:#22c55e15;color:var(--green)">DAO</span>
+          </div>
+          <div class="sc-desc">Decentralized autonomous org building open protocols for independent work infrastructure. On-chain governance, treasury management.</div>
+          <div class="sc-tags"><span class="sc-tag">DAO</span><span class="sc-tag">Protocol</span><span class="sc-tag">Web3</span></div>
+          <div class="sc-footer">
+            <div class="sc-members">Members <span>342</span></div>
+            <div class="sc-activity" style="color:var(--green)">● Active</div>
+            <div class="sc-join-btn">+ Join</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- TRENDING NOW -->
+    <div class="section-row">
+      <div class="section-title">Trending Now</div>
+      <div class="section-more">See all →</div>
+    </div>
+    <div class="space-grid">
+      <div class="space-card">
+        <div class="sc-body" style="padding:10px 12px;">
+          <div class="sc-header">
+            <div class="sc-icon" style="background:var(--amber-dim);color:var(--amber)">LA</div>
+            <div><div class="sc-name">Legal & Agreements</div><div class="sc-handle">@legal-gig</div></div>
+            <span class="sc-type-badge" style="background:var(--amber-dim);color:var(--amber)">COMMUNITY</span>
+          </div>
+          <div class="sc-footer">
+            <div class="sc-members">Members <span>2,140</span></div>
+            <div style="font-size:9px;color:var(--amber);margin-left:auto;">↑ +84 today</div>
+          </div>
+        </div>
+      </div>
+      <div class="space-card">
+        <div class="sc-body" style="padding:10px 12px;">
+          <div class="sc-header">
+            <div class="sc-icon" style="background:var(--blue-dim);color:var(--blue)">AI</div>
+            <div><div class="sc-name">AI & Automation Lab</div><div class="sc-handle">@ai-lab</div></div>
+            <span class="sc-type-badge" style="background:var(--blue-dim);color:var(--blue)">COMMUNITY</span>
+          </div>
+          <div class="sc-footer">
+            <div class="sc-members">Members <span>3,480</span></div>
+            <div style="font-size:9px;color:var(--amber);margin-left:auto;">↑ +142 today</div>
+          </div>
+        </div>
+      </div>
+      <div class="space-card">
+        <div class="sc-body" style="padding:10px 12px;">
+          <div class="sc-header">
+            <div class="sc-icon" style="background:var(--pink-dim);color:var(--pink)">RE</div>
+            <div><div class="sc-name">Real Estate Investors</div><div class="sc-handle">@rei-collective</div></div>
+            <span class="sc-type-badge" style="background:var(--gold-dim);color:var(--gold)">CLUB</span>
+          </div>
+          <div class="sc-footer">
+            <div class="sc-members">Members <span>1,090</span></div>
+            <div style="font-size:9px;color:var(--amber);margin-left:auto;">↑ +61 today</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+</body>
+</html>

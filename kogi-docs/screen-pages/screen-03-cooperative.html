@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>KOGI — Cooperative</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap');
+  :root {
+    --bg-primary: #0a0c10; --bg-secondary: #0f1117; --bg-card: #131820; --bg-card2: #161c26;
+    --border: #1e2535; --border2: #252d3d; --text-primary: #d4dbe8; --text-secondary: #7a8599; --text-muted: #4a5568;
+    --accent-gold: #c8a84b; --accent-gold-dim: #6b5a2a; --accent-teal: #2a9d8f; --accent-teal-dim: #1a4a45;
+    --accent-rose: #c94b6b; --accent-rose-dim: #5a1e2d; --accent-blue: #3b82f6; --accent-blue-dim: #1e3a5f;
+    --accent-green: #4caf7d; --accent-green-dim: #1a3d2a; --accent-purple: #8b5cf6; --accent-orange: #e87c3a;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'IBM Plex Sans', sans-serif; background: var(--bg-primary); color: var(--text-primary); font-size: 11px; display: flex; height: 100vh; overflow: hidden; }
+  .sidebar { width: 168px; background: var(--bg-secondary); border-right: 1px solid var(--border); display: flex; flex-direction: column; flex-shrink: 0; }
+  .sidebar-logo { padding: 12px 14px; border-bottom: 1px solid var(--border); }
+  .logo-text { font-family: 'IBM Plex Mono', monospace; font-weight: 600; font-size: 13px; letter-spacing: 0.15em; color: var(--accent-gold); }
+  .sidebar-nav { padding: 8px 0; }
+  .nav-section { padding: 6px 14px 2px; font-size: 9px; font-weight: 500; letter-spacing: 0.12em; color: var(--text-muted); text-transform: uppercase; }
+  .nav-item { padding: 5px 14px; display: flex; align-items: center; gap: 7px; color: var(--text-secondary); font-size: 10.5px; border-left: 2px solid transparent; }
+  .nav-item.active { color: var(--accent-gold); border-left-color: var(--accent-gold); background: rgba(200,168,75,0.06); }
+  .nav-dot { width: 5px; height: 5px; border-radius: 50%; background: currentColor; flex-shrink: 0; }
+  .main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+  .topbar { height: 44px; border-bottom: 1px solid var(--border); display: flex; align-items: center; padding: 0 18px; gap: 12px; background: var(--bg-secondary); flex-shrink: 0; }
+  .page-title { font-family: 'IBM Plex Mono', monospace; font-size: 12px; font-weight: 500; }
+  .breadcrumb { color: var(--text-muted); font-size: 10px; }
+  .breadcrumb span { color: var(--text-secondary); }
+  .topbar-right { margin-left: auto; display: flex; align-items: center; gap: 8px; }
+  .search-bar { background: var(--bg-card); border: 1px solid var(--border); border-radius: 4px; padding: 4px 10px; font-size: 10px; color: var(--text-secondary); width: 160px; }
+  .btn { padding: 4px 10px; border-radius: 3px; font-size: 10px; font-weight: 500; cursor: pointer; border: none; font-family: 'IBM Plex Sans', sans-serif; }
+  .btn-primary { background: var(--accent-green); color: #0a0c10; }
+  .btn-ghost { background: transparent; border: 1px solid var(--border2); color: var(--text-secondary); }
+  .avatar-sm { width: 22px; height: 22px; border-radius: 50%; background: var(--accent-green-dim); display: flex; align-items: center; justify-content: center; font-size: 9px; font-weight: 600; color: var(--accent-green); }
+  .content { flex: 1; overflow-y: auto; padding: 16px 18px; display: flex; flex-direction: column; gap: 12px; }
+  .stat-row { display: flex; gap: 10px; }
+  .stat-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 4px; padding: 10px 14px; flex: 1; }
+  .stat-label { font-size: 9px; color: var(--text-muted); letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 4px; }
+  .stat-value { font-family: 'IBM Plex Mono', monospace; font-size: 18px; font-weight: 500; line-height: 1; }
+  .stat-value.gold { color: var(--accent-gold); } .stat-value.teal { color: var(--accent-teal); } .stat-value.green { color: var(--accent-green); }
+  .stat-sub { font-size: 9px; color: var(--text-muted); margin-top: 3px; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 4px; padding: 12px 14px; }
+  .card-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+  .card-title { font-size: 10px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; }
+  .card-action { font-size: 9px; color: var(--accent-gold); cursor: pointer; }
+  .org-hero { background: var(--bg-card2); border: 1px solid var(--border); border-radius: 4px; padding: 14px 16px; display: flex; gap: 16px; }
+  .org-avatar { width: 52px; height: 52px; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-family: 'IBM Plex Mono', monospace; font-size: 16px; font-weight: 700; flex-shrink: 0; }
+  .org-name { font-size: 15px; font-weight: 600; margin-bottom: 2px; }
+  .org-handle { font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: var(--text-muted); margin-bottom: 6px; }
+  .org-desc { font-size: 10.5px; color: var(--text-secondary); line-height: 1.5; max-width: 600px; }
+  .org-tags { display: flex; gap: 5px; flex-wrap: wrap; margin-top: 8px; }
+  .tag { padding: 2px 7px; border-radius: 2px; font-size: 9px; font-weight: 500; }
+  .tag-green { background: var(--accent-green-dim); color: var(--accent-green); }
+  .tag-gold { background: var(--accent-gold-dim); color: var(--accent-gold); }
+  .tag-teal { background: var(--accent-teal-dim); color: var(--accent-teal); }
+  .tag-purple { background: rgba(139,92,246,0.15); color: var(--accent-purple); }
+  .section-label { font-size: 9px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-muted); font-weight: 600; margin-bottom: 6px; }
+  .progress-bar { height: 4px; background: var(--border); border-radius: 2px; overflow: hidden; margin-top: 3px; }
+  .progress-fill { height: 100%; border-radius: 2px; }
+  .equity-row { display: flex; align-items: center; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid var(--border); }
+  .equity-row:last-child { border-bottom: none; }
+  .eq-member { display: flex; align-items: center; gap: 6px; }
+  .eq-avatar { width: 20px; height: 20px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 8px; font-weight: 700; }
+  .eq-name { font-size: 10px; color: var(--text-secondary); }
+  .eq-shares { font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: var(--text-primary); }
+  .eq-pct { font-size: 9px; color: var(--text-muted); }
+  .revenue-row { display: flex; justify-content: space-between; align-items: center; padding: 5px 0; border-bottom: 1px solid var(--border); }
+  .revenue-row:last-child { border-bottom: none; }
+  .revenue-label { font-size: 10px; color: var(--text-secondary); }
+  .revenue-val { font-family: 'IBM Plex Mono', monospace; font-size: 11px; font-weight: 500; }
+  .project-row { padding: 7px 0; border-bottom: 1px solid var(--border); }
+  .project-row:last-child { border-bottom: none; }
+  .project-name { font-size: 10.5px; font-weight: 500; margin-bottom: 3px; }
+  .project-meta { display: flex; gap: 8px; align-items: center; }
+  .badge { padding: 1px 6px; border-radius: 2px; font-size: 8.5px; font-weight: 600; }
+  .badge-active { background: var(--accent-green-dim); color: var(--accent-green); }
+  .badge-plan { background: var(--accent-gold-dim); color: var(--accent-gold); }
+  .activity-row { display: flex; gap: 8px; padding: 6px 0; border-bottom: 1px solid var(--border); align-items: flex-start; }
+  .activity-row:last-child { border-bottom: none; }
+  .activity-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; margin-top: 3px; }
+  .activity-text { font-size: 10px; color: var(--text-secondary); line-height: 1.4; }
+  .activity-time { font-size: 9px; color: var(--text-muted); margin-top: 1px; }
+  ::-webkit-scrollbar { width: 4px; } ::-webkit-scrollbar-track { background: transparent; } ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+  .divider { width: 1px; background: var(--border); height: 16px; margin: 0 4px; }
+  .mono { font-family: 'IBM Plex Mono', monospace; }
+</style>
+</head>
+<body>
+<div class="sidebar">
+  <div class="sidebar-logo"><div class="logo-text">KOGI</div></div>
+  <div class="sidebar-nav">
+    <div class="nav-section">Main</div>
+    <div class="nav-item"><div class="nav-dot"></div>Home</div>
+    <div class="nav-item"><div class="nav-dot"></div>Office</div>
+    <div class="nav-item active"><div class="nav-dot"></div>Community</div>
+    <div class="nav-item"><div class="nav-dot"></div>Marketplace</div>
+    <div class="nav-item"><div class="nav-dot"></div>Exchange</div>
+    <div class="nav-item"><div class="nav-dot"></div>Bank</div>
+    <div class="nav-section">Org</div>
+    <div class="nav-item"><div class="nav-dot"></div>Organizations</div>
+    <div class="nav-item"><div class="nav-dot"></div>Collectives</div>
+    <div class="nav-item active"><div class="nav-dot"></div>Cooperatives</div>
+    <div class="nav-item"><div class="nav-dot"></div>Federations</div>
+  </div>
+</div>
+
+<div class="main">
+  <div class="topbar">
+    <div class="page-title">Cooperatives</div>
+    <div class="breadcrumb">Community <span>/ Cooperatives / Worker-Owned Creative Coop</span></div>
+    <div class="topbar-right">
+      <input class="search-bar" placeholder="Search cooperative..." />
+      <button class="btn btn-ghost">View Financials</button>
+      <button class="btn btn-primary">Apply to Join</button>
+      <div class="divider"></div>
+      <div class="avatar-sm">JC</div>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <div class="org-hero">
+      <div class="org-avatar" style="background:linear-gradient(135deg,#1a3d2a,#4caf7d);color:var(--accent-green);border:1px solid var(--accent-green-dim);">WCC</div>
+      <div style="flex:1;">
+        <div class="org-name">Worker-Owned Creative Coop</div>
+        <div class="org-handle">@creative-coop · Cooperative · Member-Owned · Est. 2023</div>
+        <div class="org-desc">A worker-owned creative cooperative operating as an LLC, where members share ownership, profits, decision-making, and resources. The coop provides branding, design, and digital services to clients, distributing revenue equitably among member-workers based on contribution.</div>
+        <div class="org-tags">
+          <span class="tag tag-green">Cooperative</span>
+          <span class="tag tag-gold">Worker-Owned</span>
+          <span class="tag tag-teal">Creative Services</span>
+          <span class="tag tag-purple">Equity Sharing</span>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:6px;align-items:flex-end;">
+        <button class="btn btn-primary">Owner ✓</button>
+        <button class="btn btn-ghost">Financials</button>
+        <div style="font-size:9px;color:var(--text-muted);text-align:right;margin-top:4px;">28 members · invite-only</div>
+      </div>
+    </div>
+
+    <div class="stat-row">
+      <div class="stat-card"><div class="stat-label">Members / Owners</div><div class="stat-value green">28</div><div class="stat-sub">All equity holders</div></div>
+      <div class="stat-card"><div class="stat-label">Q1 Revenue</div><div class="stat-value gold">$124K</div><div class="stat-sub">+18% vs Q4 2025</div></div>
+      <div class="stat-card"><div class="stat-label">Distributed</div><div class="stat-value">$89K</div><div class="stat-sub">This quarter</div></div>
+      <div class="stat-card"><div class="stat-label">Active Projects</div><div class="stat-value teal">14</div><div class="stat-sub">6 in delivery</div></div>
+      <div class="stat-card"><div class="stat-label">Coop Score</div><div class="stat-value green">94%</div><div class="stat-sub">Member satisfaction</div></div>
+    </div>
+
+    <div class="grid-3">
+
+      <!-- EQUITY / OWNERSHIP -->
+      <div class="card">
+        <div class="card-header"><div class="card-title">Equity Distribution</div><div class="card-action">Full Ledger →</div></div>
+        <div class="equity-row">
+          <div class="eq-member"><div class="eq-avatar" style="background:rgba(200,168,75,0.15);color:var(--accent-gold);">JC</div><div class="eq-name">Jordan Chen</div></div>
+          <div style="text-align:right;"><div class="eq-shares">420 shares</div><div class="eq-pct">15.0%</div></div>
+        </div>
+        <div class="equity-row">
+          <div class="eq-member"><div class="eq-avatar" style="background:rgba(76,175,125,0.12);color:var(--accent-green);">SR</div><div class="eq-name">Sofia R.</div></div>
+          <div style="text-align:right;"><div class="eq-shares">380 shares</div><div class="eq-pct">13.6%</div></div>
+        </div>
+        <div class="equity-row">
+          <div class="eq-member"><div class="eq-avatar" style="background:rgba(42,157,143,0.15);color:var(--accent-teal);">MO</div><div class="eq-name">Marcus O.</div></div>
+          <div style="text-align:right;"><div class="eq-shares">350 shares</div><div class="eq-pct">12.5%</div></div>
+        </div>
+        <div class="equity-row">
+          <div class="eq-member"><div class="eq-avatar" style="background:rgba(59,130,246,0.12);color:var(--accent-blue);">NP</div><div class="eq-name">Nina P.</div></div>
+          <div style="text-align:right;"><div class="eq-shares">290 shares</div><div class="eq-pct">10.4%</div></div>
+        </div>
+        <div class="equity-row">
+          <div class="eq-member"><div class="eq-avatar" style="background:rgba(232,124,58,0.15);color:var(--accent-orange);">KW</div><div class="eq-name">Kwame W.</div></div>
+          <div style="text-align:right;"><div class="eq-shares">240 shares</div><div class="eq-pct">8.6%</div></div>
+        </div>
+        <div style="font-size:9px;color:var(--text-muted);margin-top:6px;">+ 23 more members · 2,800 total shares</div>
+      </div>
+
+      <!-- FINANCIALS -->
+      <div class="card">
+        <div class="card-header"><div class="card-title">Financials — Q1 2026</div><div class="card-action">Full Report →</div></div>
+        <div class="revenue-row"><div class="revenue-label">Gross Revenue</div><div class="revenue-val" style="color:var(--accent-green);">$124,000</div></div>
+        <div class="revenue-row"><div class="revenue-label">Operating Costs</div><div class="revenue-val" style="color:var(--accent-rose);">-$24,800</div></div>
+        <div class="revenue-row"><div class="revenue-label">Reserve Fund (10%)</div><div class="revenue-val" style="color:var(--text-muted);">-$9,920</div></div>
+        <div class="revenue-row"><div class="revenue-label">Member Distribution</div><div class="revenue-val" style="color:var(--accent-gold);">$89,280</div></div>
+        <div style="margin-top:10px; padding-top:8px; border-top:1px solid var(--border);">
+          <div class="section-label">Distribution Method</div>
+          <div style="font-size:9.5px; color:var(--text-secondary); line-height:1.5;">
+            60% by hours contributed<br/>
+            30% by equity share<br/>
+            10% governance bonus pool
+          </div>
+        </div>
+        <div style="margin-top:10px; padding-top:8px; border-top:1px solid var(--border);">
+          <div class="section-label">Reserve Fund Balance</div>
+          <div class="mono" style="font-size:14px;color:var(--accent-teal);font-weight:500;">$48,200</div>
+        </div>
+      </div>
+
+      <!-- ACTIVE PROJECTS -->
+      <div class="card">
+        <div class="card-header"><div class="card-title">Active Projects</div><div class="card-action">All Projects →</div></div>
+        <div class="project-row">
+          <div class="project-name">Brand Identity — Zenith AI</div>
+          <div class="project-meta">
+            <span class="badge badge-active">In Delivery</span>
+            <span class="mono" style="font-size:9px;color:var(--text-muted);">$18,000</span>
+          </div>
+          <div class="progress-bar" style="margin-top:4px;"><div class="progress-fill" style="width:72%;background:var(--accent-green);"></div></div>
+        </div>
+        <div class="project-row">
+          <div class="project-name">Design System v2 — DataFlow</div>
+          <div class="project-meta">
+            <span class="badge badge-active">In Delivery</span>
+            <span class="mono" style="font-size:9px;color:var(--text-muted);">$24,000</span>
+          </div>
+          <div class="progress-bar" style="margin-top:4px;"><div class="progress-fill" style="width:45%;background:var(--accent-teal);"></div></div>
+        </div>
+        <div class="project-row">
+          <div class="project-name">Campaign Creative — Harvest Co.</div>
+          <div class="project-meta">
+            <span class="badge badge-active">Review</span>
+            <span class="mono" style="font-size:9px;color:var(--text-muted);">$12,000</span>
+          </div>
+          <div class="progress-bar" style="margin-top:4px;"><div class="progress-fill" style="width:90%;background:var(--accent-gold);"></div></div>
+        </div>
+        <div class="project-row">
+          <div class="project-name">Community Platform — People's Hub</div>
+          <div class="project-meta">
+            <span class="badge badge-plan">Planning</span>
+            <span class="mono" style="font-size:9px;color:var(--text-muted);">$32,000</span>
+          </div>
+          <div class="progress-bar" style="margin-top:4px;"><div class="progress-fill" style="width:10%;background:var(--accent-blue);"></div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid-2">
+      <!-- GOVERNANCE -->
+      <div class="card">
+        <div class="card-header"><div class="card-title">Governance — Member Votes</div><div class="card-action">Propose →</div></div>
+        <div class="project-row">
+          <div class="project-name">Hire 2 New Member-Workers — Q2</div>
+          <div class="project-meta"><span class="badge badge-active">Voting · Ends Apr 3</span></div>
+          <div class="progress-bar" style="margin-top:5px;"><div class="progress-fill" style="width:78%;background:var(--accent-green);"></div></div>
+          <div style="font-size:9px;color:var(--text-muted);margin-top:2px;">78% Yes · 22 of 28 voted</div>
+        </div>
+        <div class="project-row">
+          <div class="project-name">Increase Reserve Fund to 15%</div>
+          <div class="project-meta"><span class="badge" style="background:rgba(59,130,246,0.12);color:var(--accent-blue);">Draft</span></div>
+          <div class="progress-bar" style="margin-top:5px;"><div class="progress-fill" style="width:0%;background:var(--accent-green);"></div></div>
+          <div style="font-size:9px;color:var(--text-muted);margin-top:2px;">Awaiting sponsor — 5 endorsements</div>
+        </div>
+        <div class="project-row">
+          <div class="project-name">New Client Rate Floor — $150/hr</div>
+          <div class="project-meta"><span class="badge" style="background:var(--accent-teal-dim);color:var(--accent-teal);">Passed · Mar 1</span></div>
+          <div class="progress-bar" style="margin-top:5px;"><div class="progress-fill" style="width:92%;background:var(--accent-teal);"></div></div>
+          <div style="font-size:9px;color:var(--text-muted);margin-top:2px;">92% Yes · Effective Apr 1</div>
+        </div>
+      </div>
+
+      <!-- ACTIVITY -->
+      <div class="card">
+        <div class="card-header"><div class="card-title">Recent Activity</div><div class="card-action">Full Feed →</div></div>
+        <div class="activity-row">
+          <div class="activity-dot" style="background:var(--accent-green)"></div>
+          <div><div class="activity-text"><span style="color:var(--text-primary)">Q1 distribution</span> processed — $89,280 sent to 28 members</div><div class="activity-time">Today</div></div>
+        </div>
+        <div class="activity-row">
+          <div class="activity-dot" style="background:var(--accent-gold)"></div>
+          <div><div class="activity-text"><span style="color:var(--text-primary)">People's Hub</span> contract signed — $32K project awarded</div><div class="activity-time">2d ago</div></div>
+        </div>
+        <div class="activity-row">
+          <div class="activity-dot" style="background:var(--accent-blue)"></div>
+          <div><div class="activity-text">Rate floor governance proposal passed — new minimum $150/hr</div><div class="activity-time">Mar 1</div></div>
+        </div>
+        <div class="activity-row">
+          <div class="activity-dot" style="background:var(--accent-teal)"></div>
+          <div><div class="activity-text"><span style="color:var(--text-primary)">Jordan C.</span> completed onboarding — equity vesting starts Apr 1</div><div class="activity-time">Feb 28</div></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+</body>
+</html>

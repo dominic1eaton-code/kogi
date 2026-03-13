@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KOGI · Portfolio Commodities</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap');
+  *{margin:0;padding:0;box-sizing:border-box;}
+  :root{
+    --bg:#080b10;--bg2:#0d1117;--bg3:#111820;--bg4:#161e28;
+    --border:#1e2d3d;--border2:#243344;
+    --teal:#00c9a7;--teal2:#009e84;--teal-dim:#00c9a720;
+    --amber:#f5a623;--amber-dim:#f5a62318;
+    --purple:#8b5cf6;--purple-dim:#8b5cf615;
+    --pink:#e83e8c;--pink-dim:#e83e8c15;
+    --green:#22c55e;--red:#ef4444;--blue:#3b82f6;
+    --text:#e2e8f0;--text2:#94a3b8;--text3:#4a6280;
+    --mono:'IBM Plex Mono',monospace;--sans:'IBM Plex Sans',sans-serif;
+  }
+  body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:12px;display:flex;height:100vh;overflow:hidden;}
+  .sidebar{width:168px;background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0;}
+  .logo{padding:12px 14px;border-bottom:1px solid var(--border);font-family:var(--mono);font-size:13px;font-weight:600;letter-spacing:3px;color:var(--teal);}
+  .nav-section{padding:8px 0;}
+  .nav-label{padding:4px 14px 2px;font-size:9px;letter-spacing:2px;color:var(--text3);text-transform:uppercase;}
+  .nav-item{padding:5px 14px;color:var(--text2);cursor:pointer;font-size:11px;display:flex;align-items:center;gap:6px;border-left:2px solid transparent;}
+  .nav-item:hover{color:var(--text);background:var(--bg3);}
+  .nav-item.active{color:var(--teal);border-left-color:var(--teal);background:var(--teal-dim);}
+  .nav-item .dot{width:5px;height:5px;border-radius:50%;background:currentColor;opacity:.6;}
+  .nav-divider{height:1px;background:var(--border);margin:6px 0;}
+  .main{flex:1;display:flex;flex-direction:column;overflow:hidden;}
+  .topbar{display:flex;align-items:center;gap:10px;padding:8px 16px;background:var(--bg2);border-bottom:1px solid var(--border);}
+  .topbar-title{font-family:var(--mono);font-size:12px;font-weight:500;color:var(--text);display:flex;align-items:center;gap:6px;}
+  .topbar-title .crumb{color:var(--text3);}
+  .topbar-search{flex:1;max-width:280px;background:var(--bg3);border:1px solid var(--border);border-radius:3px;padding:4px 10px;color:var(--text2);font-family:var(--mono);font-size:11px;outline:none;}
+  .topbar-actions{margin-left:auto;display:flex;gap:6px;align-items:center;}
+  .btn{padding:4px 10px;border-radius:3px;font-family:var(--mono);font-size:10px;cursor:pointer;border:1px solid var(--border2);background:var(--bg3);color:var(--text2);}
+  .btn.primary{background:var(--teal2);border-color:var(--teal);color:#000;font-weight:600;}
+  .btn.amber{background:var(--amber-dim);border-color:var(--amber);color:var(--amber);}
+  .badge-dot{width:7px;height:7px;border-radius:50%;background:var(--teal);}
+  .stats-row{display:flex;border-bottom:1px solid var(--border);background:var(--bg2);}
+  .stat-box{flex:1;padding:10px 16px;border-right:1px solid var(--border);}
+  .stat-box:last-child{border-right:none;}
+  .stat-label{font-size:9px;letter-spacing:1.5px;color:var(--text3);text-transform:uppercase;margin-bottom:4px;}
+  .stat-value{font-family:var(--mono);font-size:18px;font-weight:600;}
+  .stat-value.teal{color:var(--teal);}
+  .stat-value.amber{color:var(--amber);}
+  .stat-sub{font-size:9px;color:var(--text3);margin-top:2px;}
+  .stat-sub .up{color:var(--green);}
+
+  .layout{flex:1;display:flex;overflow:hidden;}
+
+  /* LEFT: LISTING TABLE */
+  .listing-panel{flex:1;overflow-y:auto;border-right:1px solid var(--border);}
+  .panel-header{padding:7px 12px;background:var(--bg2);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px;position:sticky;top:0;z-index:1;}
+  .panel-title{font-family:var(--mono);font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:1.5px;flex:1;}
+
+  /* TYPE TABS */
+  .type-tabs{display:flex;gap:0;}
+  .type-tab{padding:4px 10px;font-size:9px;font-family:var(--mono);color:var(--text3);cursor:pointer;border-bottom:2px solid transparent;}
+  .type-tab.active{color:var(--teal);border-bottom-color:var(--teal);}
+
+  /* LISTING ROW */
+  .listing-row{display:flex;align-items:center;padding:8px 12px;border-bottom:1px solid var(--border);gap:8px;cursor:pointer;}
+  .listing-row:hover{background:var(--bg3);}
+  .listing-row.selected{background:var(--bg3);border-left:2px solid var(--teal);}
+  .lr-icon{width:28px;height:28px;border-radius:3px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;}
+  .lr-icon.asset{background:var(--teal-dim);color:var(--teal);}
+  .lr-icon.artifact{background:var(--amber-dim);color:var(--amber);}
+  .lr-icon.project{background:var(--purple-dim);color:var(--purple);}
+  .lr-icon.playbook{background:#22c55e15;color:var(--green);}
+  .lr-icon.template{background:var(--pink-dim);color:var(--pink);}
+  .lr-info{flex:1;}
+  .lr-name{font-size:11px;color:var(--text);font-weight:500;margin-bottom:1px;}
+  .lr-meta{font-size:9px;color:var(--text3);}
+  .lr-type{font-size:9px;font-family:var(--mono);padding:1px 5px;border-radius:2px;}
+  .lr-type.asset{color:var(--teal);background:var(--teal-dim);}
+  .lr-type.artifact{color:var(--amber);background:var(--amber-dim);}
+  .lr-type.project{color:var(--purple);background:var(--purple-dim);}
+  .lr-type.playbook{color:var(--green);background:#22c55e15;}
+  .lr-type.template{color:var(--pink);background:var(--pink-dim);}
+  .lr-price{font-family:var(--mono);font-size:12px;font-weight:600;color:var(--teal);text-align:right;}
+  .lr-model{font-size:8px;color:var(--text3);text-align:right;}
+  .lr-score{font-family:var(--mono);font-size:9px;padding:2px 5px;border-radius:2px;background:var(--bg4);color:var(--text3);}
+
+  /* RIGHT: DETAIL PANEL */
+  .detail-panel{width:340px;overflow-y:auto;background:var(--bg2);}
+  .detail-section{padding:10px 12px;border-bottom:1px solid var(--border);}
+  .ds-title{font-family:var(--mono);font-size:9px;text-transform:uppercase;letter-spacing:1.5px;color:var(--text3);margin-bottom:7px;}
+  .ds-name{font-size:14px;font-weight:600;color:var(--text);margin-bottom:3px;}
+  .ds-sub{font-size:11px;color:var(--text3);margin-bottom:8px;}
+  .ds-badges{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:8px;}
+  .ds-badge{padding:2px 7px;border-radius:2px;font-size:9px;font-family:var(--mono);}
+  .ds-badge.teal{background:var(--teal-dim);color:var(--teal);border:1px solid var(--teal2);}
+  .ds-badge.amber{background:var(--amber-dim);color:var(--amber);}
+  .ds-badge.purple{background:var(--purple-dim);color:var(--purple);}
+  .ds-price-row{display:flex;align-items:baseline;gap:6px;margin-bottom:8px;}
+  .ds-price{font-family:var(--mono);font-size:20px;font-weight:700;color:var(--teal);}
+  .ds-price-model{font-size:10px;color:var(--text3);}
+  .ds-actions{display:flex;gap:6px;}
+  .dd-metrics{display:flex;flex-wrap:wrap;gap:8px;}
+  .dd-metric{flex:1;min-width:80px;background:var(--bg3);border:1px solid var(--border);border-radius:3px;padding:7px 8px;}
+  .dd-metric-label{font-size:8px;color:var(--text3);letter-spacing:1px;text-transform:uppercase;margin-bottom:3px;}
+  .dd-metric-value{font-family:var(--mono);font-size:12px;font-weight:600;}
+  .dd-metric-value.teal{color:var(--teal);}
+  .dd-metric-value.green{color:var(--green);}
+  .dd-metric-value.amber{color:var(--amber);}
+  .dd-metric-value.purple{color:var(--purple);}
+  .dd-field{display:flex;justify-content:space-between;padding:3px 0;border-bottom:1px solid var(--border);}
+  .dd-field:last-child{border-bottom:none;}
+  .dd-key{font-size:9px;color:var(--text3);}
+  .dd-val{font-size:9px;font-family:var(--mono);color:var(--text2);}
+  .dd-val.teal{color:var(--teal);}
+
+  ::-webkit-scrollbar{width:4px;height:4px;}
+  ::-webkit-scrollbar-track{background:var(--bg);}
+  ::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px;}
+</style>
+</head>
+<body>
+
+<div class="sidebar">
+  <div class="logo">KOGI</div>
+  <div class="nav-section">
+    <div class="nav-label">Main</div>
+    <div class="nav-item"><span class="dot"></span>Home</div>
+    <div class="nav-item"><span class="dot"></span>Office</div>
+    <div class="nav-item"><span class="dot"></span>Portfolio</div>
+  </div>
+  <div class="nav-divider"></div>
+  <div class="nav-section">
+    <div class="nav-label">Economy</div>
+    <div class="nav-item active"><span class="dot"></span>Exchange</div>
+    <div class="nav-item"><span class="dot"></span>Marketplace</div>
+    <div class="nav-item"><span class="dot"></span>Bank</div>
+  </div>
+  <div class="nav-divider"></div>
+  <div class="nav-section">
+    <div class="nav-label">Exchange</div>
+    <div class="nav-item"><span class="dot"></span>Labor Market</div>
+    <div class="nav-item active"><span class="dot"></span>Commodities</div>
+    <div class="nav-item"><span class="dot"></span>Financial</div>
+    <div class="nav-item"><span class="dot"></span>Deal Rooms</div>
+    <div class="nav-item"><span class="dot"></span>Capital</div>
+    <div class="nav-item"><span class="dot"></span>Resources</div>
+    <div class="nav-item"><span class="dot"></span>Asset Transfer</div>
+  </div>
+  <div class="nav-divider"></div>
+  <div class="nav-section">
+    <div class="nav-label">Platform</div>
+    <div class="nav-item"><span class="dot"></span>Community</div>
+    <div class="nav-item"><span class="dot"></span>Organizations</div>
+  </div>
+</div>
+
+<div class="main">
+  <div class="topbar">
+    <div class="topbar-title"><span class="crumb">Exchange /</span> Portfolio Commodities</div>
+    <input class="topbar-search" placeholder="search assets, artifacts, projects, playbooks..." />
+    <div class="topbar-actions">
+      <button class="btn">Watchlist</button>
+      <button class="btn amber">+ List Item</button>
+      <button class="btn primary">Acquire</button>
+      <div class="badge-dot"></div>
+    </div>
+  </div>
+
+  <div class="stats-row">
+    <div class="stat-box">
+      <div class="stat-label">Listed Items</div>
+      <div class="stat-value teal">142</div>
+      <div class="stat-sub">28 new this week</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-label">Volume (30d)</div>
+      <div class="stat-value amber">$89,400</div>
+      <div class="stat-sub"><span class="up">+19%</span></div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-label">Avg Asset Val.</div>
+      <div class="stat-value">$8,200</div>
+      <div class="stat-sub">AI-computed</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-label">Active Trades</div>
+      <div class="stat-value">21</div>
+      <div class="stat-sub">in negotiation</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-label">DD Reports</div>
+      <div class="stat-value teal">8</div>
+      <div class="stat-sub">requested this wk</div>
+    </div>
+  </div>
+
+  <div class="layout">
+    <!-- LISTING TABLE -->
+    <div class="listing-panel">
+      <div class="panel-header">
+        <div class="panel-title">All Listings · 142 items</div>
+        <div class="type-tabs">
+          <div class="type-tab active">All</div>
+          <div class="type-tab">Assets</div>
+          <div class="type-tab">Artifacts</div>
+          <div class="type-tab">Projects</div>
+          <div class="type-tab">Playbooks</div>
+        </div>
+      </div>
+
+      <div class="listing-row selected">
+        <div class="lr-icon asset">A</div>
+        <div class="lr-info">
+          <div class="lr-name">Brand Identity System v2.0</div>
+          <div class="lr-meta">Jordan Chen · Design · v2.4 · 142 followers</div>
+        </div>
+        <span class="lr-type asset">ASSET</span>
+        <div>
+          <div class="lr-price">$12,400</div>
+          <div class="lr-model">Fixed · Full license</div>
+        </div>
+        <div class="lr-score">94 AI</div>
+      </div>
+
+      <div class="listing-row">
+        <div class="lr-icon artifact">T</div>
+        <div class="lr-info">
+          <div class="lr-name">Token Distribution Engine — Rust</div>
+          <div class="lr-meta">Priya Singh · Engineering · v1.2 · 89 followers</div>
+        </div>
+        <span class="lr-type artifact">ARTIFACT</span>
+        <div>
+          <div class="lr-price">$6,500</div>
+          <div class="lr-model">License · per-org</div>
+        </div>
+        <div class="lr-score">88 AI</div>
+      </div>
+
+      <div class="listing-row">
+        <div class="lr-icon playbook">P</div>
+        <div class="lr-info">
+          <div class="lr-name">Investment Playbook — Independent Worker</div>
+          <div class="lr-meta">Marcus Brown · Finance · v3.1 · 214 followers</div>
+        </div>
+        <span class="lr-type playbook">PLAYBOOK</span>
+        <div>
+          <div class="lr-price">$180</div>
+          <div class="lr-model">Fixed · Subscription avail.</div>
+        </div>
+        <div class="lr-score">92 AI</div>
+      </div>
+
+      <div class="listing-row">
+        <div class="lr-icon project">PR</div>
+        <div class="lr-info">
+          <div class="lr-name">Completed E-commerce Platform — Node + React</div>
+          <div class="lr-meta">Dev Kim · Engineering · Completed · All IP included</div>
+        </div>
+        <span class="lr-type project">PROJECT</span>
+        <div>
+          <div class="lr-price">$34,000</div>
+          <div class="lr-model">Acquisition · Full IP</div>
+        </div>
+        <div class="lr-score">86 AI</div>
+      </div>
+
+      <div class="listing-row">
+        <div class="lr-icon template">T</div>
+        <div class="lr-info">
+          <div class="lr-name">SaaS Proposal & Contract Template Set</div>
+          <div class="lr-meta">Tom James · Legal · v2.0 · 380 downloads</div>
+        </div>
+        <span class="lr-type template">TEMPLATE</span>
+        <div>
+          <div class="lr-price">$85</div>
+          <div class="lr-model">Fixed · Unlimited use</div>
+        </div>
+        <div class="lr-score">90 AI</div>
+      </div>
+
+      <div class="listing-row">
+        <div class="lr-icon asset">A</div>
+        <div class="lr-info">
+          <div class="lr-name">React Component Library — Kogi Design System</div>
+          <div class="lr-meta">Priya Singh · UI/UX · v4.1 · 520 stars</div>
+        </div>
+        <span class="lr-type asset">ASSET</span>
+        <div>
+          <div class="lr-price">$4,200</div>
+          <div class="lr-model">Subscription · $280/mo</div>
+        </div>
+        <div class="lr-score">95 AI</div>
+      </div>
+
+      <div class="listing-row">
+        <div class="lr-icon artifact">A</div>
+        <div class="lr-info">
+          <div class="lr-name">AI Workflow Automation Toolkit</div>
+          <div class="lr-meta">Sofia Navarro · AI/ML · v1.6 · 96 subscribers</div>
+        </div>
+        <span class="lr-type artifact">ARTIFACT</span>
+        <div>
+          <div class="lr-price">$2,100</div>
+          <div class="lr-model">Fixed · License</div>
+        </div>
+        <div class="lr-score">89 AI</div>
+      </div>
+
+      <div class="listing-row">
+        <div class="lr-icon playbook">P</div>
+        <div class="lr-info">
+          <div class="lr-name">Go-to-Market Playbook — B2B SaaS</div>
+          <div class="lr-meta">Marcus Brown · GTM · v2.0 · 167 subscribers</div>
+        </div>
+        <span class="lr-type playbook">PLAYBOOK</span>
+        <div>
+          <div class="lr-price">$240</div>
+          <div class="lr-model">Fixed · Subscription avail.</div>
+        </div>
+        <div class="lr-score">87 AI</div>
+      </div>
+
+    </div>
+
+    <!-- DETAIL PANEL -->
+    <div class="detail-panel">
+      <div class="detail-section">
+        <div class="ds-title">Asset Detail — Due Diligence View</div>
+        <div class="ds-name">Brand Identity System v2.0</div>
+        <div class="ds-sub">Jordan Chen · Design · Asset · v2.4</div>
+        <div class="ds-badges">
+          <span class="ds-badge teal">Active · Public</span>
+          <span class="ds-badge amber">142 Followers</span>
+          <span class="ds-badge purple">94 AI Score</span>
+          <span class="ds-badge teal">v2.4</span>
+        </div>
+        <div class="ds-price-row">
+          <div class="ds-price">$12,400</div>
+          <div class="ds-price-model">Fixed · Full IP license</div>
+        </div>
+        <div class="ds-actions">
+          <button class="btn">Save</button>
+          <button class="btn">DD Report</button>
+          <button class="btn amber">Inquire</button>
+          <button class="btn primary">Acquire</button>
+        </div>
+      </div>
+
+      <!-- DD METRICS -->
+      <div class="detail-section">
+        <div class="ds-title">AI Due Diligence Report — kogi-engine</div>
+        <div class="dd-metrics">
+          <div class="dd-metric">
+            <div class="dd-metric-label">Portfolio Health</div>
+            <div class="dd-metric-value teal">94/100</div>
+          </div>
+          <div class="dd-metric">
+            <div class="dd-metric-label">Artifact Maturity</div>
+            <div class="dd-metric-value green">91/100</div>
+          </div>
+          <div class="dd-metric">
+            <div class="dd-metric-label">Risk Score</div>
+            <div class="dd-metric-value amber">Low · 12</div>
+          </div>
+          <div class="dd-metric">
+            <div class="dd-metric-label">Asset Value AI</div>
+            <div class="dd-metric-value purple">$13,200</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- DD FIELDS -->
+      <div class="detail-section">
+        <div class="ds-title">Governance & Audit Trail</div>
+        <div class="dd-field"><div class="dd-key">Created</div><div class="dd-val">Nov 2024</div></div>
+        <div class="dd-field"><div class="dd-key">Last Updated</div><div class="dd-val">Mar 8, 2026</div></div>
+        <div class="dd-field"><div class="dd-key">Versions</div><div class="dd-val">12 releases</div></div>
+        <div class="dd-field"><div class="dd-key">Policy Compliance</div><div class="dd-val teal">Fully compliant</div></div>
+        <div class="dd-field"><div class="dd-key">IP Ownership</div><div class="dd-val teal">Verified · Jordan Chen</div></div>
+        <div class="dd-field"><div class="dd-key">Audit Events</div><div class="dd-val">248 log entries</div></div>
+        <div class="dd-field"><div class="dd-key">License Type</div><div class="dd-val">Commercial · Perpetual</div></div>
+      </div>
+
+      <!-- SOCIAL PROOF -->
+      <div class="detail-section">
+        <div class="ds-title">Social Proof</div>
+        <div class="dd-field"><div class="dd-key">Followers</div><div class="dd-val">142</div></div>
+        <div class="dd-field"><div class="dd-key">Subscribers</div><div class="dd-val">38</div></div>
+        <div class="dd-field"><div class="dd-key">Reviews</div><div class="dd-val teal">4.9 avg · 24 reviews</div></div>
+        <div class="dd-field"><div class="dd-key">Engagement Rate</div><div class="dd-val">8.4%</div></div>
+        <div class="dd-field"><div class="dd-key">Community Spread</div><div class="dd-val">14 active mentions</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

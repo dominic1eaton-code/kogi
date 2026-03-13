@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KOGI · Bank Dashboard</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@300;400;500;600&display=swap');
+
+  :root {
+    --bg: #080c10;
+    --bg2: #0d1117;
+    --bg3: #121820;
+    --bg4: #1a2230;
+    --border: #1e2d3d;
+    --border2: #243040;
+    --text: #c8d8e8;
+    --text2: #7a9ab8;
+    --text3: #4a6a88;
+    --accent-green: #00e5a0;
+    --accent-teal: #00b8cc;
+    --accent-gold: #e8a020;
+    --accent-red: #e84060;
+    --accent-purple: #9060e8;
+    --accent-blue: #2080e8;
+    --nav-w: 160px;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 13px; display: flex; height: 100vh; overflow: hidden; }
+
+  /* NAV */
+  .nav { width: var(--nav-w); background: var(--bg2); border-right: 1px solid var(--border); display: flex; flex-direction: column; padding: 16px 0; flex-shrink: 0; }
+  .nav-logo { padding: 0 16px 20px; font-family: 'Space Mono', monospace; font-size: 16px; font-weight: 700; color: var(--accent-green); letter-spacing: 2px; }
+  .nav-section { padding: 4px 16px 2px; font-size: 9px; letter-spacing: 1.5px; color: var(--text3); text-transform: uppercase; margin-top: 8px; }
+  .nav-item { padding: 7px 16px; color: var(--text2); font-size: 12px; cursor: pointer; display: flex; align-items: center; gap: 8px; border-left: 2px solid transparent; }
+  .nav-item:hover { color: var(--text); background: var(--bg3); }
+  .nav-item.active { color: var(--accent-green); border-left-color: var(--accent-green); background: rgba(0,229,160,0.05); }
+  .nav-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--text3); flex-shrink: 0; }
+  .nav-item.active .nav-dot { background: var(--accent-green); }
+
+  /* MAIN */
+  .main { flex: 1; overflow-y: auto; overflow-x: hidden; }
+
+  /* TOP BAR */
+  .topbar { display: flex; align-items: center; justify-content: space-between; padding: 12px 20px; background: var(--bg2); border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 10; }
+  .topbar-left { display: flex; align-items: center; gap: 12px; }
+  .topbar-title { font-family: 'Space Mono', monospace; font-size: 13px; color: var(--text); }
+  .topbar-subtitle { font-size: 11px; color: var(--text3); }
+  .topbar-right { display: flex; align-items: center; gap: 10px; }
+  .badge { background: var(--bg4); border: 1px solid var(--border2); border-radius: 4px; padding: 3px 8px; font-size: 11px; color: var(--text2); }
+  .badge.green { border-color: var(--accent-green); color: var(--accent-green); background: rgba(0,229,160,0.05); }
+  .avatar { width: 28px; height: 28px; border-radius: 50%; background: linear-gradient(135deg, var(--accent-teal), var(--accent-purple)); display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 600; color: #fff; }
+
+  /* CONTENT */
+  .content { padding: 20px; }
+
+  /* STAT ROW */
+  .stat-row { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin-bottom: 16px; }
+  .stat-card { background: var(--bg3); border: 1px solid var(--border); border-radius: 6px; padding: 12px 14px; }
+  .stat-label { font-size: 10px; color: var(--text3); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px; }
+  .stat-val { font-family: 'Space Mono', monospace; font-size: 18px; font-weight: 700; color: var(--text); }
+  .stat-val.green { color: var(--accent-green); }
+  .stat-val.gold { color: var(--accent-gold); }
+  .stat-val.red { color: var(--accent-red); }
+  .stat-val.teal { color: var(--accent-teal); }
+  .stat-sub { font-size: 10px; color: var(--text3); margin-top: 3px; }
+  .stat-sub.up { color: var(--accent-green); }
+  .stat-sub.down { color: var(--accent-red); }
+
+  /* GRID */
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-bottom: 12px; }
+  .grid-23 { display: grid; grid-template-columns: 2fr 1fr; gap: 12px; margin-bottom: 12px; }
+  .grid-32 { display: grid; grid-template-columns: 1fr 2fr; gap: 12px; margin-bottom: 12px; }
+
+  /* PANEL */
+  .panel { background: var(--bg3); border: 1px solid var(--border); border-radius: 6px; padding: 14px; }
+  .panel-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+  .panel-title { font-size: 11px; font-weight: 600; color: var(--text2); text-transform: uppercase; letter-spacing: 1px; }
+  .panel-action { font-size: 10px; color: var(--accent-teal); cursor: pointer; }
+
+  /* WALLET CARDS */
+  .wallet-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .wallet-card { border-radius: 6px; padding: 10px 12px; border: 1px solid var(--border2); position: relative; overflow: hidden; }
+  .wallet-card::before { content: ''; position: absolute; top: -20px; right: -20px; width: 60px; height: 60px; border-radius: 50%; opacity: 0.08; }
+  .wallet-card.checking { background: linear-gradient(135deg, rgba(0,229,160,0.08), rgba(0,184,204,0.04)); border-color: rgba(0,229,160,0.2); }
+  .wallet-card.checking::before { background: var(--accent-green); }
+  .wallet-card.ops { background: linear-gradient(135deg, rgba(232,160,32,0.08), rgba(232,96,232,0.04)); border-color: rgba(232,160,32,0.2); }
+  .wallet-card.ops::before { background: var(--accent-gold); }
+  .wallet-card.invest { background: linear-gradient(135deg, rgba(144,96,232,0.08), rgba(32,128,232,0.04)); border-color: rgba(144,96,232,0.2); }
+  .wallet-card.invest::before { background: var(--accent-purple); }
+  .wallet-card.tax { background: linear-gradient(135deg, rgba(232,64,96,0.08), rgba(232,160,32,0.04)); border-color: rgba(232,64,96,0.2); }
+  .wallet-card.tax::before { background: var(--accent-red); }
+  .w-type { font-size: 9px; text-transform: uppercase; letter-spacing: 1px; color: var(--text3); margin-bottom: 4px; }
+  .w-bal { font-family: 'Space Mono', monospace; font-size: 15px; font-weight: 700; color: var(--text); margin-bottom: 2px; }
+  .w-name { font-size: 10px; color: var(--text2); }
+  .w-tag { display: inline-block; font-size: 9px; padding: 1px 5px; border-radius: 3px; margin-top: 4px; }
+  .w-tag.green { background: rgba(0,229,160,0.12); color: var(--accent-green); }
+  .w-tag.gold { background: rgba(232,160,32,0.12); color: var(--accent-gold); }
+  .w-tag.purple { background: rgba(144,96,232,0.12); color: var(--accent-purple); }
+  .w-tag.red { background: rgba(232,64,96,0.12); color: var(--accent-red); }
+
+  /* TRANSACTIONS */
+  .tx-list { display: flex; flex-direction: column; gap: 6px; }
+  .tx-row { display: flex; align-items: center; justify-content: space-between; padding: 8px 10px; background: var(--bg4); border-radius: 4px; border: 1px solid var(--border); }
+  .tx-left { display: flex; align-items: center; gap: 10px; }
+  .tx-icon { width: 28px; height: 28px; border-radius: 5px; display: flex; align-items: center; justify-content: center; font-size: 12px; flex-shrink: 0; }
+  .tx-icon.in { background: rgba(0,229,160,0.1); color: var(--accent-green); }
+  .tx-icon.out { background: rgba(232,64,96,0.1); color: var(--accent-red); }
+  .tx-icon.esc { background: rgba(232,160,32,0.1); color: var(--accent-gold); }
+  .tx-name { font-size: 12px; color: var(--text); margin-bottom: 1px; }
+  .tx-meta { font-size: 10px; color: var(--text3); }
+  .tx-right { text-align: right; }
+  .tx-amount { font-family: 'Space Mono', monospace; font-size: 12px; font-weight: 700; }
+  .tx-amount.in { color: var(--accent-green); }
+  .tx-amount.out { color: var(--accent-red); }
+  .tx-date { font-size: 10px; color: var(--text3); margin-top: 1px; }
+
+  /* PROGRESS BAR */
+  .pbar-wrap { margin-bottom: 8px; }
+  .pbar-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 3px; }
+  .pbar-label { font-size: 11px; color: var(--text2); }
+  .pbar-val { font-family: 'Space Mono', monospace; font-size: 11px; color: var(--text); }
+  .pbar { height: 4px; background: var(--bg4); border-radius: 2px; overflow: hidden; }
+  .pbar-fill { height: 100%; border-radius: 2px; }
+  .pbar-fill.green { background: var(--accent-green); }
+  .pbar-fill.gold { background: var(--accent-gold); }
+  .pbar-fill.teal { background: var(--accent-teal); }
+  .pbar-fill.purple { background: var(--accent-purple); }
+  .pbar-fill.red { background: var(--accent-red); }
+
+  /* QUICK ACTIONS */
+  .qa-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+  .qa-btn { background: var(--bg4); border: 1px solid var(--border); border-radius: 5px; padding: 10px 8px; text-align: center; cursor: pointer; }
+  .qa-btn:hover { border-color: var(--accent-teal); background: rgba(0,184,204,0.05); }
+  .qa-icon { font-size: 18px; margin-bottom: 4px; }
+  .qa-label { font-size: 10px; color: var(--text2); }
+
+  /* AGENT PANEL */
+  .agent-msg { background: var(--bg4); border: 1px solid var(--border); border-left: 2px solid var(--accent-teal); border-radius: 4px; padding: 8px 10px; margin-bottom: 6px; font-size: 11px; color: var(--text); line-height: 1.5; }
+  .agent-label { font-size: 9px; color: var(--accent-teal); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 3px; }
+
+  /* CHART MINI */
+  .sparkline { display: flex; align-items: flex-end; gap: 2px; height: 32px; }
+  .spark-bar { flex: 1; border-radius: 1px 1px 0 0; min-height: 2px; }
+
+  /* ESCROW */
+  .esc-row { display: flex; align-items: center; justify-content: space-between; padding: 7px 0; border-bottom: 1px solid var(--border); }
+  .esc-row:last-child { border-bottom: none; }
+  .esc-name { font-size: 11px; color: var(--text); margin-bottom: 1px; }
+  .esc-meta { font-size: 10px; color: var(--text3); }
+  .esc-status { font-size: 10px; padding: 2px 6px; border-radius: 3px; }
+  .esc-status.locked { background: rgba(232,160,32,0.1); color: var(--accent-gold); }
+  .esc-status.pending { background: rgba(0,184,204,0.1); color: var(--accent-teal); }
+  .esc-status.release { background: rgba(0,229,160,0.1); color: var(--accent-green); }
+
+  /* SCROLLBAR */
+  ::-webkit-scrollbar { width: 4px; }
+  ::-webkit-scrollbar-track { background: var(--bg2); }
+  ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+
+  .divider { height: 1px; background: var(--border); margin: 12px 0; }
+  .tag { display: inline-block; font-size: 9px; padding: 2px 6px; border-radius: 3px; margin-right: 3px; }
+  .tag.teal { background: rgba(0,184,204,0.12); color: var(--accent-teal); }
+  .tag.green { background: rgba(0,229,160,0.12); color: var(--accent-green); }
+  .section-title { font-size: 11px; font-weight: 600; color: var(--text3); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
+  .num { font-family: 'Space Mono', monospace; }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="nav">
+  <div class="nav-logo">KOGI</div>
+  <div class="nav-section">Platform</div>
+  <div class="nav-item"><div class="nav-dot"></div>Home</div>
+  <div class="nav-item"><div class="nav-dot"></div>Office</div>
+  <div class="nav-item"><div class="nav-dot"></div>Portfolio</div>
+  <div class="nav-section">Finance</div>
+  <div class="nav-item active"><div class="nav-dot"></div>Bank</div>
+  <div class="nav-item"><div class="nav-dot"></div>Exchange</div>
+  <div class="nav-item"><div class="nav-dot"></div>Marketplace</div>
+  <div class="nav-section">Community</div>
+  <div class="nav-item"><div class="nav-dot"></div>Community</div>
+  <div class="nav-item"><div class="nav-dot"></div>Organizations</div>
+  <div class="nav-section">Dev</div>
+  <div class="nav-item"><div class="nav-dot"></div>Developer</div>
+  <div class="nav-item"><div class="nav-dot"></div>Profile</div>
+</nav>
+
+<!-- MAIN -->
+<div class="main">
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <div class="topbar-left">
+      <div>
+        <div class="topbar-title">⬡ Bank</div>
+        <div class="topbar-subtitle">KWLT · KBNK · KFIN</div>
+      </div>
+      <div class="badge green">● Live</div>
+      <div class="badge">KWLT v2.4</div>
+    </div>
+    <div class="topbar-right">
+      <div class="badge">🔒 MFA Active</div>
+      <div class="badge">Jordan Chen</div>
+      <div class="avatar">JC</div>
+    </div>
+  </div>
+
+  <!-- CONTENT -->
+  <div class="content">
+
+    <!-- STAT ROW -->
+    <div class="stat-row">
+      <div class="stat-card">
+        <div class="stat-label">Net Worth</div>
+        <div class="stat-val green">$142,800</div>
+        <div class="stat-sub up">↑ +4.2% · 30d</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Liquid Cash</div>
+        <div class="stat-val">$28,400</div>
+        <div class="stat-sub">Checking + Ops</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Invested</div>
+        <div class="stat-val teal">$89,200</div>
+        <div class="stat-sub up">↑ +1.8% · 7d</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">In Escrow</div>
+        <div class="stat-val gold">$18,300</div>
+        <div class="stat-sub">4 active deals</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Tax Reserve</div>
+        <div class="stat-val red">$6,900</div>
+        <div class="stat-sub">24% rate · Q1</div>
+      </div>
+    </div>
+
+    <!-- ROW 2: Wallets + Quick Actions -->
+    <div class="grid-23">
+      <div class="panel">
+        <div class="panel-header">
+          <div class="panel-title">Wallets & Accounts</div>
+          <div class="panel-action">+ New Account</div>
+        </div>
+        <div class="wallet-grid">
+          <div class="wallet-card checking">
+            <div class="w-type">Checking</div>
+            <div class="w-bal">$14,200</div>
+            <div class="w-name">Personal · KWLT-001</div>
+            <div class="w-tag green">Primary</div>
+          </div>
+          <div class="wallet-card ops">
+            <div class="w-type">Operations</div>
+            <div class="w-bal">$14,200</div>
+            <div class="w-name">Business Ops · KWLT-002</div>
+            <div class="w-tag gold">Business</div>
+          </div>
+          <div class="wallet-card invest">
+            <div class="w-type">Investment</div>
+            <div class="w-bal">$89,200</div>
+            <div class="w-name">Long-term · KWLT-003</div>
+            <div class="w-tag purple">Invested</div>
+          </div>
+          <div class="wallet-card tax">
+            <div class="w-type">Tax Reserve</div>
+            <div class="w-bal">$6,900</div>
+            <div class="w-name">SE Tax · KWLT-004</div>
+            <div class="w-tag red">Q1 2026</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-header">
+          <div class="panel-title">Quick Actions</div>
+        </div>
+        <div class="qa-grid">
+          <div class="qa-btn">
+            <div class="qa-icon">↑</div>
+            <div class="qa-label">Send</div>
+          </div>
+          <div class="qa-btn">
+            <div class="qa-icon">↓</div>
+            <div class="qa-label">Receive</div>
+          </div>
+          <div class="qa-btn">
+            <div class="qa-icon">⇄</div>
+            <div class="qa-label">Transfer</div>
+          </div>
+          <div class="qa-btn">
+            <div class="qa-icon">📄</div>
+            <div class="qa-label">Invoice</div>
+          </div>
+          <div class="qa-btn">
+            <div class="qa-icon">🔒</div>
+            <div class="qa-label">Escrow</div>
+          </div>
+          <div class="qa-btn">
+            <div class="qa-icon">📊</div>
+            <div class="qa-label">Reports</div>
+          </div>
+          <div class="qa-btn">
+            <div class="qa-icon">💰</div>
+            <div class="qa-label">Pay Out</div>
+          </div>
+          <div class="qa-btn">
+            <div class="qa-icon">⚙</div>
+            <div class="qa-label">Settings</div>
+          </div>
+        </div>
+        <div class="divider"></div>
+        <div class="agent-label">OBA · Finance Agent</div>
+        <div class="agent-msg">Your tax reserve is 18% below recommended. Consider moving $1,200 from Ops to maintain 25% SE tax coverage for Q1.</div>
+      </div>
+    </div>
+
+    <!-- ROW 3: Recent Transactions + Escrow + Cash Flow -->
+    <div class="grid-3">
+      <div class="panel">
+        <div class="panel-header">
+          <div class="panel-title">Recent Transactions</div>
+          <div class="panel-action">View All</div>
+        </div>
+        <div class="tx-list">
+          <div class="tx-row">
+            <div class="tx-left">
+              <div class="tx-icon in">↓</div>
+              <div>
+                <div class="tx-name">Acme Corp · Invoice #082</div>
+                <div class="tx-meta">Client Payment · Checking</div>
+              </div>
+            </div>
+            <div class="tx-right">
+              <div class="tx-amount in">+$8,500</div>
+              <div class="tx-date">Mar 12</div>
+            </div>
+          </div>
+          <div class="tx-row">
+            <div class="tx-left">
+              <div class="tx-icon out">↑</div>
+              <div>
+                <div class="tx-name">Figma Subscription</div>
+                <div class="tx-meta">Software · Ops</div>
+              </div>
+            </div>
+            <div class="tx-right">
+              <div class="tx-amount out">-$45</div>
+              <div class="tx-date">Mar 11</div>
+            </div>
+          </div>
+          <div class="tx-row">
+            <div class="tx-left">
+              <div class="tx-icon esc">🔒</div>
+              <div>
+                <div class="tx-name">Brand Identity Deal</div>
+                <div class="tx-meta">Escrow Lock · Deal #44</div>
+              </div>
+            </div>
+            <div class="tx-right">
+              <div class="tx-amount out" style="color:var(--accent-gold)">↔ $4,200</div>
+              <div class="tx-date">Mar 10</div>
+            </div>
+          </div>
+          <div class="tx-row">
+            <div class="tx-left">
+              <div class="tx-icon in">↓</div>
+              <div>
+                <div class="tx-name">Beta S. · Marketplace</div>
+                <div class="tx-meta">Resource Sale · Checking</div>
+              </div>
+            </div>
+            <div class="tx-right">
+              <div class="tx-amount in">+$1,200</div>
+              <div class="tx-date">Mar 09</div>
+            </div>
+          </div>
+          <div class="tx-row">
+            <div class="tx-left">
+              <div class="tx-icon out">↑</div>
+              <div>
+                <div class="tx-name">AWS · Cloud Compute</div>
+                <div class="tx-meta">Infrastructure · Ops</div>
+              </div>
+            </div>
+            <div class="tx-right">
+              <div class="tx-amount out">-$320</div>
+              <div class="tx-date">Mar 08</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-header">
+          <div class="panel-title">Active Escrow</div>
+          <div class="panel-action">Manage</div>
+        </div>
+        <div class="esc-row">
+          <div>
+            <div class="esc-name">Brand Identity System 2.0</div>
+            <div class="esc-meta">Deal #44 · Acme Corp</div>
+          </div>
+          <div style="text-align:right">
+            <div class="num" style="font-size:12px;color:var(--text)">$4,200</div>
+            <div class="esc-status locked">Locked</div>
+          </div>
+        </div>
+        <div class="esc-row">
+          <div>
+            <div class="esc-name">API Integration Package</div>
+            <div class="esc-meta">Deal #45 · FinTech Labs</div>
+          </div>
+          <div style="text-align:right">
+            <div class="num" style="font-size:12px;color:var(--text)">$12,400</div>
+            <div class="esc-status pending">Pending</div>
+          </div>
+        </div>
+        <div class="esc-row">
+          <div>
+            <div class="esc-name">Mobile App MVP</div>
+            <div class="esc-meta">Deal #38 · NovaTech</div>
+          </div>
+          <div style="text-align:right">
+            <div class="num" style="font-size:12px;color:var(--text)">$1,500</div>
+            <div class="esc-status release">Release Ready</div>
+          </div>
+        </div>
+        <div class="esc-row">
+          <div>
+            <div class="esc-name">Data Pipeline Audit</div>
+            <div class="esc-meta">Deal #46 · DataStream Co</div>
+          </div>
+          <div style="text-align:right">
+            <div class="num" style="font-size:12px;color:var(--text)">$200</div>
+            <div class="esc-status locked">Locked</div>
+          </div>
+        </div>
+        <div class="divider"></div>
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <div class="stat-label">Total Locked</div>
+          <div class="num" style="color:var(--accent-gold);font-size:13px;font-weight:700">$18,300</div>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-top:4px">
+          <div class="stat-label">Avg Release: </div>
+          <div class="num" style="color:var(--text2);font-size:12px">3.2 days</div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-header">
+          <div class="panel-title">Cash Flow · 30d</div>
+          <div class="panel-action">Full Report</div>
+        </div>
+        <div style="margin-bottom:12px">
+          <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:2px">
+            <div style="font-size:11px;color:var(--text2)">Inflows</div>
+            <div class="num" style="font-size:14px;color:var(--accent-green)">+$18,800</div>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:2px">
+            <div style="font-size:11px;color:var(--text2)">Outflows</div>
+            <div class="num" style="font-size:14px;color:var(--accent-red)">-$4,280</div>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:baseline">
+            <div style="font-size:11px;color:var(--text2)">Net Flow</div>
+            <div class="num" style="font-size:14px;color:var(--accent-teal)">+$14,520</div>
+          </div>
+        </div>
+        <div class="sparkline" style="margin-bottom:12px">
+          <div class="spark-bar" style="height:40%;background:var(--accent-green);opacity:0.5"></div>
+          <div class="spark-bar" style="height:60%;background:var(--accent-green);opacity:0.6"></div>
+          <div class="spark-bar" style="height:30%;background:var(--accent-red);opacity:0.4"></div>
+          <div class="spark-bar" style="height:80%;background:var(--accent-green);opacity:0.7"></div>
+          <div class="spark-bar" style="height:50%;background:var(--accent-green);opacity:0.5"></div>
+          <div class="spark-bar" style="height:20%;background:var(--accent-red);opacity:0.4"></div>
+          <div class="spark-bar" style="height:90%;background:var(--accent-green);opacity:0.8"></div>
+          <div class="spark-bar" style="height:65%;background:var(--accent-green);opacity:0.6"></div>
+          <div class="spark-bar" style="height:45%;background:var(--accent-green);opacity:0.5"></div>
+          <div class="spark-bar" style="height:75%;background:var(--accent-green);opacity:0.7"></div>
+          <div class="spark-bar" style="height:35%;background:var(--accent-red);opacity:0.4"></div>
+          <div class="spark-bar" style="height:100%;background:var(--accent-green);opacity:0.9"></div>
+        </div>
+        <div class="section-title">Budget Progress</div>
+        <div class="pbar-wrap">
+          <div class="pbar-top"><div class="pbar-label">Ops Expenses</div><div class="pbar-val">68%</div></div>
+          <div class="pbar"><div class="pbar-fill gold" style="width:68%"></div></div>
+        </div>
+        <div class="pbar-wrap">
+          <div class="pbar-top"><div class="pbar-label">Tax Reserve Goal</div><div class="pbar-val">82%</div></div>
+          <div class="pbar"><div class="pbar-fill red" style="width:82%"></div></div>
+        </div>
+        <div class="pbar-wrap">
+          <div class="pbar-top"><div class="pbar-label">Investment Allocation</div><div class="pbar-val">91%</div></div>
+          <div class="pbar"><div class="pbar-fill purple" style="width:91%"></div></div>
+        </div>
+        <div class="pbar-wrap">
+          <div class="pbar-top"><div class="pbar-label">Emergency Fund</div><div class="pbar-val">54%</div></div>
+          <div class="pbar"><div class="pbar-fill teal" style="width:54%"></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ROW 4: Invoices + Portable Benefits -->
+    <div class="grid-2">
+      <div class="panel">
+        <div class="panel-header">
+          <div class="panel-title">Outstanding Invoices</div>
+          <div class="panel-action">+ Create</div>
+        </div>
+        <div class="tx-list">
+          <div class="tx-row">
+            <div class="tx-left">
+              <div class="tx-icon in" style="font-size:9px;width:28px;height:28px">INV</div>
+              <div>
+                <div class="tx-name">Venture Partners · #084</div>
+                <div class="tx-meta">Due Mar 20 · NET-15</div>
+              </div>
+            </div>
+            <div class="tx-right">
+              <div class="tx-amount in">$12,000</div>
+              <div class="tx-date" style="color:var(--accent-gold)">Sent</div>
+            </div>
+          </div>
+          <div class="tx-row">
+            <div class="tx-left">
+              <div class="tx-icon in" style="font-size:9px;width:28px;height:28px">INV</div>
+              <div>
+                <div class="tx-name">Pixel Studio · #083</div>
+                <div class="tx-meta">Due Mar 18 · NET-30</div>
+              </div>
+            </div>
+            <div class="tx-right">
+              <div class="tx-amount in">$3,400</div>
+              <div class="tx-date" style="color:var(--accent-teal)">Viewed</div>
+            </div>
+          </div>
+          <div class="tx-row">
+            <div class="tx-left">
+              <div class="tx-icon out" style="font-size:9px;width:28px;height:28px">REC</div>
+              <div>
+                <div class="tx-name">Cloudflare · Monthly</div>
+                <div class="tx-meta">Due Mar 15 · Recurring</div>
+              </div>
+            </div>
+            <div class="tx-right">
+              <div class="tx-amount out">-$200</div>
+              <div class="tx-date" style="color:var(--accent-red)">Upcoming</div>
+            </div>
+          </div>
+        </div>
+        <div class="divider"></div>
+        <div style="display:flex;gap:16px">
+          <div><div class="stat-label">Total Receivable</div><div class="num" style="color:var(--accent-green);font-size:13px">$15,400</div></div>
+          <div><div class="stat-label">Total Payable</div><div class="num" style="color:var(--accent-red);font-size:13px">$200</div></div>
+          <div><div class="stat-label">Overdue</div><div class="num" style="color:var(--text3);font-size:13px">$0</div></div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-header">
+          <div class="panel-title">Portable Benefits</div>
+          <div class="panel-action">Configure</div>
+        </div>
+        <div class="pbar-wrap">
+          <div class="pbar-top"><div class="pbar-label">Solo 401(k) · Retirement</div><div class="pbar-val num">$18,200 / $23,000</div></div>
+          <div class="pbar"><div class="pbar-fill green" style="width:79%"></div></div>
+        </div>
+        <div class="pbar-wrap">
+          <div class="pbar-top"><div class="pbar-label">HSA · Health Savings</div><div class="pbar-val num">$2,400 / $4,150</div></div>
+          <div class="pbar"><div class="pbar-fill teal" style="width:58%"></div></div>
+        </div>
+        <div class="pbar-wrap">
+          <div class="pbar-top"><div class="pbar-label">Business Insurance</div><div class="pbar-val num">Active · Mar 2027</div></div>
+          <div class="pbar"><div class="pbar-fill purple" style="width:95%"></div></div>
+        </div>
+        <div class="divider"></div>
+        <div class="agent-label">OBA · Recommendation</div>
+        <div class="agent-msg">Max out your Solo 401(k) before April 15. You need $4,800 more. Auto-transfer from Ops account available on setup.</div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+</body>
+</html>

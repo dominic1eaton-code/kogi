@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KOGI · Accounts & Ledger</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@300;400;500;600&display=swap');
+  :root {
+    --bg: #080c10; --bg2: #0d1117; --bg3: #121820; --bg4: #1a2230;
+    --border: #1e2d3d; --border2: #243040;
+    --text: #c8d8e8; --text2: #7a9ab8; --text3: #4a6a88;
+    --green: #00e5a0; --teal: #00b8cc; --gold: #e8a020; --red: #e84060; --purple: #9060e8; --blue: #2080e8;
+    --nav-w: 160px;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 13px; display: flex; height: 100vh; overflow: hidden; }
+  .nav { width: var(--nav-w); background: var(--bg2); border-right: 1px solid var(--border); display: flex; flex-direction: column; padding: 16px 0; flex-shrink: 0; }
+  .nav-logo { padding: 0 16px 20px; font-family: 'Space Mono', monospace; font-size: 16px; font-weight: 700; color: var(--green); letter-spacing: 2px; }
+  .nav-section { padding: 4px 16px 2px; font-size: 9px; letter-spacing: 1.5px; color: var(--text3); text-transform: uppercase; margin-top: 8px; }
+  .nav-item { padding: 7px 16px; color: var(--text2); font-size: 12px; cursor: pointer; display: flex; align-items: center; gap: 8px; border-left: 2px solid transparent; }
+  .nav-item:hover { color: var(--text); background: var(--bg3); }
+  .nav-item.active { color: var(--green); border-left-color: var(--green); background: rgba(0,229,160,0.05); }
+  .nav-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--text3); flex-shrink: 0; }
+  .nav-item.active .nav-dot { background: var(--green); }
+  .main { flex: 1; overflow-y: auto; }
+  .topbar { display: flex; align-items: center; justify-content: space-between; padding: 12px 20px; background: var(--bg2); border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 10; }
+  .topbar-left { display: flex; align-items: center; gap: 12px; }
+  .topbar-title { font-family: 'Space Mono', monospace; font-size: 13px; color: var(--text); }
+  .topbar-sub { font-size: 11px; color: var(--text3); }
+  .topbar-right { display: flex; align-items: center; gap: 8px; }
+  .badge { background: var(--bg4); border: 1px solid var(--border2); border-radius: 4px; padding: 3px 8px; font-size: 11px; color: var(--text2); }
+  .badge.green { border-color: var(--green); color: var(--green); background: rgba(0,229,160,0.05); }
+  .avatar { width: 28px; height: 28px; border-radius: 50%; background: linear-gradient(135deg, var(--teal), var(--purple)); display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 600; color: #fff; }
+  .tabs { display: flex; gap: 2px; padding: 10px 20px 0; background: var(--bg2); border-bottom: 1px solid var(--border); }
+  .tab { padding: 6px 14px; font-size: 12px; color: var(--text3); cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -1px; }
+  .tab:hover { color: var(--text2); }
+  .tab.active { color: var(--green); border-bottom-color: var(--green); }
+  .content { padding: 18px 20px; }
+  .num { font-family: 'Space Mono', monospace; }
+  .panel { background: var(--bg3); border: 1px solid var(--border); border-radius: 6px; padding: 14px; margin-bottom: 12px; }
+  .panel-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+  .panel-title { font-size: 11px; font-weight: 600; color: var(--text2); text-transform: uppercase; letter-spacing: 1px; }
+  .panel-action { font-size: 10px; color: var(--teal); cursor: pointer; }
+  .divider { height: 1px; background: var(--border); margin: 10px 0; }
+  .tag { display: inline-block; font-size: 9px; padding: 2px 6px; border-radius: 3px; margin-right: 3px; }
+  .tag.green { background: rgba(0,229,160,0.12); color: var(--green); }
+  .tag.gold { background: rgba(232,160,32,0.12); color: var(--gold); }
+  .tag.purple { background: rgba(144,96,232,0.12); color: var(--purple); }
+  .tag.teal { background: rgba(0,184,204,0.12); color: var(--teal); }
+  .tag.red { background: rgba(232,64,96,0.12); color: var(--red); }
+  .tag.blue { background: rgba(32,128,232,0.12); color: var(--blue); }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 12px; }
+  .grid-23 { display: grid; grid-template-columns: 2fr 1fr; gap: 12px; }
+  .grid-32 { display: grid; grid-template-columns: 1fr 2fr; gap: 12px; }
+  .acc-card { background: var(--bg4); border: 1px solid var(--border2); border-radius: 6px; padding: 12px 14px; cursor: pointer; transition: border-color 0.2s; }
+  .acc-card:hover { border-color: var(--teal); }
+  .acc-card.selected { border-color: var(--green); background: rgba(0,229,160,0.03); }
+  .acc-type { font-size: 9px; color: var(--text3); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px; }
+  .acc-name { font-size: 12px; color: var(--text); font-weight: 500; margin-bottom: 6px; }
+  .acc-bal { font-family: 'Space Mono', monospace; font-size: 16px; font-weight: 700; margin-bottom: 2px; }
+  .acc-id { font-size: 10px; color: var(--text3); }
+  .acc-change { font-size: 10px; margin-top: 3px; }
+  .up { color: var(--green); }
+  .down { color: var(--red); }
+  .neutral { color: var(--text3); }
+
+  /* LEDGER TABLE */
+  .ledger-table { width: 100%; border-collapse: collapse; }
+  .ledger-table th { font-size: 10px; color: var(--text3); text-transform: uppercase; letter-spacing: 1px; padding: 6px 10px; text-align: left; border-bottom: 1px solid var(--border); font-weight: 500; }
+  .ledger-table td { padding: 8px 10px; border-bottom: 1px solid rgba(30,45,61,0.5); font-size: 12px; vertical-align: middle; }
+  .ledger-table tr:last-child td { border-bottom: none; }
+  .ledger-table tr:hover td { background: var(--bg4); }
+  .entry-type { display: inline-block; width: 6px; height: 6px; border-radius: 50%; margin-right: 6px; }
+  .entry-type.cr { background: var(--green); }
+  .entry-type.dr { background: var(--red); }
+  .entry-type.lock { background: var(--gold); }
+  .entry-type.release { background: var(--teal); }
+  .ledger-amount { font-family: 'Space Mono', monospace; font-size: 12px; }
+  .ledger-amount.cr { color: var(--green); }
+  .ledger-amount.dr { color: var(--red); }
+  .ledger-amount.lock { color: var(--gold); }
+  .ledger-amount.release { color: var(--teal); }
+  .ledger-balance { font-family: 'Space Mono', monospace; font-size: 12px; color: var(--text2); }
+  .ledger-ref { font-size: 10px; color: var(--text3); }
+  .search-bar { background: var(--bg4); border: 1px solid var(--border2); border-radius: 4px; padding: 6px 12px; font-size: 12px; color: var(--text); width: 220px; outline: none; font-family: 'DM Sans', sans-serif; }
+  .search-bar::placeholder { color: var(--text3); }
+  .filter-row { display: flex; gap: 6px; align-items: center; margin-bottom: 10px; }
+  .filter-btn { background: var(--bg4); border: 1px solid var(--border); border-radius: 3px; padding: 4px 10px; font-size: 11px; color: var(--text2); cursor: pointer; }
+  .filter-btn.active { border-color: var(--green); color: var(--green); background: rgba(0,229,160,0.06); }
+  .pbar { height: 3px; background: var(--bg4); border-radius: 2px; overflow: hidden; margin-top: 4px; }
+  .pbar-fill { height: 100%; border-radius: 2px; }
+  .mini-stat { display: flex; justify-content: space-between; padding: 5px 0; border-bottom: 1px solid rgba(30,45,61,0.5); }
+  .mini-stat:last-child { border-bottom: none; }
+  .mini-stat-label { font-size: 11px; color: var(--text2); }
+  .mini-stat-val { font-family: 'Space Mono', monospace; font-size: 11px; color: var(--text); }
+  ::-webkit-scrollbar { width: 4px; }
+  ::-webkit-scrollbar-track { background: var(--bg2); }
+  ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+</style>
+</head>
+<body>
+<nav class="nav">
+  <div class="nav-logo">KOGI</div>
+  <div class="nav-section">Platform</div>
+  <div class="nav-item"><div class="nav-dot"></div>Home</div>
+  <div class="nav-item"><div class="nav-dot"></div>Office</div>
+  <div class="nav-item"><div class="nav-dot"></div>Portfolio</div>
+  <div class="nav-section">Finance</div>
+  <div class="nav-item active"><div class="nav-dot"></div>Bank</div>
+  <div class="nav-item"><div class="nav-dot"></div>Exchange</div>
+  <div class="nav-item"><div class="nav-dot"></div>Marketplace</div>
+  <div class="nav-section">Community</div>
+  <div class="nav-item"><div class="nav-dot"></div>Community</div>
+  <div class="nav-item"><div class="nav-dot"></div>Organizations</div>
+  <div class="nav-section">Dev</div>
+  <div class="nav-item"><div class="nav-dot"></div>Developer</div>
+  <div class="nav-item"><div class="nav-dot"></div>Profile</div>
+</nav>
+<div class="main">
+  <div class="topbar">
+    <div class="topbar-left">
+      <div>
+        <div class="topbar-title">⬡ Bank · Accounts</div>
+        <div class="topbar-sub">KACC · KLGR — Ledger View</div>
+      </div>
+      <div class="badge green">● 8 Active</div>
+    </div>
+    <div class="topbar-right">
+      <input class="search-bar" placeholder="Search ledger entries…" style="width:180px">
+      <div class="badge">Export</div>
+      <div class="avatar">JC</div>
+    </div>
+  </div>
+  <div class="tabs">
+    <div class="tab active">All Accounts</div>
+    <div class="tab">Personal</div>
+    <div class="tab">Business</div>
+    <div class="tab">Investment</div>
+    <div class="tab">Org Accounts</div>
+  </div>
+
+  <div class="content">
+    <!-- ACCOUNT CARDS ROW -->
+    <div class="grid-3" style="grid-template-columns: repeat(5, 1fr)">
+      <div class="acc-card selected">
+        <div class="acc-type">Checking</div>
+        <div class="acc-name">Personal Checking</div>
+        <div class="acc-bal" style="color:var(--green)">$14,200</div>
+        <div class="acc-id">KWLT-001 · USD</div>
+        <div class="acc-change up">↑ +$8,500 today</div>
+      </div>
+      <div class="acc-card">
+        <div class="acc-type">Operations</div>
+        <div class="acc-name">Business Ops</div>
+        <div class="acc-bal" style="color:var(--text)">$14,200</div>
+        <div class="acc-id">KWLT-002 · USD</div>
+        <div class="acc-change down">↓ -$365 today</div>
+      </div>
+      <div class="acc-card">
+        <div class="acc-type">Investment</div>
+        <div class="acc-name">Long-Term Portfolio</div>
+        <div class="acc-bal" style="color:var(--purple)">$89,200</div>
+        <div class="acc-id">KWLT-003 · USD + EQ</div>
+        <div class="acc-change up">↑ +1.8% · 7d</div>
+      </div>
+      <div class="acc-card">
+        <div class="acc-type">Tax Reserve</div>
+        <div class="acc-name">SE Tax · Q1 2026</div>
+        <div class="acc-bal" style="color:var(--red)">$6,900</div>
+        <div class="acc-id">KWLT-004 · USD</div>
+        <div class="acc-change neutral">Q1 filing Apr 15</div>
+      </div>
+      <div class="acc-card">
+        <div class="acc-type">Retirement</div>
+        <div class="acc-name">Solo 401(k)</div>
+        <div class="acc-bal" style="color:var(--teal)">$18,200</div>
+        <div class="acc-id">KWLT-005 · USD</div>
+        <div class="acc-change up">79% of annual max</div>
+      </div>
+    </div>
+
+    <!-- LEDGER + ACCOUNT DETAILS -->
+    <div class="grid-23">
+      <!-- LEDGER TABLE -->
+      <div class="panel">
+        <div class="panel-header">
+          <div class="panel-title">Ledger · Personal Checking · KWLT-001</div>
+          <div class="panel-action">Download CSV</div>
+        </div>
+        <div class="filter-row">
+          <div class="filter-btn active">All</div>
+          <div class="filter-btn">Credits</div>
+          <div class="filter-btn">Debits</div>
+          <div class="filter-btn">Escrow</div>
+          <div class="filter-btn">Transfers</div>
+          <input class="search-bar" placeholder="Search…" style="width:160px;margin-left:auto">
+        </div>
+        <table class="ledger-table">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Entry ID</th>
+              <th>Description</th>
+              <th>Type</th>
+              <th>Amount</th>
+              <th>Balance</th>
+              <th>Ref</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Mar 12</td>
+              <td><span class="num" style="font-size:10px;color:var(--text3)">LGR-00841</span></td>
+              <td>Acme Corp · Invoice #082 · Client Payment</td>
+              <td><span class="entry-type cr"></span><span class="tag green">CR</span></td>
+              <td><span class="ledger-amount cr">+$8,500.00</span></td>
+              <td><span class="ledger-balance">$14,200.00</span></td>
+              <td><span class="ledger-ref">INV-082</span></td>
+            </tr>
+            <tr>
+              <td>Mar 11</td>
+              <td><span class="num" style="font-size:10px;color:var(--text3)">LGR-00838</span></td>
+              <td>Transfer → Operations Account</td>
+              <td><span class="entry-type dr"></span><span class="tag red">DR</span></td>
+              <td><span class="ledger-amount dr">-$2,000.00</span></td>
+              <td><span class="ledger-balance">$5,700.00</span></td>
+              <td><span class="ledger-ref">TXF-042</span></td>
+            </tr>
+            <tr>
+              <td>Mar 11</td>
+              <td><span class="num" style="font-size:10px;color:var(--text3)">LGR-00835</span></td>
+              <td>Beta S. · Resource Sale · Marketplace</td>
+              <td><span class="entry-type cr"></span><span class="tag green">CR</span></td>
+              <td><span class="ledger-amount cr">+$1,200.00</span></td>
+              <td><span class="ledger-balance">$7,700.00</span></td>
+              <td><span class="ledger-ref">MKT-118</span></td>
+            </tr>
+            <tr>
+              <td>Mar 10</td>
+              <td><span class="num" style="font-size:10px;color:var(--text3)">LGR-00831</span></td>
+              <td>Escrow Lock · Brand Identity System 2.0</td>
+              <td><span class="entry-type lock"></span><span class="tag gold">LOCK</span></td>
+              <td><span class="ledger-amount lock">↔ $4,200.00</span></td>
+              <td><span class="ledger-balance">$6,500.00</span></td>
+              <td><span class="ledger-ref">ESC-044</span></td>
+            </tr>
+            <tr>
+              <td>Mar 09</td>
+              <td><span class="num" style="font-size:10px;color:var(--text3)">LGR-00828</span></td>
+              <td>Pixel Studio · Invoice #079 · Payment Received</td>
+              <td><span class="entry-type cr"></span><span class="tag green">CR</span></td>
+              <td><span class="ledger-amount cr">+$3,400.00</span></td>
+              <td><span class="ledger-balance">$10,700.00</span></td>
+              <td><span class="ledger-ref">INV-079</span></td>
+            </tr>
+            <tr>
+              <td>Mar 08</td>
+              <td><span class="num" style="font-size:10px;color:var(--text3)">LGR-00824</span></td>
+              <td>Tax Reserve Transfer → KWLT-004</td>
+              <td><span class="entry-type dr"></span><span class="tag red">DR</span></td>
+              <td><span class="ledger-amount dr">-$850.00</span></td>
+              <td><span class="ledger-balance">$7,300.00</span></td>
+              <td><span class="ledger-ref">TXF-040</span></td>
+            </tr>
+            <tr>
+              <td>Mar 07</td>
+              <td><span class="num" style="font-size:10px;color:var(--text3)">LGR-00820</span></td>
+              <td>NovaTech · Escrow Release · Deal #38</td>
+              <td><span class="entry-type release"></span><span class="tag teal">RELEASE</span></td>
+              <td><span class="ledger-amount release">+$1,500.00</span></td>
+              <td><span class="ledger-balance">$8,150.00</span></td>
+              <td><span class="ledger-ref">ESC-038</span></td>
+            </tr>
+            <tr>
+              <td>Mar 06</td>
+              <td><span class="num" style="font-size:10px;color:var(--text3)">LGR-00816</span></td>
+              <td>Stripe · Platform Fee</td>
+              <td><span class="entry-type dr"></span><span class="tag red">DR</span></td>
+              <td><span class="ledger-amount dr">-$24.80</span></td>
+              <td><span class="ledger-balance">$6,650.00</span></td>
+              <td><span class="ledger-ref">FEE-028</span></td>
+            </tr>
+            <tr>
+              <td>Mar 05</td>
+              <td><span class="num" style="font-size:10px;color:var(--text3)">LGR-00813</span></td>
+              <td>DataStream Co · Consulting · Invoice #076</td>
+              <td><span class="entry-type cr"></span><span class="tag green">CR</span></td>
+              <td><span class="ledger-amount cr">+$5,200.00</span></td>
+              <td><span class="ledger-balance">$6,674.80</span></td>
+              <td><span class="ledger-ref">INV-076</span></td>
+            </tr>
+          </tbody>
+        </table>
+        <div class="divider"></div>
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <div style="font-size:11px;color:var(--text3)">Showing 9 of 841 entries · Append-only · KLGR</div>
+          <div style="display:flex;gap:6px">
+            <div class="filter-btn">← Prev</div>
+            <div class="filter-btn">Next →</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ACCOUNT DETAILS PANEL -->
+      <div>
+        <div class="panel" style="margin-bottom:10px">
+          <div class="panel-header">
+            <div class="panel-title">Account Details</div>
+            <div class="panel-action">Edit</div>
+          </div>
+          <div class="mini-stat"><span class="mini-stat-label">Account ID</span><span class="mini-stat-val">KWLT-001</span></div>
+          <div class="mini-stat"><span class="mini-stat-label">Type</span><span class="mini-stat-val">Personal Checking</span></div>
+          <div class="mini-stat"><span class="mini-stat-label">Currency</span><span class="mini-stat-val">USD (Fiat)</span></div>
+          <div class="mini-stat"><span class="mini-stat-label">Status</span><span class="tag green">Active</span></div>
+          <div class="mini-stat"><span class="mini-stat-label">Owner</span><span class="mini-stat-val">Jordan Chen</span></div>
+          <div class="mini-stat"><span class="mini-stat-label">Linked Wallet</span><span class="mini-stat-val">Personal · KWLT</span></div>
+          <div class="mini-stat"><span class="mini-stat-label">Created</span><span class="mini-stat-val">Jan 04, 2025</span></div>
+          <div class="mini-stat"><span class="mini-stat-label">Last Update</span><span class="mini-stat-val">Mar 12, 2026</span></div>
+          <div class="mini-stat"><span class="mini-stat-label">Ledger Entries</span><span class="mini-stat-val">841</span></div>
+          <div class="mini-stat"><span class="mini-stat-label">Version</span><span class="mini-stat-val">v2.1.4</span></div>
+        </div>
+
+        <div class="panel" style="margin-bottom:10px">
+          <div class="panel-header">
+            <div class="panel-title">30-Day Summary</div>
+          </div>
+          <div class="mini-stat"><span class="mini-stat-label">Total Credits</span><span class="mini-stat-val" style="color:var(--green)">+$18,800</span></div>
+          <div class="mini-stat"><span class="mini-stat-label">Total Debits</span><span class="mini-stat-val" style="color:var(--red)">-$4,280</span></div>
+          <div class="mini-stat"><span class="mini-stat-label">Escrow Locked</span><span class="mini-stat-val" style="color:var(--gold)">$4,200</span></div>
+          <div class="mini-stat"><span class="mini-stat-label">Net Flow</span><span class="mini-stat-val" style="color:var(--teal)">+$14,520</span></div>
+          <div class="mini-stat"><span class="mini-stat-label">Avg Daily Balance</span><span class="mini-stat-val">$8,420</span></div>
+          <div class="mini-stat"><span class="mini-stat-label">Transactions</span><span class="mini-stat-val">28</span></div>
+          <div class="pbar" style="margin-top:8px"><div class="pbar-fill" style="width:72%;background:var(--green)"></div></div>
+          <div style="font-size:10px;color:var(--text3);margin-top:3px">72% of monthly income target met</div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-header">
+            <div class="panel-title">Policies & Governance</div>
+          </div>
+          <div style="font-size:11px;color:var(--text2);margin-bottom:6px">Active Policies</div>
+          <div style="margin-bottom:4px"><span class="tag teal">AUTO-TAX-25%</span> Auto-transfer 25% of inflows to Tax Reserve</div>
+          <div style="margin-bottom:4px"><span class="tag purple">MFA-THRESHOLD</span> MFA required above $2,000</div>
+          <div style="margin-bottom:4px"><span class="tag gold">ESCROW-LOCK</span> Escrow funds frozen until release</div>
+          <div style="margin-bottom:4px"><span class="tag green">RETIRE-AUTOFILL</span> Auto-contribute $500/mo to 401(k)</div>
+          <div class="divider"></div>
+          <div style="font-size:11px;color:var(--text2);margin-bottom:4px">Permission Tier</div>
+          <div style="font-size:12px;color:var(--text)">Owner · Tier 1 Full Access</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

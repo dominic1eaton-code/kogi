@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KOGI · Campaigns</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap');
+  :root {
+    --bg: #0a0c10; --bg2: #0f1218; --bg3: #141820; --panel: #111520;
+    --border: #1e2535; --border2: #252d3e; --text: #c8d4e8; --text2: #7a8ba8; --text3: #4a5568;
+    --accent-gold: #c9a227; --accent-teal: #0fa89a; --accent-purple: #7c5cbf;
+    --accent-orange: #d4622a; --accent-green: #2a9d4e; --accent-blue: #2a6bc9;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: 'IBM Plex Sans', sans-serif; font-size: 12px; min-height: 100vh; display: flex; }
+  .sidebar { width: 160px; background: var(--bg2); border-right: 1px solid var(--border); flex-shrink: 0; }
+  .logo { padding: 14px 16px; border-bottom: 1px solid var(--border); font-family: 'IBM Plex Mono', monospace; font-weight: 600; font-size: 13px; color: var(--accent-gold); letter-spacing: 2px; }
+  .nav-section { padding: 10px 0; }
+  .nav-label { padding: 6px 16px 4px; font-size: 9px; letter-spacing: 2px; color: var(--text3); text-transform: uppercase; font-family: 'IBM Plex Mono', monospace; }
+  .nav-item { padding: 6px 16px; font-size: 11px; color: var(--text2); cursor: pointer; display: flex; align-items: center; gap: 8px; }
+  .nav-item.active { color: var(--accent-gold); background: rgba(201,162,39,0.08); border-left: 2px solid var(--accent-gold); padding-left: 14px; }
+  .nav-dot { width: 4px; height: 4px; border-radius: 50%; background: currentColor; flex-shrink: 0; }
+  .main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+  .topbar { height: 44px; background: var(--bg2); border-bottom: 1px solid var(--border); display: flex; align-items: center; padding: 0 20px; gap: 12px; flex-shrink: 0; }
+  .topbar-title { font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: var(--text2); letter-spacing: 1px; text-transform: uppercase; }
+  .topbar-title span { color: var(--accent-gold); }
+  .topbar-actions { display: flex; gap: 8px; margin-left: auto; }
+  .btn { padding: 4px 12px; font-family: 'IBM Plex Mono', monospace; font-size: 9px; letter-spacing: 1px; text-transform: uppercase; cursor: pointer; border: 1px solid; }
+  .btn-gold { border-color: var(--accent-gold); color: var(--accent-gold); background: rgba(201,162,39,0.08); }
+  .btn-teal { border-color: var(--accent-teal); color: var(--accent-teal); background: rgba(15,168,154,0.08); }
+  .content { flex: 1; overflow-y: auto; padding: 16px 20px; }
+  .stats-row { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; margin-bottom: 14px; }
+  .stat-card { background: var(--panel); border: 1px solid var(--border); padding: 10px 12px; }
+  .stat-label { font-size: 9px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--text3); font-family: 'IBM Plex Mono', monospace; margin-bottom: 4px; }
+  .stat-value { font-family: 'IBM Plex Mono', monospace; font-size: 18px; font-weight: 600; }
+  .stat-sub { font-size: 9px; color: var(--text3); margin-top: 2px; }
+  .gold { color: var(--accent-gold); } .teal { color: var(--accent-teal); } .green { color: var(--accent-green); } .purple { color: var(--accent-purple); } .blue { color: var(--accent-blue); }
+  .filter-tabs { display: flex; gap: 2px; margin-bottom: 14px; }
+  .filter-tab { padding: 5px 12px; font-family: 'IBM Plex Mono', monospace; font-size: 9px; letter-spacing: 1px; text-transform: uppercase; cursor: pointer; border: 1px solid var(--border); color: var(--text3); background: var(--panel); }
+  .filter-tab.active { border-color: var(--accent-gold); color: var(--accent-gold); background: rgba(201,162,39,0.08); }
+  .section-title { font-family: 'IBM Plex Mono', monospace; font-size: 9px; letter-spacing: 2px; text-transform: uppercase; color: var(--text3); margin-bottom: 10px; }
+  .campaigns-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 16px; }
+  .campaign-card { background: var(--panel); border: 1px solid var(--border); padding: 14px; }
+  .campaign-type-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+  .camp-type { font-size: 8px; letter-spacing: 2px; text-transform: uppercase; font-family: 'IBM Plex Mono', monospace; padding: 2px 7px; border: 1px solid; }
+  .type-equity { color: var(--accent-gold); border-color: rgba(201,162,39,0.3); background: rgba(201,162,39,0.08); }
+  .type-fund { color: var(--accent-teal); border-color: rgba(15,168,154,0.3); background: rgba(15,168,154,0.08); }
+  .type-bond { color: var(--accent-purple); border-color: rgba(124,92,191,0.3); background: rgba(124,92,191,0.08); }
+  .type-pool { color: var(--accent-blue); border-color: rgba(42,107,201,0.3); background: rgba(42,107,201,0.08); }
+  .days-left { font-family: 'IBM Plex Mono', monospace; font-size: 9px; color: var(--text3); }
+  .campaign-title { font-size: 14px; font-weight: 600; margin-bottom: 4px; line-height: 1.3; }
+  .campaign-owner { display: flex; align-items: center; gap: 6px; font-size: 10px; color: var(--text2); margin-bottom: 8px; }
+  .owner-dot { width: 18px; height: 18px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 8px; font-weight: 600; }
+  .campaign-desc { font-size: 10px; color: var(--text3); line-height: 1.6; margin-bottom: 10px; }
+  .progress-section { margin-bottom: 10px; }
+  .progress-stats { display: flex; justify-content: space-between; margin-bottom: 4px; }
+  .prog-raised { font-family: 'IBM Plex Mono', monospace; font-size: 14px; font-weight: 600; }
+  .prog-goal { font-size: 10px; color: var(--text3); align-self: flex-end; }
+  .prog-pct { font-family: 'IBM Plex Mono', monospace; font-size: 12px; }
+  .progress-bar { height: 4px; background: var(--border); border-radius: 2px; overflow: hidden; }
+  .progress-fill { height: 100%; border-radius: 2px; }
+  .campaign-meta { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; border-top: 1px solid var(--border); padding-top: 8px; }
+  .cm-item { text-align: center; }
+  .cm-val { font-family: 'IBM Plex Mono', monospace; font-size: 11px; font-weight: 600; }
+  .cm-label { font-size: 8px; letter-spacing: 1px; text-transform: uppercase; color: var(--text3); }
+  .campaign-actions { display: flex; gap: 6px; margin-top: 10px; }
+  .camp-btn { flex: 1; padding: 6px; text-align: center; font-family: 'IBM Plex Mono', monospace; font-size: 8px; letter-spacing: 1px; text-transform: uppercase; cursor: pointer; border: 1px solid; }
+  .camp-btn-invest { border-color: var(--accent-gold); color: var(--accent-gold); background: rgba(201,162,39,0.08); }
+  .camp-btn-view { border-color: var(--border2); color: var(--text3); background: transparent; }
+  /* Featured Campaign - full width hero */
+  .campaign-hero { background: var(--panel); border: 1px solid var(--border2); padding: 16px; margin-bottom: 14px; display: grid; grid-template-columns: 1fr 280px; gap: 20px; }
+  .hero-label { font-family: 'IBM Plex Mono', monospace; font-size: 8px; letter-spacing: 3px; color: var(--accent-gold); text-transform: uppercase; margin-bottom: 10px; border-bottom: 1px solid rgba(201,162,39,0.2); padding-bottom: 6px; }
+  .hero-title { font-size: 18px; font-weight: 600; margin-bottom: 6px; line-height: 1.3; }
+  .hero-desc { font-size: 11px; color: var(--text2); line-height: 1.7; margin-bottom: 12px; }
+  .hero-tags { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 12px; }
+  .tag { padding: 2px 7px; background: var(--bg3); border: 1px solid var(--border); font-size: 8px; color: var(--text3); font-family: 'IBM Plex Mono', monospace; }
+  .hero-stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+  .hs-item { background: var(--bg3); border: 1px solid var(--border); padding: 8px; }
+  .hs-val { font-family: 'IBM Plex Mono', monospace; font-size: 13px; font-weight: 600; margin-bottom: 2px; }
+  .hs-label { font-size: 8px; letter-spacing: 1px; text-transform: uppercase; color: var(--text3); }
+  .hero-right { display: flex; flex-direction: column; gap: 10px; }
+  .hero-progress { background: var(--bg3); border: 1px solid var(--border2); padding: 12px; }
+  .hp-raised { font-family: 'IBM Plex Mono', monospace; font-size: 22px; font-weight: 600; color: var(--accent-gold); }
+  .hp-goal { font-size: 10px; color: var(--text3); margin-bottom: 8px; }
+  .hp-bar { height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; margin-bottom: 8px; }
+  .hp-fill { height: 100%; border-radius: 3px; background: linear-gradient(90deg, var(--accent-gold), var(--accent-orange)); }
+  .hp-meta { display: flex; justify-content: space-between; font-size: 9px; color: var(--text3); font-family: 'IBM Plex Mono', monospace; }
+  .hero-cta-stack { display: flex; flex-direction: column; gap: 6px; }
+  .hero-btn { padding: 9px; text-align: center; font-family: 'IBM Plex Mono', monospace; font-size: 9px; letter-spacing: 1px; text-transform: uppercase; cursor: pointer; border: 1px solid; }
+  .hero-btn-gold { background: var(--accent-gold); border-color: var(--accent-gold); color: #0a0c10; font-weight: 600; }
+  .hero-btn-outline { background: transparent; border-color: var(--accent-gold); color: var(--accent-gold); }
+  ::-webkit-scrollbar { width: 4px; } ::-webkit-scrollbar-track { background: var(--bg2); } ::-webkit-scrollbar-thumb { background: var(--border2); }
+</style>
+</head>
+<body>
+<div class="sidebar">
+  <div class="logo">KOGI</div>
+  <div class="nav-section">
+    <div class="nav-label">Core</div>
+    <div class="nav-item"><div class="nav-dot"></div>Dashboard</div>
+    <div class="nav-item"><div class="nav-dot"></div>Office</div>
+    <div class="nav-item"><div class="nav-dot"></div>Portfolio</div>
+    <div class="nav-item"><div class="nav-dot"></div>Bank</div>
+    <div class="nav-item"><div class="nav-dot"></div>Marketplace</div>
+  </div>
+  <div class="nav-section">
+    <div class="nav-label">Market</div>
+    <div class="nav-item"><div class="nav-dot"></div>Work</div>
+    <div class="nav-item"><div class="nav-dot"></div>Assets</div>
+    <div class="nav-item"><div class="nav-dot"></div>Resources</div>
+    <div class="nav-item active"><div class="nav-dot"></div>Campaigns</div>
+    <div class="nav-item"><div class="nav-dot"></div>Templates</div>
+  </div>
+  <div class="nav-section">
+    <div class="nav-label">My Campaigns</div>
+    <div class="nav-item"><div class="nav-dot"></div>Invested</div>
+    <div class="nav-item"><div class="nav-dot"></div>Watching</div>
+    <div class="nav-item"><div class="nav-dot"></div>My Launches</div>
+  </div>
+</div>
+
+<div class="main">
+  <div class="topbar">
+    <div class="topbar-title">Marketplace · <span>Campaigns</span></div>
+    <div class="topbar-actions">
+      <button class="btn btn-gold">+ Launch Campaign</button>
+      <button class="btn btn-teal">Oba ✦</button>
+    </div>
+  </div>
+
+  <div class="content">
+    <!-- Stats -->
+    <div class="stats-row">
+      <div class="stat-card"><div class="stat-label">Active Campaigns</div><div class="stat-value gold">42</div><div class="stat-sub">$2.4M total target</div></div>
+      <div class="stat-card"><div class="stat-label">Total Raised (30d)</div><div class="stat-value teal">$841K</div><div class="stat-sub">↑ 28% vs prior</div></div>
+      <div class="stat-card"><div class="stat-label">Investors Active</div><div class="stat-value purple">284</div><div class="stat-sub">142 new this month</div></div>
+      <div class="stat-card"><div class="stat-label">Avg Funded</div><div class="stat-value green">67%</div><div class="stat-sub">Platform average</div></div>
+      <div class="stat-card"><div class="stat-label">Your Investments</div><div class="stat-value gold">$12K</div><div class="stat-sub">4 active positions</div></div>
+    </div>
+
+    <!-- Filter Tabs -->
+    <div class="filter-tabs">
+      <div class="filter-tab active">All</div>
+      <div class="filter-tab">Equity Rounds</div>
+      <div class="filter-tab">Community Funds</div>
+      <div class="filter-tab">Resource Pools</div>
+      <div class="filter-tab">Revenue Share</div>
+      <div class="filter-tab">Grants</div>
+    </div>
+
+    <!-- Featured Campaign -->
+    <div class="section-title">Featured Campaign · AI Recommended</div>
+    <div class="campaign-hero">
+      <div>
+        <div class="hero-label">✦ Oba Recommended · High Match</div>
+        <div class="hero-title">Alpha Platform — Series Pre-A Equity Round</div>
+        <div class="campaign-owner">
+          <div class="owner-dot" style="background:var(--accent-purple);">P</div>
+          Priya Shah · Lead · Design Collective · ★ 4.9
+        </div>
+        <div class="hero-desc">
+          Alpha is a worker-owned cooperative platform for the creative economy — helping independent designers, developers, and strategists operate as a unified business entity. We're building infrastructure for collective ownership, shared tooling, and community-scale economic coordination. This round funds 18 months of platform development and community onboarding.
+        </div>
+        <div class="hero-tags">
+          <span class="tag">Cooperative</span><span class="tag">Platform</span><span class="tag">Creative Economy</span><span class="tag">Worker-Owned</span><span class="tag">Series Pre-A</span>
+        </div>
+        <div class="hero-stats-grid">
+          <div class="hs-item"><div class="hs-val gold">$450K</div><div class="hs-label">Target</div></div>
+          <div class="hs-item"><div class="hs-val teal">$172K</div><div class="hs-label">Raised</div></div>
+          <div class="hs-item"><div class="hs-val purple">38%</div><div class="hs-label">Funded</div></div>
+          <div class="hs-item"><div class="hs-val green">84</div><div class="hs-label">Investors</div></div>
+        </div>
+      </div>
+      <div class="hero-right">
+        <div class="hero-progress">
+          <div class="hp-raised">$172,000</div>
+          <div class="hp-goal">of $450,000 · 38% funded · 24 days left</div>
+          <div class="hp-bar"><div class="hp-fill" style="width:38%;"></div></div>
+          <div class="hp-meta"><span>84 investors</span><span>$2,047 avg</span></div>
+        </div>
+        <div style="background:var(--bg3);border:1px solid var(--border);padding:10px;">
+          <div style="font-size:9px;color:var(--text3);font-family:'IBM Plex Mono',monospace;margin-bottom:6px;letter-spacing:1px;text-transform:uppercase;">Investment Terms</div>
+          <div style="font-size:10px;color:var(--text2);display:flex;flex-direction:column;gap:3px;">
+            <div style="display:flex;justify-content:space-between;border-bottom:1px solid var(--border);padding-bottom:3px;"><span>Equity offered</span><span style="color:var(--text);">8.5%</span></div>
+            <div style="display:flex;justify-content:space-between;border-bottom:1px solid var(--border);padding-bottom:3px;"><span>Valuation (pre)</span><span style="color:var(--text);">$5.3M</span></div>
+            <div style="display:flex;justify-content:space-between;border-bottom:1px solid var(--border);padding-bottom:3px;"><span>Min investment</span><span style="color:var(--text);">$500</span></div>
+            <div style="display:flex;justify-content:space-between;"><span>Structure</span><span style="color:var(--text);">SAFE Note</span></div>
+          </div>
+        </div>
+        <div class="hero-cta-stack">
+          <button class="hero-btn hero-btn-gold">Invest Now</button>
+          <button class="hero-btn hero-btn-outline">View Campaign →</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Campaign Grid -->
+    <div class="section-title">All Active Campaigns</div>
+    <div class="campaigns-grid">
+
+      <div class="campaign-card">
+        <div class="campaign-type-row">
+          <span class="camp-type type-fund">Community Fund</span>
+          <span class="days-left">18 days left</span>
+        </div>
+        <div class="campaign-title">Community Growth Initiative — Kogi Worker Onboarding</div>
+        <div class="campaign-owner"><div class="owner-dot" style="background:var(--accent-teal);">K</div>Kogi Collective · 8 members</div>
+        <div class="campaign-desc">Pooling resources to onboard 500 new independent workers to the platform. Funds used for education, tooling subsidies, and mentorship programs.</div>
+        <div class="progress-section">
+          <div class="progress-stats">
+            <span class="prog-raised teal">$28,400</span>
+            <span class="prog-pct teal">71%</span>
+          </div>
+          <div style="font-size:9px;color:var(--text3);margin-bottom:4px;">of $40,000 goal · 142 contributors</div>
+          <div class="progress-bar"><div class="progress-fill" style="width:71%;background:var(--accent-teal);"></div></div>
+        </div>
+        <div class="campaign-meta">
+          <div class="cm-item"><div class="cm-val teal">142</div><div class="cm-label">Contributors</div></div>
+          <div class="cm-item"><div class="cm-val gold">$200</div><div class="cm-label">Avg Contribution</div></div>
+          <div class="cm-item"><div class="cm-val green">18d</div><div class="cm-label">Remaining</div></div>
+        </div>
+        <div class="campaign-actions">
+          <button class="camp-btn camp-btn-invest">Contribute</button>
+          <button class="camp-btn camp-btn-view">View Details</button>
+        </div>
+      </div>
+
+      <div class="campaign-card">
+        <div class="campaign-type-row">
+          <span class="camp-type type-bond">Community Bond</span>
+          <span class="days-left">31 days left</span>
+        </div>
+        <div class="campaign-title">Infrastructure Bond — Vehicle Fleet Cooperative</div>
+        <div class="campaign-owner"><div class="owner-dot" style="background:var(--accent-orange);">N</div>Nandi Mobility Coop · 24 members</div>
+        <div class="campaign-desc">Revenue-backed bond offering financing for a shared electric vehicle fleet managed by the cooperative. 7.2% annual return, 3-year term.</div>
+        <div class="progress-section">
+          <div class="progress-stats">
+            <span class="prog-raised purple">$124,500</span>
+            <span class="prog-pct purple">83%</span>
+          </div>
+          <div style="font-size:9px;color:var(--text3);margin-bottom:4px;">of $150,000 goal · 67 investors</div>
+          <div class="progress-bar"><div class="progress-fill" style="width:83%;background:var(--accent-purple);"></div></div>
+        </div>
+        <div class="campaign-meta">
+          <div class="cm-item"><div class="cm-val purple">67</div><div class="cm-label">Investors</div></div>
+          <div class="cm-item"><div class="cm-val gold">7.2%</div><div class="cm-label">Annual Return</div></div>
+          <div class="cm-item"><div class="cm-val green">3yr</div><div class="cm-label">Term</div></div>
+        </div>
+        <div class="campaign-actions">
+          <button class="camp-btn camp-btn-invest">Invest</button>
+          <button class="camp-btn camp-btn-view">View Details</button>
+        </div>
+      </div>
+
+      <div class="campaign-card">
+        <div class="campaign-type-row">
+          <span class="camp-type type-pool">Resource Pool</span>
+          <span class="days-left">12 days left</span>
+        </div>
+        <div class="campaign-title">Compute Pool — Shared ML Infrastructure</div>
+        <div class="campaign-owner"><div class="owner-dot" style="background:var(--accent-blue);">D</div>Data Workers Guild · 14 members</div>
+        <div class="campaign-desc">Pooling capital for shared access to high-performance GPU compute cluster. All contributors receive proportional compute credits monthly.</div>
+        <div class="progress-section">
+          <div class="progress-stats">
+            <span class="prog-raised blue">$18,200</span>
+            <span class="prog-pct blue">91%</span>
+          </div>
+          <div style="font-size:9px;color:var(--text3);margin-bottom:4px;">of $20,000 goal · 28 contributors</div>
+          <div class="progress-bar"><div class="progress-fill" style="width:91%;background:var(--accent-blue);"></div></div>
+        </div>
+        <div class="campaign-meta">
+          <div class="cm-item"><div class="cm-val blue">28</div><div class="cm-label">Contributors</div></div>
+          <div class="cm-item"><div class="cm-val gold">Credits</div><div class="cm-label">Return Type</div></div>
+          <div class="cm-item"><div class="cm-val green">12d</div><div class="cm-label">Remaining</div></div>
+        </div>
+        <div class="campaign-actions">
+          <button class="camp-btn camp-btn-invest">Join Pool</button>
+          <button class="camp-btn camp-btn-view">View Details</button>
+        </div>
+      </div>
+
+      <div class="campaign-card">
+        <div class="campaign-type-row">
+          <span class="camp-type type-equity">Equity Round</span>
+          <span class="days-left">45 days left</span>
+        </div>
+        <div class="campaign-title">Token Distribution Engine — Series Seed</div>
+        <div class="campaign-owner"><div class="owner-dot" style="background:var(--accent-gold);color:#0a0c10;">T</div>Theo Park · Distributed Systems</div>
+        <div class="campaign-desc">Developer tooling for programmable token distribution, vesting schedules, and cap table management for worker-owned cooperatives and DAOs.</div>
+        <div class="progress-section">
+          <div class="progress-stats">
+            <span class="prog-raised gold">$84,000</span>
+            <span class="prog-pct gold">56%</span>
+          </div>
+          <div style="font-size:9px;color:var(--text3);margin-bottom:4px;">of $150,000 goal · 38 investors</div>
+          <div class="progress-bar"><div class="progress-fill" style="width:56%;background:var(--accent-gold);"></div></div>
+        </div>
+        <div class="campaign-meta">
+          <div class="cm-item"><div class="cm-val gold">38</div><div class="cm-label">Investors</div></div>
+          <div class="cm-item"><div class="cm-val teal">12%</div><div class="cm-label">Equity</div></div>
+          <div class="cm-item"><div class="cm-val green">45d</div><div class="cm-label">Remaining</div></div>
+        </div>
+        <div class="campaign-actions">
+          <button class="camp-btn camp-btn-invest">Invest</button>
+          <button class="camp-btn camp-btn-view">View Details</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+</body>
+</html>

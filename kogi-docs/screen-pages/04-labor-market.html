@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KOGI · Labor Market</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap');
+  :root {
+    --bg: #0a0c10; --bg2: #0f1218; --bg3: #141820; --panel: #111520;
+    --border: #1e2535; --border2: #252d3e; --text: #c8d4e8; --text2: #7a8ba8; --text3: #4a5568;
+    --accent-gold: #c9a227; --accent-teal: #0fa89a; --accent-purple: #7c5cbf;
+    --accent-orange: #d4622a; --accent-green: #2a9d4e; --accent-blue: #2a6bc9;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: 'IBM Plex Sans', sans-serif; font-size: 12px; min-height: 100vh; display: flex; }
+  .sidebar { width: 160px; background: var(--bg2); border-right: 1px solid var(--border); flex-shrink: 0; }
+  .logo { padding: 14px 16px; border-bottom: 1px solid var(--border); font-family: 'IBM Plex Mono', monospace; font-weight: 600; font-size: 13px; color: var(--accent-gold); letter-spacing: 2px; }
+  .nav-section { padding: 10px 0; }
+  .nav-label { padding: 6px 16px 4px; font-size: 9px; letter-spacing: 2px; color: var(--text3); text-transform: uppercase; font-family: 'IBM Plex Mono', monospace; }
+  .nav-item { padding: 6px 16px; font-size: 11px; color: var(--text2); cursor: pointer; display: flex; align-items: center; gap: 8px; }
+  .nav-item.active { color: var(--accent-teal); background: rgba(15,168,154,0.08); border-left: 2px solid var(--accent-teal); padding-left: 14px; }
+  .nav-item.parent-active { color: var(--accent-gold); }
+  .nav-dot { width: 4px; height: 4px; border-radius: 50%; background: currentColor; flex-shrink: 0; }
+  .main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+  .topbar { height: 44px; background: var(--bg2); border-bottom: 1px solid var(--border); display: flex; align-items: center; padding: 0 20px; gap: 12px; flex-shrink: 0; }
+  .topbar-title { font-family: 'IBM Plex Mono', monospace; font-size: 11px; font-weight: 500; color: var(--text2); letter-spacing: 1px; text-transform: uppercase; }
+  .topbar-title span { color: var(--accent-teal); }
+  .search-bar { flex: 1; max-width: 380px; height: 26px; background: var(--bg3); border: 1px solid var(--border2); padding: 0 10px; font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: var(--text); outline: none; }
+  .topbar-actions { display: flex; gap: 8px; margin-left: auto; }
+  .btn { padding: 4px 12px; font-family: 'IBM Plex Mono', monospace; font-size: 9px; letter-spacing: 1px; text-transform: uppercase; cursor: pointer; border: 1px solid; }
+  .btn-teal { border-color: var(--accent-teal); color: var(--accent-teal); background: rgba(15,168,154,0.08); }
+  .btn-gold { border-color: var(--accent-gold); color: var(--accent-gold); background: rgba(201,162,39,0.08); }
+  .content { flex: 1; overflow-y: auto; padding: 16px 20px; display: grid; grid-template-columns: 1fr 280px; gap: 14px; }
+  .left { display: flex; flex-direction: column; gap: 12px; }
+  .right { display: flex; flex-direction: column; gap: 10px; }
+  .stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+  .stat-card { background: var(--panel); border: 1px solid var(--border); padding: 10px 12px; }
+  .stat-label { font-size: 9px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--text3); font-family: 'IBM Plex Mono', monospace; margin-bottom: 4px; }
+  .stat-value { font-family: 'IBM Plex Mono', monospace; font-size: 18px; font-weight: 600; }
+  .stat-sub { font-size: 9px; color: var(--text3); margin-top: 2px; }
+  .teal { color: var(--accent-teal); } .gold { color: var(--accent-gold); } .purple { color: var(--accent-purple); } .green { color: var(--accent-green); }
+  .filter-row { display: flex; gap: 6px; align-items: center; }
+  .filter-tab { padding: 4px 10px; font-family: 'IBM Plex Mono', monospace; font-size: 9px; letter-spacing: 1px; text-transform: uppercase; cursor: pointer; border: 1px solid var(--border); color: var(--text3); background: var(--panel); }
+  .filter-tab.active { border-color: var(--accent-teal); color: var(--accent-teal); background: rgba(15,168,154,0.08); }
+  .filter-select { background: var(--bg3); border: 1px solid var(--border); padding: 4px 8px; font-family: 'IBM Plex Mono', monospace; font-size: 9px; color: var(--text2); outline: none; margin-left: auto; }
+  .workers-grid { display: flex; flex-direction: column; gap: 6px; }
+  .worker-card { background: var(--panel); border: 1px solid var(--border); padding: 12px; display: grid; grid-template-columns: auto 1fr auto; gap: 12px; cursor: pointer; transition: border-color 0.15s; }
+  .worker-card:hover { border-color: var(--border2); }
+  .worker-avatar { width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: 600; flex-shrink: 0; }
+  .worker-name { font-size: 13px; font-weight: 600; margin-bottom: 2px; }
+  .worker-title { font-size: 10px; color: var(--text2); margin-bottom: 4px; }
+  .worker-tags { display: flex; flex-wrap: wrap; gap: 3px; margin-bottom: 4px; }
+  .tag { padding: 1px 6px; background: var(--bg3); border: 1px solid var(--border); font-size: 8px; color: var(--text3); font-family: 'IBM Plex Mono', monospace; }
+  .worker-meta { display: flex; gap: 10px; font-size: 9px; color: var(--text3); }
+  .worker-right { text-align: right; flex-shrink: 0; }
+  .worker-rate { font-family: 'IBM Plex Mono', monospace; font-size: 14px; font-weight: 600; color: var(--accent-teal); }
+  .worker-rate-unit { font-size: 9px; color: var(--text3); }
+  .worker-rating { font-size: 10px; color: var(--accent-gold); margin-bottom: 4px; }
+  .worker-avail { font-size: 9px; margin-bottom: 6px; }
+  .avail-yes { color: var(--accent-green); }
+  .avail-limited { color: var(--accent-orange); }
+  .badge { padding: 2px 6px; font-size: 8px; font-family: 'IBM Plex Mono', monospace; border: 1px solid; }
+  .badge-teal { color: var(--accent-teal); border-color: rgba(15,168,154,0.25); background: rgba(15,168,154,0.08); }
+  .badge-purple { color: var(--accent-purple); border-color: rgba(124,92,191,0.25); background: rgba(124,92,191,0.08); }
+  .ai-match { font-family: 'IBM Plex Mono', monospace; font-size: 9px; color: var(--accent-teal); }
+  .propose-btn { padding: 5px 10px; background: rgba(15,168,154,0.08); border: 1px solid rgba(15,168,154,0.25); color: var(--accent-teal); font-family: 'IBM Plex Mono', monospace; font-size: 8px; letter-spacing: 1px; text-transform: uppercase; cursor: pointer; margin-top: 6px; }
+  /* Right panel */
+  .panel { background: var(--panel); border: 1px solid var(--border); padding: 12px; }
+  .section-title { font-family: 'IBM Plex Mono', monospace; font-size: 9px; letter-spacing: 2px; text-transform: uppercase; color: var(--text3); margin-bottom: 8px; }
+  .req-item { padding: 8px; background: var(--bg3); border: 1px solid var(--border); margin-bottom: 5px; }
+  .req-title { font-size: 11px; font-weight: 600; margin-bottom: 2px; }
+  .req-meta { font-size: 9px; color: var(--text3); display: flex; gap: 8px; }
+  .skills-cloud { display: flex; flex-wrap: wrap; gap: 4px; }
+  .skill-tag { padding: 3px 8px; background: var(--bg3); border: 1px solid var(--border); font-size: 9px; color: var(--text2); font-family: 'IBM Plex Mono', monospace; cursor: pointer; }
+  .skill-tag.hot { border-color: rgba(15,168,154,0.3); color: var(--accent-teal); background: rgba(15,168,154,0.06); }
+  .rate-chart { display: flex; flex-direction: column; gap: 5px; }
+  .rate-row { display: flex; align-items: center; gap: 8px; }
+  .rate-skill { font-size: 9px; color: var(--text3); width: 80px; flex-shrink: 0; }
+  .rate-bar-track { flex: 1; height: 4px; background: var(--border); position: relative; }
+  .rate-bar-fill { height: 100%; background: var(--accent-teal); }
+  .rate-val { font-family: 'IBM Plex Mono', monospace; font-size: 9px; color: var(--text2); width: 50px; text-align: right; }
+  ::-webkit-scrollbar { width: 4px; } ::-webkit-scrollbar-track { background: var(--bg2); } ::-webkit-scrollbar-thumb { background: var(--border2); }
+</style>
+</head>
+<body>
+<div class="sidebar">
+  <div class="logo">KOGI</div>
+  <div class="nav-section">
+    <div class="nav-label">Core</div>
+    <div class="nav-item"><div class="nav-dot"></div>Dashboard</div>
+    <div class="nav-item"><div class="nav-dot"></div>Office</div>
+    <div class="nav-item parent-active"><div class="nav-dot"></div>Marketplace</div>
+    <div class="nav-item"><div class="nav-dot"></div>Exchange</div>
+  </div>
+  <div class="nav-section">
+    <div class="nav-label">Market</div>
+    <div class="nav-item active"><div class="nav-dot"></div>Work / Labor</div>
+    <div class="nav-item"><div class="nav-dot"></div>Assets</div>
+    <div class="nav-item"><div class="nav-dot"></div>Resources</div>
+    <div class="nav-item"><div class="nav-dot"></div>Campaigns</div>
+    <div class="nav-item"><div class="nav-dot"></div>Templates</div>
+  </div>
+  <div class="nav-section">
+    <div class="nav-label">Deals</div>
+    <div class="nav-item"><div class="nav-dot"></div>My Deals</div>
+    <div class="nav-item"><div class="nav-dot"></div>Proposals</div>
+    <div class="nav-item"><div class="nav-dot"></div>Requirements</div>
+  </div>
+</div>
+
+<div class="main">
+  <div class="topbar">
+    <div class="topbar-title">Marketplace · <span>Labor Market</span></div>
+    <input class="search-bar" placeholder="Search skills, roles, worker names...">
+    <div class="topbar-actions">
+      <button class="btn btn-teal">Post Requirement</button>
+      <button class="btn btn-gold">Oba ✦</button>
+    </div>
+  </div>
+
+  <div class="content">
+    <div class="left">
+      <!-- Stats -->
+      <div class="stats-row">
+        <div class="stat-card"><div class="stat-label">Workers Listed</div><div class="stat-value teal">284</div><div class="stat-sub">+22 this week</div></div>
+        <div class="stat-card"><div class="stat-label">Open Roles</div><div class="stat-value gold">408</div><div class="stat-sub">21 match your portfolio</div></div>
+        <div class="stat-card"><div class="stat-label">Avg Rate</div><div class="stat-value purple">$94<span style="font-size:10px">/hr</span></div><div class="stat-sub">Platform median</div></div>
+        <div class="stat-card"><div class="stat-label">Active Deals</div><div class="stat-value green">28</div><div class="stat-sub">4 need review</div></div>
+      </div>
+
+      <!-- Filters -->
+      <div class="filter-row">
+        <div class="filter-tab active">All Workers</div>
+        <div class="filter-tab">Gigs</div>
+        <div class="filter-tab">Contracts</div>
+        <div class="filter-tab">Consulting</div>
+        <div class="filter-tab">Collaboration</div>
+        <select class="filter-select"><option>All Skills</option><option>Design</option><option>Engineering</option><option>Strategy</option></select>
+        <select class="filter-select"><option>Sort: AI Match</option><option>Rate: Low-High</option><option>Rating</option></select>
+      </div>
+
+      <!-- Worker Cards -->
+      <div class="workers-grid">
+
+        <div class="worker-card">
+          <div class="worker-avatar" style="background:#2a6bc9;">S</div>
+          <div>
+            <div class="worker-name">Sofia Reyes</div>
+            <div class="worker-title">Senior Product Designer · Design Systems Specialist</div>
+            <div class="worker-tags">
+              <span class="tag">Figma</span><span class="tag">Design Systems</span><span class="tag">Angular</span><span class="tag">Tokens</span><span class="tag">Motion</span>
+            </div>
+            <div class="worker-meta"><span>★ 4.9 · 84 reviews</span><span>94% completion</span><span>San Francisco</span></div>
+          </div>
+          <div class="worker-right">
+            <div class="worker-rate">$145<span class="worker-rate-unit">/hr</span></div>
+            <div class="worker-rating">★★★★★</div>
+            <div class="worker-avail avail-yes">Available Now</div>
+            <div class="ai-match">AI Match 97</div>
+            <button class="propose-btn">Propose →</button>
+          </div>
+        </div>
+
+        <div class="worker-card">
+          <div class="worker-avatar" style="background:#d4622a;">K</div>
+          <div>
+            <div class="worker-name">Kai Thompson</div>
+            <div class="worker-title">Full-Stack Engineer · Platform Architecture</div>
+            <div class="worker-tags">
+              <span class="tag">Go</span><span class="tag">Rust</span><span class="tag">Kafka</span><span class="tag">PostgreSQL</span><span class="tag">gRPC</span>
+            </div>
+            <div class="worker-meta"><span>★ 4.8 · 67 reviews</span><span>97% completion</span><span>Remote</span></div>
+          </div>
+          <div class="worker-right">
+            <div class="worker-rate">$170<span class="worker-rate-unit">/hr</span></div>
+            <div class="worker-rating">★★★★★</div>
+            <div class="worker-avail avail-limited">Available Feb 1</div>
+            <div class="ai-match">AI Match 94</div>
+            <button class="propose-btn">Propose →</button>
+          </div>
+        </div>
+
+        <div class="worker-card">
+          <div class="worker-avatar" style="background:#7c5cbf;">P</div>
+          <div>
+            <div class="worker-name">Priya Shah</div>
+            <div class="worker-title">Data Scientist · ML Engineering · Analytics</div>
+            <div class="worker-tags">
+              <span class="tag">Python</span><span class="tag">Scala</span><span class="tag">Spark</span><span class="tag">ML/AI</span><span class="tag">Recommendation</span>
+            </div>
+            <div class="worker-meta"><span>★ 4.9 · 43 reviews</span><span>100% completion</span><span>Remote</span></div>
+          </div>
+          <div class="worker-right">
+            <div class="worker-rate">$195<span class="worker-rate-unit">/hr</span></div>
+            <div class="worker-rating">★★★★★</div>
+            <div class="worker-avail avail-yes">Available Now</div>
+            <div class="ai-match">AI Match 91</div>
+            <button class="propose-btn">Propose →</button>
+          </div>
+        </div>
+
+        <div class="worker-card">
+          <div class="worker-avatar" style="background:#0fa89a;">M</div>
+          <div>
+            <div class="worker-name">Marcus Silva</div>
+            <div class="worker-title">Brand Strategist · Creative Director</div>
+            <div class="worker-tags">
+              <span class="tag">Brand Strategy</span><span class="tag">Creative Direction</span><span class="tag">Copywriting</span><span class="tag">Campaign</span>
+            </div>
+            <div class="worker-meta"><span>★ 4.7 · 128 reviews</span><span>89% completion</span><span>New York</span></div>
+          </div>
+          <div class="worker-right">
+            <div class="worker-rate">$120<span class="worker-rate-unit">/hr</span></div>
+            <div class="worker-rating">★★★★☆</div>
+            <div class="worker-avail avail-limited">Limited — 10 hrs/wk</div>
+            <div class="ai-match">AI Match 88</div>
+            <button class="propose-btn">Propose →</button>
+          </div>
+        </div>
+
+        <div class="worker-card">
+          <div class="worker-avatar" style="background:#c9a227;color:#0a0c10;">L</div>
+          <div>
+            <div class="worker-name">Lola Mensah</div>
+            <div class="worker-title">Legal Counsel · IP & Contract Specialist</div>
+            <div class="worker-tags">
+              <span class="tag">Contract Law</span><span class="tag">IP / Patent</span><span class="tag">NDA</span><span class="tag">Corporate</span>
+            </div>
+            <div class="worker-meta"><span>★ 4.9 · 56 reviews</span><span>96% completion</span><span>Remote · London</span></div>
+          </div>
+          <div class="worker-right">
+            <div class="worker-rate">$175<span class="worker-rate-unit">/hr</span></div>
+            <div class="worker-rating">★★★★★</div>
+            <div class="worker-avail avail-yes">Available Now</div>
+            <div class="ai-match">AI Match 86</div>
+            <button class="propose-btn">Propose →</button>
+          </div>
+        </div>
+
+        <div class="worker-card">
+          <div class="worker-avatar" style="background:#2a9d4e;">R</div>
+          <div>
+            <div class="worker-name">Remi Okafor</div>
+            <div class="worker-title">Mobile Engineer · iOS & Android</div>
+            <div class="worker-tags">
+              <span class="tag">Swift</span><span class="tag">Kotlin</span><span class="tag">React Native</span><span class="tag">Mobile</span>
+            </div>
+            <div class="worker-meta"><span>★ 4.8 · 38 reviews</span><span>92% completion</span><span>Remote</span></div>
+          </div>
+          <div class="worker-right">
+            <div class="worker-rate">$135<span class="worker-rate-unit">/hr</span></div>
+            <div class="worker-rating">★★★★★</div>
+            <div class="worker-avail avail-yes">Available Now</div>
+            <div class="ai-match">AI Match 83</div>
+            <button class="propose-btn">Propose →</button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Right -->
+    <div class="right">
+      <div class="panel">
+        <div class="section-title">Active Requirements · Mine</div>
+        <div class="req-item">
+          <div class="req-title">Frontend Engineer — React + TypeScript</div>
+          <div class="req-meta"><span>$120–160/hr</span><span>Contract · 3mo</span><span>8 proposals</span></div>
+        </div>
+        <div class="req-item">
+          <div class="req-title">Data Pipeline Architect</div>
+          <div class="req-meta"><span>$180–220/hr</span><span>Consulting</span><span>3 proposals</span></div>
+        </div>
+        <button style="width:100%;padding:6px;background:transparent;border:1px dashed var(--border2);color:var(--text3);font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:1px;text-transform:uppercase;cursor:pointer;margin-top:4px;">+ Post New Requirement</button>
+      </div>
+
+      <div class="panel">
+        <div class="section-title">Hot Skills · This Week</div>
+        <div class="skills-cloud">
+          <span class="skill-tag hot">Design Systems</span>
+          <span class="skill-tag hot">Go / Rust</span>
+          <span class="skill-tag hot">ML / AI</span>
+          <span class="skill-tag">Figma</span>
+          <span class="skill-tag hot">Kafka</span>
+          <span class="skill-tag">TypeScript</span>
+          <span class="skill-tag">Legal / IP</span>
+          <span class="skill-tag hot">Brand Strategy</span>
+          <span class="skill-tag">Motion Design</span>
+          <span class="skill-tag">Scala</span>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="section-title">Market Rates · Avg / hr</div>
+        <div class="rate-chart">
+          <div class="rate-row"><span class="rate-skill">ML / AI</span><div class="rate-bar-track"><div class="rate-bar-fill" style="width:95%;background:var(--accent-purple);"></div></div><span class="rate-val">$194</span></div>
+          <div class="rate-row"><span class="rate-skill">Architecture</span><div class="rate-bar-track"><div class="rate-bar-fill" style="width:88%;"></div></div><span class="rate-val">$178</span></div>
+          <div class="rate-row"><span class="rate-skill">Legal / IP</span><div class="rate-bar-track"><div class="rate-bar-fill" style="width:85%;background:var(--accent-gold);"></div></div><span class="rate-val">$172</span></div>
+          <div class="rate-row"><span class="rate-skill">Backend Eng</span><div class="rate-bar-track"><div class="rate-bar-fill" style="width:82%;"></div></div><span class="rate-val">$165</span></div>
+          <div class="rate-row"><span class="rate-skill">Design</span><div class="rate-bar-track"><div class="rate-bar-fill" style="width:72%;"></div></div><span class="rate-val">$144</span></div>
+          <div class="rate-row"><span class="rate-skill">Copywriting</span><div class="rate-bar-track"><div class="rate-bar-fill" style="width:55%;background:var(--accent-orange);"></div></div><span class="rate-val">$110</span></div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="section-title">Oba · AI Matching</div>
+        <div style="background:rgba(15,168,154,0.04);border:1px solid rgba(15,168,154,0.12);padding:8px;">
+          <div style="font-size:9px;color:var(--accent-teal);font-family:'IBM Plex Mono',monospace;margin-bottom:4px;">✦ Active Match Engine</div>
+          <div style="font-size:10px;color:var(--text3);line-height:1.6;">Processing 284 workers against your requirements. 21 high-confidence matches surfaced. Sofia Reyes and Kai Thompson show strongest portfolio alignment with your active projects.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

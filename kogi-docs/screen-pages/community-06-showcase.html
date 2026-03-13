@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KOGI · Showcase</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap');
+  *{margin:0;padding:0;box-sizing:border-box;}
+  :root{
+    --bg:#080b10;--bg2:#0d1117;--bg3:#111820;--bg4:#161e28;
+    --border:#1e2d3d;--border2:#243344;
+    --teal:#00c9a7;--teal2:#009e84;--teal-dim:#00c9a720;
+    --amber:#f5a623;--amber-dim:#f5a62318;
+    --purple:#8b5cf6;--purple-dim:#8b5cf615;
+    --pink:#e83e8c;--pink-dim:#e83e8c18;
+    --green:#22c55e;--red:#ef4444;--blue:#3b82f6;--blue-dim:#3b82f615;
+    --gold:#d4a017;--gold-dim:#d4a01718;
+    --text:#e2e8f0;--text2:#94a3b8;--text3:#4a6280;
+    --mono:'IBM Plex Mono',monospace;--sans:'IBM Plex Sans',sans-serif;
+  }
+  body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:12px;display:flex;height:100vh;overflow:hidden;}
+  .sidebar{width:168px;background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0;}
+  .logo{padding:12px 14px;border-bottom:1px solid var(--border);font-family:var(--mono);font-size:13px;font-weight:600;letter-spacing:3px;color:var(--teal);}
+  .nav-section{padding:8px 0;}
+  .nav-label{padding:4px 14px 2px;font-size:9px;letter-spacing:2px;color:var(--text3);text-transform:uppercase;}
+  .nav-item{padding:5px 14px;color:var(--text2);cursor:pointer;font-size:11px;display:flex;align-items:center;gap:6px;border-left:2px solid transparent;}
+  .nav-item:hover{color:var(--text);background:var(--bg3);}
+  .nav-item.active{color:var(--teal);border-left-color:var(--teal);background:var(--teal-dim);}
+  .nav-item .dot{width:5px;height:5px;border-radius:50%;background:currentColor;opacity:.6;}
+  .nav-divider{height:1px;background:var(--border);margin:6px 0;}
+  .main{flex:1;display:flex;flex-direction:column;overflow:hidden;}
+  .topbar{padding:8px 16px;background:var(--bg2);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;}
+  .topbar-title{font-family:var(--mono);font-size:13px;font-weight:500;color:var(--text);}
+  .topbar-crumb{color:var(--text3);}
+  .topbar-search{flex:1;max-width:280px;background:var(--bg3);border:1px solid var(--border);border-radius:3px;padding:4px 10px;color:var(--text2);font-family:var(--mono);font-size:11px;outline:none;}
+  .topbar-actions{margin-left:auto;display:flex;gap:6px;}
+  .btn{padding:4px 10px;border-radius:3px;font-family:var(--mono);font-size:10px;cursor:pointer;border:1px solid var(--border2);background:var(--bg3);color:var(--text2);}
+  .btn.primary{background:var(--teal2);border-color:var(--teal);color:#000;font-weight:600;}
+
+  .filter-bar{display:flex;align-items:center;gap:6px;padding:7px 16px;background:var(--bg2);border-bottom:1px solid var(--border);flex-wrap:wrap;}
+  .filter-label{font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:1px;}
+  .fchip{padding:2px 8px;border-radius:10px;font-size:9px;font-family:var(--mono);border:1px solid var(--border2);color:var(--text3);cursor:pointer;}
+  .fchip.active{border-color:var(--teal);color:var(--teal);background:var(--teal-dim);}
+  .fsep{width:1px;height:14px;background:var(--border);margin:0 4px;}
+
+  .content-area{flex:1;display:flex;overflow:hidden;}
+
+  /* MAIN GRID */
+  .showcase-main{flex:1;overflow-y:auto;padding:14px 16px;}
+  .section-hdr{display:flex;align-items:center;margin-bottom:10px;gap:8px;}
+  .sh-title{font-family:var(--mono);font-size:9px;text-transform:uppercase;letter-spacing:2px;color:var(--text3);}
+  .sh-more{margin-left:auto;font-size:9px;color:var(--teal);cursor:pointer;font-family:var(--mono);}
+
+  /* FEATURED ROW */
+  .featured-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px;}
+  .featured-card{background:var(--bg2);border:1px solid var(--border);border-radius:4px;overflow:hidden;cursor:pointer;position:relative;}
+  .featured-card:hover{border-color:var(--border2);}
+  .fc-banner{height:80px;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;}
+  .fc-banner-text{font-size:32px;position:relative;z-index:1;}
+  .fc-overlay{position:absolute;inset:0;background:linear-gradient(to bottom, transparent 40%, #0d1117 100%);}
+  .fc-body{padding:10px 12px;}
+  .fc-header{display:flex;align-items:flex-start;gap:8px;margin-bottom:5px;}
+  .fc-type-icon{width:26px;height:26px;border-radius:3px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0;}
+  .fc-name{font-size:12px;font-weight:600;color:var(--text);line-height:1.2;}
+  .fc-handle{font-size:9px;color:var(--text3);}
+  .fc-desc{font-size:10px;color:var(--text3);line-height:1.4;margin-bottom:8px;}
+  .fc-tags{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:8px;}
+  .fc-tag{font-size:8px;padding:1px 5px;border-radius:2px;background:var(--bg4);color:var(--text3);border:1px solid var(--border);}
+  .fc-footer{display:flex;align-items:center;gap:8px;}
+  .fc-author{display:flex;align-items:center;gap:5px;}
+  .fc-av{width:18px;height:18px;border-radius:50%;background:var(--bg4);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:7px;font-weight:600;}
+  .fc-author-name{font-size:9px;color:var(--text3);}
+  .fc-stats{margin-left:auto;display:flex;gap:8px;}
+  .fc-stat{font-size:9px;color:var(--text3);}
+  .fc-stat span{color:var(--text2);font-family:var(--mono);}
+  .fc-price{font-family:var(--mono);font-size:12px;color:var(--teal);margin-left:auto;}
+  .fc-ai-badge{font-size:8px;font-family:var(--mono);padding:1px 5px;border-radius:2px;background:var(--teal-dim);color:var(--teal);border:1px solid var(--teal2);}
+
+  /* GRID */
+  .card-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px;}
+  .showcase-card{background:var(--bg2);border:1px solid var(--border);border-radius:4px;overflow:hidden;cursor:pointer;}
+  .showcase-card:hover{border-color:var(--border2);}
+  .sc-thumb{height:56px;display:flex;align-items:center;justify-content:center;font-size:22px;position:relative;}
+  .sc-body{padding:8px 10px;}
+  .sc-name{font-size:10px;font-weight:600;color:var(--text);margin-bottom:2px;}
+  .sc-meta{font-size:9px;color:var(--text3);margin-bottom:5px;}
+  .sc-stats-row{display:flex;align-items:center;gap:6px;}
+  .sc-stat{font-size:9px;color:var(--text3);}
+  .sc-stat span{color:var(--text2);font-family:var(--mono);}
+  .sc-price{margin-left:auto;font-family:var(--mono);font-size:10px;color:var(--teal);}
+  .sc-type-badge{font-size:7px;font-family:var(--mono);padding:1px 4px;border-radius:2px;}
+  .sc-footer-row{display:flex;align-items:center;gap:5px;margin-top:4px;padding-top:4px;border-top:1px solid var(--border);}
+  .sc-av{width:14px;height:14px;border-radius:50%;background:var(--bg4);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:6px;font-weight:600;}
+  .sc-author-name{font-size:8px;color:var(--text3);}
+  .sc-score{font-size:8px;font-family:var(--mono);color:var(--teal);}
+
+  /* SIDEBAR */
+  .right-panel{width:240px;border-left:1px solid var(--border);background:var(--bg2);overflow-y:auto;flex-shrink:0;}
+  .rp-section{padding:10px 12px;border-bottom:1px solid var(--border);}
+  .rp-title{font-family:var(--mono);font-size:9px;text-transform:uppercase;letter-spacing:1.5px;color:var(--text3);margin-bottom:8px;}
+  .creator-row{display:flex;align-items:center;gap:8px;padding:5px 0;cursor:pointer;}
+  .cr-av{width:26px;height:26px;border-radius:50%;background:var(--bg4);border:1px solid var(--border2);display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:600;flex-shrink:0;}
+  .cr-name{font-size:10px;color:var(--text2);font-weight:500;}
+  .cr-role{font-size:8px;color:var(--text3);}
+  .cr-count{margin-left:auto;font-family:var(--mono);font-size:9px;color:var(--text3);}
+  .cr-follow{font-size:8px;font-family:var(--mono);color:var(--teal);padding:1px 5px;border:1px solid var(--teal2);border-radius:2px;cursor:pointer;}
+  .trending-tag{display:flex;justify-content:space-between;padding:4px 0;}
+  .tt-name{font-size:10px;color:var(--text2);cursor:pointer;}
+  .tt-count{font-size:9px;color:var(--text3);font-family:var(--mono);}
+  .category-btn{display:flex;align-items:center;gap:6px;padding:5px 8px;border-radius:3px;background:var(--bg3);border:1px solid var(--border);cursor:pointer;margin-bottom:4px;}
+  .category-btn:hover{border-color:var(--border2);}
+  .cat-icon{font-size:12px;}
+  .cat-name{font-size:10px;color:var(--text2);}
+  .cat-count{margin-left:auto;font-family:var(--mono);font-size:9px;color:var(--text3);}
+
+  ::-webkit-scrollbar{width:4px;}
+  ::-webkit-scrollbar-track{background:var(--bg);}
+  ::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px;}
+</style>
+</head>
+<body>
+<div class="sidebar">
+  <div class="logo">KOGI</div>
+  <div class="nav-section">
+    <div class="nav-label">Community</div>
+    <div class="nav-item"><span class="dot"></span>Feed</div>
+    <div class="nav-item"><span class="dot"></span>Spaces</div>
+    <div class="nav-item"><span class="dot"></span>Rooms</div>
+    <div class="nav-item"><span class="dot"></span>Messages</div>
+    <div class="nav-item"><span class="dot"></span>Events</div>
+    <div class="nav-item active"><span class="dot"></span>Showcase</div>
+    <div class="nav-item"><span class="dot"></span>Organizations</div>
+  </div>
+  <div class="nav-divider"></div>
+  <div class="nav-section">
+    <div class="nav-label">Economy</div>
+    <div class="nav-item"><span class="dot"></span>Exchange</div>
+    <div class="nav-item"><span class="dot"></span>Marketplace</div>
+  </div>
+</div>
+
+<div class="main">
+  <div class="topbar">
+    <div class="topbar-title"><span class="topbar-crumb">Community /</span> Showcase</div>
+    <input class="topbar-search" placeholder="search portfolio assets, creators, projects..." />
+    <div class="topbar-actions">
+      <button class="btn">⊞ Grid</button>
+      <button class="btn">≡ List</button>
+      <button class="btn primary">+ Publish Work</button>
+    </div>
+  </div>
+  <div class="filter-bar">
+    <span class="filter-label">Type</span>
+    <span class="fchip active">All</span>
+    <span class="fchip">Assets</span>
+    <span class="fchip">Artifacts</span>
+    <span class="fchip">Projects</span>
+    <span class="fchip">Playbooks</span>
+    <div class="fsep"></div>
+    <span class="filter-label">Sort</span>
+    <span class="fchip active">Trending</span>
+    <span class="fchip">Newest</span>
+    <span class="fchip">Top Rated</span>
+    <span class="fchip">For You</span>
+    <div class="fsep"></div>
+    <span class="filter-label">Category</span>
+    <span class="fchip">Design</span>
+    <span class="fchip">Engineering</span>
+    <span class="fchip">Data</span>
+    <span class="fchip">Strategy</span>
+  </div>
+
+  <div class="content-area">
+    <div class="showcase-main">
+
+      <div class="section-hdr">
+        <div class="sh-title">Featured This Week</div>
+        <div class="sh-more">View all →</div>
+      </div>
+      <div class="featured-grid">
+        <div class="featured-card">
+          <div class="fc-banner" style="background:linear-gradient(135deg,#00c9a730,#8b5cf620)"><div class="fc-banner-text">🎨</div><div class="fc-overlay"></div></div>
+          <div class="fc-body">
+            <div class="fc-header">
+              <div class="fc-type-icon" style="background:var(--teal-dim);color:var(--teal)">A</div>
+              <div><div class="fc-name">Brand Identity System v2.0</div><div class="fc-handle">Full logo · motion · token system</div></div>
+              <span class="fc-ai-badge">AI 94</span>
+            </div>
+            <div class="fc-desc">Complete brand identity system with logo suite, color tokens, motion guidelines, dark/light modes, and full governance docs.</div>
+            <div class="fc-tags"><span class="fc-tag">Branding</span><span class="fc-tag">Design System</span><span class="fc-tag">Motion</span><span class="fc-tag">IP Licensed</span></div>
+            <div class="fc-footer">
+              <div class="fc-author"><div class="fc-av" style="color:var(--teal)">JC</div><span class="fc-author-name">Jordan Chen</span></div>
+              <div class="fc-stats"><div class="fc-stat">👥 <span>142</span></div><div class="fc-stat">👏 <span>48</span></div></div>
+              <div class="fc-price">$12,400</div>
+            </div>
+          </div>
+        </div>
+        <div class="featured-card">
+          <div class="fc-banner" style="background:linear-gradient(135deg,#3b82f630,#00c9a720)"><div class="fc-banner-text">📊</div><div class="fc-overlay"></div></div>
+          <div class="fc-body">
+            <div class="fc-header">
+              <div class="fc-type-icon" style="background:var(--teal-dim);color:var(--teal)">A</div>
+              <div><div class="fc-name">Fintech Design System v1.0</div><div class="fc-handle">840 components · full Storybook</div></div>
+              <span class="fc-ai-badge">AI 91</span>
+            </div>
+            <div class="fc-desc">Token-based design system for fintech dashboards. 840 components, 4 semantic color modes, dark/light, and complete Figma + Storybook integration.</div>
+            <div class="fc-tags"><span class="fc-tag">Fintech</span><span class="fc-tag">Components</span><span class="fc-tag">Figma</span><span class="fc-tag">Storybook</span></div>
+            <div class="fc-footer">
+              <div class="fc-author"><div class="fc-av" style="color:var(--pink)">LR</div><span class="fc-author-name">Lena Rivera</span></div>
+              <div class="fc-stats"><div class="fc-stat">👥 <span>98</span></div><div class="fc-stat">👏 <span>38</span></div></div>
+              <div class="fc-price">$4,800</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="section-hdr">
+        <div class="sh-title">Trending — Design & Branding</div>
+        <div class="sh-more">See all →</div>
+      </div>
+      <div class="card-grid">
+        <div class="showcase-card">
+          <div class="sc-thumb" style="background:linear-gradient(135deg,#8b5cf620,#080b10)">🧩</div>
+          <div class="sc-body">
+            <div class="sc-name">Motion Design Playbook</div>
+            <div class="sc-meta">Playbook · v1.2 · 62pp</div>
+            <div class="sc-stats-row">
+              <div class="sc-stat">👥 <span>74</span></div>
+              <div class="sc-stat">👏 <span>31</span></div>
+              <span class="sc-type-badge" style="background:var(--purple-dim);color:var(--purple)">PLAYBOOK</span>
+              <div class="sc-price">$1,200</div>
+            </div>
+            <div class="sc-footer-row"><div class="sc-av" style="color:var(--amber)">DK</div><div class="sc-author-name">Dev Kim</div><div class="sc-score" style="margin-left:auto;">AI 87</div></div>
+          </div>
+        </div>
+        <div class="showcase-card">
+          <div class="sc-thumb" style="background:linear-gradient(135deg,#00c9a718,#080b10)">🖋</div>
+          <div class="sc-body">
+            <div class="sc-name">Typography Scale System</div>
+            <div class="sc-meta">Asset · v2.0 · Figma + CSS</div>
+            <div class="sc-stats-row">
+              <div class="sc-stat">👥 <span>51</span></div>
+              <div class="sc-stat">👏 <span>22</span></div>
+              <span class="sc-type-badge" style="background:var(--teal-dim);color:var(--teal)">ASSET</span>
+              <div class="sc-price">$480</div>
+            </div>
+            <div class="sc-footer-row"><div class="sc-av" style="color:var(--blue)">SN</div><div class="sc-author-name">Sofia N.</div><div class="sc-score" style="margin-left:auto;">AI 83</div></div>
+          </div>
+        </div>
+        <div class="showcase-card">
+          <div class="sc-thumb" style="background:linear-gradient(135deg,#f5a62318,#080b10)">🎯</div>
+          <div class="sc-body">
+            <div class="sc-name">Iconography Pack — 1,200 Icons</div>
+            <div class="sc-meta">Asset · SVG + Figma · v3.0</div>
+            <div class="sc-stats-row">
+              <div class="sc-stat">👥 <span>212</span></div>
+              <div class="sc-stat">👏 <span>86</span></div>
+              <span class="sc-type-badge" style="background:var(--amber-dim);color:var(--amber)">ASSET</span>
+              <div class="sc-price">$320</div>
+            </div>
+            <div class="sc-footer-row"><div class="sc-av" style="color:var(--teal)">JC</div><div class="sc-author-name">Jordan C.</div><div class="sc-score" style="margin-left:auto;">AI 96</div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="section-hdr">
+        <div class="sh-title">Engineering & Infrastructure</div>
+        <div class="sh-more">See all →</div>
+      </div>
+      <div class="card-grid">
+        <div class="showcase-card">
+          <div class="sc-thumb" style="background:linear-gradient(135deg,#3b82f618,#080b10)">⚡</div>
+          <div class="sc-body">
+            <div class="sc-name">Kafka-Flink Pipeline Template</div>
+            <div class="sc-meta">Artifact · Go + Scala · v1.0</div>
+            <div class="sc-stats-row">
+              <div class="sc-stat">👥 <span>88</span></div>
+              <div class="sc-stat">👏 <span>41</span></div>
+              <span class="sc-type-badge" style="background:var(--blue-dim);color:var(--blue)">ARTIFACT</span>
+              <div class="sc-price">$2,400</div>
+            </div>
+            <div class="sc-footer-row"><div class="sc-av" style="color:var(--purple)">PS</div><div class="sc-author-name">Priya S.</div><div class="sc-score" style="margin-left:auto;">AI 92</div></div>
+          </div>
+        </div>
+        <div class="showcase-card">
+          <div class="sc-thumb" style="background:linear-gradient(135deg,#22c55e15,#080b10)">🔐</div>
+          <div class="sc-body">
+            <div class="sc-name">Auth Layer + RBAC Boilerplate</div>
+            <div class="sc-meta">Artifact · Rust + Go · v2.1</div>
+            <div class="sc-stats-row">
+              <div class="sc-stat">👥 <span>63</span></div>
+              <div class="sc-stat">👏 <span>28</span></div>
+              <span class="sc-type-badge" style="background:var(--blue-dim);color:var(--blue)">ARTIFACT</span>
+              <div class="sc-price">$1,800</div>
+            </div>
+            <div class="sc-footer-row"><div class="sc-av" style="color:var(--green)">AK</div><div class="sc-author-name">Asha Kim</div><div class="sc-score" style="margin-left:auto;">AI 89</div></div>
+          </div>
+        </div>
+        <div class="showcase-card">
+          <div class="sc-thumb" style="background:linear-gradient(135deg,#d4a01718,#080b10)">📦</div>
+          <div class="sc-body">
+            <div class="sc-name">IW Market Research 2025</div>
+            <div class="sc-meta">Asset · 84pp · Dataset incl.</div>
+            <div class="sc-stats-row">
+              <div class="sc-stat">👥 <span>156</span></div>
+              <div class="sc-stat">👏 <span>74</span></div>
+              <span class="sc-type-badge" style="background:var(--gold-dim);color:var(--gold)">RESEARCH</span>
+              <div class="sc-price">$180</div>
+            </div>
+            <div class="sc-footer-row"><div class="sc-av" style="color:var(--amber)">MB</div><div class="sc-author-name">Marcus B.</div><div class="sc-score" style="margin-left:auto;">AI 85</div></div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- RIGHT PANEL -->
+    <div class="right-panel">
+      <div class="rp-section">
+        <div class="rp-title">Top Creators This Week</div>
+        <div class="creator-row">
+          <div class="cr-av" style="color:var(--teal)">JC</div>
+          <div><div class="cr-name">Jordan Chen</div><div class="cr-role">Brand Design · 8 works</div></div>
+          <div class="cr-follow">Follow</div>
+        </div>
+        <div class="creator-row">
+          <div class="cr-av" style="color:var(--pink)">LR</div>
+          <div><div class="cr-name">Lena Rivera</div><div class="cr-role">UI/UX · 6 works</div></div>
+          <div class="cr-follow">Follow</div>
+        </div>
+        <div class="creator-row">
+          <div class="cr-av" style="color:var(--purple)">PS</div>
+          <div><div class="cr-name">Priya Singh</div><div class="cr-role">Engineering · 4 works</div></div>
+          <div class="cr-follow">Follow</div>
+        </div>
+        <div class="creator-row">
+          <div class="cr-av" style="color:var(--amber)">MB</div>
+          <div><div class="cr-name">Marcus Brown</div><div class="cr-role">Strategy · 5 works</div></div>
+          <div class="cr-follow">Follow</div>
+        </div>
+      </div>
+      <div class="rp-section">
+        <div class="rp-title">Browse Categories</div>
+        <div class="category-btn"><div class="cat-icon">🎨</div><div class="cat-name">Design & Brand</div><div class="cat-count">284</div></div>
+        <div class="category-btn"><div class="cat-icon">⚡</div><div class="cat-name">Engineering</div><div class="cat-count">198</div></div>
+        <div class="category-btn"><div class="cat-icon">📊</div><div class="cat-name">Data & Research</div><div class="cat-count">142</div></div>
+        <div class="category-btn"><div class="cat-icon">📋</div><div class="cat-name">Strategy</div><div class="cat-count">96</div></div>
+        <div class="category-btn"><div class="cat-icon">⚖</div><div class="cat-name">Legal Templates</div><div class="cat-count">74</div></div>
+        <div class="category-btn"><div class="cat-icon">🎥</div><div class="cat-name">Video & Motion</div><div class="cat-count">58</div></div>
+      </div>
+      <div class="rp-section">
+        <div class="rp-title">Trending Tags</div>
+        <div class="trending-tag"><div class="tt-name">#DesignSystem</div><div class="tt-count">342</div></div>
+        <div class="trending-tag"><div class="tt-name">#OpenSource</div><div class="tt-count">218</div></div>
+        <div class="trending-tag"><div class="tt-name">#Fintech</div><div class="tt-count">184</div></div>
+        <div class="trending-tag"><div class="tt-name">#IndieWork</div><div class="tt-count">156</div></div>
+        <div class="trending-tag"><div class="tt-name">#CoopEconomics</div><div class="tt-count">112</div></div>
+      </div>
+      <div class="rp-section">
+        <div class="rp-title">Your Showcase Stats</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;">
+          <div style="background:var(--bg3);border:1px solid var(--border);border-radius:3px;padding:7px 8px;">
+            <div style="font-size:8px;color:var(--text3);margin-bottom:2px;">WORKS</div>
+            <div style="font-family:var(--mono);font-size:15px;color:var(--teal);">8</div>
+          </div>
+          <div style="background:var(--bg3);border:1px solid var(--border);border-radius:3px;padding:7px 8px;">
+            <div style="font-size:8px;color:var(--text3);margin-bottom:2px;">FOLLOWERS</div>
+            <div style="font-family:var(--mono);font-size:15px;color:var(--amber);">142</div>
+          </div>
+          <div style="background:var(--bg3);border:1px solid var(--border);border-radius:3px;padding:7px 8px;">
+            <div style="font-size:8px;color:var(--text3);margin-bottom:2px;">IMPRESSIONS</div>
+            <div style="font-family:var(--mono);font-size:15px;color:var(--purple);">8.4K</div>
+          </div>
+          <div style="background:var(--bg3);border:1px solid var(--border);border-radius:3px;padding:7px 8px;">
+            <div style="font-size:8px;color:var(--text3);margin-bottom:2px;">AVG AI SCORE</div>
+            <div style="font-family:var(--mono);font-size:15px;color:var(--teal);">91</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

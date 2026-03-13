@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>KOGI — Open Source Collaboration</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap');
+  :root {
+    --bg-primary: #0a0c10; --bg-secondary: #0f1117; --bg-card: #131820; --bg-card2: #161c26;
+    --border: #1e2535; --border2: #252d3d; --text-primary: #d4dbe8; --text-secondary: #7a8599; --text-muted: #4a5568;
+    --accent-gold: #c8a84b; --accent-gold-dim: #6b5a2a; --accent-teal: #2a9d8f; --accent-teal-dim: #1a4a45;
+    --accent-rose: #c94b6b; --accent-rose-dim: #5a1e2d; --accent-blue: #3b82f6; --accent-blue-dim: #1e3a5f;
+    --accent-green: #4caf7d; --accent-green-dim: #1a3d2a; --accent-purple: #8b5cf6; --accent-orange: #e87c3a;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'IBM Plex Sans', sans-serif; background: var(--bg-primary); color: var(--text-primary); font-size: 11px; display: flex; height: 100vh; overflow: hidden; }
+  .sidebar { width: 168px; background: var(--bg-secondary); border-right: 1px solid var(--border); flex-shrink: 0; }
+  .sidebar-logo { padding: 12px 14px; border-bottom: 1px solid var(--border); }
+  .logo-text { font-family: 'IBM Plex Mono', monospace; font-weight: 600; font-size: 13px; letter-spacing: 0.15em; color: var(--accent-gold); }
+  .sidebar-nav { padding: 8px 0; }
+  .nav-section { padding: 6px 14px 2px; font-size: 9px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.1em; }
+  .nav-item { padding: 5px 14px; display: flex; align-items: center; gap: 7px; color: var(--text-secondary); font-size: 10.5px; border-left: 2px solid transparent; }
+  .nav-item.active { color: var(--accent-gold); border-left-color: var(--accent-gold); background: rgba(200,168,75,0.06); }
+  .nav-dot { width: 5px; height: 5px; border-radius: 50%; background: currentColor; }
+  .main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+  .topbar { height: 44px; border-bottom: 1px solid var(--border); display: flex; align-items: center; padding: 0 18px; gap: 12px; background: var(--bg-secondary); flex-shrink: 0; }
+  .page-title { font-family: 'IBM Plex Mono', monospace; font-size: 12px; font-weight: 500; }
+  .breadcrumb { color: var(--text-muted); font-size: 10px; }
+  .breadcrumb span { color: var(--text-secondary); }
+  .topbar-right { margin-left: auto; display: flex; align-items: center; gap: 8px; }
+  .search-bar { background: var(--bg-card); border: 1px solid var(--border); border-radius: 4px; padding: 4px 10px; font-size: 10px; color: var(--text-secondary); width: 160px; }
+  .btn { padding: 4px 10px; border-radius: 3px; font-size: 10px; font-weight: 500; border: none; font-family: 'IBM Plex Sans', sans-serif; cursor: pointer; }
+  .btn-primary { background: var(--accent-green); color: #0a0c10; }
+  .btn-ghost { background: transparent; border: 1px solid var(--border2); color: var(--text-secondary); }
+  .avatar-sm { width: 22px; height: 22px; border-radius: 50%; background: var(--accent-green-dim); display: flex; align-items: center; justify-content: center; font-size: 9px; font-weight: 600; color: var(--accent-green); }
+  .content { flex: 1; overflow-y: auto; padding: 16px 18px; display: flex; flex-direction: column; gap: 12px; }
+  .stat-row { display: flex; gap: 10px; }
+  .stat-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 4px; padding: 10px 14px; flex: 1; }
+  .stat-label { font-size: 9px; color: var(--text-muted); letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 4px; }
+  .stat-value { font-family: 'IBM Plex Mono', monospace; font-size: 18px; font-weight: 500; line-height: 1; }
+  .stat-value.gold { color: var(--accent-gold); } .stat-value.teal { color: var(--accent-teal); } .stat-value.green { color: var(--accent-green); }
+  .stat-sub { font-size: 9px; color: var(--text-muted); margin-top: 3px; }
+  .grid-3 { display: grid; grid-template-columns: 1.8fr 1fr 1fr; gap: 10px; }
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 4px; padding: 12px 14px; }
+  .card-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+  .card-title { font-size: 10px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; }
+  .card-action { font-size: 9px; color: var(--accent-gold); cursor: pointer; }
+  .section-label { font-size: 9px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-muted); font-weight: 600; margin-bottom: 6px; }
+  .repo-card { background: var(--bg-card2); border: 1px solid var(--border2); border-radius: 4px; padding: 10px 12px; margin-bottom: 8px; }
+  .repo-card:last-child { margin-bottom: 0; }
+  .repo-header { display: flex; align-items: flex-start; gap: 8px; margin-bottom: 6px; }
+  .repo-icon { width: 26px; height: 26px; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 11px; flex-shrink: 0; }
+  .repo-name { font-family: 'IBM Plex Mono', monospace; font-size: 11px; font-weight: 600; color: var(--accent-blue); margin-bottom: 1px; }
+  .repo-desc { font-size: 9.5px; color: var(--text-secondary); line-height: 1.4; }
+  .repo-lang { margin-left: auto; display: flex; align-items: center; gap: 4px; }
+  .lang-dot { width: 8px; height: 8px; border-radius: 50%; }
+  .lang-name { font-size: 9px; color: var(--text-muted); }
+  .repo-stats { display: flex; gap: 12px; }
+  .repo-stat { font-size: 9px; color: var(--text-muted); }
+  .repo-stat span { color: var(--text-primary); font-weight: 500; }
+  .repo-tags { display: flex; gap: 4px; flex-wrap: wrap; margin-top: 5px; }
+  .tag { padding: 1px 5px; border-radius: 2px; font-size: 8.5px; }
+  .tag-blue { background: var(--accent-blue-dim); color: var(--accent-blue); }
+  .tag-green { background: var(--accent-green-dim); color: var(--accent-green); }
+  .tag-gold { background: var(--accent-gold-dim); color: var(--accent-gold); }
+  .tag-teal { background: var(--accent-teal-dim); color: var(--accent-teal); }
+  .tag-purple { background: rgba(139,92,246,0.15); color: var(--accent-purple); }
+  .repo-actions { display: flex; gap: 5px; margin-top: 7px; }
+  .r-btn { padding: 3px 8px; border-radius: 2px; font-size: 9px; border: 1px solid var(--border2); color: var(--text-secondary); background: transparent; cursor: pointer; font-family: 'IBM Plex Sans', sans-serif; }
+  .r-btn-fork { background: var(--accent-green-dim); color: var(--accent-green); border-color: rgba(76,175,125,0.3); }
+  .issue-row { padding: 6px 0; border-bottom: 1px solid var(--border); }
+  .issue-row:last-child { border-bottom: none; }
+  .issue-header { display: flex; align-items: center; gap: 6px; margin-bottom: 2px; }
+  .issue-title { font-size: 10.5px; font-weight: 500; flex: 1; }
+  .badge { padding: 1px 6px; border-radius: 2px; font-size: 8.5px; font-weight: 600; }
+  .badge-bug { background: var(--accent-rose-dim); color: var(--accent-rose); }
+  .badge-feat { background: var(--accent-blue-dim); color: var(--accent-blue); }
+  .badge-docs { background: var(--accent-gold-dim); color: var(--accent-gold); }
+  .badge-good { background: var(--accent-green-dim); color: var(--accent-green); }
+  .issue-meta { font-size: 9px; color: var(--text-muted); }
+  .contributor-row { display: flex; align-items: center; gap: 7px; padding: 5px 0; border-bottom: 1px solid var(--border); }
+  .contributor-row:last-child { border-bottom: none; }
+  .c-avatar { width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 8px; font-weight: 700; }
+  .c-name { font-size: 10px; font-weight: 500; flex: 1; }
+  .c-commits { font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: var(--accent-green); }
+  .c-prs { font-size: 9px; color: var(--text-muted); }
+  .activity-row { display: flex; gap: 8px; padding: 5px 0; border-bottom: 1px solid var(--border); align-items: flex-start; }
+  .activity-row:last-child { border-bottom: none; }
+  .activity-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; margin-top: 3px; }
+  .activity-text { font-size: 10px; color: var(--text-secondary); line-height: 1.4; }
+  .activity-time { font-size: 9px; color: var(--text-muted); margin-top: 1px; }
+  ::-webkit-scrollbar { width: 4px; } ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+  .divider { width: 1px; background: var(--border); height: 16px; margin: 0 4px; }
+  .mono { font-family: 'IBM Plex Mono', monospace; }
+  .progress-bar { height: 3px; background: var(--border); border-radius: 2px; overflow: hidden; }
+  .progress-fill { height: 100%; border-radius: 2px; }
+</style>
+</head>
+<body>
+<div class="sidebar">
+  <div class="sidebar-logo"><div class="logo-text">KOGI</div></div>
+  <div class="sidebar-nav">
+    <div class="nav-section">Main</div>
+    <div class="nav-item"><div class="nav-dot"></div>Home</div>
+    <div class="nav-item"><div class="nav-dot"></div>Office</div>
+    <div class="nav-item active"><div class="nav-dot"></div>Community</div>
+    <div class="nav-item"><div class="nav-dot"></div>Marketplace</div>
+    <div class="nav-item"><div class="nav-dot"></div>Exchange</div>
+    <div class="nav-item"><div class="nav-dot"></div>Bank</div>
+    <div class="nav-section">Open Source</div>
+    <div class="nav-item active"><div class="nav-dot"></div>Repositories</div>
+    <div class="nav-item"><div class="nav-dot"></div>Issues</div>
+    <div class="nav-item"><div class="nav-dot"></div>Pull Requests</div>
+    <div class="nav-item"><div class="nav-dot"></div>Grants</div>
+    <div class="nav-item"><div class="nav-dot"></div>Contributors</div>
+  </div>
+</div>
+
+<div class="main">
+  <div class="topbar">
+    <div class="page-title">Open Source</div>
+    <div class="breadcrumb">Community <span>/ Pamoja Protocol DAO / Open Source</span></div>
+    <div class="topbar-right">
+      <input class="search-bar" placeholder="Search repos, issues..." />
+      <button class="btn btn-ghost">Filter by Language</button>
+      <button class="btn btn-primary">+ New Repository</button>
+      <div class="divider"></div>
+      <div class="avatar-sm">JC</div>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <div class="stat-row">
+      <div class="stat-card"><div class="stat-label">Repositories</div><div class="stat-value green">18</div><div class="stat-sub">12 active · 6 archived</div></div>
+      <div class="stat-card"><div class="stat-label">Contributors</div><div class="stat-value gold">142</div><div class="stat-sub">Across all repos</div></div>
+      <div class="stat-card"><div class="stat-label">Open Issues</div><div class="stat-value teal">284</div><div class="stat-sub">48 good first issues</div></div>
+      <div class="stat-card"><div class="stat-label">PRs This Month</div><div class="stat-value">94</div><div class="stat-sub">78 merged</div></div>
+      <div class="stat-card"><div class="stat-label">Grant Funding</div><div class="stat-value gold">$84K</div><div class="stat-sub">This fiscal year</div></div>
+    </div>
+
+    <div class="grid-3">
+
+      <!-- REPOSITORIES -->
+      <div class="card">
+        <div class="card-header"><div class="card-title">Active Repositories</div><div class="card-action">All Repos →</div></div>
+
+        <div class="repo-card" style="border-color:rgba(59,130,246,0.3);">
+          <div class="repo-header">
+            <div class="repo-icon" style="background:var(--accent-blue-dim);color:var(--accent-blue);">⌘</div>
+            <div style="flex:1;">
+              <div class="repo-name">pamoja/cli-tools</div>
+              <div class="repo-desc">Open source CLI toolkit for independent workers on the Kogi network</div>
+            </div>
+            <div class="repo-lang"><div class="lang-dot" style="background:#e87c3a;"></div><div class="lang-name">Rust</div></div>
+          </div>
+          <div class="repo-stats">
+            <div class="repo-stat"><span>284</span> ⭐</div>
+            <div class="repo-stat"><span>48</span> forks</div>
+            <div class="repo-stat"><span>32</span> open issues</div>
+            <div class="repo-stat">Updated <span>2h ago</span></div>
+          </div>
+          <div class="repo-tags"><span class="tag tag-blue">cli</span><span class="tag tag-gold">tooling</span><span class="tag tag-green">community</span></div>
+          <div class="repo-actions">
+            <button class="r-btn r-btn-fork">⑂ Fork</button>
+            <button class="r-btn">Issues</button>
+            <button class="r-btn">PRs · 12</button>
+          </div>
+        </div>
+
+        <div class="repo-card">
+          <div class="repo-header">
+            <div class="repo-icon" style="background:var(--accent-green-dim);color:var(--accent-green);">◈</div>
+            <div style="flex:1;">
+              <div class="repo-name">pamoja/protocol-core</div>
+              <div class="repo-desc">Core protocol libraries and interfaces for the Pamoja platform</div>
+            </div>
+            <div class="repo-lang"><div class="lang-dot" style="background:#2a9d8f;"></div><div class="lang-name">Go</div></div>
+          </div>
+          <div class="repo-stats">
+            <div class="repo-stat"><span>142</span> ⭐</div>
+            <div class="repo-stat"><span>28</span> forks</div>
+            <div class="repo-stat"><span>18</span> open issues</div>
+          </div>
+          <div class="repo-tags"><span class="tag tag-teal">protocol</span><span class="tag tag-blue">core</span></div>
+          <div class="repo-actions">
+            <button class="r-btn r-btn-fork">⑂ Fork</button>
+            <button class="r-btn">Issues</button>
+          </div>
+        </div>
+
+        <div class="repo-card">
+          <div class="repo-header">
+            <div class="repo-icon" style="background:rgba(139,92,246,0.15);color:var(--accent-purple);">◆</div>
+            <div style="flex:1;">
+              <div class="repo-name">pamoja/governance-sdk</div>
+              <div class="repo-desc">SDK for building governance tools on the Pamoja DAO</div>
+            </div>
+            <div class="repo-lang"><div class="lang-dot" style="background:#3b82f6;"></div><div class="lang-name">TypeScript</div></div>
+          </div>
+          <div class="repo-stats">
+            <div class="repo-stat"><span>98</span> ⭐</div>
+            <div class="repo-stat"><span>14</span> forks</div>
+          </div>
+          <div class="repo-tags"><span class="tag tag-purple">sdk</span><span class="tag tag-gold">governance</span></div>
+          <div class="repo-actions">
+            <button class="r-btn r-btn-fork">⑂ Fork</button>
+            <button class="r-btn">Issues</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- OPEN ISSUES -->
+      <div class="card">
+        <div class="card-header"><div class="card-title">Open Issues</div><div class="card-action">Browse All →</div></div>
+        <div class="issue-row">
+          <div class="issue-header">
+            <span class="badge badge-good">Good First Issue</span>
+            <div class="issue-title" style="flex:1;">Add --json flag to output parser</div>
+          </div>
+          <div class="issue-meta">cli-tools · #284 · Opened 2d ago by Tayo S.</div>
+        </div>
+        <div class="issue-row">
+          <div class="issue-header">
+            <span class="badge badge-bug">Bug</span>
+            <div class="issue-title" style="flex:1;">Auth token refresh fails on retry</div>
+          </div>
+          <div class="issue-meta">cli-tools · #281 · Opened 3d ago · High priority</div>
+        </div>
+        <div class="issue-row">
+          <div class="issue-header">
+            <span class="badge badge-feat">Feature</span>
+            <div class="issue-title" style="flex:1;">Multi-org workspace switching</div>
+          </div>
+          <div class="issue-meta">protocol-core · #142 · 8 comments</div>
+        </div>
+        <div class="issue-row">
+          <div class="issue-header">
+            <span class="badge badge-docs">Docs</span>
+            <div class="issue-title" style="flex:1;">Document governance SDK deployment</div>
+          </div>
+          <div class="issue-meta">governance-sdk · #98 · Good first issue</div>
+        </div>
+        <div class="issue-row">
+          <div class="issue-header">
+            <span class="badge badge-feat">Feature</span>
+            <div class="issue-title" style="flex:1;">WebSocket reconnection with backoff</div>
+          </div>
+          <div class="issue-meta">protocol-core · #138 · In progress</div>
+        </div>
+        <div class="issue-row">
+          <div class="issue-header">
+            <span class="badge badge-good">Good First Issue</span>
+            <div class="issue-title" style="flex:1;">Add dark mode toggle to docs site</div>
+          </div>
+          <div class="issue-meta">pamoja/docs · #42 · Help wanted</div>
+        </div>
+      </div>
+
+      <!-- CONTRIBUTORS -->
+      <div class="card">
+        <div class="card-header"><div class="card-title">Top Contributors</div><div class="card-action">All →</div></div>
+        <div class="contributor-row">
+          <div class="c-avatar" style="background:rgba(200,168,75,0.15);color:var(--accent-gold);">JC</div>
+          <div style="flex:1;"><div class="c-name">Jordan Chen</div><div class="c-prs">24 PRs merged · cli-tools</div></div>
+          <div class="c-commits">284 commits</div>
+        </div>
+        <div class="contributor-row">
+          <div class="c-avatar" style="background:rgba(232,124,58,0.15);color:var(--accent-orange);">KW</div>
+          <div style="flex:1;"><div class="c-name">Kwame W.</div><div class="c-prs">18 PRs · protocol-core</div></div>
+          <div class="c-commits">198 commits</div>
+        </div>
+        <div class="contributor-row">
+          <div class="c-avatar" style="background:rgba(76,175,125,0.12);color:var(--accent-green);">TS</div>
+          <div style="flex:1;"><div class="c-name">Tayo S.</div><div class="c-prs">12 PRs · cli-tools</div></div>
+          <div class="c-commits">142 commits</div>
+        </div>
+        <div class="contributor-row">
+          <div class="c-avatar" style="background:rgba(59,130,246,0.12);color:var(--accent-blue);">MN</div>
+          <div style="flex:1;"><div class="c-name">Maya N.</div><div class="c-prs">8 PRs · governance-sdk</div></div>
+          <div class="c-commits">98 commits</div>
+        </div>
+        <div style="margin-top:10px;padding-top:8px;border-top:1px solid var(--border);">
+          <div class="section-label">Activity — Last 30 days</div>
+          <div class="activity-row">
+            <div class="activity-dot" style="background:var(--accent-green)"></div>
+            <div><div class="activity-text">CLI auth module merged — PR #283</div><div class="activity-time">2h ago</div></div>
+          </div>
+          <div class="activity-row">
+            <div class="activity-dot" style="background:var(--accent-blue)"></div>
+            <div><div class="activity-text">Protocol-core v0.8.2 release tagged</div><div class="activity-time">Yesterday</div></div>
+          </div>
+          <div class="activity-row">
+            <div class="activity-dot" style="background:var(--accent-gold)"></div>
+            <div><div class="activity-text">$8K grant approved — Kogi OS Fund</div><div class="activity-time">Mar 10</div></div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+</div>
+</body>
+</html>

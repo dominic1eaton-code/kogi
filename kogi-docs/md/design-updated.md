@@ -1,21 +1,136 @@
-#
+# KOGI — Independent Worker Operating System
+## Platform Navigation & Feature Map
 
+---
 
 home
     - portable benefits
+        - health & wellness (health, dental, vision, HSA)
+        - retirement & savings (SEP-IRA, 401k, pooled employer plans, emergency savings)
+        - paid time off & income security (sick days, vacation, income replacement)
+        - insurance & protection (occupational accident, disability, workers' compensation)
+        - professional development (portable education + training accounts)
+        - platform contributions (gig platform % contributions to portable savings account)
+    - initiatives
+        - portable benefits management
+        - grants & microfinancing
+        - group economics
+        - equity crowdfunding
+        - crowdresourcing
+        - shared portfolios
+        - portfolio resource sharing
+    - dashboard
+    - quicklinks
+    - notifications + alerts
+
 office
-studio 
+    - dashboard
+    - portfolio
+        - shared portfolios
+            - group | team | organization | collective | cooperative | federation portfolios
+            - portfolio collaboration
+            - crowdresourced portfolio components
+        - portfolio resource sharing
+    - workspace
+    - timeline + boards
+    - booking & scheduling
+        - centralized calendars
+        - multi-artist | multi-worker dashboards
+        - conflict detection
+        - event booking + reservation management
+    - CRM & lead management
+        - lead capture forms
+        - automated follow-up emails
+        - client database management
+    - contracts & invoicing
+        - customizable automated contracts with e-signatures
+        - automated payment reminders
+    - logistics & communication
+        - tour | project itinerary planning
+        - resource allocation (equipment / staff)
+        - in-app communication tools
+        - logistics tracking (equipment rentals, transportation, crew schedules)
+    - finance & reporting
+        - online payment processing
+        - expense tracking
+        - budget management
+        - tax report generation
+
+studio
 
 marketplace
+    - work
+        - gigs · contracts · jobs · tasks
+    - items
+        - offers · deals · bids · requests · proposals · listings
+    - actions
+        - rate · review · match · campaign · fundraise · resource-gather
+        - trade · allocate · fund · donate · invest · contribute
+        - find talent (labor, skills) · find resources · find portfolios
+    - equity crowdfunding + group economics
+    - crowdresourcing
+    - grants · microfinancing
+
 community
-exchange
-center
+    - feed · timeline · posts · spaces · chat · messages · rooms
+    - resource sharing · resource access · resource shared economics
+    - group economics
+    - shared portfolios · portfolio collaborations
     - organizations
-        - autonmous orgs
+        - autonomous orgs
         - collectives
         - cooperatives
         - federations
+
+exchange
+    - portfolios · skills · resources · labor · workers · gigs · tasks · jobs · deals
+    - equity crowdfunding · group economics
+    - financial instruments exchange · liquidity · equity · portfolio assets
+    - portfolio commodities exchange · items · goods · services · products · capital · artifacts
+    - portfolio resources exchange
+    - resources + items + users matching
+
+center
+    - organizations
+        - autonomous orgs
+        - collectives
+        - cooperatives
+        - federations
+    - initiatives
+        - portable benefits
+        - grants + microfinancing
+        - group economics
+        - equity crowdfunding
+        - crowdresourcing
+
 bank
+    - wallet
+        - accounts
+            - ledgers · journals · balances · status
+        - payments · taxes · orders · invoices · transactions
+    - portable benefits accounts
+        - HSA management
+        - retirement savings (SEP-IRA, 401k portability, PEP)
+        - portable savings account (gig contribution tracking)
+        - income protection fund
+        - professional development account
+    - grants & microfinancing
+        - grant applications + tracking
+        - microloan origination + management
+        - impact reporting
+    - group economics
+        - cooperative treasury management
+        - shared fund accounts
+        - collective revenue sharing
+        - group investment pools
+    - equity crowdfunding
+        - Reg CF campaigns
+        - revenue share instruments
+        - SAFE notes + convertible instruments
+        - investor cap table management
+    - crowdresourcing
+        - resource pooling accounts
+        - contribution ledgers
 
 
 developer
@@ -210,6 +325,13 @@ AllocationEngine
 IncentiveEngine
 GameEngine
 DataStreamingEngine
+BenefitsEngine         // portable benefits eligibility scoring, contribution tracking, coverage optimization
+GrantEngine            // grant matching, eligibility scoring, impact tracking
+CrowdfundingEngine     // campaign scoring, investor matching, equity modeling
+CollaborationEngine    // shared portfolio coordination, contribution attribution, conflict resolution
+BookingEngine          // scheduling optimization, conflict detection, resource allocation
+CRMEngine             // lead scoring, pipeline management, follow-up automation
+LogisticsEngine        // itinerary planning, resource routing, crew scheduling
 
 ---
 

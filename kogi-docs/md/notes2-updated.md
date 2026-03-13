@@ -1,0 +1,569 @@
+#
+
+
+home
+    - portable benefits
+        - health & wellness (health, dental, vision, HSA)
+        - retirement & savings (SEP-IRA, 401k portability, pooled employer plans, emergency savings)
+        - paid time off & income security (sick days, vacation time, income replacement)
+        - insurance & protection (occupational accident, disability, workers' compensation)
+        - professional development (portable education + training accounts)
+        - platform contributions (gig platform % contributions to portable savings accounts)
+    - initiatives
+        - portable benefits
+        - grants + microfinancing
+        - group economics
+        - equity crowdfunding
+        - crowdresourcing
+        - shared portfolios
+        - portfolio resource sharing
+office
+studio 
+
+marketplace
+    - work
+        - gigs
+        - contracts
+        - jobs
+        - tasks
+    - items
+        - offers
+        - deals
+        - bids
+        - requests
+        - proposals
+        - listings
+    - actions
+        - rate
+        - review
+        - match
+        - campaign
+        - fundraise, resource gather
+        - trade
+        - allocate
+        - fund
+        - donate
+        - invest
+        - contribute
+        - find, find talent  (labor, skills, etc...), find resources, find portfolios (and portfolio components (programs, projects, assets, etc...))
+    - equity crowdfunding, group economics
+    - crowdresourcing
+    - grants + microfinancing
+    - shared portfolios + portfolio resource exchange
+    - booking & scheduling
+        - centralized calendars
+        - multi-worker / multi-artist dashboards
+        - conflict detection
+        - event booking + reservation management
+    - CRM & lead management
+        - lead capture forms
+        - automated follow-up emails
+        - client database management
+        - pipeline management
+    - contracts & invoicing
+        - customizable automated contracts with e-signatures
+        - automated payment reminders
+    - logistics tracking
+        - tour + project itinerary planning
+        - equipment rentals, transportation, crew schedules
+        - resource allocation
+
+community
+    - feed
+    - timeline
+    - spaces
+    - chat
+    - message
+    - rooms
+    - resource sharing, resource access, resource shared economics
+    - shared portfolios + portfolio collaborations
+    - group economics
+        - cooperative treasury
+        - revenue sharing
+        - group investment pools
+        - mutual aid funds
+    - initiatives
+        - portable benefits
+        - grants + microfinancing
+        - equity crowdfunding
+        - crowdresourcing
+    - booking & scheduling
+    - CRM & lead management
+    - logistics
+
+exchange
+    - exchange: portfolios, skills, resources, labors, workers, gigs, tasks, jobs, deals, etc...
+    - equity crowdfunding, group economics
+    - financial instruments exchange, liquiity, equity, portfolio assets
+    - portfolio commodities exchange, items, goods, services, products, capital, artifacts
+    - portfolio resources echange
+    - resources+item+users matching
+
+center
+    - organizations
+        - autonmous orgs
+        - collectives
+        - cooperatives
+        - federations
+bank
+    - wallet
+        - accounts
+            - ledgers
+            - journals
+            - balances
+            - status
+        - payments
+        - taxes
+        - orders
+        - invoices
+        - transactions
+    - portable benefits accounts
+        - HSA
+        - retirement savings (SEP-IRA, 401k, PEP)
+        - portable savings account (platform contribution tracking)
+        - income protection fund
+        - professional development account
+        - emergency savings account
+    - grants & microfinancing
+        - grant registry + applications
+        - microloan origination + repayment
+        - community lending pools
+        - grant fund disbursement
+        - impact reporting
+    - group economics
+        - cooperative treasury (multi-sig)
+        - revenue sharing pool + distribution engine
+        - group investment pools
+        - mutual aid funds
+        - resource pooling accounts
+        - crowdresourcing contribution ledgers
+    - equity crowdfunding
+        - Reg CF / Reg A+ campaigns
+        - revenue share instruments
+        - SAFE notes + convertible instruments
+        - investor cap table management
+        - escrow-backed campaign accounts
+
+developer
+    - api
+        - internal
+        - external
+    - sdk
+        - internal
+        - external
+profiles
+    - profile.type
+        - personal
+        - work
+        - professional
+        - private
+        - public
+        - custom
+    - persona
+configuration
+    - settings
+    - parameters
+    - options
+    - policies
+
+---
+
+engine
+server
+host
+modules
+network
+    gateway
+    services
+clients
+
+generate the initial rust systems of the kogi-home module:
+
+## home
+
+dashboard
+    - overviews
+        - number active programs+projects
+        - portfolio overview
+        - wallet, finances overview
+        - work, tasks, gigs, contracts overview
+        - orders, bids, deals, requests, proposals overview
+        - campaigns overview
+    - quicklinks
+    - notifications+alerts
+profile
+    - user
+        - user.actions
+            - message, dm unicast, broadcast, group message multicast
+            - notify // event notifications
+            - alert // event alerts
+            - recommend // personalized engine recommendations search
+            - discover // global engine recommendation of topics to search
+            - explore // expand in direction of a specific topic and all topics related to it
+    - account
+    - profiles
+    - personas
+    - skills
+    - contact
+    - data
+    - metadata
+workspace
+    - user hub
+    - portfolios
+    - content system
+        - files
+        - documents
+        - folders
+    - calendar, timelines, schedules
+
+## office
+
+boards
+    - calendar
+    - timeline
+    - gantt
+    - agile
+    - resource (general trello board)
+
+portfolio
+    - component
+        - component.metadata
+            - id
+            - owners
+            - tags
+            - policy_ids
+            - created_at
+            - update_at
+            - vector_clock
+            - properties
+            - version
+        - component.data
+            - metadata
+            - type
+            - category
+            - name
+            - status
+            - state
+            - children - child components
+            - parents - parent components
+            - links - sibling components (group)
+            - dependents
+            - dependencies
+            - users
+                - owners
+                - editors
+                - watchers
+                - subscribers
+                - followers
+                - investors
+                - donors
+            - actions
+                - like
+                - comment
+                - subscribe
+                - follow
+                - edit
+                - watch
+                - donate
+                - invest
+                - own - permsission, privilege tiered hierarchy
+                - CRUD
+                - post - change visibility to public|private|protected
+                - share
+                - search
+                - filter
+                - index
+                - tag, mention
+                - label
+                - report
+                - hashtag, topic
+                - poll, survey
+                - invite
+                - save
+                - campaign
+                - contribute
+                - join
+            - analytics
+                - clicks, click through rate
+                - view time
+                - engagement - number of action (likes, shares, etc...) assocated with coponent
+                - spread - number of active hashtags, tags, mentions, etc... across platform
+                - follower, subscriber, watcher, bookmarks, saves, etc... growth rate
+                - user to user, portfolio to portfolio, component to component comparison+benchmarking
+                - Likes/Reactions: Initial approval or interest.
+                - Comments: Depth of engagement and direct feedback.
+                - Shares/Reposts: Content virality and brand advocacy.
+                - Saves: Content value or intent to consume later.
+                - ngagement Rate: Total engagements divided by total followers/reach
+        - component:item
+            - portfolio
+            - program
+            - project
+            - resource
+            - artifact
+            - asset
+        - component:container
+            - binder // collections of items, organized by logic
+            - book
+                - book:notebook
+                - book:contactbook
+                - book:playbook
+                - book:schedulebook
+                - book:planbook
+                - book:guidebook // documentation set book
+                - book:itembook
+                    - book:itembook.data
+                        - dasboard
+                        - charter
+                        - workspace
+                        - catalogue
+                        - library
+                        - templates
+                        - logs
+                        - metrics
+                        - version
+                        - schedule
+                        - directory
+            - record
+            - folder
+            - registry
+            - archive // deep storage with full restor
+
+
+group - linked components
+collection - unordered set of components
+list - ordered set of components
+schedule - causal list of items
+directory - spatial collection of items
+
+
+## data engine
+
+engines:
+
+PersonalizationEngine
+
+GraphEngine
+
+RecommendationEngine
+
+AnalyticsEngine
+
+OptimizationEngine
+
+QueryEngine
+
+RiskEngine
+
+SearchEngine
+
+TelemetryEngine
+
+StreamingEngine
+
+MatchEngine ~ matching users (types of users, owners, investors, donors, etc...), resources, assets, portfolio components, analytics (recommendations, searches, indexes, filters, etc...)
+
+---
+
+gRPC server
+
+---
+
+analytics:
+
+1. Engagement Metrics (How people interact)
+Likes/Reactions: Initial approval or interest.
+Comments: Depth of engagement and direct feedback.
+Shares/Reposts: Content virality and brand advocacy.
+Saves: Content value or intent to consume later.
+Engagement Rate: Total engagements divided by total followers/reach. 
+
+
+2. Content & Performance Metrics (How content performs)
+Impressions: Total times content was displayed.
+Reach: Number of unique individuals who saw the content.
+Click-Through Rate (CTR): Percentage of people clicking links.
+Video Views/Completion Rate: Retention and interest in video content.
+Hashtag Performance: Reach and engagement generated by specific tags.
+Best Time/Day to Post: Identifying when the audience is most active. 
+
+
+3. Audience Metrics (Who is engaging)
+Demographics: Age, gender, location, and language.
+Interests: Hobbies, topics, or industries the audience follows.
+Follower Growth Rate: Rate of audience expansion. 
+
+
+4. Sentiment & Brand Perception (How people feel) 
+Sentiment Analysis: Categorizing mentions as positive, negative, or neutral.
+Share of Voice: Brand mention volume compared to competitors.
+Brand Mentions: Mentions of your brand or keywords. 
+
+
+5. Competitor & Benchmarking Analysis (Market positioning) 
+Competitor Growth: Growth rate of competitor followers.
+Competitor Engagement: Their top-performing content and posting frequency.
+Industry Trends: Emerging topics and hashtags. 
+
+
+6. Paid Social Metrics (ROI of paid campaigns)
+Cost Per Click (CPC): Cost for each ad click.
+Conversion Rate: Percentage of users completing a desired action (e.g., purchase, sign-up).
+Return on Ad Spend (ROAS): Revenue generated compared to ad cost. 
+
+
+7. Behavioral & Contextual Data
+Time Spent: Time spent on specific posts or videos.
+Conversion Path: The journey from social interaction to website purchase.
+
+
+
+## features
+
+users can create and sell items in their portfolio.
+
+e.g.
+a user, user 1, creates a real estate investment playbook and adds it to a real estate portfolio. They put their playbook on the marketplace for other users to buy.
+
+another user, user 2, wants to get into real estate, but has never invested or done real estate before. They use a "real estate project" template where the template guides them on things they need to do to get started, as well as helps them find resources on the marketplace. The platform's digital assistant finds user's 1 real estate investment playbook and recommeds it to user 2 for purchase and usage. user 2 decides to purchase the playbook, which is then made available to user's 2 newly created real estate portfolio. user 2 begins to use the project template and playbooks to begin acquiring real estate assets, which they also add and build their real estate portfolio with. user 2 decides to begin flipping and selling some of their real estate on the marketplace, and exchanging other pieces of real estate assets in the "real estate portfolio" on the exchange. user 2 subscribes to all of user 1's real estate related (portfolio+programs+projects sorted by a "real estate" tag/topic) portfolio components that are publicly offered. User 2 later decides to take all that they have learned, from all of the guides+resources+playbooks gathered on the kogi platform and from other 3rd party services+platforms, and creates a real estate project management platform, to help not only manage their real estate assets portfolio, but also help manage the real estate assets portfolio of others.
+
+a user 3 decides to start a real estate investment mastermind, creates a project for it under their "masterminds portfolio", and decides to offer this portfolio component on the marketplace. user 1 sees this mastermind offering on the marketplace, participates in the offering, and later takes what they've learned and creates an updated real estate investment playbook, where this playbook, which user 2 is notified about as they are subscribed to received notifictions, is then automatically sent out to user 2, where user 2 later decides to use this updated playbook. user 1 offered a discount for loyal subscribers to their portfolio, so user 2 received a significant discount on the new playbook.
+
+---
+
+the real estate mastermind offering, real estate investment playbook, and real estate asset project management platform are all designed and managed by the qala platform. The business entites that act as vehicles for these solutions are designed+managed+maintained by ume. The complete user workflow is orchestrated by the shango platform, replete with a sambara platform AI digital assistant+agent.
+
+
+---
+
+
+
+implement a ProviderSystem AND add a providers kogi-module and provider service,for handling all 3rd party tools+platforms+services+affiliates. have a provider management system and a platform registry and providerresource management+administration, provider version control, provider metadata, provider data management
+
+extend the providerSystem to also manage affiliates and affiliate links, affiliate links can be created by and for a provider on the kogi platform, and affiliates register with the provider registry.
+
+affiliate links, affiliate discount links+codes
+
+make sure users cant use multiple affiliate links
+affiliate link commissions tracking and payouts/credits
+
+
+---
+
+kogi provides an operating system for users for who a wide variety of activities, projects and assets and things that they do, and offloads the work that they would normally be doing manually, to coordinate their "life portfolios", into a single unified system, helping them condense and consolidate their worklives and have better overall balance in life. The kogi platform supports "portffolio planning" where once a user has setup and input all of the things they have going on in their lives, into their platform, they can use the platform to evaluate the state of their "life portfolio", where they can make improvements, help them better track metrics and optimize components of their portfolio+activities+projects+assets, help users better plan and strategize their portfolios.
+
+whether a user wants to plan a vacation, start a new podcast series, write a book, or start a business, the kogi platform can help a user organize all of these activities into manageable portfolios of executio, that can be optimized, shared with a larger community, be resourced and supported in a marketplace, have portfolio assets and resources exchanged, and be designed in the kogi-studio.
+
+
+---
+
+kogi ~ emerald green
+qala ~ navy blue
+ume ~ royal purple
+sambara ~ saffron orange
+imewe ~ walnut brown
+nandi ~ jet black
+
+---
+
+postgresql ~ remote storage
+sqlite3 ~ local storage
+
+kafka+redis ~ cache storage
+
+---
+
+Tool Management System
+
+users can have workflows that utilize a variety of tools across a variety of platforms, all handles byh the Tool Management System
+
+tool - some utility used to help a user accomplish and reach some outcome+objective+goal+desire
+toolkit - an unordered collection, grouping of tools, used to accomplish some task + reach some outcome. can be prepackaged templates or custom defined/assembled
+toolchain - an ordered, pipeline sequence/set of connected tools, used to accomplish some task + reach some outcome
+toolprovider - provider + provider interface/API/sdk of a given tool
+toolset - a general, complete template set/group of associated toolkits + toolchains + ungrouped tools that are all associated/related/connected/linked with one another, and live in a toolbox. These are templated tool orchstestrations+workflows+task automations, and their associated toolchains, toolkits, and other tools that are related to the toolset
+toolbox - the core space where tools exist/live
+toolassembly - brief+description+components/parts list+blueprint+design of a tool
+tooldata - low level data of a tool
+toolinfo - high level info of a tool
+toolmetadata- meta information about a tool, unique id, names, tokens, provider info, version control info
+
+The ToolSystem has an orchestrator, workflows and tasks, which form a ToolAutomationSystem, where users can assemble toolchains, toolkits, toolsets and have automated workfows for when+how a tool (e.g. tool X) can interact+connect with another tool (e.g. tool Y). A tool orchestration is composed of tool workflows, and tool workflows contain a series of automated executable connected/linked/sequeneced tasks
+
+portfolios, portfoliocomponents, portfolioitems, portfoliocontainers can have have toolboxes, where toolboxes contain prepackaged or customed created/defined toolsets (that users can create/assemble to their liking/preferences). toolsets are composed of  toolkits (Also configurable), toolchains, and/or ungrouped tools. Tools have a provider (root is the provider, if the tool comes from and is created in/by the kogi-platform itself and not a 3rd party software/platform/affiliate). An "integration" (toolintegration) is a tool with an associated provider, where a tool+provider can integrate into the kogi-platform with with platform elements (e.g. portfolios, portfoliocomponents, portfolioitems, portfoliocontainers, timelines, schedules, AI assistants, etc...)
+
+Tools have data/metadata such as versions+version-control, unique ids, tags, labels, tool categories, tool types, tool classes, tool names, tool provider+provider info/data/metadata, all of which is part of the tool's assembly, toolassembly.
+
+All tools have an associated toolassembly, describing the tool and its creation/assembly, also containing tooldata, toolmetadata, and toolinfo
+
+
+example:
+
+A code management tool, called CMT, which can have providers such as gitlab or github, where, where CMT once connected with gitlab, forms an integration which can be used in various places in the kogi-platform. The CMT tool can be added to a "software development toolbox" and be added to a "devops tools" toolset in that toolbox and then be part of a "code management" toolkit within that toolset, and be added as a tooling step in a "software build+delivery" toolchain, where the CMT tool provides the CICD and remote build step in an automated software delivery pipeline, realized through a "CICD manager" toolorchestration, which has different "software X|Y|Z builds" toolworkflows, where the workflows use the "software build+delivery" toolchain to accomplish different tooltasks.
+
+
+TMS Dashboard Overview — system-wide snapshot: active tools, providers, integrations, recent activity, toolchains, and orchestration status
+
+Tool Registry Browser — searchable/filterable grid of all tools with category, class, and provider facets
+
+Tool Registration — Assembly Step — the 5-step wizard at the assembly data/info stage with live preview
+
+Provider Linking — provider selection grid, capability profile details, auth method picker, and bidirectional link confirmation
+
+Toolchain Builder — visual pipeline editor with drag-and-drop steps, per-step config panel, input/output mapping, and validation
+
+Toolbox Assembly — hierarchical container view showing toolsets → kits → chains → tools with attachment management
+
+Integration Setup — integration lifecycle, target elements, credential/scope config, and event activity feed
+
+Orchestration Manager — orchestration list, workflow cards with live task status dots, and run history table
+
+Live Workflow Execution — real-time task progress with log streaming, input/output panels, retry policy, and timing sidebar
+
+Toolset Template Browser — marketplace-style grid with preview panel and install/fork actions
+
+Tool Version History — timeline of semver bumps with impact analysis and bump form
+
+Provider Management — provider list, capability profiles table, bidirectional link visualization, tool coverage bars
+
+User Portfolio + Toolboxes — user-facing view showing portfolio items with their attached toolboxes and active workflows inline
+
+
+---
+
+kogi - portfolio domain
+ume - orgnanization domain
+qala - solution domain
+sambara - intelligence domain
+oru - simulation domain
+nandi - mobility domain
+imewe - manufacturing domain
+osyse - environment domain
+
+---
+
+solution
+solution model
+    - blueprint
+    - design
+    - prototype
+solution testbed
+    - tests
+solution factory
+solution vendor
+solution orchestration -> workflow -> task
+solution components|parts
+    - part number
+    - part vendor
+    - part ID
+    - part name
+    - part material
+    - part design|blueprint|
+solution data
+    - solution metadata
+        - unique id
+        - name
+        - version control
+
+        
+

@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KOGI · Exchange</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap');
+  *{margin:0;padding:0;box-sizing:border-box;}
+  :root{
+    --bg:#080b10;--bg2:#0d1117;--bg3:#111820;--bg4:#161e28;
+    --border:#1e2d3d;--border2:#243344;
+    --teal:#00c9a7;--teal2:#009e84;--teal-dim:#00c9a720;
+    --amber:#f5a623;--amber-dim:#f5a62318;
+    --purple:#8b5cf6;--purple-dim:#8b5cf615;
+    --pink:#e83e8c;--pink-dim:#e83e8c15;
+    --green:#22c55e;--red:#ef4444;--blue:#3b82f6;
+    --olive:#6b7c3f;--olive2:#8a9e52;
+    --text:#e2e8f0;--text2:#94a3b8;--text3:#4a6280;
+    --mono:'IBM Plex Mono',monospace;
+    --sans:'IBM Plex Sans',sans-serif;
+  }
+  body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:12px;display:flex;height:100vh;overflow:hidden;}
+
+  /* SIDEBAR */
+  .sidebar{width:168px;background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0;}
+  .logo{padding:12px 14px;border-bottom:1px solid var(--border);font-family:var(--mono);font-size:13px;font-weight:600;letter-spacing:3px;color:var(--teal);}
+  .nav-section{padding:8px 0;}
+  .nav-label{padding:4px 14px 2px;font-size:9px;letter-spacing:2px;color:var(--text3);text-transform:uppercase;}
+  .nav-item{padding:5px 14px;color:var(--text2);cursor:pointer;font-size:11px;display:flex;align-items:center;gap:6px;border-left:2px solid transparent;}
+  .nav-item:hover{color:var(--text);background:var(--bg3);}
+  .nav-item.active{color:var(--teal);border-left-color:var(--teal);background:var(--teal-dim);}
+  .nav-item .dot{width:5px;height:5px;border-radius:50%;background:currentColor;opacity:.6;}
+  .nav-divider{height:1px;background:var(--border);margin:6px 0;}
+
+  /* MAIN */
+  .main{flex:1;display:flex;flex-direction:column;overflow:hidden;}
+
+  /* TOPBAR */
+  .topbar{display:flex;align-items:center;gap:10px;padding:8px 16px;background:var(--bg2);border-bottom:1px solid var(--border);}
+  .topbar-title{font-family:var(--mono);font-size:13px;font-weight:500;color:var(--text);display:flex;align-items:center;gap:6px;}
+  .topbar-title .icon{color:var(--amber);}
+  .topbar-search{flex:1;max-width:280px;background:var(--bg3);border:1px solid var(--border);border-radius:3px;padding:4px 10px;color:var(--text2);font-family:var(--mono);font-size:11px;outline:none;}
+  .topbar-actions{margin-left:auto;display:flex;gap:6px;}
+  .btn{padding:4px 10px;border-radius:3px;font-family:var(--mono);font-size:10px;cursor:pointer;border:1px solid var(--border2);background:var(--bg3);color:var(--text2);}
+  .btn.primary{background:var(--teal2);border-color:var(--teal);color:#000;font-weight:600;}
+  .btn.amber{background:var(--amber-dim);border-color:var(--amber);color:var(--amber);}
+  .badge-dot{width:7px;height:7px;border-radius:50%;background:var(--teal);display:inline-block;}
+
+  /* STATS ROW */
+  .stats-row{display:flex;border-bottom:1px solid var(--border);background:var(--bg2);}
+  .stat-box{flex:1;padding:10px 16px;border-right:1px solid var(--border);}
+  .stat-box:last-child{border-right:none;}
+  .stat-label{font-size:9px;letter-spacing:1.5px;color:var(--text3);text-transform:uppercase;margin-bottom:4px;}
+  .stat-value{font-family:var(--mono);font-size:18px;font-weight:600;color:var(--text);}
+  .stat-value.teal{color:var(--teal);}
+  .stat-value.amber{color:var(--amber);}
+  .stat-value.purple{color:var(--purple);}
+  .stat-sub{font-size:9px;color:var(--text3);margin-top:2px;}
+  .stat-sub .up{color:var(--green);}
+  .stat-sub .down{color:var(--red);}
+
+  /* CONTENT */
+  .content{flex:1;overflow-y:auto;padding:14px;display:grid;grid-template-columns:1fr 1fr 1fr;grid-template-rows:auto auto auto;gap:12px;}
+
+  /* CARDS */
+  .card{background:var(--bg2);border:1px solid var(--border);border-radius:4px;overflow:hidden;}
+  .card.span2{grid-column:span 2;}
+  .card-header{padding:8px 12px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:6px;}
+  .card-title{font-family:var(--mono);font-size:10px;font-weight:500;letter-spacing:1px;color:var(--text2);text-transform:uppercase;}
+  .card-badge{margin-left:auto;font-family:var(--mono);font-size:9px;padding:2px 6px;border-radius:2px;}
+  .card-badge.teal{background:var(--teal-dim);color:var(--teal);border:1px solid var(--teal2);}
+  .card-badge.amber{background:var(--amber-dim);color:var(--amber);}
+  .card-badge.purple{background:var(--purple-dim);color:var(--purple);}
+  .card-body{padding:10px 12px;}
+
+  /* MARKET TILES */
+  .market-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:10px 12px;}
+  .market-tile{background:var(--bg3);border:1px solid var(--border);border-radius:3px;padding:10px 12px;cursor:pointer;transition:border-color .15s;}
+  .market-tile:hover{border-color:var(--teal2);}
+  .tile-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;}
+  .tile-name{font-family:var(--mono);font-size:10px;font-weight:500;color:var(--text);}
+  .tile-status{font-size:9px;padding:1px 5px;border-radius:2px;}
+  .tile-status.live{background:#22c55e20;color:var(--green);border:1px solid #22c55e40;}
+  .tile-status.hot{background:#f5a62320;color:var(--amber);border:1px solid var(--amber);}
+  .tile-stats{display:flex;gap:12px;}
+  .tile-stat{font-size:9px;color:var(--text3);}
+  .tile-stat span{color:var(--text2);font-family:var(--mono);}
+  .tile-bar{height:2px;background:var(--bg4);border-radius:1px;margin-top:8px;overflow:hidden;}
+  .tile-bar-fill{height:100%;border-radius:1px;}
+
+  /* ORDER ROWS */
+  .order-table{width:100%;}
+  .order-row{display:flex;align-items:center;padding:5px 12px;border-bottom:1px solid var(--border);gap:8px;}
+  .order-row:last-child{border-bottom:none;}
+  .order-row:hover{background:var(--bg3);}
+  .order-type{width:40px;font-size:9px;font-family:var(--mono);font-weight:600;text-transform:uppercase;}
+  .order-type.bid{color:var(--green);}
+  .order-type.ask{color:var(--red);}
+  .order-title{flex:1;font-size:10px;color:var(--text2);}
+  .order-val{font-family:var(--mono);font-size:10px;font-weight:500;}
+  .order-val.green{color:var(--green);}
+  .order-val.red{color:var(--red);}
+  .order-status{font-size:9px;padding:1px 5px;border-radius:2px;background:var(--bg4);}
+  .order-status.active{color:var(--teal);background:var(--teal-dim);}
+  .order-status.pending{color:var(--amber);background:var(--amber-dim);}
+
+  /* DEAL ROWS */
+  .deal-row{display:flex;align-items:center;padding:5px 12px;border-bottom:1px solid var(--border);gap:8px;}
+  .deal-row:last-child{border-bottom:none;}
+  .deal-row:hover{background:var(--bg3);}
+  .deal-avatar{width:22px;height:22px;border-radius:50%;background:var(--bg4);border:1px solid var(--border2);display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:600;flex-shrink:0;}
+  .deal-info{flex:1;}
+  .deal-name{font-size:10px;color:var(--text);}
+  .deal-sub{font-size:9px;color:var(--text3);}
+  .deal-amount{font-family:var(--mono);font-size:11px;font-weight:500;color:var(--teal);}
+  .deal-stage{font-size:9px;padding:1px 5px;border-radius:2px;}
+  .deal-stage.escrow{color:var(--purple);background:var(--purple-dim);}
+  .deal-stage.negotiation{color:var(--amber);background:var(--amber-dim);}
+  .deal-stage.review{color:var(--blue);background:#3b82f615;}
+  .deal-stage.complete{color:var(--green);background:#22c55e15;}
+
+  /* ACTIVITY */
+  .activity-row{display:flex;align-items:flex-start;padding:6px 12px;border-bottom:1px solid var(--border);gap:8px;}
+  .activity-row:last-child{border-bottom:none;}
+  .activity-icon{width:20px;height:20px;border-radius:3px;display:flex;align-items:center;justify-content:center;font-size:9px;flex-shrink:0;margin-top:1px;}
+  .activity-icon.teal{background:var(--teal-dim);color:var(--teal);}
+  .activity-icon.amber{background:var(--amber-dim);color:var(--amber);}
+  .activity-icon.purple{background:var(--purple-dim);color:var(--purple);}
+  .activity-icon.green{background:#22c55e15;color:var(--green);}
+  .activity-text{flex:1;font-size:10px;color:var(--text2);line-height:1.4;}
+  .activity-text strong{color:var(--text);}
+  .activity-time{font-family:var(--mono);font-size:9px;color:var(--text3);white-space:nowrap;}
+
+  /* MINI CHART */
+  .mini-chart{display:flex;align-items:flex-end;gap:2px;height:32px;padding:10px 12px 0;}
+  .bar{flex:1;border-radius:1px 1px 0 0;opacity:.8;}
+
+  /* INTEGRATION TILES */
+  .integration-list{display:flex;flex-wrap:wrap;gap:6px;padding:10px 12px;}
+  .integ-tile{background:var(--bg3);border:1px solid var(--border);border-radius:3px;padding:5px 8px;font-size:9px;color:var(--text3);cursor:pointer;display:flex;align-items:center;gap:5px;}
+  .integ-tile:hover{border-color:var(--border2);color:var(--text2);}
+  .integ-dot{width:6px;height:6px;border-radius:50%;}
+
+  /* SCROLLBAR */
+  ::-webkit-scrollbar{width:4px;height:4px;}
+  ::-webkit-scrollbar-track{background:var(--bg);}
+  ::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px;}
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<div class="sidebar">
+  <div class="logo">KOGI</div>
+  <div class="nav-section">
+    <div class="nav-label">Main</div>
+    <div class="nav-item"><span class="dot"></span>Home</div>
+    <div class="nav-item"><span class="dot"></span>Office</div>
+    <div class="nav-item"><span class="dot"></span>Portfolio</div>
+    <div class="nav-item"><span class="dot"></span>Studio</div>
+  </div>
+  <div class="nav-divider"></div>
+  <div class="nav-section">
+    <div class="nav-label">Economy</div>
+    <div class="nav-item active"><span class="dot"></span>Exchange</div>
+    <div class="nav-item"><span class="dot"></span>Marketplace</div>
+    <div class="nav-item"><span class="dot"></span>Bank</div>
+  </div>
+  <div class="nav-divider"></div>
+  <div class="nav-section">
+    <div class="nav-label">Exchange</div>
+    <div class="nav-item"><span class="dot"></span>Labor Market</div>
+    <div class="nav-item"><span class="dot"></span>Commodities</div>
+    <div class="nav-item"><span class="dot"></span>Financial</div>
+    <div class="nav-item"><span class="dot"></span>Deal Rooms</div>
+    <div class="nav-item"><span class="dot"></span>Capital</div>
+    <div class="nav-item"><span class="dot"></span>Resources</div>
+    <div class="nav-item"><span class="dot"></span>Asset Transfer</div>
+  </div>
+  <div class="nav-divider"></div>
+  <div class="nav-section">
+    <div class="nav-label">Platform</div>
+    <div class="nav-item"><span class="dot"></span>Community</div>
+    <div class="nav-item"><span class="dot"></span>Organizations</div>
+    <div class="nav-item"><span class="dot"></span>Developer</div>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div class="main">
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <div class="topbar-title"><span class="icon">⟳</span> Exchange</div>
+    <input class="topbar-search" placeholder="search markets, deals, listings..." />
+    <div class="topbar-actions">
+      <button class="btn">Order Book</button>
+      <button class="btn amber">+ Post Requirement</button>
+      <button class="btn primary">+ New Deal</button>
+      <div class="badge-dot"></div>
+    </div>
+  </div>
+
+  <!-- STATS ROW -->
+  <div class="stats-row">
+    <div class="stat-box">
+      <div class="stat-label">Active Markets</div>
+      <div class="stat-value teal">7</div>
+      <div class="stat-sub">Labor · Portfolio · Financial</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-label">Open Deals</div>
+      <div class="stat-value">12</div>
+      <div class="stat-sub"><span class="up">↑3</span> this week</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-label">Volume (30d)</div>
+      <div class="stat-value amber">$284K</div>
+      <div class="stat-sub"><span class="up">+18%</span> vs prev period</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-label">Escrow Locked</div>
+      <div class="stat-value">$38,400</div>
+      <div class="stat-sub">4 active contracts</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-label">Settled (30d)</div>
+      <div class="stat-value purple">$124,500</div>
+      <div class="stat-sub"><span class="up">+22%</span> completion rate</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-label">Match Score</div>
+      <div class="stat-value teal">94%</div>
+      <div class="stat-sub">AI engine active</div>
+    </div>
+  </div>
+
+  <!-- CONTENT GRID -->
+  <div class="content">
+
+    <!-- ACTIVE MARKETS -->
+    <div class="card span2">
+      <div class="card-header">
+        <div class="card-title">Active Markets</div>
+        <div style="margin-left:auto;display:flex;gap:6px;">
+          <span class="card-badge teal">7 Live</span>
+          <span class="card-badge amber">AI Match On</span>
+        </div>
+      </div>
+      <div class="market-grid">
+        <div class="market-tile">
+          <div class="tile-header">
+            <div class="tile-name">Labor Market</div>
+            <span class="tile-status hot">HOT</span>
+          </div>
+          <div class="tile-stats">
+            <div class="tile-stat">Listings <span>284</span></div>
+            <div class="tile-stat">Workers <span>1,840</span></div>
+            <div class="tile-stat">Avg Rate <span>$94/hr</span></div>
+          </div>
+          <div class="tile-bar"><div class="tile-bar-fill" style="width:78%;background:var(--teal);"></div></div>
+        </div>
+        <div class="market-tile">
+          <div class="tile-header">
+            <div class="tile-name">Portfolio Commodities</div>
+            <span class="tile-status live">LIVE</span>
+          </div>
+          <div class="tile-stats">
+            <div class="tile-stat">Items <span>142</span></div>
+            <div class="tile-stat">Vol <span>$89K</span></div>
+            <div class="tile-stat">Active <span>28</span></div>
+          </div>
+          <div class="tile-bar"><div class="tile-bar-fill" style="width:52%;background:var(--amber);"></div></div>
+        </div>
+        <div class="market-tile">
+          <div class="tile-header">
+            <div class="tile-name">Financial Instruments</div>
+            <span class="tile-status live">LIVE</span>
+          </div>
+          <div class="tile-stats">
+            <div class="tile-stat">Instruments <span>34</span></div>
+            <div class="tile-stat">Vol <span>$124K</span></div>
+            <div class="tile-stat">Rounds <span>6</span></div>
+          </div>
+          <div class="tile-bar"><div class="tile-bar-fill" style="width:64%;background:var(--purple);"></div></div>
+        </div>
+        <div class="market-tile">
+          <div class="tile-header">
+            <div class="tile-name">Resource Exchange</div>
+            <span class="tile-status live">LIVE</span>
+          </div>
+          <div class="tile-stats">
+            <div class="tile-stat">Resources <span>97</span></div>
+            <div class="tile-stat">Vol <span>$41K</span></div>
+            <div class="tile-stat">Types <span>8</span></div>
+          </div>
+          <div class="tile-bar"><div class="tile-bar-fill" style="width:43%;background:var(--pink);"></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ACTIVITY FEED -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">Recent Activity</div>
+        <span class="card-badge teal">Live</span>
+      </div>
+      <div class="activity-row">
+        <div class="activity-icon teal">$</div>
+        <div class="activity-text"><strong>Escrow funded</strong> · Brand Identity System deal — $12,400 locked</div>
+        <div class="activity-time">2m</div>
+      </div>
+      <div class="activity-row">
+        <div class="activity-icon amber">⟳</div>
+        <div class="activity-text"><strong>Proposal sent</strong> · Priya S. responded to Web Platform RFP</div>
+        <div class="activity-time">8m</div>
+      </div>
+      <div class="activity-row">
+        <div class="activity-icon green">✓</div>
+        <div class="activity-text"><strong>Deal closed</strong> · React Component Kit · $4,200 released</div>
+        <div class="activity-time">24m</div>
+      </div>
+      <div class="activity-row">
+        <div class="activity-icon purple">↗</div>
+        <div class="activity-text"><strong>New bid</strong> · Jordan C. bid on Legal Template Bundle</div>
+        <div class="activity-time">41m</div>
+      </div>
+      <div class="activity-row">
+        <div class="activity-icon teal">+</div>
+        <div class="activity-text"><strong>Listing active</strong> · Data Pipeline Automation — $8,900 fixed</div>
+        <div class="activity-time">1h</div>
+      </div>
+      <div class="activity-row">
+        <div class="activity-icon amber">!</div>
+        <div class="activity-text"><strong>Counter-proposal</strong> · Milestone 2 revised to $6,500</div>
+        <div class="activity-time">2h</div>
+      </div>
+    </div>
+
+    <!-- OPEN DEALS -->
+    <div class="card span2">
+      <div class="card-header">
+        <div class="card-title">Open Deals</div>
+        <span class="card-badge teal">12 Active</span>
+      </div>
+      <div class="deal-row">
+        <div class="deal-avatar" style="color:var(--teal)">JC</div>
+        <div class="deal-info">
+          <div class="deal-name">Brand Identity System v2.0</div>
+          <div class="deal-sub">Jordan Chen · Design · Milestone 2/3</div>
+        </div>
+        <div class="deal-amount">$12,400</div>
+        <span class="deal-stage escrow">Escrow</span>
+      </div>
+      <div class="deal-row">
+        <div class="deal-avatar" style="color:var(--amber)">PS</div>
+        <div class="deal-info">
+          <div class="deal-name">Web Platform Architecture</div>
+          <div class="deal-sub">Priya Singh · Engineering · Proposal v2</div>
+        </div>
+        <div class="deal-amount">$28,000</div>
+        <span class="deal-stage negotiation">Negotiation</span>
+      </div>
+      <div class="deal-row">
+        <div class="deal-avatar" style="color:var(--purple)">MB</div>
+        <div class="deal-info">
+          <div class="deal-name">Community Growth Strategy</div>
+          <div class="deal-sub">Marcus B. · Strategy · Deliverable submitted</div>
+        </div>
+        <div class="deal-amount">$5,500</div>
+        <span class="deal-stage review">Review</span>
+      </div>
+      <div class="deal-row">
+        <div class="deal-avatar" style="color:var(--pink)">LM</div>
+        <div class="deal-info">
+          <div class="deal-name">Legal Contract Templates</div>
+          <div class="deal-sub">Lena M. · Legal · Deal complete, review pending</div>
+        </div>
+        <div class="deal-amount">$2,800</div>
+        <span class="deal-stage complete">Complete</span>
+      </div>
+    </div>
+
+    <!-- ACTIVE ORDERS -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">Order Book — Labor</div>
+        <span class="card-badge amber">284 Listings</span>
+      </div>
+      <div class="order-row">
+        <div class="order-type bid">BID</div>
+        <div class="order-title">Senior React Developer · 3mo retainer</div>
+        <div class="order-val green">$9,200/mo</div>
+        <span class="order-status active">Active</span>
+      </div>
+      <div class="order-row">
+        <div class="order-type ask">ASK</div>
+        <div class="order-title">UX/UI Design · Brand refresh · 6wk</div>
+        <div class="order-val red">$14,400</div>
+        <span class="order-status active">Active</span>
+      </div>
+      <div class="order-row">
+        <div class="order-type bid">BID</div>
+        <div class="order-title">Data Engineer · Kafka pipeline setup</div>
+        <div class="order-val green">$7,800</div>
+        <span class="order-status pending">Pending</span>
+      </div>
+      <div class="order-row">
+        <div class="order-type ask">ASK</div>
+        <div class="order-title">Legal Review · SaaS contract templates</div>
+        <div class="order-val red">$3,200</div>
+        <span class="order-status active">Active</span>
+      </div>
+      <div class="order-row">
+        <div class="order-type bid">BID</div>
+        <div class="order-title">Marketing Strategist · 8wk campaign</div>
+        <div class="order-val green">$11,000</div>
+        <span class="order-status pending">Pending</span>
+      </div>
+    </div>
+
+    <!-- INTEGRATIONS -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">Linked Platforms</div>
+      </div>
+      <div class="integration-list">
+        <div class="integ-tile"><div class="integ-dot" style="background:var(--green)"></div>Robinhood</div>
+        <div class="integ-tile"><div class="integ-dot" style="background:var(--blue)"></div>Coinbase</div>
+        <div class="integ-tile"><div class="integ-dot" style="background:var(--text3)"></div>Upwork</div>
+        <div class="integ-tile"><div class="integ-dot" style="background:var(--text3)"></div>Fiverr</div>
+        <div class="integ-tile"><div class="integ-dot" style="background:var(--purple)"></div>AngelList</div>
+        <div class="integ-tile"><div class="integ-dot" style="background:var(--text3)"></div>Republic</div>
+        <div class="integ-tile"><div class="integ-dot" style="background:var(--text3)"></div>SoFi</div>
+        <div class="integ-tile"><div class="integ-dot" style="background:var(--green)"></div>Stripe</div>
+        <div class="integ-tile"><div class="integ-dot" style="background:var(--text3)"></div>Ethereum</div>
+        <div class="integ-tile"><div class="integ-dot" style="background:var(--text3)"></div>Wefunder</div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+</body>
+</html>

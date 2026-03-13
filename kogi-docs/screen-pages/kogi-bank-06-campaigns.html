@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KOGI · Campaigns & Capital</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@300;400;500;600&display=swap');
+  :root {
+    --bg: #080c10; --bg2: #0d1117; --bg3: #121820; --bg4: #1a2230;
+    --border: #1e2d3d; --border2: #243040;
+    --text: #c8d8e8; --text2: #7a9ab8; --text3: #4a6a88;
+    --green: #00e5a0; --teal: #00b8cc; --gold: #e8a020; --red: #e84060; --purple: #9060e8; --blue: #2080e8;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 13px; display: flex; height: 100vh; overflow: hidden; }
+  .nav { width: 160px; background: var(--bg2); border-right: 1px solid var(--border); display: flex; flex-direction: column; padding: 16px 0; flex-shrink: 0; }
+  .nav-logo { padding: 0 16px 20px; font-family: 'Space Mono', monospace; font-size: 16px; font-weight: 700; color: var(--green); letter-spacing: 2px; }
+  .nav-section { padding: 4px 16px 2px; font-size: 9px; letter-spacing: 1.5px; color: var(--text3); text-transform: uppercase; margin-top: 8px; }
+  .nav-item { padding: 7px 16px; color: var(--text2); font-size: 12px; cursor: pointer; display: flex; align-items: center; gap: 8px; border-left: 2px solid transparent; }
+  .nav-item.active { color: var(--green); border-left-color: var(--green); background: rgba(0,229,160,0.05); }
+  .nav-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--text3); flex-shrink: 0; }
+  .nav-item.active .nav-dot { background: var(--green); }
+  .main { flex: 1; overflow-y: auto; }
+  .topbar { display: flex; align-items: center; justify-content: space-between; padding: 12px 20px; background: var(--bg2); border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 10; }
+  .topbar-title { font-family: 'Space Mono', monospace; font-size: 13px; }
+  .topbar-sub { font-size: 11px; color: var(--text3); }
+  .topbar-right { display: flex; align-items: center; gap: 8px; }
+  .badge { background: var(--bg4); border: 1px solid var(--border2); border-radius: 4px; padding: 3px 8px; font-size: 11px; color: var(--text2); }
+  .badge.green { border-color: var(--green); color: var(--green); background: rgba(0,229,160,0.05); }
+  .avatar { width: 28px; height: 28px; border-radius: 50%; background: linear-gradient(135deg, var(--teal), var(--purple)); display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 600; color: #fff; }
+  .content { padding: 18px 20px; }
+  .num { font-family: 'Space Mono', monospace; }
+  .panel { background: var(--bg3); border: 1px solid var(--border); border-radius: 6px; padding: 14px; margin-bottom: 12px; }
+  .panel-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+  .panel-title { font-size: 11px; font-weight: 600; color: var(--text2); text-transform: uppercase; letter-spacing: 1px; }
+  .panel-action { font-size: 10px; color: var(--teal); cursor: pointer; }
+  .divider { height: 1px; background: var(--border); margin: 10px 0; }
+  .tag { display: inline-block; font-size: 9px; padding: 2px 6px; border-radius: 3px; }
+  .tag.green { background: rgba(0,229,160,0.12); color: var(--green); }
+  .tag.gold { background: rgba(232,160,32,0.12); color: var(--gold); }
+  .tag.red { background: rgba(232,64,96,0.12); color: var(--red); }
+  .tag.teal { background: rgba(0,184,204,0.12); color: var(--teal); }
+  .tag.purple { background: rgba(144,96,232,0.12); color: var(--purple); }
+  .tag.blue { background: rgba(32,128,232,0.12); color: var(--blue); }
+  .stat-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 16px; }
+  .stat-card { background: var(--bg3); border: 1px solid var(--border); border-radius: 6px; padding: 12px 14px; }
+  .stat-label { font-size: 10px; color: var(--text3); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px; }
+  .stat-val { font-family: 'Space Mono', monospace; font-size: 16px; font-weight: 700; }
+  .stat-sub { font-size: 10px; color: var(--text3); margin-top: 2px; }
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-bottom: 12px; }
+  .grid-23 { display: grid; grid-template-columns: 1.5fr 1fr; gap: 12px; }
+  .pbar { height: 6px; background: var(--bg4); border-radius: 3px; overflow: hidden; margin-top: 6px; }
+  .pbar-fill { height: 100%; border-radius: 3px; transition: width 0.6s; }
+  .mini-stat { display: flex; justify-content: space-between; padding: 5px 0; border-bottom: 1px solid rgba(30,45,61,0.5); }
+  .mini-stat:last-child { border-bottom: none; }
+  .mini-stat-label { font-size: 11px; color: var(--text2); }
+  .mini-stat-val { font-family: 'Space Mono', monospace; font-size: 11px; color: var(--text); }
+
+  /* CAMPAIGN CARD */
+  .camp-card { background: var(--bg4); border: 1px solid var(--border2); border-radius: 6px; padding: 14px; position: relative; overflow: hidden; }
+  .camp-card.featured { border-color: rgba(0,229,160,0.3); background: linear-gradient(135deg, rgba(0,229,160,0.04), rgba(0,184,204,0.02)); }
+  .camp-card-name { font-size: 14px; font-weight: 600; color: var(--text); margin-bottom: 3px; }
+  .camp-card-org { font-size: 11px; color: var(--text3); margin-bottom: 8px; }
+  .camp-raised { font-family: 'Space Mono', monospace; font-size: 20px; font-weight: 700; margin-bottom: 1px; }
+  .camp-goal { font-size: 11px; color: var(--text3); margin-bottom: 6px; }
+  .camp-meta { display: flex; gap: 12px; margin-top: 8px; }
+  .camp-meta-item { font-size: 10px; color: var(--text3); }
+  .camp-meta-val { font-family: 'Space Mono', monospace; color: var(--text2); }
+  .contrib-row { padding: 8px 0; border-bottom: 1px solid rgba(30,45,61,0.5); display: flex; justify-content: space-between; align-items: center; }
+  .contrib-row:last-child { border-bottom: none; }
+  .contrib-name { font-size: 12px; color: var(--text); }
+  .contrib-meta { font-size: 10px; color: var(--text3); }
+  .contrib-amount { font-family: 'Space Mono', monospace; font-size: 12px; }
+  .invest-card { background: var(--bg4); border: 1px solid var(--border2); border-radius: 5px; padding: 10px 12px; margin-bottom: 8px; }
+  .invest-name { font-size: 12px; font-weight: 500; color: var(--text); }
+  .invest-meta { font-size: 10px; color: var(--text3); margin-bottom: 5px; }
+  .invest-row { display: flex; justify-content: space-between; align-items: center; margin-top: 4px; }
+  .invest-val { font-family: 'Space Mono', monospace; font-size: 12px; }
+  .milestone-item { display: flex; align-items: center; gap: 8px; padding: 7px 0; border-bottom: 1px solid rgba(30,45,61,0.5); }
+  .milestone-item:last-child { border-bottom: none; }
+  .ms-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .ms-dot.done { background: var(--green); }
+  .ms-dot.active { background: var(--gold); box-shadow: 0 0 5px var(--gold); }
+  .ms-dot.pending { background: var(--bg3); border: 1px solid var(--text3); }
+  .ms-info { flex: 1; }
+  .ms-name { font-size: 11px; color: var(--text); }
+  .ms-date { font-size: 10px; color: var(--text3); }
+  .ms-amount { font-family: 'Space Mono', monospace; font-size: 11px; }
+  ::-webkit-scrollbar { width: 4px; }
+  ::-webkit-scrollbar-track { background: var(--bg2); }
+  ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+</style>
+</head>
+<body>
+<nav class="nav">
+  <div class="nav-logo">KOGI</div>
+  <div class="nav-section">Platform</div>
+  <div class="nav-item"><div class="nav-dot"></div>Home</div>
+  <div class="nav-item"><div class="nav-dot"></div>Office</div>
+  <div class="nav-section">Finance</div>
+  <div class="nav-item active"><div class="nav-dot"></div>Bank</div>
+  <div class="nav-item"><div class="nav-dot"></div>Exchange</div>
+  <div class="nav-item"><div class="nav-dot"></div>Marketplace</div>
+  <div class="nav-section">Community</div>
+  <div class="nav-item"><div class="nav-dot"></div>Community</div>
+  <div class="nav-item"><div class="nav-dot"></div>Organizations</div>
+  <div class="nav-section">Dev</div>
+  <div class="nav-item"><div class="nav-dot"></div>Developer</div>
+  <div class="nav-item"><div class="nav-dot"></div>Profile</div>
+</nav>
+<div class="main">
+  <div class="topbar">
+    <div style="display:flex;align-items:center;gap:12px">
+      <div>
+        <div class="topbar-title">⬡ Bank · Campaigns & Capital</div>
+        <div class="topbar-sub">KCMP · Fundraising, Investment & Equity Management</div>
+      </div>
+      <div class="badge green">Active Campaign</div>
+    </div>
+    <div class="topbar-right">
+      <div class="badge">+ New Campaign</div>
+      <div class="badge">Cap Table</div>
+      <div class="avatar">JC</div>
+    </div>
+  </div>
+
+  <div class="content">
+    <!-- STATS -->
+    <div class="stat-row">
+      <div class="stat-card">
+        <div class="stat-label">Capital Raised</div>
+        <div class="stat-val" style="color:var(--green)">$124,500</div>
+        <div class="stat-sub">All campaigns · YTD</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Active Campaign</div>
+        <div class="stat-val" style="color:var(--gold)">$45,000</div>
+        <div class="stat-sub">Seed Round · Series Pre-A</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Investors</div>
+        <div class="stat-val" style="color:var(--teal)">2</div>
+        <div class="stat-sub">Committed · 1 pending</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Equity Issued</div>
+        <div class="stat-val" style="color:var(--purple)">$140</div>
+        <div class="stat-sub">Seed valuation cap</div>
+      </div>
+    </div>
+
+    <!-- MAIN GRID -->
+    <div class="grid-23">
+      <!-- LEFT: Active Campaign + Investments -->
+      <div>
+        <!-- FEATURED CAMPAIGN -->
+        <div class="panel" style="margin-bottom:10px">
+          <div class="panel-header">
+            <div class="panel-title">Active Campaign · Seed Round</div>
+            <div class="panel-action">Manage Campaign</div>
+          </div>
+          <div class="camp-card featured" style="margin-bottom:12px">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px">
+              <div>
+                <div class="camp-card-name">Alpha Platform · Seed Round Series Pre-A</div>
+                <div class="camp-card-org">Kogi Platform · Campaign #KCMP-004</div>
+              </div>
+              <div><span class="tag green">Live · 42 days left</span></div>
+            </div>
+            <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:2px">
+              <div class="camp-raised" style="color:var(--green)">$45,000</div>
+              <div style="font-size:12px;color:var(--text2)">raised of</div>
+              <div class="num" style="font-size:14px;color:var(--text3)">$500,000 goal</div>
+            </div>
+            <div class="pbar">
+              <div class="pbar-fill" style="width:9%;background:linear-gradient(90deg,var(--green),var(--teal))"></div>
+            </div>
+            <div class="camp-meta">
+              <div class="camp-meta-item">Investors: <span class="camp-meta-val">2</span></div>
+              <div class="camp-meta-item">Min ticket: <span class="camp-meta-val">$5,000</span></div>
+              <div class="camp-meta-item">Type: <span class="camp-meta-val">SAFE · Pre-A</span></div>
+              <div class="camp-meta-item">Cap: <span class="camp-meta-val num">$14M</span></div>
+            </div>
+          </div>
+
+          <!-- MILESTONE DISBURSEMENT SCHEDULE -->
+          <div style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">Disbursement Milestones</div>
+          <div class="milestone-item">
+            <div class="ms-dot done"></div>
+            <div class="ms-info">
+              <div class="ms-name">M1 · Platform Beta Launch</div>
+              <div class="ms-date">Completed Feb 28, 2026</div>
+            </div>
+            <div class="ms-amount" style="color:var(--green)">$10,000 ✓</div>
+          </div>
+          <div class="milestone-item">
+            <div class="ms-dot active"></div>
+            <div class="ms-info">
+              <div class="ms-name" style="color:var(--gold)">M2 · 500 Active Users</div>
+              <div class="ms-date">Target Mar 31, 2026 · In Progress</div>
+            </div>
+            <div class="ms-amount" style="color:var(--gold)">$15,000 ●</div>
+          </div>
+          <div class="milestone-item">
+            <div class="ms-dot pending"></div>
+            <div class="ms-info">
+              <div class="ms-name">M3 · First Revenue $50K MRR</div>
+              <div class="ms-date">Target Jun 30, 2026</div>
+            </div>
+            <div class="ms-amount">$20,000 ○</div>
+          </div>
+        </div>
+
+        <!-- CONTRIBUTIONS TABLE -->
+        <div class="panel">
+          <div class="panel-header">
+            <div class="panel-title">Investor Contributions</div>
+            <div class="panel-action">+ Add Investor</div>
+          </div>
+          <div class="contrib-row">
+            <div>
+              <div class="contrib-name">Horizon Ventures LLC</div>
+              <div class="contrib-meta">Lead Investor · SAFE · Mar 02, 2026</div>
+            </div>
+            <div style="text-align:right">
+              <div class="contrib-amount" style="color:var(--green)">$25,000</div>
+              <div><span class="tag green">Confirmed</span></div>
+            </div>
+          </div>
+          <div class="contrib-row">
+            <div>
+              <div class="contrib-name">Priya Nair · Angel</div>
+              <div class="contrib-meta">Individual Investor · SAFE · Mar 08, 2026</div>
+            </div>
+            <div style="text-align:right">
+              <div class="contrib-amount" style="color:var(--green)">$20,000</div>
+              <div><span class="tag green">Confirmed</span></div>
+            </div>
+          </div>
+          <div class="contrib-row">
+            <div>
+              <div class="contrib-name">DataStream Co · Strategic</div>
+              <div class="contrib-meta">Strategic Partner · Pending Term Sheet</div>
+            </div>
+            <div style="text-align:right">
+              <div class="contrib-amount" style="color:var(--text3)">$50,000</div>
+              <div><span class="tag gold">Pending</span></div>
+            </div>
+          </div>
+          <div class="divider"></div>
+          <div style="display:flex;justify-content:space-between">
+            <div><div style="font-size:10px;color:var(--text3)">Total Committed</div><div class="num" style="color:var(--green)">$45,000</div></div>
+            <div><div style="font-size:10px;color:var(--text3)">Remaining Goal</div><div class="num" style="color:var(--text2)">$455,000</div></div>
+            <div><div style="font-size:10px;color:var(--text3)">Campaign Account</div><div class="num" style="color:var(--gold)">KCMP-004</div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- RIGHT: Investment Portfolio + Equity -->
+      <div>
+        <div class="panel" style="margin-bottom:10px">
+          <div class="panel-header">
+            <div class="panel-title">Investment Portfolio</div>
+          </div>
+          <div class="invest-card">
+            <div class="invest-name">Community Bond · Vehicle Fund</div>
+            <div class="invest-meta">Cooperative Bond · KCMP-003 · Mar 2025</div>
+            <div class="invest-row">
+              <div><span style="font-size:10px;color:var(--text3)">Invested</span> <div class="invest-val" style="color:var(--purple)">$12,000</div></div>
+              <div><span style="font-size:10px;color:var(--text3)">Current</span><div class="invest-val" style="color:var(--green)">$13,200</div></div>
+              <div><span style="font-size:10px;color:var(--text3)">Return</span><div class="invest-val up" style="color:var(--green)">+10%</div></div>
+            </div>
+          </div>
+          <div class="invest-card">
+            <div class="invest-name">Seed Fund · Pamoja Collective</div>
+            <div class="invest-meta">Community Equity · KCMP-001 · Aug 2025</div>
+            <div class="invest-row">
+              <div><span style="font-size:10px;color:var(--text3)">Invested</span><div class="invest-val" style="color:var(--purple)">$5,000</div></div>
+              <div><span style="font-size:10px;color:var(--text3)">Valuation</span><div class="invest-val" style="color:var(--text)">$5,200</div></div>
+              <div><span style="font-size:10px;color:var(--text3)">Return</span><div class="invest-val" style="color:var(--green)">+4%</div></div>
+            </div>
+          </div>
+          <div class="invest-card">
+            <div class="invest-name">Equity Stake · NovaTech Inc.</div>
+            <div class="invest-meta">Angel Round · Equity Units · Nov 2024</div>
+            <div class="invest-row">
+              <div><span style="font-size:10px;color:var(--text3)">Cost</span><div class="invest-val" style="color:var(--purple)">$8,000</div></div>
+              <div><span style="font-size:10px;color:var(--text3)">Mark</span><div class="invest-val" style="color:var(--text)">$9,400</div></div>
+              <div><span style="font-size:10px;color:var(--text3)">Return</span><div class="invest-val" style="color:var(--green)">+17.5%</div></div>
+            </div>
+          </div>
+          <div class="divider"></div>
+          <div style="display:flex;justify-content:space-between">
+            <div><div style="font-size:10px;color:var(--text3)">Total Invested</div><div class="num" style="color:var(--purple)">$25,000</div></div>
+            <div><div style="font-size:10px;color:var(--text3)">Total Value</div><div class="num" style="color:var(--green)">$27,800</div></div>
+            <div><div style="font-size:10px;color:var(--text3)">IRR</div><div class="num" style="color:var(--teal)">+11.2%</div></div>
+          </div>
+        </div>
+
+        <!-- CAMPAIGN ACCOUNT -->
+        <div class="panel" style="margin-bottom:10px">
+          <div class="panel-header">
+            <div class="panel-title">Campaign Account · KCMP-004</div>
+          </div>
+          <div class="mini-stat"><span class="mini-stat-label">Account Balance</span><span class="mini-stat-val" style="color:var(--gold)">$35,000</span></div>
+          <div class="mini-stat"><span class="mini-stat-label">Disbursed (M1)</span><span class="mini-stat-val" style="color:var(--green)">$10,000</span></div>
+          <div class="mini-stat"><span class="mini-stat-label">Held (M2+)</span><span class="mini-stat-val">$25,000</span></div>
+          <div class="mini-stat"><span class="mini-stat-label">Pending (Priya)</span><span class="mini-stat-val" style="color:var(--text3)">$10,000</span></div>
+          <div class="mini-stat"><span class="mini-stat-label">Platform Fee (1%)</span><span class="mini-stat-val" style="color:var(--red)">-$450</span></div>
+          <div class="mini-stat"><span class="mini-stat-label">Account Type</span><span class="mini-stat-val">Campaign · KCMP</span></div>
+        </div>
+
+        <!-- CAP TABLE PREVIEW -->
+        <div class="panel">
+          <div class="panel-header">
+            <div class="panel-title">Cap Table · Preview</div>
+            <div class="panel-action">Full View</div>
+          </div>
+          <div class="mini-stat"><span class="mini-stat-label">Jordan Chen (Founder)</span><span class="mini-stat-val" style="color:var(--green)">82%</span></div>
+          <div class="mini-stat"><span class="mini-stat-label">Horizon Ventures (SAFE)</span><span class="mini-stat-val">10.5%</span></div>
+          <div class="mini-stat"><span class="mini-stat-label">Priya Nair (SAFE)</span><span class="mini-stat-val">7.5%</span></div>
+          <div class="mini-stat"><span class="mini-stat-label">Option Pool (Reserved)</span><span class="mini-stat-val" style="color:var(--text3)">10%</span></div>
+          <div class="mini-stat"><span class="mini-stat-label">Post-Round Valuation</span><span class="mini-stat-val" style="color:var(--teal)">$14,000,000</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

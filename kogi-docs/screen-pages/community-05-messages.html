@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KOGI · Messages</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap');
+  *{margin:0;padding:0;box-sizing:border-box;}
+  :root{
+    --bg:#080b10;--bg2:#0d1117;--bg3:#111820;--bg4:#161e28;
+    --border:#1e2d3d;--border2:#243344;
+    --teal:#00c9a7;--teal2:#009e84;--teal-dim:#00c9a720;
+    --amber:#f5a623;--amber-dim:#f5a62318;
+    --purple:#8b5cf6;--purple-dim:#8b5cf615;
+    --pink:#e83e8c;--pink-dim:#e83e8c18;
+    --green:#22c55e;--red:#ef4444;--blue:#3b82f6;
+    --text:#e2e8f0;--text2:#94a3b8;--text3:#4a6280;
+    --mono:'IBM Plex Mono',monospace;--sans:'IBM Plex Sans',sans-serif;
+  }
+  body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:12px;display:flex;height:100vh;overflow:hidden;}
+  .sidebar{width:168px;background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0;}
+  .logo{padding:12px 14px;border-bottom:1px solid var(--border);font-family:var(--mono);font-size:13px;font-weight:600;letter-spacing:3px;color:var(--teal);}
+  .nav-section{padding:8px 0;}
+  .nav-label{padding:4px 14px 2px;font-size:9px;letter-spacing:2px;color:var(--text3);text-transform:uppercase;}
+  .nav-item{padding:5px 14px;color:var(--text2);cursor:pointer;font-size:11px;display:flex;align-items:center;gap:6px;border-left:2px solid transparent;position:relative;}
+  .nav-item:hover{color:var(--text);background:var(--bg3);}
+  .nav-item.active{color:var(--teal);border-left-color:var(--teal);background:var(--teal-dim);}
+  .nav-item .dot{width:5px;height:5px;border-radius:50%;background:currentColor;opacity:.6;}
+  .nav-badge{position:absolute;right:10px;background:var(--red);color:#fff;font-size:8px;font-family:var(--mono);padding:1px 4px;border-radius:8px;}
+  .nav-divider{height:1px;background:var(--border);margin:6px 0;}
+  .main{flex:1;display:flex;overflow:hidden;}
+  .btn{padding:4px 10px;border-radius:3px;font-family:var(--mono);font-size:10px;cursor:pointer;border:1px solid var(--border2);background:var(--bg3);color:var(--text2);}
+  .btn.primary{background:var(--teal2);border-color:var(--teal);color:#000;font-weight:600;}
+  .btn.amber{background:var(--amber-dim);border-color:var(--amber);color:var(--amber);}
+
+  /* DM LIST */
+  .dm-list{width:260px;background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0;}
+  .dl-header{padding:8px 12px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+  .dl-title{font-family:var(--mono);font-size:10px;font-weight:500;text-transform:uppercase;letter-spacing:1px;color:var(--text);}
+  .dl-search{padding:8px 12px;border-bottom:1px solid var(--border);}
+  .dl-search input{width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:3px;padding:5px 8px;font-family:var(--mono);font-size:10px;color:var(--text2);outline:none;}
+  .dl-tabs{display:flex;border-bottom:1px solid var(--border);}
+  .dl-tab{flex:1;padding:6px;font-size:9px;font-family:var(--mono);text-align:center;color:var(--text3);cursor:pointer;border-bottom:2px solid transparent;}
+  .dl-tab.active{color:var(--teal);border-bottom-color:var(--teal);}
+  .dm-items{flex:1;overflow-y:auto;}
+  .dm-item{display:flex;align-items:flex-start;gap:9px;padding:8px 12px;cursor:pointer;border-bottom:1px solid var(--border);border-left:2px solid transparent;}
+  .dm-item:hover{background:var(--bg3);}
+  .dm-item.active{background:var(--bg3);border-left-color:var(--teal);}
+  .dm-item.unread{background:var(--bg3);}
+  .di-avatar{width:32px;height:32px;border-radius:50%;background:var(--bg4);border:1px solid var(--border2);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;flex-shrink:0;position:relative;}
+  .di-status{position:absolute;bottom:0;right:0;width:8px;height:8px;border-radius:50%;border:2px solid var(--bg2);}
+  .di-status.on{background:var(--green);}
+  .di-status.off{background:var(--text3);}
+  .di-status.away{background:var(--amber);}
+  .di-body{flex:1;min-width:0;}
+  .di-name{font-size:11px;color:var(--text2);font-weight:500;display:flex;align-items:center;gap:4px;margin-bottom:1px;}
+  .di-name.unread{color:var(--text);}
+  .di-preview{font-size:10px;color:var(--text3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .di-preview.unread{color:var(--text2);}
+  .di-meta{display:flex;flex-direction:column;align-items:flex-end;gap:3px;flex-shrink:0;}
+  .di-time{font-size:8px;color:var(--text3);font-family:var(--mono);}
+  .di-badge{background:var(--teal);color:#000;font-size:7px;font-family:var(--mono);padding:1px 4px;border-radius:8px;}
+  .di-type-badge{font-size:7px;font-family:var(--mono);padding:1px 4px;border-radius:2px;}
+  .di-type-badge.collab{background:var(--teal-dim);color:var(--teal);}
+  .di-type-badge.client{background:var(--amber-dim);color:var(--amber);}
+  .di-group-avatar{width:32px;height:32px;position:relative;flex-shrink:0;}
+  .di-group-a1{width:22px;height:22px;border-radius:50%;background:var(--bg4);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:600;position:absolute;top:0;left:0;}
+  .di-group-a2{width:22px;height:22px;border-radius:50%;background:var(--bg4);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:600;position:absolute;bottom:0;right:0;}
+
+  /* CHAT VIEW */
+  .chat-view{flex:1;display:flex;flex-direction:column;overflow:hidden;}
+  .chat-header{padding:8px 14px;background:var(--bg2);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;}
+  .ch-avatar{width:32px;height:32px;border-radius:50%;background:var(--bg4);border:1px solid var(--teal2);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:var(--teal);position:relative;flex-shrink:0;}
+  .ch-online{position:absolute;bottom:0;right:0;width:8px;height:8px;border-radius:50%;background:var(--green);border:2px solid var(--bg2);}
+  .ch-name{font-size:13px;font-weight:600;color:var(--text);}
+  .ch-meta{font-size:9px;color:var(--green);}
+  .ch-actions{margin-left:auto;display:flex;gap:5px;}
+  .oba-triage{background:var(--bg3);border-bottom:1px solid var(--border);padding:6px 14px;display:flex;align-items:center;gap:8px;}
+  .ot-dot{width:6px;height:6px;border-radius:50%;background:var(--teal);box-shadow:0 0 4px var(--teal);}
+  .ot-text{font-size:9px;color:var(--teal);font-family:var(--mono);}
+  .ot-badges{margin-left:auto;display:flex;gap:5px;}
+  .ot-badge{font-size:8px;font-family:var(--mono);padding:1px 6px;border-radius:2px;cursor:pointer;}
+  .ot-badge.collab{background:var(--teal-dim);color:var(--teal);border:1px solid var(--teal2);}
+  .ot-badge.reply{background:var(--purple-dim);color:var(--purple);border:1px solid var(--purple);}
+  .chat-messages{flex:1;overflow-y:auto;padding:14px;}
+  .date-sep{display:flex;align-items:center;gap:8px;margin:8px 0;}
+  .date-sep-line{flex:1;height:1px;background:var(--border);}
+  .date-sep-text{font-size:9px;color:var(--text3);font-family:var(--mono);}
+  .msg{display:flex;gap:9px;margin-bottom:8px;padding:3px 6px;border-radius:3px;}
+  .msg:hover{background:var(--bg3);}
+  .msg.outgoing{flex-direction:row-reverse;}
+  .m-avatar{width:28px;height:28px;border-radius:50%;background:var(--bg4);border:1px solid var(--border2);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:600;flex-shrink:0;margin-top:2px;}
+  .m-body{max-width:72%;}
+  .msg.outgoing .m-body{align-items:flex-end;display:flex;flex-direction:column;}
+  .m-header{display:flex;align-items:baseline;gap:6px;margin-bottom:2px;}
+  .msg.outgoing .m-header{flex-direction:row-reverse;}
+  .m-author{font-size:10px;font-weight:600;color:var(--text);}
+  .m-time{font-size:8px;color:var(--text3);font-family:var(--mono);}
+  .m-bubble{background:var(--bg3);border:1px solid var(--border);border-radius:3px;padding:7px 10px;font-size:11px;color:var(--text2);line-height:1.55;}
+  .msg.outgoing .m-bubble{background:var(--bg4);border-color:var(--border2);}
+  .m-bubble .mention{color:var(--purple);}
+  .m-bubble strong{color:var(--text);}
+  .m-embed{background:var(--bg4);border:1px solid var(--border);border-left:3px solid var(--teal2);border-radius:3px;padding:6px 10px;margin-top:4px;font-size:10px;}
+  .m-embed-title{color:var(--text2);font-weight:500;margin-bottom:1px;}
+  .m-embed-meta{font-size:9px;color:var(--text3);}
+  .m-reactions{display:flex;gap:4px;margin-top:3px;}
+  .m-react{background:var(--bg4);border:1px solid var(--border);border-radius:10px;padding:1px 7px;font-size:10px;cursor:pointer;}
+  .m-react.active{border-color:var(--teal2);background:var(--teal-dim);}
+  .read-receipt{font-size:8px;color:var(--text3);text-align:right;margin-top:2px;font-family:var(--mono);}
+  .chat-input-area{padding:10px 14px;background:var(--bg2);border-top:1px solid var(--border);}
+  .ci-wrap{background:var(--bg3);border:1px solid var(--border);border-radius:4px;display:flex;align-items:flex-end;padding:6px 10px;gap:8px;}
+  .ci-input{flex:1;background:transparent;border:none;font-family:var(--sans);font-size:11px;color:var(--text2);outline:none;resize:none;}
+  .ci-tools{display:flex;gap:4px;}
+  .ci-tool{width:24px;height:24px;border-radius:3px;background:var(--bg4);border:1px solid var(--border);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:10px;color:var(--text3);}
+
+  ::-webkit-scrollbar{width:4px;}
+  ::-webkit-scrollbar-track{background:var(--bg);}
+  ::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px;}
+</style>
+</head>
+<body>
+
+<div class="sidebar">
+  <div class="logo">KOGI</div>
+  <div class="nav-section">
+    <div class="nav-label">Community</div>
+    <div class="nav-item"><span class="dot"></span>Feed</div>
+    <div class="nav-item"><span class="dot"></span>Spaces</div>
+    <div class="nav-item"><span class="dot"></span>Rooms</div>
+    <div class="nav-item active"><span class="dot"></span>Messages<span class="nav-badge">3</span></div>
+    <div class="nav-item"><span class="dot"></span>Events</div>
+    <div class="nav-item"><span class="dot"></span>Showcase</div>
+    <div class="nav-item"><span class="dot"></span>Organizations</div>
+  </div>
+  <div class="nav-divider"></div>
+  <div class="nav-section">
+    <div class="nav-label">Economy</div>
+    <div class="nav-item"><span class="dot"></span>Exchange</div>
+    <div class="nav-item"><span class="dot"></span>Marketplace</div>
+  </div>
+</div>
+
+<div class="main">
+  <div class="dm-list">
+    <div class="dl-header">
+      <div class="dl-title">Messages</div>
+      <button class="btn primary" style="font-size:9px;padding:2px 7px;">+ New DM</button>
+    </div>
+    <div class="dl-search"><input placeholder="Search conversations..." /></div>
+    <div class="dl-tabs">
+      <div class="dl-tab active">All</div>
+      <div class="dl-tab">Unread (3)</div>
+      <div class="dl-tab">Groups</div>
+      <div class="dl-tab">Archived</div>
+    </div>
+    <div class="dm-items">
+      <!-- DM 1 active -->
+      <div class="dm-item active">
+        <div class="di-avatar" style="color:var(--purple)">PS<div class="di-status on"></div></div>
+        <div class="di-body">
+          <div class="di-name unread">Priya Singh <span class="di-type-badge collab">Collab</span></div>
+          <div class="di-preview unread">Looking good! Let me know when you're free to sync on M4</div>
+        </div>
+        <div class="di-meta"><div class="di-time">9m</div><div class="di-badge">1</div></div>
+      </div>
+      <!-- DM 2 -->
+      <div class="dm-item">
+        <div class="di-avatar" style="color:var(--amber)">MB<div class="di-status on"></div></div>
+        <div class="di-body">
+          <div class="di-name unread">Marcus Brown</div>
+          <div class="di-preview unread">Can we hop on a quick call about the campaign? 15mins</div>
+        </div>
+        <div class="di-meta"><div class="di-time">24m</div><div class="di-badge">2</div></div>
+      </div>
+      <!-- DM 3 -->
+      <div class="dm-item">
+        <div class="di-avatar" style="color:var(--blue)">TJ<div class="di-status off"></div></div>
+        <div class="di-body">
+          <div class="di-name">Tom James</div>
+          <div class="di-preview">Legal docs are all set. Check the Deal Room vault.</div>
+        </div>
+        <div class="di-meta"><div class="di-time">1h</div></div>
+      </div>
+      <!-- DM 4 group -->
+      <div class="dm-item">
+        <div class="di-group-avatar">
+          <div class="di-group-a1" style="color:var(--teal)">JC</div>
+          <div class="di-group-a2" style="color:var(--pink)">SN</div>
+        </div>
+        <div class="di-body">
+          <div class="di-name">Alpha Core Team (5)</div>
+          <div class="di-preview">Jordan: Escrow funded. We're a go 🎯</div>
+        </div>
+        <div class="di-meta"><div class="di-time">2h</div></div>
+      </div>
+      <!-- DM 5 -->
+      <div class="dm-item">
+        <div class="di-avatar" style="color:var(--pink)">SN<div class="di-status away"></div></div>
+        <div class="di-body">
+          <div class="di-name">Sofia Navarro</div>
+          <div class="di-preview">The GPU cluster is fully provisioned now. Let me know...</div>
+        </div>
+        <div class="di-meta"><div class="di-time">3h</div></div>
+      </div>
+      <!-- DM 6 -->
+      <div class="dm-item">
+        <div class="di-avatar" style="color:var(--green)">AK<div class="di-status on"></div></div>
+        <div class="di-body">
+          <div class="di-name">Asha Kim <span class="di-type-badge client">Client</span></div>
+          <div class="di-preview">Following up on the onboarding redesign timeline</div>
+        </div>
+        <div class="di-meta"><div class="di-time">5h</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CHAT VIEW -->
+  <div class="chat-view">
+    <div class="chat-header">
+      <div class="ch-avatar">PS<div class="ch-online"></div></div>
+      <div>
+        <div class="ch-name">Priya Singh</div>
+        <div class="ch-meta">● Online — Full-Stack Engineer · @priyasingh</div>
+      </div>
+      <div class="ch-actions">
+        <button class="btn">📞 Call</button>
+        <button class="btn">📹 Video</button>
+        <button class="btn">👤 Profile</button>
+        <button class="btn amber">Propose Deal</button>
+      </div>
+    </div>
+
+    <div class="oba-triage">
+      <div class="ot-dot"></div>
+      <div class="ot-text">Oba classified this as: Collaboration Inquiry — Milestone 4 sync</div>
+      <div class="ot-badges">
+        <div class="ot-badge collab">Collab</div>
+        <div class="ot-badge reply">Draft Reply</div>
+      </div>
+    </div>
+
+    <div class="chat-messages">
+      <div class="date-sep"><div class="date-sep-line"></div><div class="date-sep-text">Thursday, Mar 12</div><div class="date-sep-line"></div></div>
+
+      <div class="msg">
+        <div class="m-avatar" style="color:var(--purple)">PS</div>
+        <div class="m-body">
+          <div class="m-header"><span class="m-author">Priya Singh</span><span class="m-time">3:15 PM</span></div>
+          <div class="m-bubble">Hey — milestone 3 is fully deployed and stable 🎉 Data pipeline is handling load well. Wanted to give you a heads up before the official post.</div>
+          <div class="m-reactions"><div class="m-react active">🔥 1</div></div>
+        </div>
+      </div>
+
+      <div class="msg outgoing">
+        <div class="m-avatar" style="color:var(--teal)">YO</div>
+        <div class="m-body">
+          <div class="m-header"><span class="m-time">3:22 PM</span><span class="m-author">You</span></div>
+          <div class="m-bubble">Amazing!! That's huge. 2.8M events/day is beyond what we scoped for M3. Great work. Let's announce it publicly tomorrow.</div>
+          <div class="read-receipt">Read · 3:23 PM</div>
+        </div>
+      </div>
+
+      <div class="msg">
+        <div class="m-avatar" style="color:var(--purple)">PS</div>
+        <div class="m-body">
+          <div class="m-header"><span class="m-author">Priya Singh</span><span class="m-time">3:26 PM</span></div>
+          <div class="m-bubble">Sounds good! Also — I want to start planning M4 (Auth layer + RBAC). I have some initial architecture thoughts. Want to do a quick sync call early next week?</div>
+        </div>
+      </div>
+
+      <div class="msg outgoing">
+        <div class="m-avatar" style="color:var(--teal)">YO</div>
+        <div class="m-body">
+          <div class="m-header"><span class="m-time">3:41 PM</span><span class="m-author">You</span></div>
+          <div class="m-bubble">Yes — Monday 10AM works. Let me send you the M4 spec doc. Also linking the project milestone so you can see the full scope:</div>
+          <div class="m-embed">
+            <div class="m-embed-title">Alpha Platform — Milestone 4: Auth Layer + RBAC</div>
+            <div class="m-embed-meta">Program · Planned · Starts Mar 17 · Budget: $28,000</div>
+          </div>
+          <div class="read-receipt">Read · 3:43 PM</div>
+        </div>
+      </div>
+
+      <div class="date-sep"><div class="date-sep-line"></div><div class="date-sep-text">Today — Friday, Mar 13</div><div class="date-sep-line"></div></div>
+
+      <div class="msg">
+        <div class="m-avatar" style="color:var(--purple)">PS</div>
+        <div class="m-body">
+          <div class="m-header"><span class="m-author">Priya Singh</span><span class="m-time">9:02 AM</span></div>
+          <div class="m-bubble">Looking good! Let me know when you're free to sync on M4. Also, should we expand the authentication scope to cover the exchange API as well? Makes sense to do it in one go.</div>
+        </div>
+      </div>
+
+      <div class="msg outgoing">
+        <div class="m-avatar" style="color:var(--teal)">YO</div>
+        <div class="m-body">
+          <div class="m-header"><span class="m-time">9:18 AM</span><span class="m-author">You</span></div>
+          <div class="m-bubble">Good call on expanding scope. Let's add exchange API auth to M4. I'll update the spec. Monday 10AM confirmed — I'll send a calendar invite now.</div>
+          <div class="read-receipt">Delivered</div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="chat-input-area">
+      <div class="ci-wrap">
+        <div class="ci-tools"><div class="ci-tool">+</div></div>
+        <textarea class="ci-input" rows="1" placeholder="Message Priya Singh..."></textarea>
+        <div class="ci-tools">
+          <div class="ci-tool">😊</div>
+          <div class="ci-tool">📎</div>
+          <div class="ci-tool">🔗</div>
+          <div class="ci-tool" style="color:var(--teal)">★</div>
+          <button class="btn primary" style="font-size:9px;padding:3px 8px;">Send</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KOGI · Tax & Accounting</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@300;400;500;600&display=swap');
+  :root {
+    --bg: #080c10; --bg2: #0d1117; --bg3: #121820; --bg4: #1a2230;
+    --border: #1e2d3d; --border2: #243040;
+    --text: #c8d8e8; --text2: #7a9ab8; --text3: #4a6a88;
+    --green: #00e5a0; --teal: #00b8cc; --gold: #e8a020; --red: #e84060; --purple: #9060e8; --blue: #2080e8;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 13px; display: flex; height: 100vh; overflow: hidden; }
+  .nav { width: 160px; background: var(--bg2); border-right: 1px solid var(--border); display: flex; flex-direction: column; padding: 16px 0; flex-shrink: 0; }
+  .nav-logo { padding: 0 16px 20px; font-family: 'Space Mono', monospace; font-size: 16px; font-weight: 700; color: var(--green); letter-spacing: 2px; }
+  .nav-section { padding: 4px 16px 2px; font-size: 9px; letter-spacing: 1.5px; color: var(--text3); text-transform: uppercase; margin-top: 8px; }
+  .nav-item { padding: 7px 16px; color: var(--text2); font-size: 12px; cursor: pointer; display: flex; align-items: center; gap: 8px; border-left: 2px solid transparent; }
+  .nav-item.active { color: var(--green); border-left-color: var(--green); background: rgba(0,229,160,0.05); }
+  .nav-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--text3); flex-shrink: 0; }
+  .nav-item.active .nav-dot { background: var(--green); }
+  .main { flex: 1; overflow-y: auto; }
+  .topbar { display: flex; align-items: center; justify-content: space-between; padding: 12px 20px; background: var(--bg2); border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 10; }
+  .topbar-title { font-family: 'Space Mono', monospace; font-size: 13px; }
+  .topbar-sub { font-size: 11px; color: var(--text3); }
+  .topbar-right { display: flex; align-items: center; gap: 8px; }
+  .badge { background: var(--bg4); border: 1px solid var(--border2); border-radius: 4px; padding: 3px 8px; font-size: 11px; color: var(--text2); }
+  .badge.red { border-color: var(--red); color: var(--red); background: rgba(232,64,96,0.05); }
+  .avatar { width: 28px; height: 28px; border-radius: 50%; background: linear-gradient(135deg, var(--teal), var(--purple)); display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 600; color: #fff; }
+  .content { padding: 18px 20px; }
+  .num { font-family: 'Space Mono', monospace; }
+  .panel { background: var(--bg3); border: 1px solid var(--border); border-radius: 6px; padding: 14px; margin-bottom: 12px; }
+  .panel-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+  .panel-title { font-size: 11px; font-weight: 600; color: var(--text2); text-transform: uppercase; letter-spacing: 1px; }
+  .panel-action { font-size: 10px; color: var(--teal); cursor: pointer; }
+  .divider { height: 1px; background: var(--border); margin: 10px 0; }
+  .tag { display: inline-block; font-size: 9px; padding: 2px 6px; border-radius: 3px; }
+  .tag.green { background: rgba(0,229,160,0.12); color: var(--green); }
+  .tag.gold { background: rgba(232,160,32,0.12); color: var(--gold); }
+  .tag.red { background: rgba(232,64,96,0.12); color: var(--red); }
+  .tag.teal { background: rgba(0,184,204,0.12); color: var(--teal); }
+  .tag.purple { background: rgba(144,96,232,0.12); color: var(--purple); }
+  .stat-row { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin-bottom: 16px; }
+  .stat-card { background: var(--bg3); border: 1px solid var(--border); border-radius: 6px; padding: 12px 14px; }
+  .stat-label { font-size: 10px; color: var(--text3); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px; }
+  .stat-val { font-family: 'Space Mono', monospace; font-size: 16px; font-weight: 700; }
+  .stat-sub { font-size: 10px; color: var(--text3); margin-top: 2px; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-bottom: 12px; }
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; }
+  .grid-23 { display: grid; grid-template-columns: 1.5fr 1fr; gap: 12px; margin-bottom: 12px; }
+  .pbar-wrap { margin-bottom: 8px; }
+  .pbar-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 3px; }
+  .pbar-label { font-size: 11px; color: var(--text2); }
+  .pbar-val { font-family: 'Space Mono', monospace; font-size: 11px; }
+  .pbar { height: 4px; background: var(--bg4); border-radius: 2px; overflow: hidden; }
+  .pbar-fill { height: 100%; border-radius: 2px; }
+  .mini-stat { display: flex; justify-content: space-between; padding: 5px 0; border-bottom: 1px solid rgba(30,45,61,0.5); }
+  .mini-stat:last-child { border-bottom: none; }
+  .mini-stat-label { font-size: 11px; color: var(--text2); }
+  .mini-stat-val { font-family: 'Space Mono', monospace; font-size: 11px; color: var(--text); }
+  .journal-table { width: 100%; border-collapse: collapse; }
+  .journal-table th { font-size: 10px; color: var(--text3); text-transform: uppercase; letter-spacing: 1px; padding: 6px 8px; text-align: left; border-bottom: 1px solid var(--border); font-weight: 500; }
+  .journal-table td { padding: 7px 8px; border-bottom: 1px solid rgba(30,45,61,0.4); font-size: 12px; }
+  .journal-table tr:hover td { background: var(--bg4); }
+  .alert-box { border-radius: 5px; padding: 10px 12px; margin-bottom: 8px; }
+  .alert-box.warning { background: rgba(232,160,32,0.08); border: 1px solid rgba(232,160,32,0.3); }
+  .alert-box.info { background: rgba(0,184,204,0.08); border: 1px solid rgba(0,184,204,0.25); }
+  .alert-box.success { background: rgba(0,229,160,0.08); border: 1px solid rgba(0,229,160,0.25); }
+  .alert-title { font-size: 11px; font-weight: 600; margin-bottom: 2px; }
+  .alert-title.warning { color: var(--gold); }
+  .alert-title.info { color: var(--teal); }
+  .alert-title.success { color: var(--green); }
+  .alert-desc { font-size: 11px; color: var(--text2); }
+  .q-card { background: var(--bg4); border: 1px solid var(--border2); border-radius: 5px; padding: 10px 12px; }
+  .q-label { font-size: 9px; color: var(--text3); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 3px; }
+  .q-val { font-family: 'Space Mono', monospace; font-size: 14px; font-weight: 700; }
+  .q-sub { font-size: 10px; color: var(--text3); margin-top: 2px; }
+  .bar-chart { display: flex; align-items: flex-end; gap: 4px; height: 80px; margin-top: 8px; }
+  .bar-group { flex: 1; display: flex; align-items: flex-end; gap: 1px; }
+  .bar { flex: 1; border-radius: 2px 2px 0 0; min-height: 2px; }
+  .bar-label { font-size: 9px; color: var(--text3); text-align: center; margin-top: 3px; }
+  ::-webkit-scrollbar { width: 4px; }
+  ::-webkit-scrollbar-track { background: var(--bg2); }
+  ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+</style>
+</head>
+<body>
+<nav class="nav">
+  <div class="nav-logo">KOGI</div>
+  <div class="nav-section">Platform</div>
+  <div class="nav-item"><div class="nav-dot"></div>Home</div>
+  <div class="nav-item"><div class="nav-dot"></div>Office</div>
+  <div class="nav-section">Finance</div>
+  <div class="nav-item active"><div class="nav-dot"></div>Bank</div>
+  <div class="nav-item"><div class="nav-dot"></div>Exchange</div>
+  <div class="nav-item"><div class="nav-dot"></div>Marketplace</div>
+  <div class="nav-section">Community</div>
+  <div class="nav-item"><div class="nav-dot"></div>Community</div>
+  <div class="nav-item"><div class="nav-dot"></div>Organizations</div>
+  <div class="nav-section">Dev</div>
+  <div class="nav-item"><div class="nav-dot"></div>Developer</div>
+  <div class="nav-item"><div class="nav-dot"></div>Profile</div>
+</nav>
+<div class="main">
+  <div class="topbar">
+    <div style="display:flex;align-items:center;gap:12px">
+      <div>
+        <div class="topbar-title">⬡ Bank · Tax & Accounting</div>
+        <div class="topbar-sub">KTAX · Self-Employment · FY 2026</div>
+      </div>
+      <div class="badge red">⚠ Q1 Due Apr 15</div>
+    </div>
+    <div class="topbar-right">
+      <div class="badge">Export 1099</div>
+      <div class="badge">Generate Report</div>
+      <div class="avatar">JC</div>
+    </div>
+  </div>
+
+  <div class="content">
+    <!-- STATS ROW -->
+    <div class="stat-row">
+      <div class="stat-card">
+        <div class="stat-label">Gross Income YTD</div>
+        <div class="stat-val" style="color:var(--green)">$94,200</div>
+        <div class="stat-sub">Jan — Mar 2026</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Total Deductions</div>
+        <div class="stat-val" style="color:var(--teal)">$18,400</div>
+        <div class="stat-sub">19.5% of gross</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Net Taxable</div>
+        <div class="stat-val" style="color:var(--text)">$75,800</div>
+        <div class="stat-sub">After deductions</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Est. Tax Owed</div>
+        <div class="stat-val" style="color:var(--red)">$21,000</div>
+        <div class="stat-sub">~27.7% eff. rate</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Reserve Balance</div>
+        <div class="stat-val" style="color:var(--gold)">$6,900</div>
+        <div class="stat-sub">32.8% coverage — low</div>
+      </div>
+    </div>
+
+    <!-- ALERTS -->
+    <div class="grid-3" style="margin-bottom:12px">
+      <div class="alert-box warning">
+        <div class="alert-title warning">⚠ Q1 Estimated Tax Due</div>
+        <div class="alert-desc">$5,250 due Apr 15. Reserve balance $6,900 — sufficient but low. Consider increasing monthly set-aside.</div>
+      </div>
+      <div class="alert-box info">
+        <div class="alert-title info">◎ Deduction Opportunity</div>
+        <div class="alert-desc">$2,400 in home office expenses not yet categorized. Classify to increase deduction total.</div>
+      </div>
+      <div class="alert-box success">
+        <div class="alert-title success">✓ Solo 401(k) On Track</div>
+        <div class="alert-desc">$18,200 contributed. $4,800 remaining for maximum deductible contribution by Apr 15.</div>
+      </div>
+    </div>
+
+    <!-- QUARTERLY + JOURNAL -->
+    <div class="grid-23">
+      <!-- JOURNAL TABLE -->
+      <div class="panel">
+        <div class="panel-header">
+          <div class="panel-title">Journal · Q1 2026</div>
+          <div class="panel-action">View Full Journal</div>
+        </div>
+        <table class="journal-table">
+          <thead>
+            <tr>
+              <th>Category</th>
+              <th>Journal Type</th>
+              <th>Description</th>
+              <th>Amount</th>
+              <th>Class</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td style="color:var(--text2)">Revenue</td>
+              <td>Income</td>
+              <td>Client Invoices · Consulting Services</td>
+              <td class="num" style="color:var(--green)">+$94,200</td>
+              <td><span class="tag green">Income</span></td>
+            </tr>
+            <tr>
+              <td style="color:var(--text2)">Software</td>
+              <td>Expense</td>
+              <td>Figma, AWS, GitHub, Linear, Notion</td>
+              <td class="num" style="color:var(--red)">-$1,840</td>
+              <td><span class="tag red">Deductible</span></td>
+            </tr>
+            <tr>
+              <td style="color:var(--text2)">Retirement</td>
+              <td>Deduction</td>
+              <td>Solo 401(k) Contributions YTD</td>
+              <td class="num" style="color:var(--purple)">-$18,200</td>
+              <td><span class="tag purple">Pre-tax</span></td>
+            </tr>
+            <tr>
+              <td style="color:var(--text2)">Travel</td>
+              <td>Expense</td>
+              <td>Client Site Visits · Air + Hotels</td>
+              <td class="num" style="color:var(--red)">-$2,400</td>
+              <td><span class="tag red">Deductible</span></td>
+            </tr>
+            <tr>
+              <td style="color:var(--text2)">Equipment</td>
+              <td>Asset</td>
+              <td>MacBook Pro M4 · Section 179</td>
+              <td class="num" style="color:var(--teal)">-$3,200</td>
+              <td><span class="tag teal">S.179</span></td>
+            </tr>
+            <tr>
+              <td style="color:var(--text2)">Home Office</td>
+              <td>Expense</td>
+              <td>200 sq ft · $12/sqft · Uncategorized</td>
+              <td class="num" style="color:var(--text3)">? $2,400</td>
+              <td><span class="tag gold">Pending</span></td>
+            </tr>
+            <tr>
+              <td style="color:var(--text2)">Health</td>
+              <td>Deduction</td>
+              <td>Self-Employed Health Insurance Deduction</td>
+              <td class="num" style="color:var(--purple)">-$4,800</td>
+              <td><span class="tag purple">SE Health</span></td>
+            </tr>
+            <tr>
+              <td style="color:var(--text2)">Platform Fees</td>
+              <td>Expense</td>
+              <td>Kogi Platform · Transaction Fees</td>
+              <td class="num" style="color:var(--red)">-$840</td>
+              <td><span class="tag red">Deductible</span></td>
+            </tr>
+          </tbody>
+        </table>
+        <div class="divider"></div>
+        <div style="display:flex;justify-content:space-between">
+          <div><span style="font-size:11px;color:var(--text2)">Net Income (Taxable)</span></div>
+          <div class="num" style="font-size:14px;font-weight:700;color:var(--text)">$62,920</div>
+        </div>
+      </div>
+
+      <!-- QUARTERLY BREAKDOWN -->
+      <div>
+        <div class="panel" style="margin-bottom:10px">
+          <div class="panel-header">
+            <div class="panel-title">Quarterly Estimates · 2026</div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:10px">
+            <div class="q-card" style="border-color:rgba(232,64,96,0.3)">
+              <div class="q-label">Q1 2026</div>
+              <div class="q-val" style="color:var(--red)">$5,250</div>
+              <div class="q-sub">Due Apr 15 · ⚠ Prepare</div>
+            </div>
+            <div class="q-card">
+              <div class="q-label">Q2 2026</div>
+              <div class="q-val" style="color:var(--text3)">~$5,250</div>
+              <div class="q-sub">Due Jun 15 · Estimated</div>
+            </div>
+            <div class="q-card">
+              <div class="q-label">Q3 2026</div>
+              <div class="q-val" style="color:var(--text3)">~$5,250</div>
+              <div class="q-sub">Due Sep 15 · Estimated</div>
+            </div>
+            <div class="q-card">
+              <div class="q-label">Q4 2026</div>
+              <div class="q-val" style="color:var(--text3)">~$5,250</div>
+              <div class="q-sub">Due Jan 15 · Estimated</div>
+            </div>
+          </div>
+          <div class="pbar-wrap">
+            <div class="pbar-top"><div class="pbar-label">Reserve Coverage · Q1</div><div class="pbar-val" style="color:var(--gold)">$6,900 / $21,000</div></div>
+            <div class="pbar"><div class="pbar-fill" style="width:33%;background:var(--gold)"></div></div>
+          </div>
+        </div>
+
+        <div class="panel" style="margin-bottom:10px">
+          <div class="panel-header">
+            <div class="panel-title">Income vs Expenses · Monthly</div>
+          </div>
+          <div class="bar-chart">
+            <!-- Jan -->
+            <div style="flex:1">
+              <div class="bar-group">
+                <div class="bar" style="height:55px;background:rgba(0,229,160,0.5)"></div>
+                <div class="bar" style="height:12px;background:rgba(232,64,96,0.5)"></div>
+              </div>
+              <div class="bar-label">Jan</div>
+            </div>
+            <!-- Feb -->
+            <div style="flex:1">
+              <div class="bar-group">
+                <div class="bar" style="height:42px;background:rgba(0,229,160,0.5)"></div>
+                <div class="bar" style="height:18px;background:rgba(232,64,96,0.5)"></div>
+              </div>
+              <div class="bar-label">Feb</div>
+            </div>
+            <!-- Mar -->
+            <div style="flex:1">
+              <div class="bar-group">
+                <div class="bar" style="height:70px;background:rgba(0,229,160,0.7)"></div>
+                <div class="bar" style="height:20px;background:rgba(232,64,96,0.5)"></div>
+              </div>
+              <div class="bar-label">Mar</div>
+            </div>
+          </div>
+          <div style="display:flex;gap:12px;margin-top:4px">
+            <div style="display:flex;align-items:center;gap:4px;font-size:10px;color:var(--text3)"><div style="width:8px;height:8px;border-radius:1px;background:var(--green);opacity:0.7"></div>Income</div>
+            <div style="display:flex;align-items:center;gap:4px;font-size:10px;color:var(--text3)"><div style="width:8px;height:8px;border-radius:1px;background:var(--red);opacity:0.7"></div>Expenses</div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-header">
+            <div class="panel-title">1099 Issuances</div>
+          </div>
+          <div class="mini-stat"><span class="mini-stat-label">1099-NEC Received</span><span class="mini-stat-val">4 forms</span></div>
+          <div class="mini-stat"><span class="mini-stat-label">Largest Payer</span><span class="mini-stat-val">Acme Corp · $42,000</span></div>
+          <div class="mini-stat"><span class="mini-stat-label">KYC Status</span><span class="mini-stat-val" style="color:var(--green)">Verified ✓</span></div>
+          <div class="mini-stat"><span class="mini-stat-label">SSN / EIN</span><span class="mini-stat-val">EIN · On File</span></div>
+          <div class="mini-stat"><span class="mini-stat-label">Filing Software</span><span class="mini-stat-val">KTAX · kogi-tax</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

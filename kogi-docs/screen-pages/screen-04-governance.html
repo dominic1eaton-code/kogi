@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>KOGI — Distributed Governance</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap');
+  :root {
+    --bg-primary: #0a0c10; --bg-secondary: #0f1117; --bg-card: #131820; --bg-card2: #161c26;
+    --border: #1e2535; --border2: #252d3d; --text-primary: #d4dbe8; --text-secondary: #7a8599; --text-muted: #4a5568;
+    --accent-gold: #c8a84b; --accent-gold-dim: #6b5a2a; --accent-teal: #2a9d8f; --accent-teal-dim: #1a4a45;
+    --accent-rose: #c94b6b; --accent-rose-dim: #5a1e2d; --accent-blue: #3b82f6; --accent-blue-dim: #1e3a5f;
+    --accent-green: #4caf7d; --accent-green-dim: #1a3d2a; --accent-purple: #8b5cf6; --accent-orange: #e87c3a;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'IBM Plex Sans', sans-serif; background: var(--bg-primary); color: var(--text-primary); font-size: 11px; display: flex; height: 100vh; overflow: hidden; }
+  .sidebar { width: 168px; background: var(--bg-secondary); border-right: 1px solid var(--border); flex-shrink: 0; }
+  .sidebar-logo { padding: 12px 14px; border-bottom: 1px solid var(--border); }
+  .logo-text { font-family: 'IBM Plex Mono', monospace; font-weight: 600; font-size: 13px; letter-spacing: 0.15em; color: var(--accent-gold); }
+  .sidebar-nav { padding: 8px 0; }
+  .nav-section { padding: 6px 14px 2px; font-size: 9px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.1em; }
+  .nav-item { padding: 5px 14px; display: flex; align-items: center; gap: 7px; color: var(--text-secondary); font-size: 10.5px; border-left: 2px solid transparent; }
+  .nav-item.active { color: var(--accent-gold); border-left-color: var(--accent-gold); background: rgba(200,168,75,0.06); }
+  .nav-dot { width: 5px; height: 5px; border-radius: 50%; background: currentColor; }
+  .main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+  .topbar { height: 44px; border-bottom: 1px solid var(--border); display: flex; align-items: center; padding: 0 18px; gap: 12px; background: var(--bg-secondary); flex-shrink: 0; }
+  .page-title { font-family: 'IBM Plex Mono', monospace; font-size: 12px; font-weight: 500; }
+  .breadcrumb { color: var(--text-muted); font-size: 10px; }
+  .breadcrumb span { color: var(--text-secondary); }
+  .topbar-right { margin-left: auto; display: flex; align-items: center; gap: 8px; }
+  .search-bar { background: var(--bg-card); border: 1px solid var(--border); border-radius: 4px; padding: 4px 10px; font-size: 10px; color: var(--text-secondary); width: 160px; }
+  .btn { padding: 4px 10px; border-radius: 3px; font-size: 10px; font-weight: 500; border: none; font-family: 'IBM Plex Sans', sans-serif; cursor: pointer; }
+  .btn-primary { background: var(--accent-purple); color: #fff; }
+  .btn-ghost { background: transparent; border: 1px solid var(--border2); color: var(--text-secondary); }
+  .avatar-sm { width: 22px; height: 22px; border-radius: 50%; background: rgba(139,92,246,0.15); display: flex; align-items: center; justify-content: center; font-size: 9px; font-weight: 600; color: var(--accent-purple); }
+  .content { flex: 1; overflow-y: auto; padding: 16px 18px; display: flex; flex-direction: column; gap: 12px; }
+  .stat-row { display: flex; gap: 10px; }
+  .stat-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 4px; padding: 10px 14px; flex: 1; }
+  .stat-label { font-size: 9px; color: var(--text-muted); letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 4px; }
+  .stat-value { font-family: 'IBM Plex Mono', monospace; font-size: 18px; font-weight: 500; line-height: 1; }
+  .stat-value.gold { color: var(--accent-gold); } .stat-value.purple { color: var(--accent-purple); } .stat-value.green { color: var(--accent-green); }
+  .stat-sub { font-size: 9px; color: var(--text-muted); margin-top: 3px; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 4px; padding: 12px 14px; }
+  .card-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+  .card-title { font-size: 10px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; }
+  .card-action { font-size: 9px; color: var(--accent-gold); cursor: pointer; }
+  .section-label { font-size: 9px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-muted); font-weight: 600; margin-bottom: 6px; }
+  .proposal-card { background: var(--bg-card2); border: 1px solid var(--border2); border-radius: 4px; padding: 10px 12px; margin-bottom: 8px; }
+  .proposal-card:last-child { margin-bottom: 0; }
+  .proposal-title { font-size: 11px; font-weight: 600; margin-bottom: 4px; }
+  .proposal-desc { font-size: 9.5px; color: var(--text-secondary); line-height: 1.4; margin-bottom: 7px; }
+  .proposal-meta-row { display: flex; align-items: center; gap: 8px; margin-bottom: 5px; }
+  .badge { padding: 2px 6px; border-radius: 2px; font-size: 8.5px; font-weight: 600; }
+  .badge-voting { background: rgba(76,175,125,0.15); color: var(--accent-green); }
+  .badge-draft { background: var(--accent-gold-dim); color: var(--accent-gold); }
+  .badge-passed { background: var(--accent-teal-dim); color: var(--accent-teal); }
+  .badge-failed { background: var(--accent-rose-dim); color: var(--accent-rose); }
+  .vote-bar-row { display: flex; gap: 4px; height: 6px; border-radius: 3px; overflow: hidden; }
+  .vote-yes { background: var(--accent-green); }
+  .vote-no { background: var(--accent-rose); }
+  .vote-abs { background: var(--border2); }
+  .vote-counts { display: flex; gap: 10px; margin-top: 3px; }
+  .vote-count { font-size: 9px; color: var(--text-muted); }
+  .vote-count span { font-weight: 600; }
+  .role-row { display: flex; align-items: center; gap: 8px; padding: 6px 0; border-bottom: 1px solid var(--border); }
+  .role-row:last-child { border-bottom: none; }
+  .role-dot { width: 8px; height: 8px; border-radius: 2px; flex-shrink: 0; }
+  .role-name { font-size: 10.5px; font-weight: 500; flex: 1; }
+  .role-desc { font-size: 9px; color: var(--text-muted); }
+  .role-count { font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: var(--text-primary); }
+  .timeline-item { display: flex; gap: 10px; padding: 6px 0; border-bottom: 1px solid var(--border); align-items: flex-start; }
+  .timeline-item:last-child { border-bottom: none; }
+  .timeline-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; margin-top: 3px; }
+  .timeline-content { flex: 1; }
+  .timeline-title { font-size: 10.5px; font-weight: 500; }
+  .timeline-meta { font-size: 9px; color: var(--text-muted); margin-top: 1px; }
+  .power-bar { height: 10px; background: var(--border); border-radius: 2px; overflow: hidden; margin-top: 4px; display: flex; }
+  .power-segment { height: 100%; }
+  ::-webkit-scrollbar { width: 4px; } ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+  .divider { width: 1px; background: var(--border); height: 16px; margin: 0 4px; }
+  .mono { font-family: 'IBM Plex Mono', monospace; }
+</style>
+</head>
+<body>
+<div class="sidebar">
+  <div class="sidebar-logo"><div class="logo-text">KOGI</div></div>
+  <div class="sidebar-nav">
+    <div class="nav-section">Main</div>
+    <div class="nav-item"><div class="nav-dot"></div>Home</div>
+    <div class="nav-item"><div class="nav-dot"></div>Office</div>
+    <div class="nav-item active"><div class="nav-dot"></div>Community</div>
+    <div class="nav-item"><div class="nav-dot"></div>Marketplace</div>
+    <div class="nav-item"><div class="nav-dot"></div>Exchange</div>
+    <div class="nav-item"><div class="nav-dot"></div>Bank</div>
+    <div class="nav-section">Org</div>
+    <div class="nav-item"><div class="nav-dot"></div>Organizations</div>
+    <div class="nav-item"><div class="nav-dot"></div>Collectives</div>
+    <div class="nav-item"><div class="nav-dot"></div>Cooperatives</div>
+    <div class="nav-item active"><div class="nav-dot"></div>Governance</div>
+    <div class="nav-item"><div class="nav-dot"></div>Federations</div>
+  </div>
+</div>
+
+<div class="main">
+  <div class="topbar">
+    <div class="page-title">Governance</div>
+    <div class="breadcrumb">Community <span>/ Pamoja Protocol DAO / Governance</span></div>
+    <div class="topbar-right">
+      <input class="search-bar" placeholder="Search proposals..." />
+      <button class="btn btn-ghost">Delegate Vote</button>
+      <button class="btn btn-primary">+ New Proposal</button>
+      <div class="divider"></div>
+      <div class="avatar-sm">JC</div>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <div class="stat-row">
+      <div class="stat-card"><div class="stat-label">Eligible Voters</div><div class="stat-value purple">142</div><div class="stat-sub">Full members only</div></div>
+      <div class="stat-card"><div class="stat-label">Active Proposals</div><div class="stat-value gold">8</div><div class="stat-sub">3 voting now</div></div>
+      <div class="stat-card"><div class="stat-label">Avg Participation</div><div class="stat-value green">73%</div><div class="stat-sub">Last 6 votes</div></div>
+      <div class="stat-card"><div class="stat-label">Quorum Required</div><div class="stat-value">51%</div><div class="stat-sub">73 members minimum</div></div>
+      <div class="stat-card"><div class="stat-label">Your Voting Power</div><div class="stat-value gold">1.8×</div><div class="stat-sub">Member + Governor tier</div></div>
+    </div>
+
+    <div class="grid-2">
+
+      <!-- ACTIVE VOTES -->
+      <div class="card" style="grid-row:span 2;">
+        <div class="card-header"><div class="card-title">Active Proposals</div><div class="card-action">All Proposals →</div></div>
+
+        <div class="proposal-card" style="border-color:rgba(76,175,125,0.3);">
+          <div class="proposal-title">Fund Open Source CLI Tooling v2.0</div>
+          <div class="proposal-desc">Allocate $18,000 from treasury to fund continued development of the open-source CLI tooling suite. Covers 3 months of contributor compensation and hosting.</div>
+          <div class="proposal-meta-row">
+            <span class="badge badge-voting">Voting</span>
+            <span style="font-size:9px;color:var(--text-muted);" class="mono">Ends Apr 2 · 2d left</span>
+            <span style="font-size:9px;color:var(--text-muted);">Category: Budget</span>
+          </div>
+          <div class="vote-bar-row">
+            <div class="vote-yes" style="flex:67"></div>
+            <div class="vote-no" style="flex:18"></div>
+            <div class="vote-abs" style="flex:15"></div>
+          </div>
+          <div class="vote-counts">
+            <div class="vote-count"><span style="color:var(--accent-green);">67%</span> Yes · 94</div>
+            <div class="vote-count"><span style="color:var(--accent-rose);">18%</span> No · 25</div>
+            <div class="vote-count"><span style="color:var(--text-muted);">15%</span> Abstain</div>
+          </div>
+          <div style="margin-top:7px;display:flex;gap:6px;">
+            <button class="btn" style="background:var(--accent-green-dim);color:var(--accent-green);flex:1;font-size:9px;">Vote Yes</button>
+            <button class="btn" style="background:var(--accent-rose-dim);color:var(--accent-rose);flex:1;font-size:9px;">Vote No</button>
+            <button class="btn btn-ghost" style="font-size:9px;">Abstain</button>
+          </div>
+        </div>
+
+        <div class="proposal-card" style="border-color:rgba(59,130,246,0.25);">
+          <div class="proposal-title">Allocate $12K — Infrastructure Grants Q2</div>
+          <div class="proposal-desc">Distribute $12,000 in grants to member-led infrastructure projects. Selection committee of 5 stewards will evaluate and approve individual grant requests.</div>
+          <div class="proposal-meta-row">
+            <span class="badge badge-voting">Voting</span>
+            <span style="font-size:9px;color:var(--text-muted);" class="mono">Ends Apr 5</span>
+          </div>
+          <div class="vote-bar-row">
+            <div class="vote-yes" style="flex:81"></div>
+            <div class="vote-no" style="flex:8"></div>
+            <div class="vote-abs" style="flex:11"></div>
+          </div>
+          <div class="vote-counts">
+            <div class="vote-count"><span style="color:var(--accent-green);">81%</span> Yes · 72</div>
+            <div class="vote-count"><span style="color:var(--accent-rose);">8%</span> No</div>
+            <div class="vote-count"><span style="color:var(--text-muted);">11%</span> Abstain</div>
+          </div>
+          <div style="margin-top:7px;display:flex;gap:6px;">
+            <button class="btn" style="background:rgba(59,130,246,0.2);color:var(--accent-blue);flex:1;font-size:9px;border:1px solid var(--accent-blue-dim);">Voted Yes ✓</button>
+            <button class="btn btn-ghost" style="font-size:9px;">Change Vote</button>
+          </div>
+        </div>
+
+        <div class="proposal-card">
+          <div class="proposal-title">Add 3 Steward Seats — Q2 2026</div>
+          <div class="proposal-desc">Expand the steward council by 3 elected positions. Open election period runs April 10–20. All full members eligible to run.</div>
+          <div class="proposal-meta-row">
+            <span class="badge badge-draft">Draft</span>
+            <span style="font-size:9px;color:var(--text-muted);">Needs 5 sponsors · 3/5</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- GOVERNANCE STRUCTURE -->
+      <div class="card">
+        <div class="card-header"><div class="card-title">Governance Structure</div></div>
+        <div class="role-row">
+          <div class="role-dot" style="background:var(--accent-gold);"></div>
+          <div style="flex:1;"><div class="role-name">Owner / Founder</div><div class="role-desc">Full veto · treasury control · charter authority</div></div>
+          <div class="role-count">2</div>
+        </div>
+        <div class="role-row">
+          <div class="role-dot" style="background:var(--accent-purple);"></div>
+          <div style="flex:1;"><div class="role-name">Governor / Steward</div><div class="role-desc">Proposal sponsorship · vote weight 1.5×</div></div>
+          <div class="role-count">8</div>
+        </div>
+        <div class="role-row">
+          <div class="role-dot" style="background:var(--accent-green);"></div>
+          <div style="flex:1;"><div class="role-name">Full Member</div><div class="role-desc">Vote · propose · stand for election</div></div>
+          <div class="role-count">98</div>
+        </div>
+        <div class="role-row">
+          <div class="role-dot" style="background:var(--accent-blue);"></div>
+          <div style="flex:1;"><div class="role-name">Contributor</div><div class="role-desc">Comment · survey · advisory vote only</div></div>
+          <div class="role-count">34</div>
+        </div>
+        <div style="margin-top:10px;padding-top:8px;border-top:1px solid var(--border);">
+          <div class="section-label">Voting Power Distribution</div>
+          <div class="power-bar">
+            <div class="power-segment" style="width:5%;background:var(--accent-gold);opacity:0.9;"></div>
+            <div class="power-segment" style="width:17%;background:var(--accent-purple);opacity:0.8;"></div>
+            <div class="power-segment" style="width:69%;background:var(--accent-green);opacity:0.7;"></div>
+            <div class="power-segment" style="width:9%;background:var(--accent-blue);opacity:0.5;"></div>
+          </div>
+          <div style="font-size:9px;color:var(--text-muted);margin-top:4px;">Quadratic model — whale protection enabled</div>
+        </div>
+      </div>
+
+      <!-- RECENT DECISIONS -->
+      <div class="card">
+        <div class="card-header"><div class="card-title">Recent Decisions</div><div class="card-action">History →</div></div>
+        <div class="timeline-item">
+          <div class="timeline-dot" style="background:var(--accent-green);"></div>
+          <div class="timeline-content">
+            <div class="timeline-title">Partner w/ Cooperative Hub Federation</div>
+            <div class="timeline-meta">Passed · 89% · 128 votes · Mar 18</div>
+          </div>
+        </div>
+        <div class="timeline-item">
+          <div class="timeline-dot" style="background:var(--accent-green);"></div>
+          <div class="timeline-content">
+            <div class="timeline-title">Treasury Protocol v2 — New multi-sig rules</div>
+            <div class="timeline-meta">Passed · 77% · 110 votes · Mar 5</div>
+          </div>
+        </div>
+        <div class="timeline-item">
+          <div class="timeline-dot" style="background:var(--accent-rose);"></div>
+          <div class="timeline-content">
+            <div class="timeline-title">Increase membership dues by 20%</div>
+            <div class="timeline-meta">Failed · 38% · 104 votes · Feb 20</div>
+          </div>
+        </div>
+        <div class="timeline-item">
+          <div class="timeline-dot" style="background:var(--accent-green);"></div>
+          <div class="timeline-content">
+            <div class="timeline-title">Elect Priya K. as Steward — Q1</div>
+            <div class="timeline-meta">Passed · 91% · 130 votes · Feb 10</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KOGI · Marketplace</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap');
+  :root {
+    --bg: #0a0c10;
+    --bg2: #0f1218;
+    --bg3: #141820;
+    --panel: #111520;
+    --border: #1e2535;
+    --border2: #252d3e;
+    --text: #c8d4e8;
+    --text2: #7a8ba8;
+    --text3: #4a5568;
+    --accent-gold: #c9a227;
+    --accent-teal: #0fa89a;
+    --accent-purple: #7c5cbf;
+    --accent-orange: #d4622a;
+    --accent-green: #2a9d4e;
+    --accent-blue: #2a6bc9;
+    --accent-red: #c93a3a;
+    --tag-bg: #1a2030;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: 'IBM Plex Sans', sans-serif; font-size: 12px; min-height: 100vh; display: flex; }
+  .sidebar { width: 160px; background: var(--bg2); border-right: 1px solid var(--border); display: flex; flex-direction: column; flex-shrink: 0; }
+  .logo { padding: 14px 16px; border-bottom: 1px solid var(--border); font-family: 'IBM Plex Mono', monospace; font-weight: 600; font-size: 13px; color: var(--accent-gold); letter-spacing: 2px; }
+  .nav-section { padding: 10px 0; }
+  .nav-label { padding: 6px 16px 4px; font-size: 9px; letter-spacing: 2px; color: var(--text3); text-transform: uppercase; font-family: 'IBM Plex Mono', monospace; }
+  .nav-item { padding: 6px 16px; font-size: 11px; color: var(--text2); cursor: pointer; display: flex; align-items: center; gap: 8px; transition: all 0.1s; }
+  .nav-item:hover { color: var(--text); background: var(--bg3); }
+  .nav-item.active { color: var(--accent-gold); background: rgba(201,162,39,0.08); border-left: 2px solid var(--accent-gold); padding-left: 14px; }
+  .nav-dot { width: 4px; height: 4px; border-radius: 50%; background: currentColor; flex-shrink: 0; }
+  .main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+  .topbar { height: 44px; background: var(--bg2); border-bottom: 1px solid var(--border); display: flex; align-items: center; padding: 0 20px; gap: 16px; flex-shrink: 0; }
+  .topbar-title { font-family: 'IBM Plex Mono', monospace; font-size: 11px; font-weight: 500; color: var(--text2); letter-spacing: 1px; text-transform: uppercase; }
+  .topbar-title span { color: var(--accent-gold); }
+  .search-bar { flex: 1; max-width: 400px; height: 26px; background: var(--bg3); border: 1px solid var(--border2); border-radius: 2px; padding: 0 10px; font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: var(--text); outline: none; }
+  .topbar-actions { display: flex; gap: 8px; margin-left: auto; }
+  .btn { padding: 4px 12px; font-family: 'IBM Plex Mono', monospace; font-size: 9px; letter-spacing: 1px; text-transform: uppercase; cursor: pointer; border-radius: 2px; border: 1px solid; transition: all 0.15s; }
+  .btn-gold { border-color: var(--accent-gold); color: var(--accent-gold); background: rgba(201,162,39,0.08); }
+  .btn-gold:hover { background: rgba(201,162,39,0.18); }
+  .btn-teal { border-color: var(--accent-teal); color: var(--accent-teal); background: rgba(15,168,154,0.08); }
+  .content { flex: 1; overflow-y: auto; padding: 16px 20px; }
+  .stats-row { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; margin-bottom: 16px; }
+  .stat-card { background: var(--panel); border: 1px solid var(--border); padding: 10px 12px; }
+  .stat-label { font-size: 9px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--text3); font-family: 'IBM Plex Mono', monospace; margin-bottom: 4px; }
+  .stat-value { font-family: 'IBM Plex Mono', monospace; font-size: 18px; font-weight: 600; }
+  .stat-sub { font-size: 9px; color: var(--text3); margin-top: 2px; }
+  .gold { color: var(--accent-gold); }
+  .teal { color: var(--accent-teal); }
+  .green { color: var(--accent-green); }
+  .orange { color: var(--accent-orange); }
+  .purple { color: var(--accent-purple); }
+  .blue { color: var(--accent-blue); }
+  .section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+  .section-title { font-family: 'IBM Plex Mono', monospace; font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--text2); }
+  .filter-tabs { display: flex; gap: 2px; margin-bottom: 12px; }
+  .filter-tab { padding: 5px 12px; font-family: 'IBM Plex Mono', monospace; font-size: 9px; letter-spacing: 1px; text-transform: uppercase; cursor: pointer; border: 1px solid var(--border); color: var(--text3); background: var(--panel); transition: all 0.1s; }
+  .filter-tab.active { border-color: var(--accent-gold); color: var(--accent-gold); background: rgba(201,162,39,0.08); }
+  .listings-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 16px; }
+  .listing-card { background: var(--panel); border: 1px solid var(--border); padding: 12px; cursor: pointer; transition: border-color 0.15s; position: relative; }
+  .listing-card:hover { border-color: var(--border2); }
+  .listing-type { font-size: 8px; letter-spacing: 2px; text-transform: uppercase; font-family: 'IBM Plex Mono', monospace; margin-bottom: 8px; padding: 2px 6px; display: inline-block; }
+  .type-work { color: var(--accent-teal); background: rgba(15,168,154,0.1); border: 1px solid rgba(15,168,154,0.2); }
+  .type-asset { color: var(--accent-purple); background: rgba(124,92,191,0.1); border: 1px solid rgba(124,92,191,0.2); }
+  .type-resource { color: var(--accent-orange); background: rgba(212,98,42,0.1); border: 1px solid rgba(212,98,42,0.2); }
+  .type-campaign { color: var(--accent-gold); background: rgba(201,162,39,0.1); border: 1px solid rgba(201,162,39,0.2); }
+  .type-template { color: var(--accent-blue); background: rgba(42,107,201,0.1); border: 1px solid rgba(42,107,201,0.2); }
+  .listing-title { font-weight: 600; font-size: 12px; color: var(--text); margin-bottom: 4px; line-height: 1.3; }
+  .listing-owner { font-size: 10px; color: var(--text2); margin-bottom: 6px; display: flex; align-items: center; gap: 5px; }
+  .owner-dot { width: 14px; height: 14px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 7px; font-weight: 600; flex-shrink: 0; }
+  .listing-desc { font-size: 10px; color: var(--text3); line-height: 1.5; margin-bottom: 8px; }
+  .listing-tags { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 8px; }
+  .tag { padding: 2px 6px; background: var(--tag-bg); border: 1px solid var(--border); font-size: 8px; color: var(--text3); font-family: 'IBM Plex Mono', monospace; border-radius: 1px; }
+  .listing-footer { display: flex; align-items: center; justify-content: space-between; border-top: 1px solid var(--border); padding-top: 8px; margin-top: 8px; }
+  .listing-price { font-family: 'IBM Plex Mono', monospace; font-size: 13px; font-weight: 600; }
+  .listing-meta { display: flex; gap: 10px; font-size: 9px; color: var(--text3); }
+  .ai-score { position: absolute; top: 10px; right: 10px; font-family: 'IBM Plex Mono', monospace; font-size: 9px; padding: 2px 5px; background: rgba(15,168,154,0.1); border: 1px solid rgba(15,168,154,0.2); color: var(--accent-teal); }
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .panel { background: var(--panel); border: 1px solid var(--border); padding: 12px; }
+  .mini-list { display: flex; flex-direction: column; gap: 6px; }
+  .mini-item { display: flex; align-items: center; justify-content: space-between; padding: 6px 8px; background: var(--bg3); border: 1px solid var(--border); }
+  .mini-item-left { display: flex; align-items: center; gap: 8px; }
+  .mini-label { font-size: 10px; color: var(--text); }
+  .mini-sub { font-size: 9px; color: var(--text3); }
+  .badge { padding: 1px 5px; font-size: 8px; font-family: 'IBM Plex Mono', monospace; border-radius: 1px; }
+  .badge-green { background: rgba(42,157,78,0.15); color: var(--accent-green); border: 1px solid rgba(42,157,78,0.2); }
+  .badge-orange { background: rgba(212,98,42,0.15); color: var(--accent-orange); border: 1px solid rgba(212,98,42,0.2); }
+  .badge-gold { background: rgba(201,162,39,0.15); color: var(--accent-gold); border: 1px solid rgba(201,162,39,0.2); }
+  .progress-bar { height: 2px; background: var(--border); border-radius: 1px; overflow: hidden; margin-top: 4px; }
+  .progress-fill { height: 100%; border-radius: 1px; }
+  ::-webkit-scrollbar { width: 4px; } ::-webkit-scrollbar-track { background: var(--bg2); } ::-webkit-scrollbar-thumb { background: var(--border2); }
+</style>
+</head>
+<body>
+<div class="sidebar">
+  <div class="logo">KOGI</div>
+  <div class="nav-section">
+    <div class="nav-label">Core</div>
+    <div class="nav-item"><div class="nav-dot"></div>Dashboard</div>
+    <div class="nav-item"><div class="nav-dot"></div>Office</div>
+    <div class="nav-item"><div class="nav-dot"></div>Portfolio</div>
+    <div class="nav-item"><div class="nav-dot"></div>Bank</div>
+    <div class="nav-item active"><div class="nav-dot"></div>Marketplace</div>
+    <div class="nav-item"><div class="nav-dot"></div>Exchange</div>
+  </div>
+  <div class="nav-section">
+    <div class="nav-label">Market</div>
+    <div class="nav-item"><div class="nav-dot"></div>Work</div>
+    <div class="nav-item"><div class="nav-dot"></div>Assets</div>
+    <div class="nav-item"><div class="nav-dot"></div>Resources</div>
+    <div class="nav-item"><div class="nav-dot"></div>Campaigns</div>
+    <div class="nav-item"><div class="nav-dot"></div>Templates</div>
+  </div>
+  <div class="nav-section">
+    <div class="nav-label">System</div>
+    <div class="nav-item"><div class="nav-dot"></div>Community</div>
+    <div class="nav-item"><div class="nav-dot"></div>Organizations</div>
+    <div class="nav-item"><div class="nav-dot"></div>Developer</div>
+    <div class="nav-item"><div class="nav-dot"></div>Profile</div>
+  </div>
+</div>
+
+<div class="main">
+  <div class="topbar">
+    <div class="topbar-title">KOGI · <span>Marketplace</span></div>
+    <input class="search-bar" placeholder="Search skills, assets, services, resources...">
+    <div class="topbar-actions">
+      <button class="btn btn-teal">+ List Item</button>
+      <button class="btn btn-gold">Oba ✦</button>
+    </div>
+  </div>
+
+  <div class="content">
+    <!-- Stats Row -->
+    <div class="stats-row">
+      <div class="stat-card"><div class="stat-label">Active Listings</div><div class="stat-value gold">284</div><div class="stat-sub">+18 this week</div></div>
+      <div class="stat-card"><div class="stat-label">Active Deals</div><div class="stat-value teal">18</div><div class="stat-sub">4 awaiting review</div></div>
+      <div class="stat-card"><div class="stat-label">Proposals</div><div class="stat-value purple">12</div><div class="stat-sub">3 new today</div></div>
+      <div class="stat-card"><div class="stat-label">Revenue (30d)</div><div class="stat-value gold">$8,400</div><div class="stat-sub">↑ 14% vs prior</div></div>
+      <div class="stat-card"><div class="stat-label">Match Score</div><div class="stat-value teal">94.2</div><div class="stat-sub">AI engine · top 8%</div></div>
+    </div>
+
+    <!-- Filter Tabs -->
+    <div class="filter-tabs">
+      <div class="filter-tab active">All</div>
+      <div class="filter-tab">Work</div>
+      <div class="filter-tab">Assets & Artifacts</div>
+      <div class="filter-tab">Resources</div>
+      <div class="filter-tab">Campaigns</div>
+      <div class="filter-tab">Templates</div>
+      <div class="filter-tab">Bundles</div>
+    </div>
+
+    <!-- Listings Grid -->
+    <div class="section-header">
+      <div class="section-title">Recommended for You · AI-Matched</div>
+      <div class="btn btn-gold" style="font-size:9px;">View All →</div>
+    </div>
+    <div class="listings-grid">
+
+      <!-- Card 1 -->
+      <div class="listing-card">
+        <div class="ai-score">AI 97</div>
+        <div class="listing-type type-work">Work · Contract</div>
+        <div class="listing-title">Senior Product Designer — Platform UI Systems</div>
+        <div class="listing-owner"><div class="owner-dot" style="background:#2a6bc9;">S</div>Sofia Reyes · ★ 4.9 (84)</div>
+        <div class="listing-desc">Full-stack product design with expertise in design systems, component libraries, and developer handoff. Available for 3–6 month engagements.</div>
+        <div class="listing-tags">
+          <span class="tag">Figma</span><span class="tag">Design Systems</span><span class="tag">Angular</span><span class="tag">TypeScript</span>
+        </div>
+        <div class="listing-footer">
+          <div class="listing-price teal">$145<span style="font-size:9px;color:var(--text3)">/hr</span></div>
+          <div class="listing-meta"><span>284 views</span><span>12 saves</span></div>
+        </div>
+      </div>
+
+      <!-- Card 2 -->
+      <div class="listing-card">
+        <div class="ai-score">AI 94</div>
+        <div class="listing-type type-asset">Asset · Playbook</div>
+        <div class="listing-title">Brand Identity System v2.0 — Complete Toolkit</div>
+        <div class="listing-owner"><div class="owner-dot" style="background:#c9a227;">J</div>Jordan Chen · ★ 4.8 (142)</div>
+        <div class="listing-desc">Production-ready brand identity package. Logos, color systems, typography, component library, and usage documentation. 480+ files.</div>
+        <div class="listing-tags">
+          <span class="tag">Branding</span><span class="tag">Figma</span><span class="tag">Design System</span>
+        </div>
+        <div class="listing-footer">
+          <div class="listing-price purple">$2,400</div>
+          <div class="listing-meta"><span>1,249 views</span><span>87 saves</span></div>
+        </div>
+      </div>
+
+      <!-- Card 3 -->
+      <div class="listing-card">
+        <div class="ai-score">AI 91</div>
+        <div class="listing-type type-template">Template · Playbook</div>
+        <div class="listing-title">Legal Template Bundle — Independent Worker Pack</div>
+        <div class="listing-owner"><div class="owner-dot" style="background:#0fa89a;">M</div>Marcus Law · ★ 4.7 (38)</div>
+        <div class="listing-desc">12 attorney-reviewed contract templates: NDAs, service agreements, IP assignments, retainer agreements, and subcontractor docs.</div>
+        <div class="listing-tags">
+          <span class="tag">Legal</span><span class="tag">Contracts</span><span class="tag">NDA</span><span class="tag">IP</span>
+        </div>
+        <div class="listing-footer">
+          <div class="listing-price blue">$380</div>
+          <div class="listing-meta"><span>642 views</span><span>204 saves</span></div>
+        </div>
+      </div>
+
+      <!-- Card 4 -->
+      <div class="listing-card">
+        <div class="ai-score">AI 89</div>
+        <div class="listing-type type-resource">Resource · Compute</div>
+        <div class="listing-title">GPU Compute Cluster · 40GB VRAM · Shared Access</div>
+        <div class="listing-owner"><div class="owner-dot" style="background:#d4622a;">K</div>Kali Systems · ★ 4.6 (21)</div>
+        <div class="listing-desc">High-performance GPU compute cluster available for ML training, inference, and rendering workloads. Flexible hourly or monthly billing.</div>
+        <div class="listing-tags">
+          <span class="tag">ML/AI</span><span class="tag">Compute</span><span class="tag">GPU</span>
+        </div>
+        <div class="listing-footer">
+          <div class="listing-price orange">$4.20<span style="font-size:9px;color:var(--text3)">/hr</span></div>
+          <div class="listing-meta"><span>183 views</span><span>44 saves</span></div>
+        </div>
+      </div>
+
+      <!-- Card 5 -->
+      <div class="listing-card">
+        <div class="ai-score">AI 88</div>
+        <div class="listing-type type-campaign">Campaign · Equity</div>
+        <div class="listing-title">Alpha Platform — Series Pre-A · $450K Target</div>
+        <div class="listing-owner"><div class="owner-dot" style="background:#7c5cbf;">P</div>Priya S. · ★ 4.9 (67)</div>
+        <div class="listing-desc">Worker-owned cooperative platform for the creative economy. Raising equity round for product development and community expansion. 38% committed.</div>
+        <div class="listing-tags">
+          <span class="tag">Equity</span><span class="tag">Cooperative</span><span class="tag">Platform</span>
+        </div>
+        <div class="listing-footer">
+          <div class="listing-price gold">$450K</div>
+          <div class="listing-meta"><span>$172K raised</span><span>38%</span></div>
+        </div>
+      </div>
+
+      <!-- Card 6 -->
+      <div class="listing-card">
+        <div class="ai-score">AI 86</div>
+        <div class="listing-type type-work">Work · Gig</div>
+        <div class="listing-title">Data Pipeline Architecture Review + Recommendations</div>
+        <div class="listing-owner"><div class="owner-dot" style="background:#2a9d4e;">T</div>Theo Park · ★ 4.8 (93)</div>
+        <div class="listing-desc">Full architecture audit of your data infrastructure with actionable recommendations. Covers ingestion, processing, storage, and analytics layers.</div>
+        <div class="listing-tags">
+          <span class="tag">Scala</span><span class="tag">Kafka</span><span class="tag">Spark</span><span class="tag">PostgreSQL</span>
+        </div>
+        <div class="listing-footer">
+          <div class="listing-price teal">$3,200</div>
+          <div class="listing-meta"><span>5–7 days</span><span>Fixed</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bottom Two Column -->
+    <div class="two-col">
+      <!-- Recent Activity -->
+      <div class="panel">
+        <div class="section-header" style="margin-bottom:8px;">
+          <div class="section-title">Active Listings · Mine</div>
+          <span style="font-size:9px;color:var(--text3);font-family:'IBM Plex Mono',monospace;">4 active</span>
+        </div>
+        <div class="mini-list">
+          <div class="mini-item">
+            <div class="mini-item-left">
+              <div class="owner-dot" style="background:var(--accent-teal);font-size:8px;">●</div>
+              <div><div class="mini-label">UI Component Library — React Kit</div><div class="mini-sub">Asset · $890 · 284 views · 18 saves</div></div>
+            </div>
+            <div><div class="badge badge-green">Active</div><div class="progress-bar" style="width:60px;margin-top:4px;"><div class="progress-fill" style="width:70%;background:var(--accent-teal);"></div></div></div>
+          </div>
+          <div class="mini-item">
+            <div class="mini-item-left">
+              <div class="owner-dot" style="background:var(--accent-purple);font-size:8px;">●</div>
+              <div><div class="mini-label">Brand Strategy Consulting</div><div class="mini-sub">Work · $180/hr · 142 views · 6 proposals</div></div>
+            </div>
+            <div><div class="badge badge-green">Active</div></div>
+          </div>
+          <div class="mini-item">
+            <div class="mini-item-left">
+              <div class="owner-dot" style="background:var(--accent-gold);font-size:8px;">●</div>
+              <div><div class="mini-label">Full Stack Audit Playbook</div><div class="mini-sub">Template · $220 · 98 views · 3 saves</div></div>
+            </div>
+            <div><div class="badge badge-orange">Paused</div></div>
+          </div>
+          <div class="mini-item">
+            <div class="mini-item-left">
+              <div class="owner-dot" style="background:var(--accent-blue);font-size:8px;">●</div>
+              <div><div class="mini-label">Analytics Dashboard Template</div><div class="mini-sub">Asset · $440 · 441 views · 37 saves</div></div>
+            </div>
+            <div><div class="badge badge-green">Active</div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Deals -->
+      <div class="panel">
+        <div class="section-header" style="margin-bottom:8px;">
+          <div class="section-title">Open Deals</div>
+          <span style="font-size:9px;color:var(--text3);font-family:'IBM Plex Mono',monospace;">3 active</span>
+        </div>
+        <div class="mini-list">
+          <div class="mini-item">
+            <div class="mini-item-left">
+              <div class="owner-dot" style="background:#2a6bc9;">S</div>
+              <div><div class="mini-label">Sofia R. → Design Systems Contract</div><div class="mini-sub">Milestone 2/4 · $12,000 escrow</div></div>
+            </div>
+            <div><div class="badge badge-gold">In Progress</div></div>
+          </div>
+          <div class="mini-item">
+            <div class="mini-item-left">
+              <div class="owner-dot" style="background:#d4622a;">K</div>
+              <div><div class="mini-label">Kai M. → Brand Identity System</div><div class="mini-sub">Proposal sent · $2,400 · Awaiting</div></div>
+            </div>
+            <div><div class="badge badge-orange">Pending</div></div>
+          </div>
+          <div class="mini-item">
+            <div class="mini-item-left">
+              <div class="owner-dot" style="background:#7c5cbf;">R</div>
+              <div><div class="mini-label">Remi K. → Data Pipeline Review</div><div class="mini-sub">Negotiation · Counter $4,100</div></div>
+            </div>
+            <div><div class="badge badge-orange">Negotiating</div></div>
+          </div>
+          <div class="mini-item" style="background:rgba(42,157,78,0.04);border-color:rgba(42,157,78,0.15);">
+            <div class="mini-item-left">
+              <div class="owner-dot" style="background:#2a9d4e;">T</div>
+              <div><div class="mini-label">Theo P. → React Component Kit</div><div class="mini-sub">Completed · $890 settled</div></div>
+            </div>
+            <div><div class="badge badge-green">Complete</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

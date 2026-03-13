@@ -11,13 +11,20 @@ Scala data/data-processing engine for Kogi platform-wide flows and host analytic
 
 ## Engines
 - `KogiEngine`: single access point composing all subengines.
-- `AnalyticsEngine`: realtime analytics signals, health scoring, and module/host snapshots.
+- `AnalyticsEngine`: realtime analytics signals, health scoring, and system snapshots.
 - `TelemetryEngine`: platform flow ingest, envelope/ledger tracking, and component stats.
 - `RecommendationEngine`: recommendations + discovery + explore synthesis.
+- `PersonalizationEngine`: segments, experiments, persona-driven delivery configs.
+- `MatchEngine`: multi-dimensional matching across users, components, resources, artifacts.
+- `GraphEngine`: dependency graph traversal, impact analysis, cycles, critical path, diff.
+- `RiskEngine`: portfolio risk scoring and risk optimization plans.
+- `PolicyEngine`: governance policy evaluation + approval workflows.
 - `OptimizationEngine`: workload optimization heuristics and plans.
-- `SearchEngine`: search, filtering, indexing for platform data.
+- `SearchEngine`: search, filtering, indexing, personalized re-ranking.
 - `QueryEngine`: SQL interpretation + optimization hints for execution.
-- `PortfolioHealthPipeline`: weighted health scoring for productivity/cashflow/collaboration/risk signals.
+- `AllocationEngine`: bid scoring + allocation for game listings.
+- `IncentiveEngine`: KP ledger, incentive profiles, streak logic.
+- `GameEngine`: listings, bids, allocations, incentives orchestration.
 - `DataStreamingEngine`: bounded event stream ingest with subscriber hooks.
 
 ## Build
@@ -43,16 +50,25 @@ bazel run //:engine_run
 ```
 
 ## CLI
-The engine exposes a lightweight CLI for the Go engine service:
+The engine exposes a lightweight CLI (JSON output) for automation and the Go engine service.
 
 ```powershell
 cd kogi-engine
-sbt "runMain kogi.engine.KogiEngineCli --action snapshot"
+sbt "runMain kogi.engine.KogiEngineCli --action status"
 sbt "runMain kogi.engine.KogiEngineCli --action control --mode start"
+sbt "runMain kogi.engine.KogiEngineCli --action ingest --topic engine.ingest --payload event_type=demo"
+sbt "runMain kogi.engine.KogiEngineCli --action snapshot --host-id kogi-host-001 --window-ms 300000"
+sbt "runMain kogi.engine.KogiEngineCli --action search --query \"portfolio risk\" --tag risk --meta domain=finance"
+sbt "runMain kogi.engine.KogiEngineCli --action graph-impact --node auth-service"
 ```
 
+Common actions include `control`, `status`, `ingest`, `snapshot`, `query`, `search`, `index`,
+`match-profiles-resources`, and `graph-*` (impact/closure/rdeps/neighbors/ancestors/descendants/cycles/topo/critical/diff).
+Use `GraphEngineCLI` for graph-only workflows with `--format text|json|dot`.
+
 ## gRPC Server
-The engine can expose a gRPC endpoint used by the Go engine service:
+The engine can expose a gRPC endpoint used by the Go engine service. Requests and responses
+use `google.protobuf.Struct`, and reflection is enabled.
 
 ```powershell
 cd kogi-engine
@@ -60,6 +76,8 @@ sbt "runMain kogi.engine.EngineGrpcServer"
 ```
 
 Set `KOGI_ENGINE_GRPC_PORT` to override the default `9100`.
+Set `KOGI_ENGINE_GRPC_REFLECTION` to `off`/`false`/`0` to disable reflection (enabled by default).
+Set `KOGI_ENGINE_GRPC_PROTO` to the proto file path (used for reflection metadata/logging; default `kogi_engine.proto`).
 
 Run via Bazel:
 ```powershell
@@ -67,27 +85,25 @@ bazel run //:engine_grpc_run
 ```
 
 ### grpcurl
-The server enables reflection, so you can use `grpcurl` directly:
-```powershell
-
+Reflection is enabled by default, so you can use `grpcurl` directly. Full command set
+(matches `grpcurl-commands.ps1`):
+```bash
 grpcurl -plaintext localhost:9100 list
-
 grpcurl -plaintext localhost:9100 describe kogi.engine.v1.EngineService
+grpcurl -plaintext -d '{}' localhost:9100 kogi.engine.v1.EngineService/Status
+grpcurl -plaintext -d '{"action":"start"}' localhost:9100 kogi.engine.v1.EngineService/Control
+grpcurl -plaintext -d '{"topic":"engine.ingest","source":"kogi.network.engine","target":"kogi.engine","payload":{"event_type":"demo"}}' localhost:9100 kogi.engine.v1.EngineService/Ingest
+grpcurl -plaintext -d '{"host_id":"kogi-host-001","window_ms":300000}' localhost:9100 kogi.engine.v1.EngineService/Snapshot
+grpcurl -plaintext -d '{"action":"pause"}' localhost:9100 kogi.engine.v1.EngineService/Control
+grpcurl -plaintext -d '{"action":"stop"}' localhost:9100 kogi.engine.v1.EngineService/Control
+```
 
-grpcurl -plaintext -d "{}" localhost:9100 kogi.engine.v1.EngineService/Status
+You can also run `.\grpcurl-commands.ps1` to print and execute the same list.
 
-grpcurl -plaintext -d "{\"action\":\"start\"}" localhost:9100 kogi.engine.v1.EngineService/Control
-
-grpcurl -plaintext -d "{\"topic\":\"engine.ingest\",\"source\":\"kogi.network.engine\",\"target\":\"kogi.engine\",\"payload\":{\"event_type\":\"demo\"}}" localhost:9100 kogi.engine.v1.EngineService/Ingest
-
+If reflection is disabled, point grpcurl at the proto file:
+```powershell
 grpcurl -plaintext -import-path kogi-infra/proto -proto kogi_engine.proto localhost:9100 kogi.engine.v1.EngineService/Status
-
-grpcurl -plaintext -d "{\"action\":\"start\"}"  -import-path kogi-infra/proto -proto kogi_engine.proto localhost:9100 kogi.engine.v1.EngineService/Control
-
-grpcurl -plaintext -d "{\"topic\":\"engine.ingest\",\"source\":\"kogi.network.engine\",\"target\":\"kogi.engine\",\"payload\":{\"event_type\":\"demo\"}}" -import-path kogi-infra/proto -proto kogi_engine.proto localhost:9100 kogi.engine.v1.EngineService/Ingest
-
 netstat -ano | findstr 9100
-
 ```
 
 ## Engine Service (Host Control Plane)
@@ -97,43 +113,22 @@ The host calls the engine service for control + ingest. Run it from the Go servi
 go run ./kogi-network/services/engine
 ```
 
+Set `KOGI_ENGINE_GRPC_MODE` to `on` or `required` to enable gRPC forwarding (default off unless addr is set).
+Set `KOGI_ENGINE_GRPC_ADDR` to override the gRPC target (default `127.0.0.1:9100` when mode is `on`/`required`).
+Set `KOGI_ENGINE_GRPC_TIMEOUT` to a duration like `2s`.
 Set `KOGI_ENGINE_CLI` to point at a compiled CLI binary/script, or ensure `sbt` is on `PATH` so the Go engine service can call `KogiEngineCli`.
 Set `KOGI_ENGINE_ENDPOINT` only if you also expose a Scala HTTP endpoint (legacy path).
 
 ## Core APIs
+- `KogiEngine.control(action: String)` / `status`: lifecycle control.
 - `KogiEngine.ingestEnvelope(envelope: PlatformDataEnvelope)`: platform-wide canonical ingest entrypoint.
-- `KogiEngine.ingestBusEvent(topic, payload, ...)`: gateway pub/sub payload ingestion.
-- `KogiEngine.snapshot(hostId)`: combined engine + host + module realtime snapshot.
-- `KogiEngine.search(query: SearchQuery)`: search + filter over indexed documents.
+- `KogiEngine.ingestGatewayMessage(topic, payload, ...)`: gateway pub/sub payload ingestion.
+- `KogiEngine.snapshot(hostId, windowMs)`: combined engine + host + module realtime snapshot.
+- `KogiEngine.flowLedger(limit)` / `flowEnvelopes(limit)`: data flow audit trail.
+- `KogiEngine.search(query: SearchQuery)` / `index(document: SearchDocument)`: search + indexing.
 - `KogiEngine.query(sql: String)`: query analysis + optimization hints.
-
----
-
-Now I have a thorough understanding of the codebase. Let me write the complete implementations.Now let me verify both files compile cleanly and check for any type references that need validation:Good — those were placeholder stubs with undefined types. The new implementation replaces all of them with fully typed implementations. Let me present the files:Here's a summary of what was built:
-
----
-
-**MatchEngine** — replaces all the empty stubs with a fully typed, multi-dimensional matching system:
-
-- **Subject types**: `UserSubject` (with `UserRole`: Owner, Investor, Donor, Subscriber, etc.), `ComponentSubject` (Portfolio/Program/Project/Resource/Artifact/Asset), `ResourceSubject`, `AssetSubject`, `AnalyticsArtifact`
-- **Core match pairs**: user↔component, component↔users (filtered by role), asset↔component, resource↔component, user↔user (talent/similarity)
-- **`componentBundle`**: single call that returns matched users + resources + assets for any portfolio component
-- **`matchExchangeListings`**: pairs marketplace listings with best-fit buyers/investors
-- **`matchWorkloadsToPlans`**: delegates to `OptimizationEngine` and wraps results as match candidates
-- **`matchArtifactsToUser`**: re-ranks search results, recommendations, and index items by persona + tag alignment
-- **`MatchWeights`**: pluggable scoring strategies (`default`, `investment`, `talent`, `analytics`)
-- Scoring uses Jaccard similarity for tags, attribute overlap, role→kind affinity, persona boosting, and budget/value signals
-
----
-
-**PersonalizationEngine** — fully implemented across all requested dimensions:
-
-- **Core entry point**: `personalize(request)` returns a `PersonalizationResult` with recommendations, delivery config, segments, experiment assignments, and persona metadata in one call
-- **Preference management**: explicit/inferred/default three-tier fallback chain; `setPreference`, `resolvePreferences`
-- **Content delivery adaptation**: `ContentDeliveryConfig` (density, ordering, feed limits, sidebar, filters) derived from persona × context
-- **`rankContent` / `adaptContent`**: dynamic reordering of feed items using persona rules (suppress low-value for ValueSeekers, promote new for EarlyAdopters, cap depth for CasualBrowsers, etc.)
-- **Segmentation**: `Segment` definitions with rule-based matching, `assignSegments`, `profilesInSegment`
-- **A/B testing**: sticky variant assignment via weighted random sampling, `recordExposure`, `experimentStats`
-- **Multi-armed bandit (UCB1)**: `registerBanditSlot`, `selectBanditArm`, `recordBanditReward`, `banditStats`
-- **Persona lifecycle**: `buildPersona`, `detectPersonaDrift`, `applyPersonaDriftIfNeeded`
-- Composes over `RecommendationEngine` — all interaction recording and hybrid recommendation calls pass through
+- `KogiEngine.graphAddEdge(...)`, `graphImpact(...)`, `graphCycles(...)`, `graphCriticalPath(...)`, `graphDiff(...)`.
+- `KogiEngine.matchProfilesToResources(...)`: profile/resource matching.
+- `KogiEngine.allocate(...)` / `scoreAllocation(...)`: allocation scoring + selection.
+- `KogiEngine.incentiveApply(...)`, `incentiveProfile(...)`, `incentiveLedger(...)`: incentives + KP ledger.
+- `KogiEngine.gameRegisterParticipant(...)`, `gameUpsertListing(...)`, `gameSubmitBid(...)`, `gameAllocateListing(...)`, `gameSnapshot(...)`.

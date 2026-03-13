@@ -15,7 +15,7 @@ Design Document — v1.0  ·  March 2026
 | :---- | :---- |
 | **Language** | Scala 3 (primary) · compiled on JVM |
 | **Interfaces** | gRPC (EngineGrpcServer) · HTTP REST (GraphEngineAPIServer) · CLI (KogiEngineCli, GraphEngineCLI) |
-| **Sub-engines** | Analytics · Telemetry · Recommendation · Personalization · Match · Graph · Risk · Optimization · Search · Query · DataStreaming |
+| **Sub-engines** | Analytics / Telemetry / Recommendation / Personalization / Match / Graph / Risk / Optimization / Search / Query / Allocation / Incentive / Game / DataStreaming |
 | **Persistence** | In-memory (production swap: PostgreSQL / Kafka / Redis) |
 | **Entry point** | Main.scala · EngineGrpcServer · GraphEngineAPIServer |
 | **Status** | MVP — all sub-engines implemented and integrated |
@@ -45,6 +45,9 @@ The architecture is layered: raw events enter through the TelemetryEngine, which
 | OptimizationEngine | OptimizationEngine.scala | System resource optimization recommendations, persona-aware workload tuning |
 | SearchEngine | SearchEngine.scala | Full-text \+ tag/metadata indexing, personalized re-ranking |
 | QueryEngine | QueryEngine.scala | SQL normalization, cost estimation, query optimization, persona-aware row caps |
+| AllocationEngine | AllocationEngine.scala | Bid scoring and allocation selection for game listings |
+| IncentiveEngine | IncentiveEngine.scala | KP ledger, incentive profiles, streaks, reward application |
+| GameEngine | GameEngine.scala | Listings, bids, allocation orchestration, incentive application |
 
 ## **1.3 Data Flow**
 
@@ -59,7 +62,7 @@ The primary data path through kogi-engine:
 | :---- | :---- | :---- | :---- |
 | gRPC Server | EngineGrpcServer.scala | gRPC / protobuf (google.Struct) | Control · Status · Ingest · Snapshot |
 | HTTP REST Server | GraphEngineAPIServer.scala | HTTP/1.1 JSON (JDK HttpServer) | GET /health · POST /load · GET /nodes · GET /edges · GET /impact · GET /topo · GET /critical · GET /cycles · GET /diff |
-| Engine CLI | KogiEngineCli.scala | stdin/stdout (JSON output) | control · status · ingest · snapshot · query · search · graph-impact · graph-cycles · graph-critical · graph-topo · graph-diff |
+| Engine CLI | KogiEngineCli.scala | stdin/stdout (JSON output) | control, status, ingest, snapshot, query, search, index, match-profiles-resources, graph-impact, graph-closure, graph-rdeps, graph-neighbors, graph-ancestors, graph-descendants, graph-cycles, graph-critical, graph-topo, graph-diff, graph-add-node, graph-add-edge, graph-remove-node, graph-remove-edge, graph-nodes, graph-edges |
 | Graph CLI | GraphEngineCLI.scala | stdin/stdout (text \+ JSON \+ DOT) | impact · closure · rdeps · topo · critical · cycles · neighbors · ancestors · descendants · diff · nodes · edges · export |
 | Programmatic API | GraphEngineAPIFacade.scala | Scala in-process | Builder API, typed Either results, snapshot/diff, mutation methods |
 
@@ -72,10 +75,10 @@ KogiEngine is the single entry point for all engine functionality. It owns and c
 
 ## **2.2 Construction & Wiring**
 
-| new KogiEngine(   recommendationEngine  \= new RecommendationEngine(),   riskEngine            \= new RiskEngine(),   analyticsEngineOverride \= null,        // auto-wired: AnalyticsEngine(risk, rec)   telemetryEngineOverride \= null,         // auto-wired: TelemetryEngine(analytics)   optimizationEngine    \= new OptimizationEngine(),   searchEngine          \= new SearchEngine(),   queryEngine           \= new QueryEngine(),   matchEngine           \= new MatchEngine(),   initialGraphEdges     \= Seq.empty,   initialGraphNodes     \= Seq.empty ) |
+| new KogiEngine(   recommendationEngine  = new RecommendationEngine(),   riskEngine            = new RiskEngine(),   analyticsEngineOverride = null,        // auto-wired: AnalyticsEngine(risk, rec)   telemetryEngineOverride = null,         // auto-wired: TelemetryEngine(analytics)   optimizationEngine    = new OptimizationEngine(),   searchEngine          = new SearchEngine(),   queryEngine           = new QueryEngine(),   matchEngine           = new MatchEngine(),   allocationEngineOverride = null,   incentiveEngineOverride = null,   gameEngineOverride = null,   initialGraphEdges     = Seq.empty,   initialGraphNodes     = Seq.empty ) |
 | :---- |
 
-The AnalyticsEngine and TelemetryEngine are auto-wired so they share the same RiskEngine and RecommendationEngine instances, ensuring consistent signal propagation without duplicate computation.
+The AnalyticsEngine and TelemetryEngine are auto-wired so they share the same RiskEngine and RecommendationEngine instances, ensuring consistent signal propagation without duplicate computation. AllocationEngine and IncentiveEngine are also shared by GameEngine unless overrides are provided.
 
 ## **2.3 Lifecycle Control**
 
@@ -632,7 +635,8 @@ EngineGrpcCodec provides bidirectional conversion between Scala Map\[String, Any
 
 | Port | Default 9100; overridable via KOGI\_ENGINE\_GRPC\_PORT environment variable |
 | :---- | :---- |
-| **Reflection** | ProtoReflectionService registered — allows gRPC UI and grpcurl introspection |
+| **Reflection** | Enabled by default; disable via KOGI_ENGINE_GRPC_REFLECTION=off |
+| **Proto file** | Optional KOGI_ENGINE_GRPC_PROTO for reflection metadata/logging (default kogi_engine.proto) |
 | **Shutdown** | JVM shutdown hook calls server.shutdown() for graceful drain |
 | **Threading** | Default Netty thread pool; tune via grpc server builder if needed |
 
@@ -645,17 +649,30 @@ KogiEngineCli provides a command-line interface to the full KogiEngine, emitting
 
 | Command | Key Arguments | Action |
 | :---- | :---- | :---- |
-| control | \--action start|pause|stop | Transition engine lifecycle mode |
+| control | --mode start|pause|stop|resume | Transition engine lifecycle mode |
 | status | (none) | Print current mode and timestamp |
-| snapshot | \--host-id \--window-ms | Full EngineFlowSnapshot as JSON |
-| ingest | \--topic \--source \--target \--payload key=value... | Ingest a gateway message and return snapshot |
-| query | \--sql "..." | Parse, analyze, and optimize a SQL string |
-| search | \--text \--tags \--limit | Run a search query against the index |
-| graph-impact | \--node | ImpactReport for a node |
+| snapshot | --host-id --window-ms | Full EngineFlowSnapshot as JSON |
+| ingest | --topic --source --target --payload key=value... --flow-id --timestamp-ms | Ingest a gateway message and return snapshot |
+| query | --sql "..." | Parse, analyze, and optimize a SQL string |
+| search | --query "..." --tag <tag>... --meta key=value... | Run a search query against the index |
+| index | --id --title --body/--content --tag <tag>... --meta key=value... | Index a document |
+| match-profiles-resources | (none) | Placeholder match run (empty inputs) |
+| graph-impact | --node | ImpactReport for a node |
+| graph-closure | --node | Dependency closure for a node |
+| graph-rdeps | --node | Reverse dependency closure |
+| graph-neighbors | --node | Neighborhood for a node |
+| graph-ancestors | --node | Hierarchy ancestors |
+| graph-descendants | --node | Hierarchy descendants |
 | graph-cycles | (none) | CycleReport across all edges |
 | graph-critical | (none) | Critical path report |
 | graph-topo | (none) | Topological sort order |
-| graph-diff | \--edge from:to:type... | Diff current graph against supplied edge list |
+| graph-diff | --before-edge-1 A:B:Dependency:1.0 ... | Diff current graph against supplied edge list |
+| graph-add-node | --id --duration | Add a node to the graph |
+| graph-add-edge | --from --to --edge-type --weight | Add an edge to the graph |
+| graph-remove-node | --id | Remove a node (and incident edges) |
+| graph-remove-edge | --from --to | Remove an edge |
+| graph-nodes | (none) | List all node IDs |
+| graph-edges | (none) | List all edges |
 
 ## **15.2 GraphEngineCLI — Graph-Specific CLI**
 
@@ -677,7 +694,7 @@ GraphEngineCLI is a standalone CLI exclusively for the GraphEngine, with CSV/DOT
 | edges | List all edges |
 | export \--format csv|dot|json | Export graph in CSV (edge list), DOT (Graphviz), or JSON format |
 
-| *Both CLIs support \--format json|text output. JSON mode is suitable for programmatic consumption by Go services; text mode is optimized for human-readable debugging and monitoring.* |
+| *KogiEngineCli always emits JSON. GraphEngineCLI supports --format text|json|dot for human-friendly or programmatic output.* |
 | :---- |
 
 | 16\. Complete Data Model Reference |

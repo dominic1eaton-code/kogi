@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KOGI · Asset Transfer</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap');
+  *{margin:0;padding:0;box-sizing:border-box;}
+  :root{
+    --bg:#080b10;--bg2:#0d1117;--bg3:#111820;--bg4:#161e28;
+    --border:#1e2d3d;--border2:#243344;
+    --teal:#00c9a7;--teal2:#009e84;--teal-dim:#00c9a720;
+    --amber:#f5a623;--amber-dim:#f5a62318;
+    --purple:#8b5cf6;--purple-dim:#8b5cf615;
+    --pink:#e83e8c;--pink-dim:#e83e8c15;
+    --green:#22c55e;--red:#ef4444;--blue:#3b82f6;
+    --text:#e2e8f0;--text2:#94a3b8;--text3:#4a6280;
+    --mono:'IBM Plex Mono',monospace;--sans:'IBM Plex Sans',sans-serif;
+  }
+  body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:12px;display:flex;height:100vh;overflow:hidden;}
+  .sidebar{width:168px;background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0;}
+  .logo{padding:12px 14px;border-bottom:1px solid var(--border);font-family:var(--mono);font-size:13px;font-weight:600;letter-spacing:3px;color:var(--teal);}
+  .nav-section{padding:8px 0;}
+  .nav-label{padding:4px 14px 2px;font-size:9px;letter-spacing:2px;color:var(--text3);text-transform:uppercase;}
+  .nav-item{padding:5px 14px;color:var(--text2);cursor:pointer;font-size:11px;display:flex;align-items:center;gap:6px;border-left:2px solid transparent;}
+  .nav-item:hover{color:var(--text);background:var(--bg3);}
+  .nav-item.active{color:var(--teal);border-left-color:var(--teal);background:var(--teal-dim);}
+  .nav-item .dot{width:5px;height:5px;border-radius:50%;background:currentColor;opacity:.6;}
+  .nav-divider{height:1px;background:var(--border);margin:6px 0;}
+  .main{flex:1;display:flex;flex-direction:column;overflow:hidden;}
+  .topbar{display:flex;align-items:center;gap:10px;padding:8px 16px;background:var(--bg2);border-bottom:1px solid var(--border);}
+  .topbar-title{font-family:var(--mono);font-size:12px;font-weight:500;color:var(--text);display:flex;align-items:center;gap:6px;}
+  .topbar-title .crumb{color:var(--text3);}
+  .topbar-actions{margin-left:auto;display:flex;gap:6px;align-items:center;}
+  .btn{padding:4px 10px;border-radius:3px;font-family:var(--mono);font-size:10px;cursor:pointer;border:1px solid var(--border2);background:var(--bg3);color:var(--text2);}
+  .btn.primary{background:var(--teal2);border-color:var(--teal);color:#000;font-weight:600;}
+  .btn.amber{background:var(--amber-dim);border-color:var(--amber);color:var(--amber);}
+  .badge-dot{width:7px;height:7px;border-radius:50%;background:var(--teal);}
+  .stats-row{display:flex;border-bottom:1px solid var(--border);background:var(--bg2);}
+  .stat-box{flex:1;padding:10px 16px;border-right:1px solid var(--border);}
+  .stat-box:last-child{border-right:none;}
+  .stat-label{font-size:9px;letter-spacing:1.5px;color:var(--text3);text-transform:uppercase;margin-bottom:4px;}
+  .stat-value{font-family:var(--mono);font-size:18px;font-weight:600;}
+  .stat-value.teal{color:var(--teal);}
+  .stat-value.amber{color:var(--amber);}
+  .stat-sub{font-size:9px;color:var(--text3);margin-top:2px;}
+  .stat-sub .up{color:var(--green);}
+  .content{flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:12px;}
+
+  .card{background:var(--bg2);border:1px solid var(--border);border-radius:4px;}
+  .card-header{padding:8px 12px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:6px;}
+  .card-title{font-family:var(--mono);font-size:10px;font-weight:500;letter-spacing:1px;color:var(--text2);text-transform:uppercase;}
+  .card-badge{margin-left:auto;font-family:var(--mono);font-size:9px;padding:2px 6px;border-radius:2px;}
+  .card-badge.teal{background:var(--teal-dim);color:var(--teal);border:1px solid var(--teal2);}
+  .card-badge.amber{background:var(--amber-dim);color:var(--amber);}
+
+  /* TRANSFER WIZARD */
+  .wizard{background:var(--bg2);border:1px solid var(--border);border-radius:4px;overflow:hidden;}
+  .wizard-steps{display:flex;border-bottom:1px solid var(--border);}
+  .wizard-step{flex:1;padding:8px 12px;text-align:center;font-size:9px;font-family:var(--mono);color:var(--text3);border-right:1px solid var(--border);position:relative;}
+  .wizard-step:last-child{border-right:none;}
+  .wizard-step.active{color:var(--teal);background:var(--teal-dim);}
+  .wizard-step.done{color:var(--green);}
+  .wizard-step-num{display:block;font-size:8px;margin-bottom:2px;opacity:.6;}
+  .wizard-body{display:grid;grid-template-columns:1fr 1fr;gap:0;border-bottom:1px solid var(--border);}
+  .wizard-col{padding:14px 16px;border-right:1px solid var(--border);}
+  .wizard-col:last-child{border-right:none;}
+  .wizard-col-title{font-size:9px;font-family:var(--mono);color:var(--text3);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:10px;}
+  .wf-field{margin-bottom:10px;}
+  .wf-label{font-size:9px;color:var(--text3);margin-bottom:3px;}
+  .wf-value{font-size:11px;color:var(--text2);font-weight:500;}
+  .wf-value.highlight{color:var(--teal);font-family:var(--mono);}
+  .wf-value.muted{color:var(--text3);}
+  .wf-select{background:var(--bg3);border:1px solid var(--border);border-radius:3px;padding:6px 10px;font-size:10px;font-family:var(--mono);color:var(--text2);outline:none;width:100%;cursor:pointer;}
+  .wf-asset-selected{background:var(--bg3);border:1px solid var(--teal2);border-radius:3px;padding:8px 10px;display:flex;align-items:center;gap:8px;}
+  .wf-asset-icon{width:24px;height:24px;border-radius:3px;background:var(--teal-dim);color:var(--teal);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;}
+  .wf-asset-name{font-size:11px;color:var(--text);font-weight:500;}
+  .wf-asset-meta{font-size:9px;color:var(--text3);}
+  .wf-asset-val{margin-left:auto;font-family:var(--mono);font-size:12px;color:var(--teal);}
+
+  .wizard-footer{padding:10px 16px;display:flex;align-items:center;gap:10px;background:var(--bg3);}
+  .wizard-summary{flex:1;font-size:10px;color:var(--text3);}
+  .wizard-summary span{color:var(--text2);font-family:var(--mono);}
+
+  /* TRANSFER LOG */
+  .transfer-row{display:flex;align-items:center;padding:8px 12px;border-bottom:1px solid var(--border);gap:8px;}
+  .transfer-row:last-child{border-bottom:none;}
+  .transfer-row:hover{background:var(--bg3);}
+  .tr-icon{width:28px;height:28px;border-radius:3px;display:flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0;}
+  .tr-icon.outgoing{background:var(--amber-dim);color:var(--amber);}
+  .tr-icon.incoming{background:var(--teal-dim);color:var(--teal);}
+  .tr-icon.pending{background:var(--purple-dim);color:var(--purple);}
+  .tr-info{flex:1;}
+  .tr-name{font-size:10px;color:var(--text);font-weight:500;}
+  .tr-meta{font-size:9px;color:var(--text3);}
+  .tr-amount{font-family:var(--mono);font-size:11px;font-weight:600;}
+  .tr-amount.in{color:var(--teal);}
+  .tr-amount.out{color:var(--amber);}
+  .tr-direction{font-size:9px;font-family:var(--mono);color:var(--text3);}
+  .tr-status{font-size:9px;padding:1px 5px;border-radius:2px;}
+  .tr-status.complete{background:#22c55e15;color:var(--green);}
+  .tr-status.pending{background:var(--purple-dim);color:var(--purple);}
+  .tr-status.processing{background:var(--amber-dim);color:var(--amber);}
+  .tr-time{font-family:var(--mono);font-size:9px;color:var(--text3);white-space:nowrap;}
+
+  /* INVOLVED PARTIES */
+  .party-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;padding:10px 12px;}
+  .party-card{background:var(--bg3);border:1px solid var(--border);border-radius:3px;padding:8px 10px;}
+  .party-card-header{display:flex;align-items:center;gap:6px;margin-bottom:5px;}
+  .party-card-avatar{width:22px;height:22px;border-radius:50%;background:var(--bg4);border:1px solid var(--border2);display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:600;}
+  .party-card-name{font-size:10px;color:var(--text);font-weight:500;}
+  .party-card-role{font-size:9px;color:var(--text3);}
+  .party-card-stat{font-size:9px;color:var(--text3);margin-top:3px;}
+  .party-card-stat span{color:var(--text2);font-family:var(--mono);}
+
+  ::-webkit-scrollbar{width:4px;height:4px;}
+  ::-webkit-scrollbar-track{background:var(--bg);}
+  ::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px;}
+</style>
+</head>
+<body>
+
+<div class="sidebar">
+  <div class="logo">KOGI</div>
+  <div class="nav-section">
+    <div class="nav-label">Main</div>
+    <div class="nav-item"><span class="dot"></span>Home</div>
+    <div class="nav-item"><span class="dot"></span>Office</div>
+    <div class="nav-item"><span class="dot"></span>Portfolio</div>
+  </div>
+  <div class="nav-divider"></div>
+  <div class="nav-section">
+    <div class="nav-label">Economy</div>
+    <div class="nav-item active"><span class="dot"></span>Exchange</div>
+    <div class="nav-item"><span class="dot"></span>Marketplace</div>
+    <div class="nav-item"><span class="dot"></span>Bank</div>
+  </div>
+  <div class="nav-divider"></div>
+  <div class="nav-section">
+    <div class="nav-label">Exchange</div>
+    <div class="nav-item"><span class="dot"></span>Labor Market</div>
+    <div class="nav-item"><span class="dot"></span>Commodities</div>
+    <div class="nav-item"><span class="dot"></span>Financial</div>
+    <div class="nav-item"><span class="dot"></span>Deal Rooms</div>
+    <div class="nav-item"><span class="dot"></span>Capital</div>
+    <div class="nav-item"><span class="dot"></span>Resources</div>
+    <div class="nav-item active"><span class="dot"></span>Asset Transfer</div>
+  </div>
+  <div class="nav-divider"></div>
+  <div class="nav-section">
+    <div class="nav-label">Platform</div>
+    <div class="nav-item"><span class="dot"></span>Community</div>
+    <div class="nav-item"><span class="dot"></span>Organizations</div>
+  </div>
+</div>
+
+<div class="main">
+  <div class="topbar">
+    <div class="topbar-title"><span class="crumb">Exchange /</span> Asset Transfer</div>
+    <div class="topbar-actions">
+      <button class="btn">Transfer History</button>
+      <button class="btn amber">Receive</button>
+      <button class="btn primary">+ New Transfer</button>
+      <div class="badge-dot"></div>
+    </div>
+  </div>
+
+  <div class="stats-row">
+    <div class="stat-box">
+      <div class="stat-label">Active Transfers</div>
+      <div class="stat-value teal">12</div>
+      <div class="stat-sub">4 pending · 8 processing</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-label">Transfer Volume</div>
+      <div class="stat-value amber">$64,200</div>
+      <div class="stat-sub">30-day total</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-label">Avg Settlement</div>
+      <div class="stat-value">1.4 days</div>
+      <div class="stat-sub">Via kogi-bank escrow</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-label">Items Transferred</div>
+      <div class="stat-value">48</div>
+      <div class="stat-sub">This month</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-label">Success Rate</div>
+      <div class="stat-value teal">99.2%</div>
+      <div class="stat-sub">All-time</div>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <!-- TRANSFER WIZARD -->
+    <div class="wizard">
+      <div class="wizard-steps">
+        <div class="wizard-step done"><span class="wizard-step-num">01</span>Select Asset</div>
+        <div class="wizard-step done"><span class="wizard-step-num">02</span>Set Recipient</div>
+        <div class="wizard-step active"><span class="wizard-step-num">03</span>Configure Terms</div>
+        <div class="wizard-step"><span class="wizard-step-num">04</span>Review & Sign</div>
+        <div class="wizard-step"><span class="wizard-step-num">05</span>Escrow & Execute</div>
+      </div>
+      <div class="wizard-body">
+        <div class="wizard-col">
+          <div class="wizard-col-title">Asset Being Transferred</div>
+          <div class="wf-asset-selected">
+            <div class="wf-asset-icon">A</div>
+            <div>
+              <div class="wf-asset-name">Brand Identity System v2.0</div>
+              <div class="wf-asset-meta">Asset · v2.4 · Jordan Chen · AI Score 94</div>
+            </div>
+            <div class="wf-asset-val">$12,400</div>
+          </div>
+          <div style="height:10px;"></div>
+          <div class="wf-field">
+            <div class="wf-label">Transfer Type</div>
+            <select class="wf-select">
+              <option>Full IP Transfer — Perpetual License</option>
+              <option>Temporary License</option>
+              <option>Revenue Share</option>
+              <option>Equity Swap</option>
+            </select>
+          </div>
+          <div class="wf-field">
+            <div class="wf-label">Transfer Value</div>
+            <div class="wf-value highlight">$12,400</div>
+          </div>
+          <div class="wf-field">
+            <div class="wf-label">Payment Method</div>
+            <select class="wf-select">
+              <option>Escrow — kogi-bank</option>
+              <option>Direct Payment</option>
+              <option>Milestone-gated</option>
+            </select>
+          </div>
+        </div>
+        <div class="wizard-col">
+          <div class="wizard-col-title">Recipient</div>
+          <div class="wf-asset-selected" style="border-color:var(--amber);margin-bottom:10px;">
+            <div class="wf-asset-icon" style="background:var(--amber-dim);color:var(--amber)">JO</div>
+            <div>
+              <div class="wf-asset-name">Jordan Park (Angel)</div>
+              <div class="wf-asset-meta">Kogi User · Verified · Alpha Platform Backer</div>
+            </div>
+          </div>
+          <div class="wf-field">
+            <div class="wf-label">IP Assignment</div>
+            <div class="wf-value">Full transfer on final payment</div>
+          </div>
+          <div class="wf-field">
+            <div class="wf-label">Retention</div>
+            <div class="wf-value">Seller retains portfolio reference</div>
+          </div>
+          <div class="wf-field">
+            <div class="wf-label">Governance Policy</div>
+            <div class="wf-value highlight">PolicyEngine verified ✓</div>
+          </div>
+          <div class="wf-field">
+            <div class="wf-label">Audit Trail</div>
+            <div class="wf-value">Full immutable EventLog enabled</div>
+          </div>
+        </div>
+      </div>
+      <div class="wizard-footer">
+        <div class="wizard-summary">
+          Transfer <span>Brand Identity System v2.0</span> → <span>Jordan Park</span> · <span>$12,400</span> · Escrow via kogi-bank · IP transfers on payment
+        </div>
+        <button class="btn">Back</button>
+        <button class="btn primary">Continue to Review →</button>
+      </div>
+    </div>
+
+    <!-- ACTIVE TRANSFERS + PARTIES -->
+    <div style="display:grid;grid-template-columns:2fr 1fr;gap:12px;">
+
+      <!-- TRANSFER LOG -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Transfer Log</div>
+          <span class="card-badge teal">12 Active</span>
+        </div>
+        <div class="transfer-row">
+          <div class="tr-icon outgoing">↗</div>
+          <div class="tr-info">
+            <div class="tr-name">Brand Identity System v2.0</div>
+            <div class="tr-meta">To: Jordan Park · Full IP · Escrow funded</div>
+          </div>
+          <div class="tr-amount out">$12,400</div>
+          <div class="tr-direction">Outgoing</div>
+          <span class="tr-status pending">Pending</span>
+          <div class="tr-time">Today</div>
+        </div>
+        <div class="transfer-row">
+          <div class="tr-icon incoming">↙</div>
+          <div class="tr-info">
+            <div class="tr-name">React Component Library — v4.1</div>
+            <div class="tr-meta">From: Priya Singh · License · $280/mo</div>
+          </div>
+          <div class="tr-amount in">$280/mo</div>
+          <div class="tr-direction">Incoming</div>
+          <span class="tr-status complete">Active</span>
+          <div class="tr-time">Mar 1</div>
+        </div>
+        <div class="transfer-row">
+          <div class="tr-icon outgoing">↗</div>
+          <div class="tr-info">
+            <div class="tr-name">Investment Playbook v3.1</div>
+            <div class="tr-meta">To: Collective Fund A · Subscription · Ongoing</div>
+          </div>
+          <div class="tr-amount out">$45/mo</div>
+          <div class="tr-direction">Outgoing</div>
+          <span class="tr-status complete">Complete</span>
+          <div class="tr-time">Feb 28</div>
+        </div>
+        <div class="transfer-row">
+          <div class="tr-icon pending">⟳</div>
+          <div class="tr-info">
+            <div class="tr-name">Legal Template Bundle</div>
+            <div class="tr-meta">To: Design Co-op · Fixed · Awaiting confirmation</div>
+          </div>
+          <div class="tr-amount in">$240</div>
+          <div class="tr-direction">Outgoing</div>
+          <span class="tr-status processing">Processing</span>
+          <div class="tr-time">Feb 25</div>
+        </div>
+        <div class="transfer-row">
+          <div class="tr-icon incoming">↙</div>
+          <div class="tr-info">
+            <div class="tr-name">AI Workflow Automation Toolkit</div>
+            <div class="tr-meta">From: Sofia Navarro · License · One-time</div>
+          </div>
+          <div class="tr-amount in">$2,100</div>
+          <div class="tr-direction">Incoming</div>
+          <span class="tr-status complete">Complete</span>
+          <div class="tr-time">Feb 20</div>
+        </div>
+      </div>
+
+      <!-- INVOLVED PARTIES -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Transfer Parties</div>
+        </div>
+        <div class="party-grid" style="grid-template-columns:1fr;">
+          <div class="party-card">
+            <div class="party-card-header">
+              <div class="party-card-avatar" style="color:var(--teal)">JC</div>
+              <div>
+                <div class="party-card-name">Jordan Chen</div>
+                <div class="party-card-role">Seller · Asset Owner</div>
+              </div>
+            </div>
+            <div class="party-card-stat">Transfers <span>12</span> · Vol <span>$64K</span></div>
+          </div>
+          <div class="party-card">
+            <div class="party-card-header">
+              <div class="party-card-avatar" style="color:var(--amber)">JP</div>
+              <div>
+                <div class="party-card-name">Jordan Park</div>
+                <div class="party-card-role">Buyer · Angel Investor</div>
+              </div>
+            </div>
+            <div class="party-card-stat">Investments <span>8</span> · Capital <span>$450K</span></div>
+          </div>
+          <div class="party-card">
+            <div class="party-card-header">
+              <div class="party-card-avatar" style="color:var(--purple)">KB</div>
+              <div>
+                <div class="party-card-name">kogi-bank</div>
+                <div class="party-card-role">Escrow Service</div>
+              </div>
+            </div>
+            <div class="party-card-stat">Escrow locked <span>$12,400</span></div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+</div>
+
+</body>
+</html>

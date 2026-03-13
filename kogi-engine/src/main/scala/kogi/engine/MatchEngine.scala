@@ -174,6 +174,30 @@ final case class AnalyticsArtifact(
 ) extends MatchSubject
 
 
+/** Lightweight profile used for profile-to-resource matching. */
+final case class Profile(
+    id: String,
+    tags: List[String] = Nil,
+    attributes: Map[String, String] = Map.empty
+) extends MatchSubject
+
+/** Lightweight resource used for profile-to-resource matching. */
+final case class Resource(
+    id: String,
+    tags: List[String] = Nil,
+    attributes: Map[String, String] = Map.empty
+) extends MatchSubject
+
+/** Adapter to allow OptimizationPlan to participate in match results. */
+final case class OptimizationPlanSubject(
+    plan: OptimizationPlan,
+    tags: List[String] = Nil,
+    attributes: Map[String, String] = Map.empty
+) extends MatchSubject {
+  def id: String = plan.request.workloadId
+}
+
+
 // ─────────────────────────────────────────────────────────────────────────────
 // Match result types
 // ─────────────────────────────────────────────────────────────────────────────
@@ -223,7 +247,7 @@ final case class TalentMatchResult(
  */
 final case class WorkloadMatchResult(
     workloadId: String,
-    matchedPlans: List[MatchCandidate[OptimizationPlan]],
+    matchedPlans: List[MatchCandidate[OptimizationPlanSubject]],
     generatedAtMs: Long
 )
 
@@ -483,6 +507,32 @@ final class MatchEngine(
 
 
   // ══════════════════════════════════════════════════════════════════════════
+
+  // ------------------------------------------------------------------
+  // 4b. Profile ? Resource (lightweight matching)
+  // ------------------------------------------------------------------
+
+  def matchProfilesToResources(
+      profiles: Seq[Profile],
+      resources: Seq[Resource],
+      weights: MatchWeights = MatchWeights.default,
+      limit: Int = defaultLimit
+  ): Map[Profile, Seq[Resource]] = {
+
+    profiles.map { profile =>
+      val scored = resources.map { resource =>
+          val (score, reasons) = scoreProfileToResource(profile, resource, weights)
+          MatchCandidate(resource, score, reasons)
+        }
+        .filter(_.score >= minScore)
+        .sortBy(-_.score)
+        .take(limit)
+        .map(_.subject)
+      profile -> scored
+    }.toMap
+  }
+
+
   // 5.  User ↔ User  (talent, skills, persona-based grouping)
   // ══════════════════════════════════════════════════════════════════════════
 
@@ -566,8 +616,13 @@ final class MatchEngine(
   ): List[WorkloadMatchResult] =
     requests.map { req =>
       val plan = optimizationEngine.optimize(req)
+      val subject = OptimizationPlanSubject(
+        plan = plan,
+        tags = plan.request.objectives,
+        attributes = Map("score" -> f"${plan.score}%.2f")
+      )
       val candidate = MatchCandidate(
-        subject = plan,
+        subject = subject,
         score   = plan.score / 100.0,
         reasons = plan.recommendations.take(2).map(_.message)
       )
@@ -813,6 +868,27 @@ final class MatchEngine(
   }
 
   /** Score an asset ↔ component pair. */
+
+  /** Score a profile ? resource pair (lightweight matching). */
+  private def scoreProfileToResource(
+      profile: Profile,
+      resource: Resource,
+      weights: MatchWeights
+  ): (Double, List[String]) = {
+
+    val reasons = mutable.ListBuffer[String]()
+
+    val tagSim = jaccardSimilarity(profile.tags, resource.tags)
+    if (tagSim > 0.2) reasons += f"tag overlap ${tagSim * 100.0}%.0f%%"
+
+    val attrSim = attributeOverlap(profile.attributes, resource.attributes)
+    if (attrSim > 0.1) reasons += "metadata match"
+
+    val raw = tagSim * weights.tagOverlap + attrSim * weights.attributeOverlap
+    (clamp(raw), reasons.toList)
+  }
+
+  /** Score an asset ??? component pair. */
   private def scoreAssetToComponent(
       asset: AssetSubject,
       component: ComponentSubject,
@@ -855,7 +931,7 @@ final class MatchEngine(
       persona: PersonaLabel,
       component: ComponentSubject
   ): (Double, Boolean) = persona match {
-    case Investor | PowerUser if component.riskScore < 40.0 =>
+    case PowerUser if component.riskScore < 40.0 =>
       (1.0, true)   // investors prefer low-risk assets
     case Explorer =>
       (0.8, true)   // explorers engage with diverse component types

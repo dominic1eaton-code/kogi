@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>KOGI — Portfolio Collaboration</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap');
+  :root {
+    --bg-primary: #0a0c10; --bg-secondary: #0f1117; --bg-card: #131820; --bg-card2: #161c26;
+    --border: #1e2535; --border2: #252d3d; --text-primary: #d4dbe8; --text-secondary: #7a8599; --text-muted: #4a5568;
+    --accent-gold: #c8a84b; --accent-gold-dim: #6b5a2a; --accent-teal: #2a9d8f; --accent-teal-dim: #1a4a45;
+    --accent-rose: #c94b6b; --accent-rose-dim: #5a1e2d; --accent-blue: #3b82f6; --accent-blue-dim: #1e3a5f;
+    --accent-green: #4caf7d; --accent-green-dim: #1a3d2a; --accent-purple: #8b5cf6; --accent-orange: #e87c3a;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'IBM Plex Sans', sans-serif; background: var(--bg-primary); color: var(--text-primary); font-size: 11px; display: flex; height: 100vh; overflow: hidden; }
+  .sidebar { width: 168px; background: var(--bg-secondary); border-right: 1px solid var(--border); flex-shrink: 0; }
+  .sidebar-logo { padding: 12px 14px; border-bottom: 1px solid var(--border); }
+  .logo-text { font-family: 'IBM Plex Mono', monospace; font-weight: 600; font-size: 13px; letter-spacing: 0.15em; color: var(--accent-gold); }
+  .sidebar-nav { padding: 8px 0; }
+  .nav-section { padding: 6px 14px 2px; font-size: 9px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.1em; }
+  .nav-item { padding: 5px 14px; display: flex; align-items: center; gap: 7px; color: var(--text-secondary); font-size: 10.5px; border-left: 2px solid transparent; }
+  .nav-item.active { color: var(--accent-gold); border-left-color: var(--accent-gold); background: rgba(200,168,75,0.06); }
+  .nav-dot { width: 5px; height: 5px; border-radius: 50%; background: currentColor; }
+  .main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+  .topbar { height: 44px; border-bottom: 1px solid var(--border); display: flex; align-items: center; padding: 0 18px; gap: 12px; background: var(--bg-secondary); flex-shrink: 0; }
+  .page-title { font-family: 'IBM Plex Mono', monospace; font-size: 12px; font-weight: 500; }
+  .breadcrumb { color: var(--text-muted); font-size: 10px; }
+  .breadcrumb span { color: var(--text-secondary); }
+  .topbar-right { margin-left: auto; display: flex; align-items: center; gap: 8px; }
+  .search-bar { background: var(--bg-card); border: 1px solid var(--border); border-radius: 4px; padding: 4px 10px; font-size: 10px; color: var(--text-secondary); width: 160px; }
+  .btn { padding: 4px 10px; border-radius: 3px; font-size: 10px; font-weight: 500; border: none; font-family: 'IBM Plex Sans', sans-serif; cursor: pointer; }
+  .btn-primary { background: var(--accent-teal); color: #0a0c10; }
+  .btn-ghost { background: transparent; border: 1px solid var(--border2); color: var(--text-secondary); }
+  .avatar-sm { width: 22px; height: 22px; border-radius: 50%; background: var(--accent-teal-dim); display: flex; align-items: center; justify-content: center; font-size: 9px; font-weight: 600; color: var(--accent-teal); }
+  .content { flex: 1; overflow-y: auto; padding: 16px 18px; display: flex; flex-direction: column; gap: 12px; }
+  .stat-row { display: flex; gap: 10px; }
+  .stat-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 4px; padding: 10px 14px; flex: 1; }
+  .stat-label { font-size: 9px; color: var(--text-muted); letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 4px; }
+  .stat-value { font-family: 'IBM Plex Mono', monospace; font-size: 18px; font-weight: 500; line-height: 1; }
+  .stat-value.gold { color: var(--accent-gold); } .stat-value.teal { color: var(--accent-teal); } .stat-value.green { color: var(--accent-green); }
+  .stat-sub { font-size: 9px; color: var(--text-muted); margin-top: 3px; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+  .grid-2 { display: grid; grid-template-columns: 1.6fr 1fr; gap: 10px; }
+  .card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 4px; padding: 12px 14px; }
+  .card-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+  .card-title { font-size: 10px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; }
+  .card-action { font-size: 9px; color: var(--accent-gold); cursor: pointer; }
+  .section-label { font-size: 9px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-muted); font-weight: 600; margin-bottom: 6px; }
+  .collab-card { background: var(--bg-card2); border: 1px solid var(--border2); border-radius: 4px; padding: 10px 12px; margin-bottom: 8px; }
+  .collab-card:last-child { margin-bottom: 0; }
+  .collab-header { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 7px; }
+  .collab-icon { width: 32px; height: 32px; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 13px; flex-shrink: 0; }
+  .collab-title { font-size: 11px; font-weight: 600; margin-bottom: 2px; }
+  .collab-type { font-size: 9px; color: var(--text-muted); }
+  .collab-members { display: flex; gap: -4px; margin-left: auto; }
+  .mini-avatar { width: 18px; height: 18px; border-radius: 50%; border: 1px solid var(--bg-card); display: flex; align-items: center; justify-content: center; font-size: 7px; font-weight: 700; margin-left: -4px; }
+  .mini-avatar:first-child { margin-left: 0; }
+  .collab-stats { display: flex; gap: 14px; }
+  .collab-stat { font-size: 9px; color: var(--text-muted); }
+  .collab-stat span { color: var(--text-primary); font-weight: 500; }
+  .progress-bar { height: 3px; background: var(--border); border-radius: 2px; overflow: hidden; margin-top: 5px; }
+  .progress-fill { height: 100%; border-radius: 2px; }
+  .badge { padding: 1px 6px; border-radius: 2px; font-size: 8.5px; font-weight: 600; }
+  .badge-active { background: var(--accent-teal-dim); color: var(--accent-teal); }
+  .badge-review { background: var(--accent-gold-dim); color: var(--accent-gold); }
+  .badge-plan { background: var(--accent-blue-dim); color: var(--accent-blue); }
+  .collab-actions { display: flex; gap: 5px; margin-top: 7px; }
+  .collab-btn { padding: 3px 8px; border-radius: 2px; font-size: 9px; border: 1px solid var(--border2); color: var(--text-secondary); background: transparent; cursor: pointer; font-family: 'IBM Plex Sans', sans-serif; }
+  .contributor-row { display: flex; align-items: center; gap: 7px; padding: 5px 0; border-bottom: 1px solid var(--border); }
+  .contributor-row:last-child { border-bottom: none; }
+  .c-avatar { width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 8px; font-weight: 700; }
+  .c-name { font-size: 10px; font-weight: 500; flex: 1; }
+  .c-role { font-size: 9px; color: var(--text-muted); }
+  .c-contrib { font-family: 'IBM Plex Mono', monospace; font-size: 9px; color: var(--accent-gold); }
+  .activity-row { display: flex; gap: 8px; padding: 5px 0; border-bottom: 1px solid var(--border); }
+  .activity-row:last-child { border-bottom: none; }
+  .activity-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; margin-top: 3px; }
+  .activity-text { font-size: 10px; color: var(--text-secondary); line-height: 1.4; }
+  .activity-time { font-size: 9px; color: var(--text-muted); margin-top: 1px; }
+  ::-webkit-scrollbar { width: 4px; } ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+  .divider { width: 1px; background: var(--border); height: 16px; margin: 0 4px; }
+  .mono { font-family: 'IBM Plex Mono', monospace; }
+</style>
+</head>
+<body>
+<div class="sidebar">
+  <div class="sidebar-logo"><div class="logo-text">KOGI</div></div>
+  <div class="sidebar-nav">
+    <div class="nav-section">Main</div>
+    <div class="nav-item"><div class="nav-dot"></div>Home</div>
+    <div class="nav-item"><div class="nav-dot"></div>Office</div>
+    <div class="nav-item active"><div class="nav-dot"></div>Community</div>
+    <div class="nav-item"><div class="nav-dot"></div>Marketplace</div>
+    <div class="nav-item"><div class="nav-dot"></div>Exchange</div>
+    <div class="nav-item"><div class="nav-dot"></div>Bank</div>
+    <div class="nav-section">Org</div>
+    <div class="nav-item"><div class="nav-dot"></div>Organizations</div>
+    <div class="nav-item"><div class="nav-dot"></div>Collectives</div>
+    <div class="nav-item"><div class="nav-dot"></div>Cooperatives</div>
+    <div class="nav-item active"><div class="nav-dot"></div>Collaborations</div>
+  </div>
+</div>
+
+<div class="main">
+  <div class="topbar">
+    <div class="page-title">Portfolio Collaborations</div>
+    <div class="breadcrumb">Community <span>/ Pamoja Protocol DAO / Collaborations</span></div>
+    <div class="topbar-right">
+      <input class="search-bar" placeholder="Search collaborations..." />
+      <button class="btn btn-ghost">Filter</button>
+      <button class="btn btn-primary">+ Start Collaboration</button>
+      <div class="divider"></div>
+      <div class="avatar-sm">JC</div>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <div class="stat-row">
+      <div class="stat-card"><div class="stat-label">Active Collabs</div><div class="stat-value teal">24</div><div class="stat-sub">Across 6 programs</div></div>
+      <div class="stat-card"><div class="stat-label">Contributors</div><div class="stat-value gold">68</div><div class="stat-sub">18 orgs represented</div></div>
+      <div class="stat-card"><div class="stat-label">Shared Value</div><div class="stat-value">$284K</div><div class="stat-sub">Active project value</div></div>
+      <div class="stat-card"><div class="stat-label">Portfolios Linked</div><div class="stat-value teal">142</div><div class="stat-sub">Components shared</div></div>
+      <div class="stat-card"><div class="stat-label">Completion Rate</div><div class="stat-value green">87%</div><div class="stat-sub">Last 12 collabs</div></div>
+    </div>
+
+    <div class="grid-2">
+
+      <!-- ACTIVE COLLABORATIONS -->
+      <div class="card" style="grid-row:span 2;">
+        <div class="card-header"><div class="card-title">Active Collaborations</div><div class="card-action">All Collabs →</div></div>
+
+        <div class="collab-card" style="border-color:rgba(42,157,143,0.3);">
+          <div class="collab-header">
+            <div class="collab-icon" style="background:var(--accent-teal-dim);color:var(--accent-teal);">◈</div>
+            <div style="flex:1;">
+              <div class="collab-title">Protocol CLI Tooling v2.0</div>
+              <div class="collab-type">Open Source · Program · Funded by Treasury</div>
+            </div>
+            <div class="collab-members">
+              <div class="mini-avatar" style="background:rgba(200,168,75,0.15);color:var(--accent-gold);">JC</div>
+              <div class="mini-avatar" style="background:rgba(76,175,125,0.12);color:var(--accent-green);">TS</div>
+              <div class="mini-avatar" style="background:rgba(59,130,246,0.12);color:var(--accent-blue);">MN</div>
+              <div class="mini-avatar" style="background:var(--border2);color:var(--text-muted);">+5</div>
+            </div>
+          </div>
+          <div class="collab-stats">
+            <div class="collab-stat"><span>8</span> contributors</div>
+            <div class="collab-stat">Budget <span class="mono">$18,000</span></div>
+            <div class="collab-stat">Due <span>Apr 30</span></div>
+            <span class="badge badge-active">Active</span>
+          </div>
+          <div class="progress-bar"><div class="progress-fill" style="width:58%;background:var(--accent-teal);"></div></div>
+          <div class="collab-actions">
+            <button class="collab-btn">View Portfolio</button>
+            <button class="collab-btn">Rooms</button>
+            <button class="collab-btn">Contribute</button>
+          </div>
+        </div>
+
+        <div class="collab-card" style="border-color:rgba(200,168,75,0.25);">
+          <div class="collab-header">
+            <div class="collab-icon" style="background:var(--accent-gold-dim);color:var(--accent-gold);">⬡</div>
+            <div style="flex:1;">
+              <div class="collab-title">Community Wallet Infrastructure</div>
+              <div class="collab-type">Program · Financial Infrastructure</div>
+            </div>
+            <div class="collab-members">
+              <div class="mini-avatar" style="background:rgba(139,92,246,0.15);color:var(--accent-purple);">AM</div>
+              <div class="mini-avatar" style="background:rgba(42,157,143,0.15);color:var(--accent-teal);">PK</div>
+              <div class="mini-avatar" style="background:var(--border2);color:var(--text-muted);">+4</div>
+            </div>
+          </div>
+          <div class="collab-stats">
+            <div class="collab-stat"><span>6</span> contributors</div>
+            <div class="collab-stat">Budget <span class="mono">$28,000</span></div>
+            <div class="collab-stat">Due <span>Jun 15</span></div>
+            <span class="badge badge-review">Review</span>
+          </div>
+          <div class="progress-bar"><div class="progress-fill" style="width:34%;background:var(--accent-gold);"></div></div>
+          <div class="collab-actions">
+            <button class="collab-btn">View Portfolio</button>
+            <button class="collab-btn">Proposal</button>
+          </div>
+        </div>
+
+        <div class="collab-card">
+          <div class="collab-header">
+            <div class="collab-icon" style="background:var(--accent-blue-dim);color:var(--accent-blue);">◻</div>
+            <div style="flex:1;">
+              <div class="collab-title">Data Infrastructure Layer</div>
+              <div class="collab-type">Project · Distributed Systems</div>
+            </div>
+            <div class="collab-members">
+              <div class="mini-avatar" style="background:rgba(232,124,58,0.15);color:var(--accent-orange);">KW</div>
+              <div class="mini-avatar" style="background:rgba(200,168,75,0.15);color:var(--accent-gold);">JC</div>
+              <div class="mini-avatar" style="background:var(--border2);color:var(--text-muted);">+3</div>
+            </div>
+          </div>
+          <div class="collab-stats">
+            <div class="collab-stat"><span>5</span> contributors</div>
+            <div class="collab-stat">Budget <span class="mono">$12,000</span></div>
+            <span class="badge badge-plan">Planning</span>
+          </div>
+          <div class="progress-bar"><div class="progress-fill" style="width:12%;background:var(--accent-blue);"></div></div>
+          <div class="collab-actions">
+            <button class="collab-btn">View Portfolio</button>
+            <button class="collab-btn">Join</button>
+          </div>
+        </div>
+
+        <div class="collab-card">
+          <div class="collab-header">
+            <div class="collab-icon" style="background:rgba(139,92,246,0.15);color:var(--accent-purple);">◆</div>
+            <div style="flex:1;">
+              <div class="collab-title">Governance Documentation Set</div>
+              <div class="collab-type">Artifact · Guidebook · Public</div>
+            </div>
+            <div class="collab-members">
+              <div class="mini-avatar" style="background:rgba(42,157,143,0.15);color:var(--accent-teal);">PK</div>
+              <div class="mini-avatar" style="background:rgba(139,92,246,0.15);color:var(--accent-purple);">AM</div>
+            </div>
+          </div>
+          <div class="collab-stats">
+            <div class="collab-stat"><span>2</span> authors</div>
+            <div class="collab-stat">Status <span>Published</span></div>
+            <span class="badge" style="background:rgba(76,175,125,0.15);color:var(--accent-green);">Done</span>
+          </div>
+          <div class="progress-bar"><div class="progress-fill" style="width:100%;background:var(--accent-green);"></div></div>
+          <div class="collab-actions">
+            <button class="collab-btn">View Docs</button>
+            <button class="collab-btn">Fork</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- CONTRIBUTORS + ACTIVITY -->
+      <div style="display:flex;flex-direction:column;gap:10px;">
+        <div class="card">
+          <div class="card-header"><div class="card-title">Top Contributors</div><div class="card-action">All →</div></div>
+          <div class="contributor-row">
+            <div class="c-avatar" style="background:rgba(200,168,75,0.15);color:var(--accent-gold);">JC</div>
+            <div style="flex:1;"><div class="c-name">Jordan Chen</div><div class="c-role">Protocol CLI · Data Infrastructure</div></div>
+            <div class="c-contrib">142 contributions</div>
+          </div>
+          <div class="contributor-row">
+            <div class="c-avatar" style="background:rgba(232,124,58,0.15);color:var(--accent-orange);">KW</div>
+            <div style="flex:1;"><div class="c-name">Kwame W.</div><div class="c-role">Data Infrastructure · CLI</div></div>
+            <div class="c-contrib">98 contributions</div>
+          </div>
+          <div class="contributor-row">
+            <div class="c-avatar" style="background:rgba(42,157,143,0.15);color:var(--accent-teal);">PK</div>
+            <div style="flex:1;"><div class="c-name">Priya K.</div><div class="c-role">Governance Docs · Wallet</div></div>
+            <div class="c-contrib">84 contributions</div>
+          </div>
+          <div class="contributor-row">
+            <div class="c-avatar" style="background:rgba(139,92,246,0.15);color:var(--accent-purple);">AM</div>
+            <div style="flex:1;"><div class="c-name">Amara M.</div><div class="c-role">Governance Docs · Strategy</div></div>
+            <div class="c-contrib">76 contributions</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header"><div class="card-title">Recent Activity</div><div class="card-action">Feed →</div></div>
+          <div class="activity-row">
+            <div class="activity-dot" style="background:var(--accent-teal)"></div>
+            <div><div class="activity-text"><span style="color:var(--text-primary)">CLI v2</span> PR merged — auth module complete</div><div class="activity-time">2h ago</div></div>
+          </div>
+          <div class="activity-row">
+            <div class="activity-dot" style="background:var(--accent-gold)"></div>
+            <div><div class="activity-text"><span style="color:var(--text-primary)">Wallet</span> spec review — Amara commented 14 points</div><div class="activity-time">4h ago</div></div>
+          </div>
+          <div class="activity-row">
+            <div class="activity-dot" style="background:var(--accent-green)"></div>
+            <div><div class="activity-text">Governance Docs v1.0 published to community</div><div class="activity-time">Yesterday</div></div>
+          </div>
+          <div class="activity-row">
+            <div class="activity-dot" style="background:var(--accent-blue)"></div>
+            <div><div class="activity-text"><span style="color:var(--text-primary)">Kwame W.</span> joined Data Infrastructure collab</div><div class="activity-time">Mar 11</div></div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+</div>
+</body>
+</html>

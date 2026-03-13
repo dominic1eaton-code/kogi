@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KOGI · Design Guild Space</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap');
+  *{margin:0;padding:0;box-sizing:border-box;}
+  :root{
+    --bg:#080b10;--bg2:#0d1117;--bg3:#111820;--bg4:#161e28;
+    --border:#1e2d3d;--border2:#243344;
+    --teal:#00c9a7;--teal2:#009e84;--teal-dim:#00c9a720;
+    --amber:#f5a623;--amber-dim:#f5a62318;
+    --purple:#8b5cf6;--purple-dim:#8b5cf615;
+    --pink:#e83e8c;--pink-dim:#e83e8c18;
+    --green:#22c55e;--red:#ef4444;--blue:#3b82f6;--blue-dim:#3b82f615;
+    --text:#e2e8f0;--text2:#94a3b8;--text3:#4a6280;
+    --mono:'IBM Plex Mono',monospace;--sans:'IBM Plex Sans',sans-serif;
+  }
+  body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:12px;display:flex;height:100vh;overflow:hidden;}
+  .sidebar{width:168px;background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0;}
+  .logo{padding:12px 14px;border-bottom:1px solid var(--border);font-family:var(--mono);font-size:13px;font-weight:600;letter-spacing:3px;color:var(--teal);}
+  .nav-section{padding:8px 0;}
+  .nav-label{padding:4px 14px 2px;font-size:9px;letter-spacing:2px;color:var(--text3);text-transform:uppercase;}
+  .nav-item{padding:5px 14px;color:var(--text2);cursor:pointer;font-size:11px;display:flex;align-items:center;gap:6px;border-left:2px solid transparent;}
+  .nav-item:hover{color:var(--text);background:var(--bg3);}
+  .nav-item.active{color:var(--teal);border-left-color:var(--teal);background:var(--teal-dim);}
+  .nav-item .dot{width:5px;height:5px;border-radius:50%;background:currentColor;opacity:.6;}
+  .nav-divider{height:1px;background:var(--border);margin:6px 0;}
+  .main{flex:1;display:flex;overflow:hidden;}
+  .btn{padding:4px 10px;border-radius:3px;font-family:var(--mono);font-size:10px;cursor:pointer;border:1px solid var(--border2);background:var(--bg3);color:var(--text2);}
+  .btn.primary{background:var(--teal2);border-color:var(--teal);color:#000;font-weight:600;}
+
+  /* SPACE SIDEBAR (rooms) */
+  .space-sidebar{width:200px;background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden;flex-shrink:0;}
+  .space-header{padding:10px 12px;border-bottom:1px solid var(--border);}
+  .space-name{font-size:13px;font-weight:600;color:var(--text);display:flex;align-items:center;gap:6px;margin-bottom:2px;}
+  .space-icon-sm{font-size:14px;}
+  .space-type{font-size:9px;color:var(--text3);font-family:var(--mono);}
+  .space-stats-mini{display:flex;gap:8px;margin-top:4px;}
+  .ssm{font-size:9px;color:var(--text3);}
+  .ssm span{color:var(--teal);font-family:var(--mono);}
+  .rooms-section{flex:1;overflow-y:auto;padding:8px 0;}
+  .room-section-label{padding:4px 12px 2px;font-size:9px;letter-spacing:1.5px;color:var(--text3);text-transform:uppercase;}
+  .room-item{display:flex;align-items:center;gap:6px;padding:4px 12px;cursor:pointer;color:var(--text3);font-size:10px;border-left:2px solid transparent;}
+  .room-item:hover{color:var(--text2);background:var(--bg3);}
+  .room-item.active{color:var(--teal);background:var(--teal-dim);border-left-color:var(--teal);}
+  .room-item.unread{color:var(--text2);}
+  .room-prefix{font-family:var(--mono);font-size:10px;color:var(--text3);}
+  .room-unread-dot{width:6px;height:6px;border-radius:50%;background:var(--teal);margin-left:auto;flex-shrink:0;}
+  .room-unread-count{margin-left:auto;background:var(--teal);color:#000;font-size:7px;font-family:var(--mono);padding:1px 4px;border-radius:6px;}
+  .online-members{padding:8px 12px;border-top:1px solid var(--border);}
+  .om-label{font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:5px;}
+  .om-list{display:flex;flex-direction:column;gap:4px;}
+  .om-member{display:flex;align-items:center;gap:5px;font-size:10px;color:var(--text2);}
+  .om-avatar{width:16px;height:16px;border-radius:50%;background:var(--bg4);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:7px;font-weight:700;}
+  .om-status{width:6px;height:6px;border-radius:50%;flex-shrink:0;}
+  .om-status.online{background:var(--green);}
+  .om-status.away{background:var(--amber);}
+
+  /* SPACE CONTENT */
+  .space-content{flex:1;display:flex;flex-direction:column;overflow:hidden;}
+  .space-topbar{padding:8px 14px;background:var(--bg2);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px;}
+  .space-topbar-title{font-family:var(--mono);font-size:12px;font-weight:500;color:var(--text);display:flex;align-items:center;gap:5px;}
+  .space-topbar-actions{margin-left:auto;display:flex;gap:5px;}
+  .space-nav-tabs{display:flex;border-bottom:1px solid var(--border);background:var(--bg2);padding:0 14px;}
+  .snt{padding:7px 12px;font-size:10px;font-family:var(--mono);color:var(--text3);cursor:pointer;border-bottom:2px solid transparent;}
+  .snt.active{color:var(--teal);border-bottom-color:var(--teal);}
+
+  /* SPACE FEED */
+  .space-feed{flex:1;overflow-y:auto;padding:12px 14px;}
+  .pinned-notice{background:var(--amber-dim);border:1px solid var(--amber);border-radius:3px;padding:6px 10px;margin-bottom:10px;display:flex;align-items:center;gap:6px;font-size:10px;color:var(--amber);}
+  .post{background:var(--bg2);border:1px solid var(--border);border-radius:4px;margin-bottom:10px;}
+  .post:hover{border-color:var(--border2);}
+  .post-header{display:flex;align-items:flex-start;gap:10px;padding:10px 12px;}
+  .post-avatar{width:28px;height:28px;border-radius:50%;background:var(--bg4);border:1px solid var(--border2);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0;}
+  .post-meta{flex:1;}
+  .post-author{font-size:11px;font-weight:600;color:var(--text);display:flex;align-items:center;gap:5px;}
+  .post-role{font-size:9px;color:var(--text3);}
+  .post-time{font-size:9px;color:var(--text3);font-family:var(--mono);}
+  .post-badge{font-size:8px;font-family:var(--mono);padding:1px 5px;border-radius:2px;}
+  .post-badge.pin{background:var(--amber-dim);color:var(--amber);}
+  .post-badge.showcase{background:var(--teal-dim);color:var(--teal);}
+  .post-badge.event{background:var(--purple-dim);color:var(--purple);}
+  .post-body{padding:0 12px 10px;font-size:11px;color:var(--text2);line-height:1.6;}
+  .post-body .hashtag{color:var(--teal);}
+  .post-body .mention{color:var(--purple);}
+  .embed-card{background:var(--bg3);border:1px solid var(--border);border-radius:3px;padding:8px 10px;display:flex;align-items:center;gap:8px;margin-top:6px;cursor:pointer;}
+  .embed-card:hover{border-color:var(--teal2);}
+  .embed-icon{width:28px;height:28px;border-radius:3px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;}
+  .embed-title{font-size:10px;font-weight:500;color:var(--text);}
+  .embed-meta{font-size:9px;color:var(--text3);}
+  .reaction-bar{display:flex;align-items:center;gap:10px;padding:6px 12px;border-top:1px solid var(--border);background:var(--bg3);}
+  .reaction{display:flex;align-items:center;gap:4px;font-size:10px;color:var(--text3);cursor:pointer;padding:1px 4px;border-radius:3px;}
+  .reaction:hover{color:var(--text2);}
+  .reaction.active{color:var(--teal);}
+
+  /* SPACE MEMBERS PANEL */
+  .members-panel{width:220px;border-left:1px solid var(--border);overflow-y:auto;background:var(--bg2);flex-shrink:0;}
+  .mp-section{padding:8px 12px;border-bottom:1px solid var(--border);}
+  .mp-title{font-size:9px;font-family:var(--mono);text-transform:uppercase;letter-spacing:1.5px;color:var(--text3);margin-bottom:7px;}
+  .member-row{display:flex;align-items:center;gap:7px;padding:4px 0;cursor:pointer;}
+  .member-row:hover .mr-name{color:var(--teal);}
+  .mr-avatar{width:22px;height:22px;border-radius:50%;background:var(--bg4);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:700;flex-shrink:0;position:relative;}
+  .mr-online{position:absolute;bottom:-1px;right:-1px;width:6px;height:6px;border-radius:50%;border:1px solid var(--bg2);}
+  .mr-online.on{background:var(--green);}
+  .mr-online.off{background:var(--text3);}
+  .mr-name{font-size:10px;color:var(--text2);flex:1;}
+  .mr-role{font-size:8px;font-family:var(--mono);padding:1px 4px;border-radius:2px;}
+  .mr-role.owner{background:var(--gold-dim);color:#d4a017;}
+  .mr-role.admin{background:var(--purple-dim);color:var(--purple);}
+  .mr-role.mod{background:var(--teal-dim);color:var(--teal);}
+
+  /* SPACE INFO CARD */
+  .space-info-card{padding:10px 12px;border-bottom:1px solid var(--border);}
+  .si-label{font-size:9px;font-family:var(--mono);text-transform:uppercase;letter-spacing:1.5px;color:var(--text3);margin-bottom:6px;}
+  .si-stat{display:flex;justify-content:space-between;padding:3px 0;font-size:9px;}
+  .si-key{color:var(--text3);}
+  .si-val{color:var(--text2);font-family:var(--mono);}
+  .si-val.teal{color:var(--teal);}
+
+  ::-webkit-scrollbar{width:4px;}
+  ::-webkit-scrollbar-track{background:var(--bg);}
+  ::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px;}
+</style>
+</head>
+<body>
+
+<div class="sidebar">
+  <div class="logo">KOGI</div>
+  <div class="nav-section">
+    <div class="nav-label">Community</div>
+    <div class="nav-item"><span class="dot"></span>Feed</div>
+    <div class="nav-item active"><span class="dot"></span>Spaces</div>
+    <div class="nav-item"><span class="dot"></span>Rooms</div>
+    <div class="nav-item"><span class="dot"></span>Messages</div>
+    <div class="nav-item"><span class="dot"></span>Events</div>
+    <div class="nav-item"><span class="dot"></span>Showcase</div>
+  </div>
+  <div class="nav-divider"></div>
+  <div class="nav-section">
+    <div class="nav-label">My Spaces</div>
+    <div class="nav-item active"><div class="dot" style="background:var(--teal)"></div>Design Guild</div>
+    <div class="nav-item"><div class="dot" style="background:var(--purple)"></div>Alpha Platform</div>
+    <div class="nav-item"><div class="dot" style="background:var(--amber)"></div>Freelance Devs</div>
+    <div class="nav-item"><div class="dot" style="background:var(--pink)"></div>Pamoja Network</div>
+  </div>
+</div>
+
+<div class="main">
+  <!-- SPACE SIDEBAR - rooms list -->
+  <div class="space-sidebar">
+    <div class="space-header">
+      <div class="space-name"><span class="space-icon-sm">🎨</span> Design Guild</div>
+      <div class="space-type">GUILD · Public · @design-guild</div>
+      <div class="space-stats-mini">
+        <div class="ssm">Members <span>420</span></div>
+        <div class="ssm">Online <span>28</span></div>
+      </div>
+    </div>
+    <div class="rooms-section">
+      <div class="room-section-label">General</div>
+      <div class="room-item active"><span class="room-prefix">#</span>general<span class="room-unread-count">3</span></div>
+      <div class="room-item unread"><span class="room-prefix">#</span>announcements<div class="room-unread-dot"></div></div>
+      <div class="room-item"><span class="room-prefix">#</span>introductions</div>
+      <div class="room-item"><span class="room-prefix">#</span>random</div>
+      <div class="room-section-label" style="margin-top:6px;">Design Work</div>
+      <div class="room-item unread"><span class="room-prefix">#</span>showcase<div class="room-unread-dot"></div></div>
+      <div class="room-item"><span class="room-prefix">#</span>critique-friday</div>
+      <div class="room-item"><span class="room-prefix">#</span>brand-identity</div>
+      <div class="room-item"><span class="room-prefix">#</span>motion-design</div>
+      <div class="room-item"><span class="room-prefix">#</span>design-systems</div>
+      <div class="room-item"><span class="room-prefix">#</span>tools-resources</div>
+      <div class="room-section-label" style="margin-top:6px;">Collaboration</div>
+      <div class="room-item unread"><span class="room-prefix">#</span>gigs-opps<span class="room-unread-count">5</span></div>
+      <div class="room-item"><span class="room-prefix">#</span>rfp-board</div>
+      <div class="room-item"><span class="room-prefix">#</span>collab-wanted</div>
+      <div class="room-section-label" style="margin-top:6px;">Events</div>
+      <div class="room-item"><span class="room-prefix">📅</span>critique-mar-14</div>
+      <div class="room-item"><span class="room-prefix">📅</span>workshop-mar-21</div>
+    </div>
+    <div class="online-members">
+      <div class="om-label">Online Now — 28</div>
+      <div class="om-list">
+        <div class="om-member"><div class="om-avatar" style="color:var(--teal)">JC</div><div class="om-status online"></div>Jordan Chen</div>
+        <div class="om-member"><div class="om-avatar" style="color:var(--amber)">MB</div><div class="om-status online"></div>Marcus B.</div>
+        <div class="om-member"><div class="om-avatar" style="color:var(--pink)">LR</div><div class="om-status online"></div>Lena Rivera</div>
+        <div class="om-member"><div class="om-avatar" style="color:var(--purple)">DK</div><div class="om-status away"></div>Dev Kim</div>
+        <div class="om-member" style="color:var(--text3);font-size:9px;padding-left:20px;">+24 more online</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SPACE CONTENT -->
+  <div class="space-content">
+    <div class="space-topbar">
+      <div class="space-topbar-title"># general <span style="color:var(--text3);font-size:10px;">— Design Guild</span></div>
+      <div style="flex:1;max-width:220px;background:var(--bg3);border:1px solid var(--border);border-radius:3px;padding:3px 8px;font-family:var(--mono);font-size:10px;color:var(--text3);margin-left:10px;">Search this room...</div>
+      <div class="space-topbar-actions">
+        <button class="btn">📌 Pins</button>
+        <button class="btn">👥 Members</button>
+        <button class="btn primary">+ Invite</button>
+      </div>
+    </div>
+    <div class="space-nav-tabs">
+      <div class="snt active">Feed</div>
+      <div class="snt">Showcase</div>
+      <div class="snt">Events</div>
+      <div class="snt">Members (420)</div>
+      <div class="snt">Resources</div>
+      <div class="snt">Settings</div>
+    </div>
+
+    <div class="space-feed">
+      <!-- PINNED -->
+      <div class="pinned-notice">📌 Pinned · Critique Friday sessions are every week at 3PM EST in #critique-friday</div>
+
+      <!-- POST 1 -->
+      <div class="post">
+        <div class="post-header">
+          <div class="post-avatar" style="color:var(--purple)">LR</div>
+          <div class="post-meta">
+            <div class="post-author">Lena Rivera <span class="post-badge showcase">SHOWCASE</span></div>
+            <div class="post-role">UI/UX Designer · Member</div>
+          </div>
+          <div class="post-time">1h ago</div>
+        </div>
+        <div class="post-body">
+          Just dropped a full token-based design system for fintech dashboards — 840 components, 4 semantic color modes, and full Storybook integration. Took 6 months. Now available on the Marketplace. Would love critique from the guild! <span class="hashtag">#DesignSystem</span> <span class="hashtag">#Fintech</span>
+          <div class="embed-card">
+            <div class="embed-icon" style="background:var(--teal-dim);color:var(--teal)">DS</div>
+            <div><div class="embed-title">Fintech Design System — v1.0</div><div class="embed-meta">Asset · Marketplace · $4,800 · 98 followers</div></div>
+          </div>
+        </div>
+        <div class="reaction-bar">
+          <div class="reaction active">👏 38</div>
+          <div class="reaction">💡 24</div>
+          <div class="reaction">🔖 17</div>
+          <div class="reaction">💬 9 replies</div>
+          <div class="reaction">↗ Share</div>
+        </div>
+      </div>
+
+      <!-- POST 2 -->
+      <div class="post">
+        <div class="post-header">
+          <div class="post-avatar" style="color:var(--teal)">JC</div>
+          <div class="post-meta">
+            <div class="post-author">Jordan Chen <span class="post-badge pin">📌 PINNED</span></div>
+            <div class="post-role">Brand Designer · Guild Admin</div>
+          </div>
+          <div class="post-time">3h ago</div>
+        </div>
+        <div class="post-body">
+          Reminder: <strong>March Critique Friday</strong> is this week — Mar 14 at 3PM EST. Submit your work in the <span class="mention">#critique-friday</span> room before Wednesday. This month's theme: brand systems for platform products. <span class="hashtag">#CritiqueFriday</span>
+        </div>
+        <div class="reaction-bar">
+          <div class="reaction">👍 42</div>
+          <div class="reaction">💬 6 replies</div>
+          <div class="reaction">↗ Share</div>
+        </div>
+      </div>
+
+      <!-- POST 3 -->
+      <div class="post">
+        <div class="post-header">
+          <div class="post-avatar" style="color:var(--amber)">MB</div>
+          <div class="post-meta">
+            <div class="post-author">Marcus Brown</div>
+            <div class="post-role">Strategist · Member</div>
+          </div>
+          <div class="post-time">5h ago</div>
+        </div>
+        <div class="post-body">
+          Anyone have experience designing for cooperative governance UIs? Working on a dashboard for a worker coop that needs to surface proposals, voting, and treasury state. Happy to share early sketches for feedback here if people are interested.
+        </div>
+        <div class="reaction-bar">
+          <div class="reaction">💡 14</div>
+          <div class="reaction">💬 11 replies</div>
+          <div class="reaction">↗ Share</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- MEMBERS PANEL -->
+  <div class="members-panel">
+    <div class="space-info-card">
+      <div class="si-label">Space Info</div>
+      <div class="si-stat"><div class="si-key">Members</div><div class="si-val">420</div></div>
+      <div class="si-stat"><div class="si-key">Online now</div><div class="si-val teal">28</div></div>
+      <div class="si-stat"><div class="si-key">Posts this week</div><div class="si-val">84</div></div>
+      <div class="si-stat"><div class="si-key">Active rooms</div><div class="si-val">12</div></div>
+      <div class="si-stat"><div class="si-key">Your role</div><div class="si-val teal">Member</div></div>
+      <div class="si-stat"><div class="si-key">Joined</div><div class="si-val">Jan 2026</div></div>
+    </div>
+    <div class="mp-section">
+      <div class="mp-title">Admins & Mods</div>
+      <div class="member-row">
+        <div class="mr-avatar" style="color:var(--teal)">JC<div class="mr-online on"></div></div>
+        <div class="mr-name">Jordan Chen</div>
+        <span class="mr-role admin">Admin</span>
+      </div>
+      <div class="member-row">
+        <div class="mr-avatar" style="color:var(--purple)">AK<div class="mr-online on"></div></div>
+        <div class="mr-name">Asha Kim</div>
+        <span class="mr-role mod">Mod</span>
+      </div>
+      <div class="member-row">
+        <div class="mr-avatar" style="color:var(--amber)">RP<div class="mr-online off"></div></div>
+        <div class="mr-name">Rafael P.</div>
+        <span class="mr-role mod">Mod</span>
+      </div>
+    </div>
+    <div class="mp-section">
+      <div class="mp-title">Online Members</div>
+      <div class="member-row">
+        <div class="mr-avatar" style="color:var(--pink)">LR<div class="mr-online on"></div></div>
+        <div class="mr-name">Lena Rivera</div>
+      </div>
+      <div class="member-row">
+        <div class="mr-avatar" style="color:var(--amber)">MB<div class="mr-online on"></div></div>
+        <div class="mr-name">Marcus Brown</div>
+      </div>
+      <div class="member-row">
+        <div class="mr-avatar" style="color:var(--blue)">DK<div class="mr-online on"></div></div>
+        <div class="mr-name">Dev Kim</div>
+      </div>
+      <div class="member-row">
+        <div class="mr-avatar" style="color:var(--green)">NJ<div class="mr-online on"></div></div>
+        <div class="mr-name">Nadia J.</div>
+      </div>
+      <div style="padding:4px 0;font-size:9px;color:var(--text3);">+24 more online</div>
+    </div>
+    <div class="mp-section">
+      <div class="mp-title">Recent Showcase</div>
+      <div class="embed-card" style="background:var(--bg3);border:1px solid var(--border);border-radius:3px;padding:6px 8px;margin-bottom:5px;cursor:pointer;">
+        <div class="embed-icon" style="background:var(--teal-dim);color:var(--teal);width:22px;height:22px;font-size:9px;border-radius:2px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">DS</div>
+        <div style="margin-left:6px;"><div style="font-size:9px;color:var(--text2);">Fintech Design System</div><div style="font-size:8px;color:var(--text3);">Lena R. · 2h ago</div></div>
+      </div>
+      <div class="embed-card" style="background:var(--bg3);border:1px solid var(--border);border-radius:3px;padding:6px 8px;margin-bottom:5px;cursor:pointer;">
+        <div class="embed-icon" style="background:var(--amber-dim);color:var(--amber);width:22px;height:22px;font-size:9px;border-radius:2px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">BI</div>
+        <div style="margin-left:6px;"><div style="font-size:9px;color:var(--text2);">Brand Identity System v2</div><div style="font-size:8px;color:var(--text3);">Jordan C. · 1d ago</div></div>
+      </div>
+    </div>
+  </div>
+
+</div>
+</body>
+</html>
