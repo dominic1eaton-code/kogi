@@ -437,6 +437,31 @@ impl WorkspaceSystem {
             ],
             schedules: self.schedules.clone(),
             boards: self.boards.clone(),
+            domains: vec![
+                "personal_work".to_string(),
+                "operations".to_string(),
+                "tactics".to_string(),
+                "strategy".to_string(),
+                "governance".to_string(),
+            ],
+            user_stories: self
+                .stories
+                .iter()
+                .map(|x| format!("{} ({})", x.title, x.points))
+                .collect(),
+            work_packages: vec![
+                "Kernel isolation instrumentation".to_string(),
+                "Office dashboard feed aggregation".to_string(),
+            ],
+            toolchains: vec![
+                "build-chain".to_string(),
+                "release-chain".to_string(),
+                "observability-chain".to_string(),
+            ],
+            tool_links: vec![
+                "https://jira.example.local".to_string(),
+                "https://github.example.local".to_string(),
+            ],
             generated_at: Utc::now(),
         }
     }

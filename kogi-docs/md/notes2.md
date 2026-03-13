@@ -396,3 +396,100 @@ postgresql ~ remote storage
 sqlite3 ~ local storage
 
 kafka+redis ~ cache storage
+
+---
+
+Tool Management System
+
+users can have workflows that utilize a variety of tools across a variety of platforms, all handles byh the Tool Management System
+
+tool - some utility used to help a user accomplish and reach some outcome+objective+goal+desire
+toolkit - an unordered collection, grouping of tools, used to accomplish some task + reach some outcome. can be prepackaged templates or custom defined/assembled
+toolchain - an ordered, pipeline sequence/set of connected tools, used to accomplish some task + reach some outcome
+toolprovider - provider + provider interface/API/sdk of a given tool
+toolset - a general, complete template set/group of associated toolkits + toolchains + ungrouped tools that are all associated/related/connected/linked with one another, and live in a toolbox. These are templated tool orchstestrations+workflows+task automations, and their associated toolchains, toolkits, and other tools that are related to the toolset
+toolbox - the core space where tools exist/live
+toolassembly - brief+description+components/parts list+blueprint+design of a tool
+tooldata - low level data of a tool
+toolinfo - high level info of a tool
+toolmetadata- meta information about a tool, unique id, names, tokens, provider info, version control info
+
+The ToolSystem has an orchestrator, workflows and tasks, which form a ToolAutomationSystem, where users can assemble toolchains, toolkits, toolsets and have automated workfows for when+how a tool (e.g. tool X) can interact+connect with another tool (e.g. tool Y). A tool orchestration is composed of tool workflows, and tool workflows contain a series of automated executable connected/linked/sequeneced tasks
+
+portfolios, portfoliocomponents, portfolioitems, portfoliocontainers can have have toolboxes, where toolboxes contain prepackaged or customed created/defined toolsets (that users can create/assemble to their liking/preferences). toolsets are composed of  toolkits (Also configurable), toolchains, and/or ungrouped tools. Tools have a provider (root is the provider, if the tool comes from and is created in/by the kogi-platform itself and not a 3rd party software/platform/affiliate). An "integration" (toolintegration) is a tool with an associated provider, where a tool+provider can integrate into the kogi-platform with with platform elements (e.g. portfolios, portfoliocomponents, portfolioitems, portfoliocontainers, timelines, schedules, AI assistants, etc...)
+
+Tools have data/metadata such as versions+version-control, unique ids, tags, labels, tool categories, tool types, tool classes, tool names, tool provider+provider info/data/metadata, all of which is part of the tool's assembly, toolassembly.
+
+All tools have an associated toolassembly, describing the tool and its creation/assembly, also containing tooldata, toolmetadata, and toolinfo
+
+
+example:
+
+A code management tool, called CMT, which can have providers such as gitlab or github, where, where CMT once connected with gitlab, forms an integration which can be used in various places in the kogi-platform. The CMT tool can be added to a "software development toolbox" and be added to a "devops tools" toolset in that toolbox and then be part of a "code management" toolkit within that toolset, and be added as a tooling step in a "software build+delivery" toolchain, where the CMT tool provides the CICD and remote build step in an automated software delivery pipeline, realized through a "CICD manager" toolorchestration, which has different "software X|Y|Z builds" toolworkflows, where the workflows use the "software build+delivery" toolchain to accomplish different tooltasks.
+
+
+TMS Dashboard Overview — system-wide snapshot: active tools, providers, integrations, recent activity, toolchains, and orchestration status
+
+Tool Registry Browser — searchable/filterable grid of all tools with category, class, and provider facets
+
+Tool Registration — Assembly Step — the 5-step wizard at the assembly data/info stage with live preview
+
+Provider Linking — provider selection grid, capability profile details, auth method picker, and bidirectional link confirmation
+
+Toolchain Builder — visual pipeline editor with drag-and-drop steps, per-step config panel, input/output mapping, and validation
+
+Toolbox Assembly — hierarchical container view showing toolsets → kits → chains → tools with attachment management
+
+Integration Setup — integration lifecycle, target elements, credential/scope config, and event activity feed
+
+Orchestration Manager — orchestration list, workflow cards with live task status dots, and run history table
+
+Live Workflow Execution — real-time task progress with log streaming, input/output panels, retry policy, and timing sidebar
+
+Toolset Template Browser — marketplace-style grid with preview panel and install/fork actions
+
+Tool Version History — timeline of semver bumps with impact analysis and bump form
+
+Provider Management — provider list, capability profiles table, bidirectional link visualization, tool coverage bars
+
+User Portfolio + Toolboxes — user-facing view showing portfolio items with their attached toolboxes and active workflows inline
+
+
+---
+
+kogi - portfolio domain
+ume - orgnanization domain
+qala - solution domain
+sambara - intelligence domain
+oru - simulation domain
+nandi - mobility domain
+imewe - manufacturing domain
+osyse - environment domain
+
+---
+
+solution
+solution model
+    - blueprint
+    - design
+    - prototype
+solution testbed
+    - tests
+solution factory
+solution vendor
+solution orchestration -> workflow -> task
+solution components|parts
+    - part number
+    - part vendor
+    - part ID
+    - part name
+    - part material
+    - part design|blueprint|
+solution data
+    - solution metadata
+        - unique id
+        - name
+        - version control
+
+        
+

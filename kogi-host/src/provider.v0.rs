@@ -1,108 +1,5 @@
-// =============================================================================
-//  provider.rs — Kogi OS · Provider System  v1.1
-//  Independent Worker Operating System
-//
-//  v1.1 — Tool Management System integration
-//    · ProviderRecord now carries an optional `tms_tool_provider_id` — the UUID
-//      of the corresponding ToolProvider in the ToolManagementSystem.
-//    · ProviderRecord also carries `tool_profiles: Vec<ProviderToolProfile>`
-//      which declares what tool categories/types the provider supports.
-//    · ProviderToolLink records the explicit binding between a ProviderRecord
-//      and a TMS ToolProvider (by UUID), including auth method and scopes.
-//    · ProviderSystem gains `link_tool_provider`, `tool_profiles_for`, and
-//      `providers_by_tool_category` helpers.
-//
-//  See tool_management_system.rs for the ToolProvider / ToolCategory / ToolType
-//  definitions that are referenced here.
-// =============================================================================
-
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
-
-// =============================================================================
-// §TMS — TOOL MANAGEMENT SYSTEM BRIDGE TYPES
-// =============================================================================
-
-/// Opaque reference to a ToolProvider UUID in the ToolManagementSystem.
-/// Resolved at runtime via ToolManagementSystem::get_provider(id).
-pub type TmsToolProviderId = String;
-
-/// Declares what tool category/type a provider supports within the TMS.
-/// Stored as plain strings to avoid a hard dependency on TMS enums;
-/// values MUST match the `Debug` representations of `ToolCategory` /
-/// `ToolType` / `ToolClass` in tool_management_system.rs.
-#[derive(Clone, Debug, Serialize, Deserialize)]
-pub struct ProviderToolProfile {
-    pub id: String,
-    pub provider_id: String,
-    /// Corresponds to `ToolCategory` variant name (e.g. "Development", "DevOps")
-    pub tool_category: String,
-    /// Corresponds to `ToolType` variant name (e.g. "CodeManagement", "TestRunner")
-    pub tool_type: String,
-    /// Corresponds to `ToolClass` variant name (e.g. "Connector", "Source", "Trigger")
-    pub tool_class: String,
-    /// Human-readable description of the tool capability this provider offers
-    pub capability_description: String,
-    /// Supported authentication methods for this tool type (e.g. "oauth2", "api_key")
-    pub auth_methods: Vec<String>,
-    /// API base URL for this tool capability
-    pub api_base_url: Option<String>,
-    /// Scopes / permissions required
-    pub required_scopes: Vec<String>,
-    pub status: String,
-    pub created_at: String,
-    pub updated_at: String,
-}
-
-/// Explicit binding record between a ProviderRecord and a TMS ToolProvider.
-/// Created when a provider's tool capability is registered in the TMS.
-#[derive(Clone, Debug, Serialize, Deserialize)]
-pub struct ProviderToolLink {
-    pub id: String,
-    pub provider_record_id: String,
-    /// UUID (as String) of the ToolProvider in ToolManagementSystem
-    pub tms_tool_provider_id: TmsToolProviderId,
-    /// The tool category this link covers (mirrors ProviderToolProfile.tool_category)
-    pub tool_category: String,
-    pub auth_method: String,
-    pub scopes: Vec<String>,
-    pub status: String,
-    pub linked_at: String,
-    pub updated_at: String,
-}
-
-/// Input for creating a ProviderToolProfile.
-#[derive(Clone, Debug, Serialize, Deserialize)]
-pub struct NewProviderToolProfile {
-    pub provider_id: String,
-    pub tool_category: String,
-    pub tool_type: String,
-    pub tool_class: String,
-    pub capability_description: String,
-    #[serde(default)]
-    pub auth_methods: Vec<String>,
-    #[serde(default)]
-    pub api_base_url: Option<String>,
-    #[serde(default)]
-    pub required_scopes: Vec<String>,
-    #[serde(default)]
-    pub status: Option<String>,
-}
-
-/// Input for linking a ProviderRecord to a TMS ToolProvider.
-#[derive(Clone, Debug, Serialize, Deserialize)]
-pub struct NewProviderToolLink {
-    pub provider_record_id: String,
-    pub tms_tool_provider_id: TmsToolProviderId,
-    pub tool_category: String,
-    #[serde(default)]
-    pub auth_method: Option<String>,
-    #[serde(default)]
-    pub scopes: Vec<String>,
-    #[serde(default)]
-    pub status: Option<String>,
-}
-
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct ProviderPlatform {
@@ -209,17 +106,6 @@ pub struct ProviderRecord {
     pub data_assets: Vec<ProviderDataAsset>,
     pub created_at: String,
     pub updated_at: String,
-
-    // ── Tool Management System integration ────────────────────────────────
-    /// UUID (as String) of the corresponding ToolProvider in the TMS.
-    /// None until the provider has been registered in the TMS via
-    /// `ProviderSystem::link_tool_provider`.
-    pub tms_tool_provider_id: Option<TmsToolProviderId>,
-    /// Declared tool capability profiles for this provider.
-    /// Each profile describes a tool category/type the provider supports.
-    pub tool_profiles: Vec<ProviderToolProfile>,
-    /// Explicit TMS ToolProvider link records.
-    pub tool_links: Vec<ProviderToolLink>,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -236,10 +122,6 @@ pub struct ProviderTotals {
     pub active_platforms: usize,
     pub active_affiliates: usize,
     pub active_affiliate_links: usize,
-    // ── TMS ──────────────────────────────────────────────────────────────
-    pub tool_profiles: usize,
-    pub tool_links: usize,
-    pub tms_linked_providers: usize,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -254,9 +136,6 @@ pub struct ProviderSnapshot {
     pub data_assets: Vec<ProviderDataAsset>,
     pub affiliates: Vec<AffiliateRecord>,
     pub affiliate_links: Vec<AffiliateLink>,
-    // ── TMS ──────────────────────────────────────────────────────────────
-    pub tool_profiles: Vec<ProviderToolProfile>,
-    pub tool_links: Vec<ProviderToolLink>,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -389,9 +268,6 @@ pub struct ProviderSystem {
     next_data_id: u64,
     next_affiliate_id: u64,
     next_affiliate_link_id: u64,
-    // ── TMS ──────────────────────────────────────────────────────────────
-    next_tool_profile_id: u64,
-    next_tool_link_id: u64,
 }
 
 impl ProviderSystem {
@@ -409,8 +285,6 @@ impl ProviderSystem {
             next_data_id: 1,
             next_affiliate_id: 1,
             next_affiliate_link_id: 1,
-            next_tool_profile_id: 1,
-            next_tool_link_id: 1,
         };
 
         let platform = system.register_platform(NewProviderPlatform {
@@ -495,23 +369,17 @@ impl ProviderSystem {
     }
 
     pub fn snapshot(&self) -> ProviderSnapshot {
-        let mut resources   = Vec::new();
-        let mut versions    = Vec::new();
-        let mut metadata    = Vec::new();
+        let mut resources = Vec::new();
+        let mut versions = Vec::new();
+        let mut metadata = Vec::new();
         let mut data_assets = Vec::new();
-        let mut tool_profiles: Vec<ProviderToolProfile> = Vec::new();
-        let mut tool_links: Vec<ProviderToolLink>       = Vec::new();
 
         for provider in &self.providers {
             resources.extend(provider.resources.clone());
             versions.extend(provider.versions.clone());
             metadata.extend(provider.metadata.clone());
             data_assets.extend(provider.data_assets.clone());
-            tool_profiles.extend(provider.tool_profiles.clone());
-            tool_links.extend(provider.tool_links.clone());
         }
-
-        let tms_linked = self.providers.iter().filter(|p| p.tms_tool_provider_id.is_some()).count();
 
         ProviderSnapshot {
             view: "host.providers".to_string(),
@@ -526,11 +394,16 @@ impl ProviderSystem {
                 affiliate_links: self.affiliate_links.len(),
                 active_providers: self.providers.iter().filter(|p| p.status == "active").count(),
                 active_platforms: self.platforms.iter().filter(|p| p.status == "active").count(),
-                active_affiliates: self.affiliates.iter().filter(|a| a.status == "active").count(),
-                active_affiliate_links: self.affiliate_links.iter().filter(|l| l.status == "active").count(),
-                tool_profiles: tool_profiles.len(),
-                tool_links: tool_links.len(),
-                tms_linked_providers: tms_linked,
+                active_affiliates: self
+                    .affiliates
+                    .iter()
+                    .filter(|a| a.status == "active")
+                    .count(),
+                active_affiliate_links: self
+                    .affiliate_links
+                    .iter()
+                    .filter(|l| l.status == "active")
+                    .count(),
             },
             platforms: self.platforms.clone(),
             providers: self.providers.clone(),
@@ -540,8 +413,6 @@ impl ProviderSystem {
             data_assets,
             affiliates: self.affiliates.clone(),
             affiliate_links: self.affiliate_links.clone(),
-            tool_profiles,
-            tool_links,
         }
     }
 
@@ -589,9 +460,6 @@ impl ProviderSystem {
             data_assets: Vec::new(),
             created_at: now.clone(),
             updated_at: now,
-            tms_tool_provider_id: None,
-            tool_profiles: Vec::new(),
-            tool_links: Vec::new(),
         };
         self.next_provider_id += 1;
         self.providers.push(provider.clone());
@@ -795,330 +663,3 @@ pub fn to_json<T: Serialize>(value: &T) -> String {
 fn default_timestamp() -> String {
     "2026-03-12T00:00:00Z".to_string()
 }
-
-// =============================================================================
-// §TMS — PROVIDER SYSTEM: TOOL MANAGEMENT SYSTEM METHODS
-// =============================================================================
-
-impl ProviderSystem {
-    // ── Tool Profile registration ─────────────────────────────────────────────
-
-    /// Declare that a provider supports a specific tool category/type.
-    /// Creates a `ProviderToolProfile` on the provider and returns it.
-    pub fn add_tool_profile(
-        &mut self,
-        request: NewProviderToolProfile,
-    ) -> Result<ProviderToolProfile, String> {
-        let provider = self
-            .providers
-            .iter_mut()
-            .find(|p| p.id == request.provider_id)
-            .ok_or_else(|| format!("provider not found: {}", request.provider_id))?;
-
-        let profile = ProviderToolProfile {
-            id: format!("tool-profile-{:03}", self.next_tool_profile_id),
-            provider_id: provider.id.clone(),
-            tool_category: request.tool_category,
-            tool_type: request.tool_type,
-            tool_class: request.tool_class,
-            capability_description: request.capability_description,
-            auth_methods: request.auth_methods,
-            api_base_url: request.api_base_url,
-            required_scopes: request.required_scopes,
-            status: request.status.unwrap_or_else(|| "active".to_string()),
-            created_at: default_timestamp(),
-            updated_at: default_timestamp(),
-        };
-        self.next_tool_profile_id += 1;
-        provider.tool_profiles.push(profile.clone());
-        provider.updated_at = default_timestamp();
-        Ok(profile)
-    }
-
-    // ── TMS ToolProvider link ─────────────────────────────────────────────────
-
-    /// Bind a ProviderRecord to a TMS ToolProvider (by UUID string).
-    /// This is called once the tool has been registered in the TMS so the two
-    /// systems share a bidirectional reference.
-    pub fn link_tool_provider(
-        &mut self,
-        request: NewProviderToolLink,
-    ) -> Result<ProviderToolLink, String> {
-        let provider = self
-            .providers
-            .iter_mut()
-            .find(|p| p.id == request.provider_record_id)
-            .ok_or_else(|| format!("provider not found: {}", request.provider_record_id))?;
-
-        let link = ProviderToolLink {
-            id: format!("tool-link-{:03}", self.next_tool_link_id),
-            provider_record_id: provider.id.clone(),
-            tms_tool_provider_id: request.tms_tool_provider_id.clone(),
-            tool_category: request.tool_category,
-            auth_method: request.auth_method.unwrap_or_else(|| "api_key".to_string()),
-            scopes: request.scopes,
-            status: request.status.unwrap_or_else(|| "active".to_string()),
-            linked_at: default_timestamp(),
-            updated_at: default_timestamp(),
-        };
-        self.next_tool_link_id += 1;
-
-        // Record the primary TMS tool provider ID on the ProviderRecord itself
-        // (first link wins; subsequent links are additional capabilities)
-        if provider.tms_tool_provider_id.is_none() {
-            provider.tms_tool_provider_id = Some(request.tms_tool_provider_id);
-        }
-        provider.tool_links.push(link.clone());
-        provider.updated_at = default_timestamp();
-        Ok(link)
-    }
-
-    // ── Queries ───────────────────────────────────────────────────────────────
-
-    /// Return all ProviderToolProfiles for a given provider.
-    pub fn tool_profiles_for(&self, provider_id: &str) -> Result<Vec<&ProviderToolProfile>, String> {
-        let provider = self
-            .providers
-            .iter()
-            .find(|p| p.id == provider_id)
-            .ok_or_else(|| format!("provider not found: {provider_id}"))?;
-        Ok(provider.tool_profiles.iter().collect())
-    }
-
-    /// Find all providers that declare support for a given tool category.
-    /// `tool_category` must match a `ToolCategory` variant name exactly
-    /// (e.g. "Development", "DevOps", "Analytics").
-    pub fn providers_by_tool_category(&self, tool_category: &str) -> Vec<&ProviderRecord> {
-        self.providers
-            .iter()
-            .filter(|p| p.tool_profiles.iter().any(|tp| tp.tool_category == tool_category))
-            .collect()
-    }
-
-    /// Find all providers that have been linked to the TMS (i.e. have a TMS UUID).
-    pub fn tms_linked_providers(&self) -> Vec<&ProviderRecord> {
-        self.providers.iter().filter(|p| p.tms_tool_provider_id.is_some()).collect()
-    }
-
-    /// Look up a provider by its TMS ToolProvider UUID.
-    pub fn provider_by_tms_id(&self, tms_id: &str) -> Option<&ProviderRecord> {
-        self.providers
-            .iter()
-            .find(|p| p.tms_tool_provider_id.as_deref() == Some(tms_id))
-    }
-
-    /// Return all ProviderToolLinks across all providers.
-    pub fn all_tool_links(&self) -> Vec<&ProviderToolLink> {
-        self.providers.iter().flat_map(|p| p.tool_links.iter()).collect()
-    }
-}
-
-// =============================================================================
-// §TESTS — Provider System (including TMS bridge)
-// =============================================================================
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    fn base_system() -> ProviderSystem { ProviderSystem::mvp() }
-
-    #[test]
-    fn test_mvp_snapshot_totals() {
-        let sys = base_system();
-        let snap = sys.snapshot();
-        assert!(snap.totals.providers >= 1);
-        assert!(snap.totals.platforms >= 1);
-        assert!(snap.totals.resources >= 1);
-        assert!(snap.totals.versions >= 1);
-        assert!(snap.totals.metadata_entries >= 1);
-        assert!(snap.totals.data_assets >= 1);
-        assert!(snap.totals.affiliates >= 1);
-        assert!(snap.totals.affiliate_links >= 1);
-    }
-
-    #[test]
-    fn test_add_tool_profile() {
-        let mut sys = base_system();
-        let provider_id = sys.providers[0].id.clone();
-
-        let profile = sys.add_tool_profile(NewProviderToolProfile {
-            provider_id: provider_id.clone(),
-            tool_category: "Development".to_string(),
-            tool_type: "CodeManagement".to_string(),
-            tool_class: "Connector".to_string(),
-            capability_description: "GitHub VCS + CI/CD integration".to_string(),
-            auth_methods: vec!["oauth2".to_string(), "api_key".to_string()],
-            api_base_url: Some("https://api.github.com".to_string()),
-            required_scopes: vec!["repo".to_string(), "webhook".to_string()],
-            status: Some("active".to_string()),
-        }).unwrap();
-
-        assert_eq!(profile.tool_category, "Development");
-        assert_eq!(profile.tool_type, "CodeManagement");
-        assert_eq!(profile.auth_methods.len(), 2);
-
-        let profiles = sys.tool_profiles_for(&provider_id).unwrap();
-        assert_eq!(profiles.len(), 1);
-    }
-
-    #[test]
-    fn test_link_tool_provider() {
-        let mut sys = base_system();
-        let provider_id = sys.providers[0].id.clone();
-        let fake_tms_uuid = "550e8400-e29b-41d4-a716-446655440000".to_string();
-
-        let link = sys.link_tool_provider(NewProviderToolLink {
-            provider_record_id: provider_id.clone(),
-            tms_tool_provider_id: fake_tms_uuid.clone(),
-            tool_category: "Development".to_string(),
-            auth_method: Some("oauth2".to_string()),
-            scopes: vec!["repo".to_string()],
-            status: Some("active".to_string()),
-        }).unwrap();
-
-        assert_eq!(link.tms_tool_provider_id, fake_tms_uuid);
-        assert_eq!(link.auth_method, "oauth2");
-
-        // Provider should now carry the TMS ID
-        let provider = sys.providers.iter().find(|p| p.id == provider_id).unwrap();
-        assert_eq!(provider.tms_tool_provider_id.as_deref(), Some(fake_tms_uuid.as_str()));
-    }
-
-    #[test]
-    fn test_provider_by_tms_id() {
-        let mut sys = base_system();
-        let provider_id = sys.providers[0].id.clone();
-        let tms_uuid = "aaaabbbb-cccc-dddd-eeee-ffffffffffff".to_string();
-
-        sys.link_tool_provider(NewProviderToolLink {
-            provider_record_id: provider_id.clone(),
-            tms_tool_provider_id: tms_uuid.clone(),
-            tool_category: "DevOps".to_string(),
-            auth_method: None,
-            scopes: vec![],
-            status: None,
-        }).unwrap();
-
-        let found = sys.provider_by_tms_id(&tms_uuid);
-        assert!(found.is_some());
-        assert_eq!(found.unwrap().id, provider_id);
-    }
-
-    #[test]
-    fn test_providers_by_tool_category() {
-        let mut sys = base_system();
-        let provider_id = sys.providers[0].id.clone();
-
-        sys.add_tool_profile(NewProviderToolProfile {
-            provider_id: provider_id.clone(),
-            tool_category: "DevOps".to_string(),
-            tool_type: "ContinuousIntegration".to_string(),
-            tool_class: "Trigger".to_string(),
-            capability_description: "CI runner".to_string(),
-            auth_methods: vec![],
-            api_base_url: None,
-            required_scopes: vec![],
-            status: None,
-        }).unwrap();
-
-        let devops_providers = sys.providers_by_tool_category("DevOps");
-        assert_eq!(devops_providers.len(), 1);
-        assert_eq!(devops_providers[0].id, provider_id);
-
-        let empty = sys.providers_by_tool_category("Finance");
-        assert!(empty.is_empty());
-    }
-
-    #[test]
-    fn test_tms_linked_providers() {
-        let mut sys = base_system();
-        assert_eq!(sys.tms_linked_providers().len(), 0);
-
-        let provider_id = sys.providers[0].id.clone();
-        sys.link_tool_provider(NewProviderToolLink {
-            provider_record_id: provider_id,
-            tms_tool_provider_id: "some-uuid".to_string(),
-            tool_category: "Development".to_string(),
-            auth_method: None,
-            scopes: vec![],
-            status: None,
-        }).unwrap();
-
-        assert_eq!(sys.tms_linked_providers().len(), 1);
-    }
-
-    #[test]
-    fn test_snapshot_includes_tms_fields() {
-        let mut sys = base_system();
-        let provider_id = sys.providers[0].id.clone();
-
-        sys.add_tool_profile(NewProviderToolProfile {
-            provider_id: provider_id.clone(),
-            tool_category: "Development".to_string(),
-            tool_type: "CodeManagement".to_string(),
-            tool_class: "Connector".to_string(),
-            capability_description: "VCS".to_string(),
-            auth_methods: vec!["oauth2".to_string()],
-            api_base_url: None,
-            required_scopes: vec![],
-            status: None,
-        }).unwrap();
-
-        sys.link_tool_provider(NewProviderToolLink {
-            provider_record_id: provider_id,
-            tms_tool_provider_id: "tms-uuid-001".to_string(),
-            tool_category: "Development".to_string(),
-            auth_method: Some("oauth2".to_string()),
-            scopes: vec!["repo".to_string()],
-            status: None,
-        }).unwrap();
-
-        let snap = sys.snapshot();
-        assert_eq!(snap.totals.tool_profiles, 1);
-        assert_eq!(snap.totals.tool_links, 1);
-        assert_eq!(snap.totals.tms_linked_providers, 1);
-        assert_eq!(snap.tool_profiles.len(), 1);
-        assert_eq!(snap.tool_links.len(), 1);
-    }
-
-    #[test]
-    fn test_all_tool_links() {
-        let mut sys = base_system();
-        let provider_id = sys.providers[0].id.clone();
-
-        sys.link_tool_provider(NewProviderToolLink {
-            provider_record_id: provider_id.clone(),
-            tms_tool_provider_id: "tms-001".to_string(),
-            tool_category: "Development".to_string(),
-            auth_method: None, scopes: vec![], status: None,
-        }).unwrap();
-
-        sys.link_tool_provider(NewProviderToolLink {
-            provider_record_id: provider_id,
-            tms_tool_provider_id: "tms-002".to_string(),
-            tool_category: "DevOps".to_string(),
-            auth_method: None, scopes: vec![], status: None,
-        }).unwrap();
-
-        assert_eq!(sys.all_tool_links().len(), 2);
-    }
-
-    #[test]
-    fn test_tool_profile_not_found_error() {
-        let mut sys = base_system();
-        let result = sys.add_tool_profile(NewProviderToolProfile {
-            provider_id: "nonexistent".to_string(),
-            tool_category: "DevOps".to_string(),
-            tool_type: "ContinuousDeployment".to_string(),
-            tool_class: "Sink".to_string(),
-            capability_description: "deploy".to_string(),
-            auth_methods: vec![],
-            api_base_url: None,
-            required_scopes: vec![],
-            status: None,
-        });
-        assert!(result.is_err());
-    }
-}
-
