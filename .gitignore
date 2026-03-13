@@ -16,4 +16,3 @@ bazel-*
 .bloop/
 MODULE.bazel.lock
 .cache/
-*/kogi-desktop-win32-x64
