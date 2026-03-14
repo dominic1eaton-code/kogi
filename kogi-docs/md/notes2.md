@@ -781,6 +781,50 @@ work management system
 
 ---
 
+profile management system
+
+users can have different types of profiles, that have different accounts associated with them:
+- work profiles
+- professional profiless
+- personal profile
+- public profiles
+- private profiles
+- protected profiles
+- business profiles
+- miscellaneaous profiles
+- custom profiles
+- template profiles
+
+E.G. 
+
+a user may have a work profile A and work profile B, where work profile A is for work they do with a cooperative related to software development, and has gitlab+jira+claude+youtube+google accounts linked to it and has a software development and podcast production projects associated with it, and it is linked with the cooperative's public portfolio. work profile B may be associated with a new startup that the user may be exploring and may have chatGPT+github+noion+facebook+yahoo accounts linked to it, and has a software social media app project associated with it, and an open source community collective linked to this profile as well.
+
+profiles are personalizable, can have multiple personas attached to them (investor, developer, creative, etc...), have user preferences and configurations+options+parameters+settings, have tiered privilages+persmissions+visbility+access control, are shareable (can generate a linktree and form linkforests). Profiles also contain contact information and configurable/enable+disable communication channels of/for a user.
+
+
+the kogi linknetwork system: kogi-net:
+- linknetwork connects a series of linktrees, forming a linkforest, a link structure siting on top of a linknetwork substrate
+- linkforest that connects the linktrees of many users
+- users have many digitized contacts and digital accounts - representing a user's individual link tree
+    - personal, work, school, public emails
+    - personal, work, school websites
+    - digital platform accounts
+    - many, many, many social media accoutns and accoutns on far too many digital platforms
+        - tiktok, LTK, amazon, ebay, facebook, whatsapp, etc...
+    - personal, work, school, public/private phone numbers
+- the platform helps users navigate the forest of linktrees, searchable, indexible, trackable/provenance, organizable, role-base-access-controlled trees, rankable, etc ...
+- the platform forms a series of mychorrizal networks, linknets (where kogi-net is the root network), acting as a connective substrate of digital accounts+profiles+portfolios for  digital users accross many digital platforms, all linked together centrally accessible+managed in the kogi-platform
+- contactbooks/directories are built from linktrees and linkforests, linking together and creating directories of user profiles, containing their contact information and configurable channels for communication (email, DMs, notification, broadcasting, group message, social platform message (facebook message, whatsapp message, slack message, discod message, etc...), etc...)
+
+
+
+
+---
+
+portfolio management system - the master spreadsheet
+
+---
+
 - home
 - work
 - community
@@ -801,3 +845,5 @@ kogi-root
 - center
 - work
 - portfolio
+
+
