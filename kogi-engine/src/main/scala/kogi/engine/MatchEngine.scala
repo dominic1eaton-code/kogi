@@ -341,6 +341,19 @@ final class MatchEngine(
   def assetCount: Int     = assetRegistry.size
 
 
+  def user(id: String): Option[UserSubject] = userRegistry.get(id)
+  def users: Seq[UserSubject] = userRegistry.values.toSeq
+
+  def component(id: String): Option[ComponentSubject] = componentRegistry.get(id)
+  def components: Seq[ComponentSubject] = componentRegistry.values.toSeq
+
+  def resource(id: String): Option[ResourceSubject] = resourceRegistry.get(id)
+  def resources: Seq[ResourceSubject] = resourceRegistry.values.toSeq
+
+  def asset(id: String): Option[AssetSubject] = assetRegistry.get(id)
+  def assets: Seq[AssetSubject] = assetRegistry.values.toSeq
+
+
   // ══════════════════════════════════════════════════════════════════════════
   // 2.  User ↔ Component  (investors, donors, owners seeking projects, etc.)
   // ══════════════════════════════════════════════════════════════════════════

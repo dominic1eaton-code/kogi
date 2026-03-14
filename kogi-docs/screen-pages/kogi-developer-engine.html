@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KOGI – Developer</title>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+:root {
+  --bg: #0d1117;
+  --sidebar: #111620;
+  --panel: #161c27;
+  --card: #1a2030;
+  --card2: #1e2535;
+  --border: #252d3d;
+  --border2: #2a3448;
+  --text: #c8d0e0;
+  --text2: #7a8aaa;
+  --text3: #4a5570;
+  --cyan: #00e5c0;
+  --purple: #a855f7;
+  --orange: #f59e0b;
+  --green: #22c55e;
+  --red: #ef4444;
+  --blue: #3b82f6;
+  --pink: #ec4899;
+  --yellow: #eab308;
+  --teal: #14b8a6;
+  --indigo: #6366f1;
+}
+body { background: var(--bg); color: var(--text); font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace; font-size: 13px; height: 100vh; overflow: hidden; }
+.app { display: flex; height: 100vh; }
+.sidebar { width: 160px; background: var(--sidebar); border-right: 1px solid var(--border); display: flex; flex-direction: column; flex-shrink: 0; }
+.sidebar-logo { padding: 16px 16px 12px; font-size: 16px; font-weight: 700; letter-spacing: 3px; color: #fff; border-bottom: 1px solid var(--border); }
+.nav { flex: 1; padding: 8px 0; overflow-y: auto; }
+.nav-item { display: flex; align-items: center; gap: 8px; padding: 7px 14px; color: var(--text2); font-size: 11px; letter-spacing: 1px; cursor: pointer; transition: all 0.15s; text-decoration: none; }
+.nav-item:hover { color: var(--text); background: rgba(255,255,255,0.03); }
+.nav-item.active { color: #fff; background: rgba(255,255,255,0.06); border-left: 2px solid var(--cyan); }
+.nav-item .icon { font-size: 12px; width: 14px; text-align: center; }
+.nav-sub { padding-left: 28px; }
+.nav-sub .nav-item { font-size: 10px; padding: 5px 14px 5px 0; color: var(--text3); }
+.nav-sub .nav-item.active { color: var(--cyan); border-left: none; background: none; }
+.sidebar-bottom { padding: 12px 14px; border-top: 1px solid var(--border); }
+.sys-label { font-size: 10px; color: var(--text3); letter-spacing: 1px; margin-bottom: 6px; }
+.sys-msg { font-size: 11px; color: var(--text2); margin-bottom: 8px; }
+.badge { display: inline-block; padding: 2px 8px; border-radius: 3px; font-size: 10px; font-weight: 600; letter-spacing: 1px; margin-right: 4px; margin-bottom: 4px; }
+.badge.online { background: rgba(34,197,94,0.15); color: var(--green); border: 1px solid rgba(34,197,94,0.3); }
+.badge.sync { background: rgba(0,229,192,0.1); color: var(--cyan); border: 1px solid rgba(0,229,192,0.2); }
+.main { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+.top-header { display: flex; align-items: center; justify-content: space-between; padding: 12px 20px; border-bottom: 1px solid var(--border); background: var(--sidebar); flex-shrink: 0; }
+.header-left { display: flex; align-items: center; gap: 10px; }
+.header-icon { font-size: 18px; }
+.header-title h1 { font-size: 16px; font-weight: 600; color: #fff; letter-spacing: 1px; }
+.header-title .breadcrumb { font-size: 10px; color: var(--text3); letter-spacing: 2px; margin-top: 1px; }
+.breadcrumb span.active { color: var(--cyan); }
+.header-right { display: flex; align-items: center; gap: 8px; }
+.search-box { background: var(--panel); border: 1px solid var(--border); border-radius: 4px; padding: 5px 12px; color: var(--text2); font-family: inherit; font-size: 11px; width: 180px; outline: none; }
+.search-box::placeholder { color: var(--text3); }
+.pro-badge { background: rgba(0,229,192,0.1); border: 1px solid rgba(0,229,192,0.3); color: var(--cyan); padding: 3px 10px; border-radius: 3px; font-size: 11px; letter-spacing: 1px; font-weight: 600; }
+.avatar { width: 28px; height: 28px; background: var(--orange); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; color: #000; }
+.tab-bar { display: flex; gap: 2px; padding: 0 16px; background: var(--sidebar); border-bottom: 1px solid var(--border); flex-shrink: 0; }
+.tab { padding: 8px 14px; font-size: 11px; color: var(--text3); letter-spacing: 1px; cursor: pointer; border-bottom: 2px solid transparent; }
+.tab.active { color: var(--cyan); border-bottom-color: var(--cyan); }
+.body-layout { display: flex; flex: 1; min-height: 0; overflow: hidden; }
+.content-area { flex: 1; padding: 14px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; }
+.right-panel { width: 230px; border-left: 1px solid var(--border); padding: 14px; overflow-y: auto; flex-shrink: 0; background: var(--sidebar); display: flex; flex-direction: column; gap: 14px; }
+.stats-row { display: flex; gap: 8px; flex-shrink: 0; }
+.stat-card { flex: 1; background: var(--card); border: 1px solid var(--border); border-radius: 6px; padding: 12px; }
+.stat-label { font-size: 9px; letter-spacing: 2px; color: var(--text3); margin-bottom: 5px; }
+.stat-value { font-size: 24px; font-weight: 700; letter-spacing: -0.5px; line-height: 1; margin-bottom: 3px; }
+.stat-sub { font-size: 10px; color: var(--text2); }
+.up { color: var(--green); } .down { color: var(--red); }
+.stat-bar { height: 2px; background: var(--border2); border-radius: 2px; margin-top: 6px; }
+.stat-bar-fill { height: 100%; border-radius: 2px; }
+.section { background: var(--panel); border: 1px solid var(--border); border-radius: 6px; padding: 12px; }
+.section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+.section-title { font-size: 9px; letter-spacing: 2px; color: var(--text3); }
+.section-action { font-size: 10px; color: var(--cyan); cursor: pointer; }
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+.grid-4 { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 8px; }
+.grid-5 { display: grid; grid-template-columns: repeat(5,1fr); gap: 8px; }
+.mod-card { background: var(--card); border: 1px solid var(--border); border-radius: 5px; padding: 10px; }
+.mod-card-label { font-size: 9px; letter-spacing: 1.5px; color: var(--text3); margin-bottom: 3px; }
+.mod-card-title { font-size: 12px; font-weight: 600; margin-bottom: 2px; }
+.mod-card-sub { font-size: 10px; color: var(--text2); }
+.mod-card-value { font-size: 17px; font-weight: 700; margin-bottom: 2px; }
+.progress-bar { height: 3px; background: var(--border2); border-radius: 2px; margin-top: 7px; }
+.progress-fill { height: 100%; border-radius: 2px; }
+.rp-section-title { font-size: 9px; letter-spacing: 2px; color: var(--text3); margin-bottom: 8px; }
+.rp-item { display: flex; align-items: center; justify-content: space-between; padding: 5px 0; border-bottom: 1px solid var(--border); font-size: 11px; }
+.rp-item:last-child { border-bottom: none; }
+.tag-row { display: flex; flex-wrap: wrap; gap: 4px; }
+.tag { padding: 2px 8px; border-radius: 3px; font-size: 10px; font-weight: 600; border: 1px solid; cursor: pointer; }
+.data-table { width: 100%; border-collapse: collapse; font-size: 11px; }
+.data-table th { text-align: left; color: var(--text3); font-size: 9px; letter-spacing: 2px; padding: 5px 8px; border-bottom: 1px solid var(--border); font-weight: 500; }
+.data-table td { padding: 7px 8px; border-bottom: 1px solid var(--border); color: var(--text); }
+.data-table tr:last-child td { border-bottom: none; }
+.pill { padding: 2px 7px; border-radius: 10px; font-size: 10px; font-weight: 600; }
+.kanban { display: flex; gap: 8px; overflow-x: auto; }
+.kanban-col { min-width: 180px; max-width: 180px; display: flex; flex-direction: column; gap: 6px; }
+.kanban-col-header { font-size: 9px; letter-spacing: 2px; color: var(--text3); padding: 4px 0; margin-bottom: 2px; display: flex; justify-content: space-between; align-items: center; }
+.kanban-card { background: var(--card); border: 1px solid var(--border); border-radius: 5px; padding: 9px; font-size: 11px; }
+.kanban-card-tag { font-size: 9px; font-weight: 600; letter-spacing: 1px; margin-bottom: 4px; }
+.kanban-card-title { color: var(--text); margin-bottom: 4px; line-height: 1.3; }
+.kanban-card-meta { color: var(--text3); font-size: 10px; }
+.oba-bar { background: linear-gradient(90deg, rgba(168,85,247,0.12), rgba(0,229,192,0.08)); border: 1px solid rgba(168,85,247,0.25); border-radius: 6px; padding: 10px 14px; display: flex; align-items: center; gap: 10px; }
+.oba-icon { font-size: 16px; }
+.oba-text { flex: 1; font-size: 11px; color: var(--text2); }
+.oba-text strong { color: var(--purple); }
+.oba-input { flex: 2; background: rgba(0,0,0,0.2); border: 1px solid rgba(168,85,247,0.2); border-radius: 4px; padding: 5px 10px; color: var(--text); font-family: inherit; font-size: 11px; outline: none; }
+.oba-btn { background: rgba(168,85,247,0.15); border: 1px solid rgba(168,85,247,0.3); color: var(--purple); padding: 5px 12px; border-radius: 4px; font-family: inherit; font-size: 10px; cursor: pointer; }
+.tool-chip { display: inline-flex; align-items: center; gap: 5px; background: var(--card); border: 1px solid var(--border); border-radius: 4px; padding: 4px 9px; font-size: 10px; color: var(--text2); cursor: pointer; }
+.tool-chip:hover { border-color: var(--cyan); color: var(--text); }
+.status-dot { width: 6px; height: 6px; border-radius: 50%; display: inline-block; }
+</style>
+</head>
+<body>
+<div class="app">
+
+<div class="sidebar">
+  <div class="sidebar-logo">KOGI</div>
+  <nav class="nav"><a class="nav-item" href="kogi-dashboard.html"><span class="icon">▦</span>DASHBOARD</a>
+<a class="nav-item" href="kogi-office.html"><span class="icon">◫</span>OFFICE</a>
+<a class="nav-item" href="kogi-portfolio.html"><span class="icon">◈</span>PORTFOLIO</a>
+<a class="nav-item" href="kogi-workspace.html"><span class="icon">◧</span>WORKSPACE</a>
+<a class="nav-item" href="kogi-timeline.html"><span class="icon">◫</span>TIMELINE</a>
+<a class="nav-item" href="kogi-strategy.html"><span class="icon">◉</span>STRATEGY</a>
+<a class="nav-item" href="kogi-bank.html"><span class="icon">◻</span>BANK</a>
+<a class="nav-item" href="kogi-exchange.html"><span class="icon">⇄</span>EXCHANGE</a>
+<a class="nav-item" href="kogi-marketplace.html"><span class="icon">◈</span>MARKETPLACE</a>
+<a class="nav-item" href="kogi-studio.html"><span class="icon">✦</span>STUDIO</a>
+<a class="nav-item" href="kogi-community.html"><span class="icon">◉</span>COMMUNITY</a>
+<a class="nav-item active" href="kogi-developer.html"><span class="icon">⟨⟩</span>DEVELOPER</a>
+<a class="nav-item" href="kogi-profile.html"><span class="icon">◯</span>PROFILE</a>
+<a class="nav-item" href="kogi-organizations.html"><span class="icon">◫</span>ORGANIZATIONS</a>
+<a class="nav-item" href="kogi-legal.html"><span class="icon">◎</span>LEGAL</a>
+</nav>
+  <div class="sidebar-bottom">
+    <div class="sys-label">SYSTEM</div>
+    <div class="sys-msg">All modules healthy</div>
+    <span class="badge online">Online</span>
+    <span class="badge sync">Sync OK</span>
+  </div>
+</div>
+<div class="main">
+
+<div class="top-header">
+  <div class="header-left">
+    <span class="header-icon">⚡</span>
+    <div class="header-title">
+      <h1>Developer</h1>
+      <div class="breadcrumb"><span class="active">ENGINE & NODES</span> · API · SDK · INTEGRATIONS</div>
+    </div>
+  </div>
+  <div class="header-right">
+    <input class="search-box" placeholder="Search..." />
+    <span class="pro-badge">PRO</span>
+    <div class="avatar">J</div>
+  </div>
+</div>
+<div class="tab-bar"><div class="tab">API</div><div class="tab">SDK · INTEGRATIONS</div><div class="tab active">ENGINE & NODES</div><div class="tab">PIPELINE</div><div class="tab">PQL</div></div>
+<div class="body-layout">
+<div class="content-area">
+
+<div class="stats-row">
+  <div class="stat-card"><div class="stat-label">KOGI-ENGINE STATUS</div><div class="stat-value" style="color:var(--green)">Online</div><div class="stat-sub">All subengines healthy</div></div>
+  <div class="stat-card"><div class="stat-label">DATA EVENTS (1H)</div><div class="stat-value" style="color:var(--cyan)">48.2K</div><div class="stat-sub"><span class="up">+12%</span></div></div>
+  <div class="stat-card"><div class="stat-label">ACTIVE NODES</div><div class="stat-value" style="color:var(--purple)">8</div><div class="stat-sub">Federation healthy</div></div>
+  <div class="stat-card"><div class="stat-label">PIPELINE LATENCY</div><div class="stat-value" style="color:var(--orange)">12ms</div><div class="stat-sub">P99 avg</div></div>
+</div>
+
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+  <div class="section">
+    <div class="section-header"><div class="section-title">KOGI-ENGINE SUBENGINES</div></div>
+    <div style="display:flex;flex-direction:column;gap:5px">
+      <div style="display:grid;grid-template-columns:auto 1fr auto;gap:8px;align-items:center;padding:8px;background:var(--card);border:1px solid rgba(0,229,192,0.2);border-radius:4px">
+        <span style="width:8px;height:8px;background:var(--green);border-radius:50%;display:inline-block"></span>
+        <div><div style="font-size:11px;font-weight:600;color:var(--cyan)">AnalyticsEngine</div><div style="font-size:10px;color:var(--text3)">KPIs · BI dashboards · Portfolio health</div></div>
+        <span style="font-size:10px;color:var(--green)">12ms</span>
+      </div>
+      <div style="display:grid;grid-template-columns:auto 1fr auto;gap:8px;align-items:center;padding:8px;background:var(--card);border:1px solid rgba(168,85,247,0.2);border-radius:4px">
+        <span style="width:8px;height:8px;background:var(--green);border-radius:50%;display:inline-block"></span>
+        <div><div style="font-size:11px;font-weight:600;color:var(--purple)">RecommendationEngine</div><div style="font-size:10px;color:var(--text3)">Collaborative · Content-based · Hybrid · Oba</div></div>
+        <span style="font-size:10px;color:var(--green)">18ms</span>
+      </div>
+      <div style="display:grid;grid-template-columns:auto 1fr auto;gap:8px;align-items:center;padding:8px;background:var(--card);border:1px solid rgba(245,158,11,0.2);border-radius:4px">
+        <span style="width:8px;height:8px;background:var(--green);border-radius:50%;display:inline-block"></span>
+        <div><div style="font-size:11px;font-weight:600;color:var(--orange)">MatchEngine</div><div style="font-size:10px;color:var(--text3)">Users · Resources · Assets · Portfolio components</div></div>
+        <span style="font-size:10px;color:var(--green)">9ms</span>
+      </div>
+      <div style="display:grid;grid-template-columns:auto 1fr auto;gap:8px;align-items:center;padding:8px;background:var(--card);border:1px solid rgba(34,197,94,0.2);border-radius:4px">
+        <span style="width:8px;height:8px;background:var(--green);border-radius:50%;display:inline-block"></span>
+        <div><div style="font-size:11px;font-weight:600;color:var(--green)">RiskEngine</div><div style="font-size:10px;color:var(--text3)">Portfolio health · Credit scoring · Risk mitigation</div></div>
+        <span style="font-size:10px;color:var(--green)">14ms</span>
+      </div>
+      <div style="display:grid;grid-template-columns:auto 1fr auto;gap:8px;align-items:center;padding:8px;background:var(--card);border:1px solid rgba(59,130,246,0.2);border-radius:4px">
+        <span style="width:8px;height:8px;background:var(--green);border-radius:50%;display:inline-block"></span>
+        <div><div style="font-size:11px;font-weight:600;color:var(--blue)">SearchEngine</div><div style="font-size:10px;color:var(--text3)">Indexing · Filtering · Full-text · PQL</div></div>
+        <span style="font-size:10px;color:var(--green)">5ms</span>
+      </div>
+      <div style="display:grid;grid-template-columns:auto 1fr auto;gap:8px;align-items:center;padding:8px;background:var(--card);border:1px solid rgba(236,72,153,0.2);border-radius:4px">
+        <span style="width:8px;height:8px;background:var(--green);border-radius:50%;display:inline-block"></span>
+        <div><div style="font-size:11px;font-weight:600;color:var(--pink)">GraphEngine</div><div style="font-size:10px;color:var(--text3)">DAG traversal · Critical path · Cycle detection</div></div>
+        <span style="font-size:10px;color:var(--green)">22ms</span>
+      </div>
+      <div style="display:grid;grid-template-columns:auto 1fr auto;gap:8px;align-items:center;padding:8px;background:var(--card);border:1px solid rgba(20,184,166,0.2);border-radius:4px">
+        <span style="width:8px;height:8px;background:var(--green);border-radius:50%;display:inline-block"></span>
+        <div><div style="font-size:11px;font-weight:600;color:var(--teal)">CollaborationEngine</div><div style="font-size:10px;color:var(--text3)">Attribution weights · CRDT sync · Conflict resolution</div></div>
+        <span style="font-size:10px;color:var(--green)">16ms</span>
+      </div>
+      <div style="display:grid;grid-template-columns:auto 1fr auto;gap:8px;align-items:center;padding:8px;background:var(--card);border:1px solid rgba(99,102,241,0.2);border-radius:4px">
+        <span style="width:8px;height:8px;background:var(--green);border-radius:50%;display:inline-block"></span>
+        <div><div style="font-size:11px;font-weight:600;color:var(--indigo)">OptimizationEngine</div><div style="font-size:10px;color:var(--text3)">Resource allocation · Performance · Resiliency</div></div>
+        <span style="font-size:10px;color:var(--green)">8ms</span>
+      </div>
+    </div>
+  </div>
+
+  <div style="display:flex;flex-direction:column;gap:10px">
+    <div class="section">
+      <div class="section-header"><div class="section-title">FEDERATION NODES</div></div>
+      <div style="display:flex;flex-direction:column;gap:5px">
+        <div style="display:grid;grid-template-columns:auto 1fr auto auto;gap:8px;align-items:center;padding:7px;background:var(--card);border:1px solid var(--border);border-radius:4px">
+          <span style="width:7px;height:7px;background:var(--green);border-radius:50%;display:inline-block"></span>
+          <div><div style="font-size:11px;color:var(--cyan)">kogi-host-01 <span style="color:var(--orange);font-size:9px">LEADER</span></div><div style="font-size:9px;color:var(--text3)">us-east-1 · Primary</div></div>
+          <span style="font-size:10px;color:var(--green)">14ms</span>
+          <span style="font-size:9px;color:var(--green)">●</span>
+        </div>
+        <div style="display:grid;grid-template-columns:auto 1fr auto auto;gap:8px;align-items:center;padding:7px;background:var(--card);border:1px solid var(--border);border-radius:4px">
+          <span style="width:7px;height:7px;background:var(--green);border-radius:50%;display:inline-block"></span>
+          <div><div style="font-size:11px;color:var(--text)">kogi-host-02</div><div style="font-size:9px;color:var(--text3)">us-west-2 · Follower</div></div>
+          <span style="font-size:10px;color:var(--green)">18ms</span>
+          <span style="font-size:9px;color:var(--green)">●</span>
+        </div>
+        <div style="display:grid;grid-template-columns:auto 1fr auto auto;gap:8px;align-items:center;padding:7px;background:var(--card);border:1px solid var(--border);border-radius:4px">
+          <span style="width:7px;height:7px;background:var(--green);border-radius:50%;display:inline-block"></span>
+          <div><div style="font-size:11px;color:var(--text)">kogi-host-03</div><div style="font-size:9px;color:var(--text3)">eu-west-1 · Follower</div></div>
+          <span style="font-size:10px;color:var(--green)">42ms</span>
+          <span style="font-size:9px;color:var(--green)">●</span>
+        </div>
+        <div style="display:grid;grid-template-columns:auto 1fr auto auto;gap:8px;align-items:center;padding:7px;background:var(--card);border:1px solid var(--border);border-radius:4px">
+          <span style="width:7px;height:7px;background:var(--yellow);border-radius:50%;display:inline-block"></span>
+          <div><div style="font-size:11px;color:var(--text)">kogi-host-04</div><div style="font-size:9px;color:var(--text3)">ap-south-1 · Syncing</div></div>
+          <span style="font-size:10px;color:var(--yellow)">88ms</span>
+          <span style="font-size:9px;color:var(--yellow)">●</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><div class="section-title">DATA PIPELINE STATUS</div></div>
+      <div style="display:flex;flex-direction:column;gap:5px">
+        <div class="rp-item"><span style="font-size:11px;color:var(--text)">PortfolioSystem → Analytics</span><span style="color:var(--green);font-size:10px">● Live</span></div>
+        <div class="rp-item"><span style="font-size:11px;color:var(--text)">BankSystem → RiskEngine</span><span style="color:var(--green);font-size:10px">● Live</span></div>
+        <div class="rp-item"><span style="font-size:11px;color:var(--text)">CollaborationEngine → Graph</span><span style="color:var(--green);font-size:10px">● Live</span></div>
+        <div class="rp-item"><span style="font-size:11px;color:var(--text)">CommunitySystem → Match</span><span style="color:var(--green);font-size:10px">● Live</span></div>
+        <div class="rp-item"><span style="font-size:11px;color:var(--text)">MarketplaceSystem → Search</span><span style="color:var(--yellow);font-size:10px">● Syncing</span></div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><div class="section-title">PLATFORM QUERY — PQL</div></div>
+      <div style="background:var(--bg);border:1px solid var(--border);border-radius:4px;padding:8px;font-size:11px;color:var(--green);font-family:inherit;line-height:1.6">
+        <div style="color:var(--text3)">// Portfolio Query Language</div>
+        <div>SELECT portfolio_items</div>
+        <div>FROM portfolio</div>
+        <div style="color:var(--cyan)">WHERE kind IN [Project, Asset]</div>
+        <div style="color:var(--cyan)">AND status = Active</div>
+        <div style="color:var(--purple)">TRAVERSE dependencies</div>
+        <div style="color:var(--purple)">DEPTH 3</div>
+        <div style="color:var(--orange)">ORDER BY health_score DESC</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div>
+
+</div>
+</div>
+</div>
+</body>
+</html>

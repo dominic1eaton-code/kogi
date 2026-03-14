@@ -12,6 +12,8 @@ final class KogiEngine(
     analyticsEngineOverride: AnalyticsEngine = null,
     telemetryEngineOverride: TelemetryEngine = null,
     policyEngineOverride: PolicyEngine = null,
+    dataStreamingEngineOverride: DataStreamingEngine = null,
+    personalizationEngineOverride: PersonalizationEngine = null,
     val optimizationEngine: OptimizationEngine = new OptimizationEngine(),
     val searchEngine: SearchEngine = new SearchEngine(),
     val queryEngine: QueryEngine = new QueryEngine(),
@@ -22,9 +24,14 @@ final class KogiEngine(
     initialGraphEdges: Seq[GraphEdge] = Seq.empty,
     initialGraphNodes: Seq[GraphNode] = Seq.empty
 ) {
+  val dataStreamingEngine: DataStreamingEngine =
+    if (dataStreamingEngineOverride != null) dataStreamingEngineOverride
+    else new DataStreamingEngine()
+
   val analyticsEngine: AnalyticsEngine =
     if (analyticsEngineOverride != null) analyticsEngineOverride
     else new AnalyticsEngine(
+      streamEngine = dataStreamingEngine,
       riskEngine = riskEngine,
       recommendationEngine = recommendationEngine
     )
@@ -36,6 +43,10 @@ final class KogiEngine(
   val policyEngine: PolicyEngine =
     if (policyEngineOverride != null) policyEngineOverride
     else new PolicyEngine()
+
+  val personalizationEngine: PersonalizationEngine =
+    if (personalizationEngineOverride != null) personalizationEngineOverride
+    else new PersonalizationEngine(recommendationEngine = recommendationEngine)
 
   private var controlMode: String = "stopped"
 

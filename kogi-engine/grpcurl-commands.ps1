@@ -32,6 +32,186 @@ if ([string]::IsNullOrWhiteSpace($ProtoPath)) {
 
 $Service = "kogi.engine.v1.EngineService"
 
+$Methods = @(
+  "Control",
+  "Status",
+  "Ingest",
+  "IngestEnvelope",
+  "Snapshot",
+  "FlowLedger",
+  "FlowEnvelopes",
+  "AnalyticsModuleCatalog",
+  "AnalyticsIngestEvent",
+  "AnalyticsIngestBatch",
+  "AnalyticsIngestModuleMetric",
+  "AnalyticsIngestHostMetric",
+  "AnalyticsIngestRealtime",
+  "AnalyticsIngestBus",
+  "AnalyticsSnapshotProfile",
+  "AnalyticsModuleActivity",
+  "AnalyticsModuleSnapshot",
+  "AnalyticsHostSnapshot",
+  "AnalyticsSystemSnapshot",
+  "StreamIngest",
+  "StreamIngestBatch",
+  "StreamRecent",
+  "StreamAll",
+  "StreamByProfile",
+  "StreamByModule",
+  "StreamSince",
+  "StreamByModuleSince",
+  "StreamSize",
+  "RecUpsertItem",
+  "RecUpsertItems",
+  "RecUpsertProfile",
+  "RecRecordInteraction",
+  "RecRecordInteractions",
+  "RecRecordRating",
+  "RecRecordReview",
+  "RecRecordDwell",
+  "RecRecordSearch",
+  "RecBuildPersona",
+  "RecProfile",
+  "RecPersonas",
+  "RecHybrid",
+  "RecCollab",
+  "RecContent",
+  "RecContextual",
+  "RecColdStart",
+  "RecFeedback",
+  "RecProfileSummary",
+  "RecPersonalizedSearch",
+  "RecStats",
+  "Personalize",
+  "PersonalizationSetPreference",
+  "PersonalizationSetPreferences",
+  "PersonalizationClearPreference",
+  "PersonalizationPreferences",
+  "PersonalizationResolvePreferences",
+  "PersonalizationDeliveryConfig",
+  "PersonalizationRankContent",
+  "PersonalizationRegisterSegment",
+  "PersonalizationRegisterSegments",
+  "PersonalizationAssignSegments",
+  "PersonalizationSegmentAssignment",
+  "PersonalizationProfilesInSegment",
+  "PersonalizationBuildPersona",
+  "PersonalizationDetectDrift",
+  "PersonalizationApplyDrift",
+  "PersonalizationRegisterExperiment",
+  "PersonalizationAssignExperiment",
+  "PersonalizationRecordExposure",
+  "PersonalizationExperimentStats",
+  "PersonalizationExperimentAssignments",
+  "PersonalizationRegisterBandit",
+  "PersonalizationSelectBandit",
+  "PersonalizationRecordBandit",
+  "PersonalizationBanditStats",
+  "PersonalizationAdaptContent",
+  "PersonalizationRecordInteraction",
+  "PersonalizationRecordInteractions",
+  "PersonalizationRegisterItem",
+  "PersonalizationRecommendations",
+  "Search",
+  "Index",
+  "SearchIndexBatch",
+  "SearchRemove",
+  "SearchFilter",
+  "SearchPersonalized",
+  "Query",
+  "QueryAnalyze",
+  "QueryOptimize",
+  "QueryOptimizeProfile",
+  "RiskScore",
+  "RiskScorePersona",
+  "RiskOptimize",
+  "RiskManage",
+  "Optimize",
+  "PolicyRegisterSimple",
+  "PolicyUnregister",
+  "PolicyList",
+  "PolicyClear",
+  "PolicyEvaluate",
+  "PolicyEvaluateReport",
+  "PolicyRequestApproval",
+  "PolicyResolveApproval",
+  "PolicyApproval",
+  "PolicyApprovals",
+  "MatchRegisterUser",
+  "MatchRegisterUsers",
+  "MatchRegisterComponent",
+  "MatchRegisterComponents",
+  "MatchRegisterResource",
+  "MatchRegisterResources",
+  "MatchRegisterAsset",
+  "MatchRegisterAssets",
+  "MatchCounts",
+  "MatchUserToComponents",
+  "MatchComponentToUsers",
+  "MatchAssetsToComponent",
+  "MatchComponentsToAsset",
+  "MatchResourcesToComponent",
+  "MatchComponentsToResource",
+  "MatchProfilesResources",
+  "MatchTalent",
+  "MatchByPersona",
+  "MatchSimilarUsers",
+  "MatchWorkloadsToPlans",
+  "MatchArtifactsToUser",
+  "MatchComponentBundle",
+  "MatchExchangeListings",
+  "AllocationScore",
+  "AllocationAllocate",
+  "IncentiveRegisterParticipant",
+  "IncentiveProfile",
+  "IncentiveBalance",
+  "IncentiveApplyEvent",
+  "IncentiveApplyIncentive",
+  "IncentiveApplyIncentives",
+  "IncentiveEarn",
+  "IncentivePenalize",
+  "IncentiveRedeem",
+  "IncentiveIncentivesForAllocation",
+  "IncentiveLedger",
+  "GameRegisterParticipant",
+  "GameRegisterParticipants",
+  "GameParticipant",
+  "GameParticipants",
+  "GameUpsertListing",
+  "GameListing",
+  "GameCloseListing",
+  "GameSuspendListing",
+  "GameListings",
+  "GameSubmitBid",
+  "GameWithdrawBid",
+  "GameBids",
+  "GameMatchListing",
+  "GameScoreBids",
+  "GameAllocateListing",
+  "GameAwardIncentives",
+  "GameSnapshot",
+  "GameEvents",
+  "GraphAddEdge",
+  "GraphAddNode",
+  "GraphRemoveEdge",
+  "GraphRemoveNode",
+  "GraphLoad",
+  "GraphTraverse",
+  "GraphRtraverse",
+  "GraphImpact",
+  "GraphClosure",
+  "GraphRdeps",
+  "GraphNeighbors",
+  "GraphAncestors",
+  "GraphDescendants",
+  "GraphCycles",
+  "GraphTopo",
+  "GraphCritical",
+  "GraphDiff",
+  "GraphNodes",
+  "GraphEdges"
+)
+
 function Invoke-Grpcurl {
   param(
     [string]$Method,
@@ -67,6 +247,10 @@ if ($UseProto) {
 }
 Write-Host ""
 
+Write-Host "# Methods"
+$Methods | ForEach-Object { Write-Host " - $_" }
+Write-Host ""
+
 Write-Host "# Status"
 Invoke-Grpcurl -Method "Status" -Json "{}"
 Write-Host ""
@@ -81,6 +265,22 @@ Write-Host ""
 
 Write-Host "# Snapshot"
 Invoke-Grpcurl -Method "Snapshot" -Json '{"host_id":"kogi-host-001","window_ms":300000}'
+Write-Host ""
+
+Write-Host "# Analytics module catalog"
+Invoke-Grpcurl -Method "AnalyticsModuleCatalog" -Json "{}"
+Write-Host ""
+
+Write-Host "# Stream size"
+Invoke-Grpcurl -Method "StreamSize" -Json "{}"
+Write-Host ""
+
+Write-Host "# Rec stats"
+Invoke-Grpcurl -Method "RecStats" -Json "{}"
+Write-Host ""
+
+Write-Host "# Graph nodes"
+Invoke-Grpcurl -Method "GraphNodes" -Json "{}"
 Write-Host ""
 
 Write-Host "# Control (pause)"

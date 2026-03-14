@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KOGI – Workspace</title>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+:root {
+  --bg: #0d1117;
+  --sidebar: #111620;
+  --panel: #161c27;
+  --card: #1a2030;
+  --card2: #1e2535;
+  --border: #252d3d;
+  --border2: #2a3448;
+  --text: #c8d0e0;
+  --text2: #7a8aaa;
+  --text3: #4a5570;
+  --cyan: #00e5c0;
+  --purple: #a855f7;
+  --orange: #f59e0b;
+  --green: #22c55e;
+  --red: #ef4444;
+  --blue: #3b82f6;
+  --pink: #ec4899;
+  --yellow: #eab308;
+  --teal: #14b8a6;
+  --indigo: #6366f1;
+}
+body { background: var(--bg); color: var(--text); font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace; font-size: 13px; height: 100vh; overflow: hidden; }
+.app { display: flex; height: 100vh; }
+.sidebar { width: 160px; background: var(--sidebar); border-right: 1px solid var(--border); display: flex; flex-direction: column; flex-shrink: 0; }
+.sidebar-logo { padding: 16px 16px 12px; font-size: 16px; font-weight: 700; letter-spacing: 3px; color: #fff; border-bottom: 1px solid var(--border); }
+.nav { flex: 1; padding: 8px 0; overflow-y: auto; }
+.nav-item { display: flex; align-items: center; gap: 8px; padding: 7px 14px; color: var(--text2); font-size: 11px; letter-spacing: 1px; cursor: pointer; transition: all 0.15s; text-decoration: none; }
+.nav-item:hover { color: var(--text); background: rgba(255,255,255,0.03); }
+.nav-item.active { color: #fff; background: rgba(255,255,255,0.06); border-left: 2px solid var(--cyan); }
+.nav-item .icon { font-size: 12px; width: 14px; text-align: center; }
+.nav-sub { padding-left: 28px; }
+.nav-sub .nav-item { font-size: 10px; padding: 5px 14px 5px 0; color: var(--text3); }
+.nav-sub .nav-item.active { color: var(--cyan); border-left: none; background: none; }
+.sidebar-bottom { padding: 12px 14px; border-top: 1px solid var(--border); }
+.sys-label { font-size: 10px; color: var(--text3); letter-spacing: 1px; margin-bottom: 6px; }
+.sys-msg { font-size: 11px; color: var(--text2); margin-bottom: 8px; }
+.badge { display: inline-block; padding: 2px 8px; border-radius: 3px; font-size: 10px; font-weight: 600; letter-spacing: 1px; margin-right: 4px; margin-bottom: 4px; }
+.badge.online { background: rgba(34,197,94,0.15); color: var(--green); border: 1px solid rgba(34,197,94,0.3); }
+.badge.sync { background: rgba(0,229,192,0.1); color: var(--cyan); border: 1px solid rgba(0,229,192,0.2); }
+.main { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+.top-header { display: flex; align-items: center; justify-content: space-between; padding: 12px 20px; border-bottom: 1px solid var(--border); background: var(--sidebar); flex-shrink: 0; }
+.header-left { display: flex; align-items: center; gap: 10px; }
+.header-icon { font-size: 18px; }
+.header-title h1 { font-size: 16px; font-weight: 600; color: #fff; letter-spacing: 1px; }
+.header-title .breadcrumb { font-size: 10px; color: var(--text3); letter-spacing: 2px; margin-top: 1px; }
+.breadcrumb span.active { color: var(--cyan); }
+.header-right { display: flex; align-items: center; gap: 8px; }
+.search-box { background: var(--panel); border: 1px solid var(--border); border-radius: 4px; padding: 5px 12px; color: var(--text2); font-family: inherit; font-size: 11px; width: 180px; outline: none; }
+.search-box::placeholder { color: var(--text3); }
+.pro-badge { background: rgba(0,229,192,0.1); border: 1px solid rgba(0,229,192,0.3); color: var(--cyan); padding: 3px 10px; border-radius: 3px; font-size: 11px; letter-spacing: 1px; font-weight: 600; }
+.avatar { width: 28px; height: 28px; background: var(--orange); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; color: #000; }
+.tab-bar { display: flex; gap: 2px; padding: 0 16px; background: var(--sidebar); border-bottom: 1px solid var(--border); flex-shrink: 0; }
+.tab { padding: 8px 14px; font-size: 11px; color: var(--text3); letter-spacing: 1px; cursor: pointer; border-bottom: 2px solid transparent; }
+.tab.active { color: var(--cyan); border-bottom-color: var(--cyan); }
+.body-layout { display: flex; flex: 1; min-height: 0; overflow: hidden; }
+.content-area { flex: 1; padding: 14px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; }
+.right-panel { width: 230px; border-left: 1px solid var(--border); padding: 14px; overflow-y: auto; flex-shrink: 0; background: var(--sidebar); display: flex; flex-direction: column; gap: 14px; }
+.stats-row { display: flex; gap: 8px; flex-shrink: 0; }
+.stat-card { flex: 1; background: var(--card); border: 1px solid var(--border); border-radius: 6px; padding: 12px; }
+.stat-label { font-size: 9px; letter-spacing: 2px; color: var(--text3); margin-bottom: 5px; }
+.stat-value { font-size: 24px; font-weight: 700; letter-spacing: -0.5px; line-height: 1; margin-bottom: 3px; }
+.stat-sub { font-size: 10px; color: var(--text2); }
+.up { color: var(--green); } .down { color: var(--red); }
+.stat-bar { height: 2px; background: var(--border2); border-radius: 2px; margin-top: 6px; }
+.stat-bar-fill { height: 100%; border-radius: 2px; }
+.section { background: var(--panel); border: 1px solid var(--border); border-radius: 6px; padding: 12px; }
+.section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+.section-title { font-size: 9px; letter-spacing: 2px; color: var(--text3); }
+.section-action { font-size: 10px; color: var(--cyan); cursor: pointer; }
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+.grid-4 { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 8px; }
+.grid-5 { display: grid; grid-template-columns: repeat(5,1fr); gap: 8px; }
+.mod-card { background: var(--card); border: 1px solid var(--border); border-radius: 5px; padding: 10px; }
+.mod-card-label { font-size: 9px; letter-spacing: 1.5px; color: var(--text3); margin-bottom: 3px; }
+.mod-card-title { font-size: 12px; font-weight: 600; margin-bottom: 2px; }
+.mod-card-sub { font-size: 10px; color: var(--text2); }
+.mod-card-value { font-size: 17px; font-weight: 700; margin-bottom: 2px; }
+.progress-bar { height: 3px; background: var(--border2); border-radius: 2px; margin-top: 7px; }
+.progress-fill { height: 100%; border-radius: 2px; }
+.rp-section-title { font-size: 9px; letter-spacing: 2px; color: var(--text3); margin-bottom: 8px; }
+.rp-item { display: flex; align-items: center; justify-content: space-between; padding: 5px 0; border-bottom: 1px solid var(--border); font-size: 11px; }
+.rp-item:last-child { border-bottom: none; }
+.tag-row { display: flex; flex-wrap: wrap; gap: 4px; }
+.tag { padding: 2px 8px; border-radius: 3px; font-size: 10px; font-weight: 600; border: 1px solid; cursor: pointer; }
+.data-table { width: 100%; border-collapse: collapse; font-size: 11px; }
+.data-table th { text-align: left; color: var(--text3); font-size: 9px; letter-spacing: 2px; padding: 5px 8px; border-bottom: 1px solid var(--border); font-weight: 500; }
+.data-table td { padding: 7px 8px; border-bottom: 1px solid var(--border); color: var(--text); }
+.data-table tr:last-child td { border-bottom: none; }
+.pill { padding: 2px 7px; border-radius: 10px; font-size: 10px; font-weight: 600; }
+.kanban { display: flex; gap: 8px; overflow-x: auto; }
+.kanban-col { min-width: 180px; max-width: 180px; display: flex; flex-direction: column; gap: 6px; }
+.kanban-col-header { font-size: 9px; letter-spacing: 2px; color: var(--text3); padding: 4px 0; margin-bottom: 2px; display: flex; justify-content: space-between; align-items: center; }
+.kanban-card { background: var(--card); border: 1px solid var(--border); border-radius: 5px; padding: 9px; font-size: 11px; }
+.kanban-card-tag { font-size: 9px; font-weight: 600; letter-spacing: 1px; margin-bottom: 4px; }
+.kanban-card-title { color: var(--text); margin-bottom: 4px; line-height: 1.3; }
+.kanban-card-meta { color: var(--text3); font-size: 10px; }
+.oba-bar { background: linear-gradient(90deg, rgba(168,85,247,0.12), rgba(0,229,192,0.08)); border: 1px solid rgba(168,85,247,0.25); border-radius: 6px; padding: 10px 14px; display: flex; align-items: center; gap: 10px; }
+.oba-icon { font-size: 16px; }
+.oba-text { flex: 1; font-size: 11px; color: var(--text2); }
+.oba-text strong { color: var(--purple); }
+.oba-input { flex: 2; background: rgba(0,0,0,0.2); border: 1px solid rgba(168,85,247,0.2); border-radius: 4px; padding: 5px 10px; color: var(--text); font-family: inherit; font-size: 11px; outline: none; }
+.oba-btn { background: rgba(168,85,247,0.15); border: 1px solid rgba(168,85,247,0.3); color: var(--purple); padding: 5px 12px; border-radius: 4px; font-family: inherit; font-size: 10px; cursor: pointer; }
+.tool-chip { display: inline-flex; align-items: center; gap: 5px; background: var(--card); border: 1px solid var(--border); border-radius: 4px; padding: 4px 9px; font-size: 10px; color: var(--text2); cursor: pointer; }
+.tool-chip:hover { border-color: var(--cyan); color: var(--text); }
+.status-dot { width: 6px; height: 6px; border-radius: 50%; display: inline-block; }
+</style>
+</head>
+<body>
+<div class="app">
+
+<div class="sidebar">
+  <div class="sidebar-logo">KOGI</div>
+  <nav class="nav"><a class="nav-item" href="kogi-dashboard.html"><span class="icon">▦</span>DASHBOARD</a>
+<a class="nav-item" href="kogi-office.html"><span class="icon">◫</span>OFFICE</a>
+<a class="nav-item" href="kogi-portfolio.html"><span class="icon">◈</span>PORTFOLIO</a>
+<a class="nav-item active" href="kogi-workspace.html"><span class="icon">◧</span>WORKSPACE</a>
+<a class="nav-item" href="kogi-timeline.html"><span class="icon">◫</span>TIMELINE</a>
+<a class="nav-item" href="kogi-strategy.html"><span class="icon">◉</span>STRATEGY</a>
+<a class="nav-item" href="kogi-bank.html"><span class="icon">◻</span>BANK</a>
+<a class="nav-item" href="kogi-exchange.html"><span class="icon">⇄</span>EXCHANGE</a>
+<a class="nav-item" href="kogi-marketplace.html"><span class="icon">◈</span>MARKETPLACE</a>
+<a class="nav-item" href="kogi-studio.html"><span class="icon">✦</span>STUDIO</a>
+<a class="nav-item" href="kogi-community.html"><span class="icon">◉</span>COMMUNITY</a>
+<a class="nav-item" href="kogi-developer.html"><span class="icon">⟨⟩</span>DEVELOPER</a>
+<a class="nav-item" href="kogi-profile.html"><span class="icon">◯</span>PROFILE</a>
+<a class="nav-item" href="kogi-organizations.html"><span class="icon">◫</span>ORGANIZATIONS</a>
+<a class="nav-item" href="kogi-legal.html"><span class="icon">◎</span>LEGAL</a>
+</nav>
+  <div class="sidebar-bottom">
+    <div class="sys-label">SYSTEM</div>
+    <div class="sys-msg">All modules healthy</div>
+    <span class="badge online">Online</span>
+    <span class="badge sync">Sync OK</span>
+  </div>
+</div>
+<div class="main">
+
+<div class="top-header">
+  <div class="header-left">
+    <span class="header-icon">◧</span>
+    <div class="header-title">
+      <h1>Workspace</h1>
+      <div class="breadcrumb"><span class="active">TASKS</span> · WORK · CONTENT · TOOLS</div>
+    </div>
+  </div>
+  <div class="header-right">
+    <input class="search-box" placeholder="Search..." />
+    <span class="pro-badge">PRO</span>
+    <div class="avatar">J</div>
+  </div>
+</div>
+<div class="tab-bar"><div class="tab active">TASKS</div><div class="tab">WORK</div><div class="tab">CONTENT</div><div class="tab">TOOLS</div><div class="tab">GOVERNANCE</div></div>
+<div class="body-layout">
+<div class="content-area">
+
+<div class="oba-bar">
+  <span class="oba-icon">◈</span>
+  <div class="oba-text"><strong>Oba</strong> · 3 tasks overdue in Alpha Platform · 2 governance proposals await your vote · Stripe payout $3,200 received</div>
+  <input class="oba-input" placeholder="Ask Oba anything..." />
+  <button class="oba-btn">Ask</button>
+</div>
+
+<div class="stats-row">
+  <div class="stat-card"><div class="stat-label">OPEN TASKS</div><div class="stat-value" style="color:var(--cyan)">34</div><div class="stat-sub">8 due today</div></div>
+  <div class="stat-card"><div class="stat-label">IN PROGRESS</div><div class="stat-value" style="color:var(--green)">12</div><div class="stat-sub">Across 4 projects</div></div>
+  <div class="stat-card"><div class="stat-label">BLOCKED</div><div class="stat-value" style="color:var(--red)">3</div><div class="stat-sub">Needs attention</div></div>
+  <div class="stat-card"><div class="stat-label">COMPLETED</div><div class="stat-value" style="color:var(--purple)">87</div><div class="stat-sub"><span class="up">↑14%</span> This sprint</div></div>
+  <div class="stat-card"><div class="stat-label">SPRINT VELOCITY</div><div class="stat-value" style="color:var(--orange)">42</div><div class="stat-sub">Story points</div><div class="stat-bar"><div class="stat-bar-fill" style="width:70%;background:var(--orange)"></div></div></div>
+</div>
+
+<div style="display:flex;gap:12px;flex:1;min-height:0">
+  <div style="flex:1;display:flex;flex-direction:column;gap:10px;min-width:0">
+    <div class="section">
+      <div class="section-header"><div class="section-title">WORK BOARD — ACTIVE SPRINT</div><span class="section-action">+ New Task</span></div>
+      <div class="kanban">
+        <div class="kanban-col">
+          <div class="kanban-col-header">BACKLOG <span style="color:var(--text3);font-size:10px">14</span></div>
+          <div class="kanban-card"><div class="kanban-card-tag" style="color:var(--blue)">STORY</div><div class="kanban-card-title">Design token system for dark theme variants</div><div class="kanban-card-meta">◈ Portfolio · 3pts</div></div>
+          <div class="kanban-card"><div class="kanban-card-tag" style="color:var(--purple)">TASK</div><div class="kanban-card-title">Write API spec for /v1/exchange endpoint</div><div class="kanban-card-meta">⇄ Exchange · 2pts</div></div>
+          <div class="kanban-card"><div class="kanban-card-tag" style="color:var(--text3)">TASK</div><div class="kanban-card-title">Review DevDAO contract terms</div><div class="kanban-card-meta">◎ Legal · 1pt</div></div>
+        </div>
+        <div class="kanban-col">
+          <div class="kanban-col-header">TODO <span style="color:var(--text3);font-size:10px">8</span></div>
+          <div class="kanban-card"><div class="kanban-card-tag" style="color:var(--cyan)">STORY</div><div class="kanban-card-title">Implement portable benefits onboarding flow</div><div class="kanban-card-meta">◻ Bank · 5pts</div></div>
+          <div class="kanban-card"><div class="kanban-card-tag" style="color:var(--orange)">TASK</div><div class="kanban-card-title">Set up Stripe webhook for payment events</div><div class="kanban-card-meta">◻ Bank · 3pts</div></div>
+          <div class="kanban-card"><div class="kanban-card-tag" style="color:var(--green)">TASK</div><div class="kanban-card-title">Update community space access roles</div><div class="kanban-card-meta">◉ Community · 1pt</div></div>
+        </div>
+        <div class="kanban-col">
+          <div class="kanban-col-header">IN PROGRESS <span style="color:var(--cyan);font-size:10px">12</span></div>
+          <div class="kanban-card" style="border-color:rgba(0,229,192,0.3)"><div class="kanban-card-tag" style="color:var(--cyan)">FEATURE</div><div class="kanban-card-title">CollaborationEngine — contribution attribution weights</div><div class="kanban-card-meta">◈ Portfolio · 8pts</div></div>
+          <div class="kanban-card" style="border-color:rgba(0,229,192,0.2)"><div class="kanban-card-tag" style="color:var(--purple)">FEATURE</div><div class="kanban-card-title">CRM lead scoring pipeline integration</div><div class="kanban-card-meta">◈ Marketplace · 5pts</div></div>
+          <div class="kanban-card" style="border-color:rgba(0,229,192,0.2)"><div class="kanban-card-tag" style="color:var(--orange)">BUG</div><div class="kanban-card-title">Fix microloan repayment schedule edge case</div><div class="kanban-card-meta">◻ Bank · 2pts</div></div>
+        </div>
+        <div class="kanban-col">
+          <div class="kanban-col-header">REVIEW <span style="color:var(--yellow);font-size:10px">5</span></div>
+          <div class="kanban-card"><div class="kanban-card-tag" style="color:var(--yellow)">FEATURE</div><div class="kanban-card-title">Grant registry search filters v2</div><div class="kanban-card-meta">◈ Marketplace · 3pts</div></div>
+          <div class="kanban-card"><div class="kanban-card-tag" style="color:var(--pink)">DESIGN</div><div class="kanban-card-title">Studio testbed result dashboard mockup</div><div class="kanban-card-meta">✦ Studio · 2pts</div></div>
+        </div>
+        <div class="kanban-col">
+          <div class="kanban-col-header">DONE <span style="color:var(--green);font-size:10px">87</span></div>
+          <div class="kanban-card" style="opacity:0.6"><div class="kanban-card-tag" style="color:var(--green)">FEATURE</div><div class="kanban-card-title">Wallet multi-sig cooperative treasury setup</div><div class="kanban-card-meta">◻ Bank · 8pts</div></div>
+          <div class="kanban-card" style="opacity:0.6"><div class="kanban-card-tag" style="color:var(--green)">TASK</div><div class="kanban-card-title">Oba notification routing for overdue items</div><div class="kanban-card-meta">▦ Dashboard · 3pts</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <div class="section">
+        <div class="section-header"><div class="section-title">CONTENT MANAGEMENT</div><span class="section-action">+ New</span></div>
+        <div style="display:flex;flex-direction:column;gap:5px">
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:6px 8px;background:var(--card);border:1px solid var(--border);border-radius:4px">
+            <div style="display:flex;align-items:center;gap:8px"><span style="color:var(--cyan);font-size:12px">📓</span><div><div style="font-size:11px;color:var(--text)">Platform Architecture Notes</div><div style="font-size:10px;color:var(--text3)">Notebook · Updated 2hr ago</div></div></div>
+            <span style="color:var(--text3);font-size:10px">→</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:6px 8px;background:var(--card);border:1px solid var(--border);border-radius:4px">
+            <div style="display:flex;align-items:center;gap:8px"><span style="color:var(--orange);font-size:12px">📋</span><div><div style="font-size:11px;color:var(--text)">Client Onboarding Playbook</div><div style="font-size:10px;color:var(--text3)">Playbook · v3.2</div></div></div>
+            <span style="color:var(--text3);font-size:10px">→</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:6px 8px;background:var(--card);border:1px solid var(--border);border-radius:4px">
+            <div style="display:flex;align-items:center;gap:8px"><span style="color:var(--purple);font-size:12px">📒</span><div><div style="font-size:11px;color:var(--text)">Brand Identity Binder</div><div style="font-size:10px;color:var(--text3)">Binder · 34 items</div></div></div>
+            <span style="color:var(--text3);font-size:10px">→</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:6px 8px;background:var(--card);border:1px solid var(--border);border-radius:4px">
+            <div style="display:flex;align-items:center;gap:8px"><span style="color:var(--green);font-size:12px">📗</span><div><div style="font-size:11px;color:var(--text)">Alpha Platform Itembook</div><div style="font-size:10px;color:var(--text3)">Itembook · 12 linked items</div></div></div>
+            <span style="color:var(--text3);font-size:10px">→</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:6px 8px;background:var(--card);border:1px solid var(--border);border-radius:4px">
+            <div style="display:flex;align-items:center;gap:8px"><span style="color:var(--yellow);font-size:12px">📑</span><div><div style="font-size:11px;color:var(--text)">Q1 2026 Sprint Record</div><div style="font-size:10px;color:var(--text3)">Record · Ordered list · 87 items</div></div></div>
+            <span style="color:var(--text3);font-size:10px">→</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-header"><div class="section-title">GOVERNANCE QUEUE</div><span class="section-action">View All</span></div>
+        <div style="display:flex;flex-direction:column;gap:5px">
+          <div style="padding:8px;background:var(--card);border:1px solid rgba(168,85,247,0.3);border-radius:4px">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px"><span style="font-size:11px;color:var(--text)">Equity Policy — RFC-009</span><span style="font-size:10px;color:var(--yellow)">Vote</span></div>
+            <div style="font-size:10px;color:var(--text3)">Dev DAO · Ends in 2 days · 72/88 votes</div>
+            <div class="progress-bar" style="margin-top:6px"><div class="progress-fill" style="width:82%;background:var(--purple)"></div></div>
+          </div>
+          <div style="padding:8px;background:var(--card);border:1px solid rgba(245,158,11,0.2);border-radius:4px">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px"><span style="font-size:11px;color:var(--text)">Q2 Budget Allocation</span><span style="font-size:10px;color:var(--orange)">Review</span></div>
+            <div style="font-size:10px;color:var(--text3)">Delivery Coop · 18/35 votes</div>
+            <div class="progress-bar" style="margin-top:6px"><div class="progress-fill" style="width:51%;background:var(--orange)"></div></div>
+          </div>
+          <div style="padding:8px;background:var(--card);border:1px solid var(--border);border-radius:4px">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px"><span style="font-size:11px;color:var(--text)">Data Retention Policy</span><span style="font-size:10px;color:var(--text3)">Draft</span></div>
+            <div style="font-size:10px;color:var(--text3)">Kogi Platform · Author: J.Chen</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div style="width:280px;flex-shrink:0;display:flex;flex-direction:column;gap:10px;overflow-y:auto">
+    <div class="section">
+      <div class="section-header"><div class="section-title">TOOLCHAIN</div><span class="section-action">+ Add Tool</span></div>
+      <div style="display:flex;flex-direction:column;gap:5px">
+        <div style="font-size:9px;letter-spacing:1.5px;color:var(--text3);margin-bottom:2px">LINKED PLATFORMS</div>
+        <div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:8px">
+          <span class="tool-chip">⚙ Jira</span>
+          <span class="tool-chip">◈ GitHub</span>
+          <span class="tool-chip">✦ Figma</span>
+          <span class="tool-chip">◎ Notion</span>
+          <span class="tool-chip">◉ Slack</span>
+          <span class="tool-chip">◉ Claude</span>
+          <span class="tool-chip">⟨⟩ VS Code</span>
+          <span class="tool-chip">◈ Monday</span>
+        </div>
+        <div style="font-size:9px;letter-spacing:1.5px;color:var(--text3);margin-bottom:4px">ACTIVE TOOLKITS</div>
+        <div style="background:var(--card);border:1px solid var(--border);border-radius:4px;padding:8px;margin-bottom:4px">
+          <div style="font-size:11px;color:var(--cyan);margin-bottom:2px">Dev Stack</div>
+          <div style="font-size:10px;color:var(--text3)">Rust · Go · Scala · Zig · PG</div>
+        </div>
+        <div style="background:var(--card);border:1px solid var(--border);border-radius:4px;padding:8px;margin-bottom:4px">
+          <div style="font-size:11px;color:var(--purple);margin-bottom:2px">AI Toolkit</div>
+          <div style="font-size:10px;color:var(--text3)">Claude · GPT-4o · Grok · Oba</div>
+        </div>
+        <div style="background:var(--card);border:1px solid var(--border);border-radius:4px;padding:8px">
+          <div style="font-size:11px;color:var(--orange);margin-bottom:2px">Design Tools</div>
+          <div style="font-size:10px;color:var(--text3)">Figma · Framer · Midjourney</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><div class="section-title">OPERATIONS METRICS</div></div>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <div><div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:3px"><span>Sprint progress</span><span style="color:var(--cyan)">67%</span></div><div class="progress-bar"><div class="progress-fill" style="width:67%;background:var(--cyan)"></div></div></div>
+        <div><div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:3px"><span>OKR completion</span><span style="color:var(--green)">45%</span></div><div class="progress-bar"><div class="progress-fill" style="width:45%;background:var(--green)"></div></div></div>
+        <div><div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:3px"><span>Roadmap on-track</span><span style="color:var(--purple)">78%</span></div><div class="progress-bar"><div class="progress-fill" style="width:78%;background:var(--purple)"></div></div></div>
+        <div><div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:3px"><span>Capacity utilization</span><span style="color:var(--orange)">73%</span></div><div class="progress-bar"><div class="progress-fill" style="width:73%;background:var(--orange)"></div></div></div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><div class="section-title">UPCOMING</div></div>
+      <div style="display:flex;flex-direction:column;gap:5px">
+        <div style="font-size:11px;display:flex;gap:8px;align-items:flex-start;padding:5px 0;border-bottom:1px solid var(--border)"><span style="color:var(--red);font-size:10px;margin-top:2px">●</span><div><div style="color:var(--text)">Sprint Demo</div><div style="font-size:10px;color:var(--text3)">Today, 3:00 PM</div></div></div>
+        <div style="font-size:11px;display:flex;gap:8px;align-items:flex-start;padding:5px 0;border-bottom:1px solid var(--border)"><span style="color:var(--orange);font-size:10px;margin-top:2px">●</span><div><div style="color:var(--text)">DevDAO Governance Vote</div><div style="font-size:10px;color:var(--text3)">Fri Mar 15</div></div></div>
+        <div style="font-size:11px;display:flex;gap:8px;align-items:flex-start;padding:5px 0;border-bottom:1px solid var(--border)"><span style="color:var(--yellow);font-size:10px;margin-top:2px">●</span><div><div style="color:var(--text)">Tax Filing Deadline</div><div style="font-size:10px;color:var(--text3)">Mar 22</div></div></div>
+        <div style="font-size:11px;display:flex;gap:8px;align-items:flex-start;padding:5px 0"><span style="color:var(--cyan);font-size:10px;margin-top:2px">●</span><div><div style="color:var(--text)">Q1 Close</div><div style="font-size:10px;color:var(--text3)">Mar 31</div></div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div>
+
+</div>
+</div>
+</div>
+</body>
+</html>

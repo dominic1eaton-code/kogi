@@ -1,6 +1,8 @@
 #
 
 
+kogi - an operating system to give independent workers everything that they need to manage their portfolio's of work
+
 home
     - portable benefits
 office
@@ -468,7 +470,17 @@ osyse - environment domain
 
 ---
 
+The solutionSystem is the primary domain of the platform and the solution is the central/root element of the platform: 
+
 solution
+    - solution component
+        - solution part
+        - part number
+        - part vendor
+        - part ID
+        - part name
+        - part material
+        - part design|blueprint|
 solution model
     - blueprint
     - design
@@ -478,18 +490,314 @@ solution testbed
 solution factory
 solution vendor
 solution orchestration -> workflow -> task
-solution components|parts
-    - part number
-    - part vendor
-    - part ID
-    - part name
-    - part material
-    - part design|blueprint|
 solution data
     - solution metadata
         - unique id
         - name
-        - version control
+        - version
+        - maturity
+            - sandbox, dev, nightly, test, cm (control managed)
+    - solution features
+        - features list
+            - name
+            - brief
+            - feature
+solution tooling
 
-        
+solution chain, solution set, solution kit, tool solution
 
+solution book
+    - charter
+    - notes
+    - parts
+    - vendors
+    - binders
+    - directories
+    - lists
+    - collections
+    - schedules
+    - timelines
+    - work packages
+    - work breakdown structures WBSs
+
+solution package
+
+solution factory SF
+    - solution development environment SDE
+        - solution configuration
+            - solution version
+            - solution component
+                - solution component version
+            - solution part
+                - solution part version
+        - solution model
+            - solution blueprint
+            - solution design
+            - solution archietcture
+            - solution mockup
+            - solution protoype
+        - solution sandbox environment
+        - solution build environment ~ solution assembly environnment
+            - solution build
+                - solution build version
+                - solution build maturity
+                - solution build number
+            - solution assembly
+        - solution test environment
+        - solution release environment
+        - solution maturity
+        - solution toolbox
+    - solution network ~ chain+interconnected SDEs
+    - solution registry
+    - solution portoflio
+
+solutdion channels - communication channels, distribution channels
+solution distribution, logistics, supplychain
+solution communications
+solution artifact management system - inventory mangaement, binary management, capital+asset management
+solution resource management system
+
+
+reusability, sustainability, renewability, recyclability, closed loop systems, eco-aware solution design
+
+---
+
+communication channels
+email
+message - unicast (direct), multicast (group), broadcast [alerts, notifications, announcements]
+notifications, alerts, announcements
+
+
+---
+
+
+READ all of the docs and generate a design document for the kogi-platform bank system: with independent worker + autonomous/independent organization + collective + cooperative + independent teams banking, independent worker accounting+journals+ledgers, wallets system, escrow, investment and different types of accounts+wallets (accounts as stores of capital+resources+liquidity+equity+financial assets/instrucments, and wallets as points of transactions of these financial items/entites/components), funding+donor/donation+capital+resources+bids+offers+deals+erequests+proposals+contracts+gigs+tasks management and campaigns
+
+
+READ all of the docs and generate a design document for the kogi-platform game system+engine:
+kogi resource+capital+labor+exchange+marketplace+portfolio/portfolio-components/assets+bids+offers+deals+erequests+proposals+contracts+gigs+tasks game+allocation+incenive mechanism design system, matching+recommendations+analytics+personalization+preferences, kogi platform incentive mechanism designs, allocation system, incentive system,
+
+---
+
+
+read all of these documents and, using the uploaded images as references, generate user screens images, one screen per image, for the kogi bank
+
+
+---
+
+persona construction:
+
+
+mystery shopping ~ the dream 100 - 100 products and full customer + customer interaction pipeline and business replication
+
+list of all the problems of a prospective buyer of a competitor product/good/service, and how does my product/good/service solve the prospects problem in comparison; iteration cycling
+
+---
+
+order fufillment, errors, discrepencies, returns, chargebacks, etc...
+
+---
+
+
+READ all of the docs, and using the uploaded images as references, generate screen images, one screen per image, for:
+
+community pages for autonomous+independently organized organizations, collectives, cooperatives, teams, distributed governance, portfolio collaborations, group economics + equity crowdfunding + donations, open source collaborations
+
+---
+
+break out of one's average
+
+---
+
+initiatives
+
+portable benefits
+ortable benefits are worker-centered benefits that remain with an individual rather than being tied to a single employer, designed primarily for independent contractors, freelancers, and gig workers. Common examples include health, dental, and vision insurance, retirement savings (like SEP-IRAs), paid time off, and workers' compensation. 
+
+Common Portable Benefit Offerings
+
+Health and Wellness: Health insurance, dental insurance, vision insurance, and Health Savings Accounts (HSAs).
+
+Retirement & Savings: Retirement savings plans (401k/403b portability, Pooled Employer Plans) and emergency savings accounts.
+
+Paid Time Off & Income Security: Paid sick days, paid vacation time, and income replacement for missed work.
+
+Insurance & Protection: Occupational accident insurance (disability) and workers' compensation coverage.
+
+Professional Development: Portable education or training accounts. 
+
+Platform/Gig Contributions: Companies like DoorDash contribute a percentage (e.g., 4%) of pre-tip earnings to a portable savings account managed by firms like Stride LLC for eligible workers.
+
+
+grants, microfinancing, group economics, equity crowdfunding, crowdresourcing
+
+shared portfolios, portfolio resource sharing
+
+group|team|organization|collective|cooperative|federation portfolios
+
+portfolio collaboration
+
+Booking & Scheduling: Centralized calendars, multi-artist dashboards, conflict detection, and event booking/reservation management.
+
+CRM & Lead Management: Lead capture forms, automated follow-up emails, and client database management.
+
+Contracts & Invoicing: Customizable, automated contracts with e-signatures, and automated payment reminders.
+
+Finance & Reporting: Online payment processing, expense tracking, budget management, and tax report generation.
+
+Logistics & Communication: Tour itinerary planning, resource allocation (equipment/staff), and in-app communication tools.
+
+Logistics Tracking: Keep track of tour logistics, 
+including equipment rentals, transportation, and crew schedules
+
+---
+
+Tools:
+
+generate a tools design document for the
+- resume/work-portfolio highlights builder+generation tool
+
+
+also include in the document any other tools that might be useful/essential for users of the kogi platform
+
+---
+
+Resource Management System
+- portfolios, programs, projects, assets, artifacts, binders, journals, books, dossiers, folders, documents, files, directories, 
+- timelines, schedules, roadmaps, calendars, gantts
+- boards, stories, epics, features, stories, tasks, work packages, work breakdown structures, initiatives, strategies, tactics, operations, themes
+- gigs, consultations, bookings, tasks, jobs, contracts, offers, deals, requests, proposals, bids, investments
+- capital, assets, artifacts, labor, land, estates, real estate
+- equitty, liquidity, debt, taxes, cash, credit, debit, donations, grants
+- contributions (labor, skills, financial, support, advertising, marketing, promoions, endorsements, donation, investment)
+- users: member, contributors, donors, investors, subscribers, followers, watcher, owner, editor
+- personas:  developers, creatives, artists, writers, journalists, professionals, enthusiasts, hobbyists, service providers, visionaries, architects, designers, facilitators, integrators, organizers, activists, managers, directors, insiders, hackers, technicians, innovators, technologists
+- workers: contractors, consultants, gig workers, freelancers, entreprenuers, micropreneurs, coaches, partners, employees, officers
+- organizations: autonomous|independent|ad-hoc organizations, open source communities, cooperatives, collectives, federations, autonomous|independent|ad-hoc teams|groups, councils, assemblies
+
+kogi-platform resources
+
+---
+
+work management system
+
+- workspace
+    - work dashboard
+    - work backlogs + backloags management system
+    - work governance
+    - work content management system
+        - files
+        - documents
+        - contracts
+        - agreements
+        - SOPs
+        - policies
+        - procedures
+        - frameworks
+        - models
+    - work boards
+    - work timelines
+        - schedules
+        - gantts
+        - calendars
+        - roadmaps
+        - timeboxes: program incements PIs, sprints, custom timeboxes, durations, qaurters
+    - work analytics
+        - forecasting
+        - analysis
+        - telemetry
+        - optimization
+        - personalization
+        - performance
+        - KPIs
+        - OKRs
+        - data tracking
+    - work resource management
+        - budgeting
+        - reporting
+        - allocation
+        - delegation
+        - TODO's
+    - work studio
+        - requirements management system
+        - work design systems
+- work breakdown structure WBS
+    - work package
+        - theme
+            - initiative
+                - epic
+                    - story
+                        - task
+                    - story.data:
+                        + owners
+                        + unique id
+                        + name
+                        + labels
+                        + categories
+                        + classes
+                        + types
+                        + dependencies
+                        + dependents
+                        + children
+                        + parents
+                        + attachments
+                        + fields
+                        + timestamps (creation, update)
+                        + tags
+                    - story.type:
+                        + feature
+                        + bug
+                        + testing
+                        + capability
+                        + issue
+                        + defect
+                        + enhancement
+                        + innovation
+                        + audit
+                        + enabler
+                        + blocker
+                        + use case
+                        + business case
+                        + requirement
+                        + documentation
+                        + milestone
+                        + goal
+                        + objective
+                        + outcome
+                        + mission
+                        + vision
+                        + risk
+                        + strategy
+                        + tactic
+                        + operation
+                        + plan
+                        + report
+                        + release
+                        + deployment
+                        + distribution
+                        + template
+                        + archive
+
+
+---
+
+- home
+- work
+- community
+- marketplace
+- exchange
+- studio
+- office
+
+- developer
+- resources
+- operations + tactics + strategy
+
+
+
+kogi-root
+- home
+- office
+- center
+- work
+- portfolio
