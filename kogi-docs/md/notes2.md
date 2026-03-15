@@ -944,6 +944,17 @@ portfolio skill matching. I have a project and need help, who on the marketplace
 
 kogi independent worker+organization portfolio management platform ~ distributed portfolio system
 
+---
+
+spreadsheet system
+
+5 core components: row, column, cell, data|value, sheet
+
+methods: CRUD, functions, macros|scripts|programs|processes
+
+---
+
+generate screen pages for things like: bookings, CRM, crowdfunding of resources|capital|equity, group economics, organizing resource|crowdfunding|general-purpose campaigns as an individual worker + team + group + collective + cooperative on the community+marketplace+exchange
 
 ---
 

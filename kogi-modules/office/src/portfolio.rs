@@ -6014,3 +6014,788 @@ mod tests {
         assert_eq!(pt.grand_total.unwrap(), 450.0);
     }
 }
+
+// =============================================================================
+//  portfolio_view_engine.rs — Kogi OS · KPVW v3.0
+//  Portfolio View Engine
+//
+//  Transforms raw PortfolioRow data into shaped, filtered, sorted, grouped,
+//  and visually enriched spreadsheet views. Views are defined as
+//  ViewDefinition objects, serialized to JSON, versioned, and shareable.
+//
+//  Key types
+//  ─────────
+//    ViewDefinition     — complete description of a user-facing view
+//    ViewFilter         — composable boolean predicate (AND/OR tree)
+//    FilterPredicate    — a single filter clause (operator + value)
+//    ViewSort           — ordered sort predicate
+//    ViewGroup          — hierarchical group definition
+//    PivotConfig        — cross-dimensional aggregation
+//    ChartConfig        — chart overlay configuration
+//    BoardConfig        — Kanban / Gantt / Calendar board mode settings
+//    RowHighlightRule   — conditional row coloring
+//    SummaryRowConfig   — aggregate row at sheet bottom
+//    ViewEngine         — applies transforms to a PortfolioRow slice
+//
+//  @author  Kogi Team
+//  @version 3.0.0
+//  @license MIT
+// =============================================================================
+
+#![allow(dead_code)]
+
+use std::collections::{HashMap, HashSet};
+use chrono::{DateTime, NaiveDate, Utc};
+use rust_decimal::Decimal;
+use serde::{Deserialize, Serialize};
+use uuid::Uuid;
+
+use crate::portfolio_spreadsheet_substrate::{
+    CellStore, CellValue, ColumnId, ComponentId, EntityId, PortfolioRow, RowStore,
+};
+
+// =============================================================================
+// §1 — FILTER SYSTEM
+// =============================================================================
+
+/// A single atomic filter clause.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub enum FilterPredicate {
+    Equals          { column: ColumnId, value: serde_json::Value },
+    NotEquals       { column: ColumnId, value: serde_json::Value },
+    GreaterThan     { column: ColumnId, value: f64 },
+    LessThan        { column: ColumnId, value: f64 },
+    GreaterOrEqual  { column: ColumnId, value: f64 },
+    LessOrEqual     { column: ColumnId, value: f64 },
+    Between         { column: ColumnId, min: f64, max: f64 },
+    Contains        { column: ColumnId, substring: String },
+    StartsWith      { column: ColumnId, prefix: String },
+    EndsWith        { column: ColumnId, suffix: String },
+    DateAfter       { column: ColumnId, date: NaiveDate },
+    DateBefore      { column: ColumnId, date: NaiveDate },
+    DateBetween     { column: ColumnId, start: NaiveDate, end: NaiveDate },
+    InSet           { column: ColumnId, values: Vec<serde_json::Value> },
+    NotInSet        { column: ColumnId, values: Vec<serde_json::Value> },
+    TagIncludes     { column: ColumnId, tag: String },
+    HasRiskSeverity { severity: String },
+    HasComplianceFlag { flag: String },
+    IsEmpty         { column: ColumnId },
+    IsNotEmpty      { column: ColumnId },
+    IsTrue          { column: ColumnId },
+    IsFalse         { column: ColumnId },
+    OwnedByMe,
+    HealthScoreAbove { threshold: f64 },
+    HealthScoreBelow { threshold: f64 },
+    RiskScoreAbove   { threshold: f64 },
+}
+
+/// A composable boolean filter node (AND/OR tree).
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub enum ViewFilter {
+    Predicate(FilterPredicate),
+    And(Vec<ViewFilter>),
+    Or(Vec<ViewFilter>),
+    Not(Box<ViewFilter>),
+}
+
+/// Actor context supplied to the view engine for ownership filters.
+#[derive(Debug, Clone)]
+pub struct ActorContext {
+    pub user_id: EntityId,
+    pub org_ids: Vec<EntityId>,
+}
+
+// =============================================================================
+// §2 — SORT SYSTEM
+// =============================================================================
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub enum SortDirection { Ascending, Descending }
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub enum NullPlacement { First, Last }
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ViewSort {
+    pub column_id:      ColumnId,
+    pub direction:      SortDirection,
+    pub null_placement: NullPlacement,
+}
+
+impl ViewSort {
+    pub fn asc(col: impl Into<ColumnId>) -> Self {
+        Self { column_id: col.into(), direction: SortDirection::Ascending, null_placement: NullPlacement::Last }
+    }
+    pub fn desc(col: impl Into<ColumnId>) -> Self {
+        Self { column_id: col.into(), direction: SortDirection::Descending, null_placement: NullPlacement::Last }
+    }
+}
+
+// =============================================================================
+// §3 — GROUP & ROLLUP SYSTEM
+// =============================================================================
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ViewGroup {
+    pub column_id:        ColumnId,
+    pub collapse_default: bool,
+    pub label_template:   Option<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub enum Aggregation {
+    Sum, Avg, Min, Max, Median, Count, CountNonEmpty, CountTrue, PctTrue, Mode, Union,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct SummaryRowConfig {
+    pub columns: Vec<(ColumnId, Aggregation)>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct RollupConfig {
+    pub hierarchy_column: ColumnId,
+    pub rollup_columns:   Vec<(ColumnId, Aggregation)>,
+}
+
+// =============================================================================
+// §4 — PIVOT TABLE
+// =============================================================================
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct PivotConfig {
+    pub row_field:   ColumnId,
+    pub col_field:   ColumnId,
+    pub value_field: ColumnId,
+    pub aggregation: Aggregation,
+    pub show_totals: bool,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct PivotTable {
+    pub row_headers: Vec<String>,
+    pub col_headers: Vec<String>,
+    pub cells:       Vec<Vec<Option<f64>>>,
+    pub row_totals:  Vec<Option<f64>>,
+    pub col_totals:  Vec<Option<f64>>,
+    pub grand_total: Option<f64>,
+}
+
+// =============================================================================
+// §5 — CHART CONFIGURATION
+// =============================================================================
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub enum ChartType { Bar, StackedBar, Line, Area, Scatter, Pie, Gauge, Treemap, NetworkGraph, Timeline }
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ChartConfig {
+    pub chart_type:   ChartType,
+    pub x_column:     ColumnId,
+    pub y_columns:    Vec<ColumnId>,
+    pub group_by:     Option<ColumnId>,
+    pub title:        Option<String>,
+    pub color_scheme: Option<String>,
+    pub show_legend:  bool,
+}
+
+// =============================================================================
+// §6 — BOARD MODES
+// =============================================================================
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub enum BoardMode { Kanban, Gantt, Calendar, AgileBoard, ResourceBoard, NetworkGraph, Treemap, TimelineBoard }
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct KanbanLane { pub status: String, pub color: Option<String>, pub wip_limit: Option<u32> }
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct GanttConfig {
+    pub start_column:       ColumnId,
+    pub end_column:         ColumnId,
+    pub bar_color_column:   Option<ColumnId>,
+    pub show_dependencies:  bool,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct BoardConfig {
+    pub mode:                    BoardMode,
+    pub kanban_lanes:            Option<Vec<KanbanLane>>,
+    pub gantt:                   Option<GanttConfig>,
+    pub calendar_date_column:    Option<ColumnId>,
+    pub treemap_size_column:     Option<ColumnId>,
+    pub card_columns:            Vec<ColumnId>,
+}
+
+// =============================================================================
+// §7 — ROW HEIGHT & CONDITIONAL FORMATTING
+// =============================================================================
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub enum RowHeight { Compact, Normal, Tall, Auto }
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct RowHighlightRule {
+    pub id:       Uuid,
+    pub label:    String,
+    pub filter:   ViewFilter,
+    pub bg_color: String,
+    pub fg_color: Option<String>,
+    pub priority: u8,
+}
+
+// =============================================================================
+// §8 — VIEW DEFINITION
+// =============================================================================
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub enum ViewVisibility { Private, Shared, Public, Template }
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct VisibleColumn {
+    pub column_id: ColumnId,
+    pub width_px:  Option<u16>,
+    pub pinned:    bool,
+    pub hidden:    bool,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ViewDefinition {
+    pub id:                Uuid,
+    pub name:              String,
+    pub sheet_id:          String,
+    pub base_row_filter:   Option<ViewFilter>,
+    pub visible_columns:   Vec<VisibleColumn>,
+    pub filters:           Vec<ViewFilter>,
+    pub sorts:             Vec<ViewSort>,
+    pub groups:            Vec<ViewGroup>,
+    pub row_height:        RowHeight,
+    pub highlight_rules:   Vec<RowHighlightRule>,
+    pub pinned_column_ids: Vec<ColumnId>,
+    pub frozen_row_count:  u32,
+    pub pivot_config:      Option<PivotConfig>,
+    pub chart_config:      Option<ChartConfig>,
+    pub summary_row:       Option<SummaryRowConfig>,
+    pub board_config:      Option<BoardConfig>,
+    pub rollup_config:     Option<RollupConfig>,
+    pub visibility:        ViewVisibility,
+    pub created_by:        EntityId,
+    pub created_at:        DateTime<Utc>,
+    pub updated_at:        DateTime<Utc>,
+}
+
+impl ViewDefinition {
+    pub fn new(name: impl Into<String>, sheet_id: impl Into<String>, created_by: EntityId) -> Self {
+        let now = Utc::now();
+        Self {
+            id:                Uuid::new_v4(),
+            name:              name.into(),
+            sheet_id:          sheet_id.into(),
+            base_row_filter:   None,
+            visible_columns:   vec![],
+            filters:           vec![],
+            sorts:             vec![],
+            groups:            vec![],
+            row_height:        RowHeight::Normal,
+            highlight_rules:   vec![],
+            pinned_column_ids: vec![],
+            frozen_row_count:  0,
+            pivot_config:      None,
+            chart_config:      None,
+            summary_row:       None,
+            board_config:      None,
+            rollup_config:     None,
+            visibility:        ViewVisibility::Private,
+            created_by,
+            created_at:        now,
+            updated_at:        now,
+        }
+    }
+}
+
+// =============================================================================
+// §9 — GROUPED VIEW OUTPUT
+// =============================================================================
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct GroupHeader {
+    pub group_key:    String,
+    pub group_value:  String,
+    pub row_count:    usize,
+    pub is_collapsed: bool,
+    pub aggregates:   HashMap<ColumnId, f64>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub enum ViewRow {
+    Data(ComponentId),
+    GroupHeader(GroupHeader),
+    SummaryRow(HashMap<ColumnId, f64>),
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct MaterializedView {
+    pub view_id:          Uuid,
+    pub sheet_id:         String,
+    pub rows:             Vec<ViewRow>,
+    pub total_data_rows:  usize,
+    pub generated_at:     DateTime<Utc>,
+}
+
+// =============================================================================
+// §10 — VIEW ENGINE
+// =============================================================================
+
+pub struct ViewEngine;
+
+impl ViewEngine {
+    pub fn apply(
+        view:          &ViewDefinition,
+        row_store:     &RowStore,
+        cell_store:    &CellStore,
+        actor:         &ActorContext,
+        sheet_row_ids: &[ComponentId],
+    ) -> MaterializedView {
+        let mut rows: Vec<&PortfolioRow> = sheet_row_ids
+            .iter()
+            .filter_map(|id| row_store.get(id))
+            .collect();
+
+        if let Some(bf) = &view.base_row_filter {
+            rows.retain(|r| Self::evaluate_filter(bf, r, cell_store, actor));
+        }
+        for f in &view.filters {
+            rows.retain(|r| Self::evaluate_filter(f, r, cell_store, actor));
+        }
+
+        let total_data_rows = rows.len();
+
+        if !view.sorts.is_empty() {
+            rows.sort_by(|a, b| {
+                for sort in &view.sorts {
+                    let ord = Self::compare_by_col(a, b, &sort.column_id, cell_store, &sort.null_placement);
+                    if ord != std::cmp::Ordering::Equal {
+                        return if sort.direction == SortDirection::Descending { ord.reverse() } else { ord };
+                    }
+                }
+                std::cmp::Ordering::Equal
+            });
+        }
+
+        let view_rows = if view.groups.is_empty() {
+            let mut out: Vec<ViewRow> = rows.iter().map(|r| ViewRow::Data(r.component_id)).collect();
+            if let Some(sr) = &view.summary_row {
+                out.push(ViewRow::SummaryRow(Self::summary(&rows, &sr.columns, cell_store)));
+            }
+            out
+        } else {
+            Self::group(&rows, &view.groups, &view.summary_row, cell_store)
+        };
+
+        MaterializedView {
+            view_id:        view.id,
+            sheet_id:       view.sheet_id.clone(),
+            rows:           view_rows,
+            total_data_rows,
+            generated_at:   Utc::now(),
+        }
+    }
+
+    // ── Filter ────────────────────────────────────────────────────────────────
+
+    pub fn evaluate_filter(f: &ViewFilter, row: &PortfolioRow, cs: &CellStore, actor: &ActorContext) -> bool {
+        match f {
+            ViewFilter::Predicate(p) => Self::eval_pred(p, row, cs, actor),
+            ViewFilter::And(fs)      => fs.iter().all(|f| Self::evaluate_filter(f, row, cs, actor)),
+            ViewFilter::Or(fs)       => fs.iter().any(|f| Self::evaluate_filter(f, row, cs, actor)),
+            ViewFilter::Not(inner)   => !Self::evaluate_filter(inner, row, cs, actor),
+        }
+    }
+
+    fn eval_pred(p: &FilterPredicate, row: &PortfolioRow, cs: &CellStore, actor: &ActorContext) -> bool {
+        match p {
+            FilterPredicate::Equals { column, value } =>
+                Self::as_json(row, column, cs) == Some(value.clone()),
+            FilterPredicate::NotEquals { column, value } =>
+                Self::as_json(row, column, cs).as_ref() != Some(value),
+            FilterPredicate::GreaterThan    { column, value } => Self::as_f64(row, column, cs).map_or(false, |v| v > *value),
+            FilterPredicate::LessThan       { column, value } => Self::as_f64(row, column, cs).map_or(false, |v| v < *value),
+            FilterPredicate::GreaterOrEqual { column, value } => Self::as_f64(row, column, cs).map_or(false, |v| v >= *value),
+            FilterPredicate::LessOrEqual    { column, value } => Self::as_f64(row, column, cs).map_or(false, |v| v <= *value),
+            FilterPredicate::Between { column, min, max } =>
+                Self::as_f64(row, column, cs).map_or(false, |v| v >= *min && v <= *max),
+            FilterPredicate::Contains { column, substring } =>
+                Self::as_str(row, column, cs).map_or(false, |s| s.to_lowercase().contains(&substring.to_lowercase())),
+            FilterPredicate::StartsWith { column, prefix } =>
+                Self::as_str(row, column, cs).map_or(false, |s| s.to_lowercase().starts_with(&prefix.to_lowercase())),
+            FilterPredicate::EndsWith { column, suffix } =>
+                Self::as_str(row, column, cs).map_or(false, |s| s.to_lowercase().ends_with(&suffix.to_lowercase())),
+            FilterPredicate::DateAfter  { column, date }        => Self::as_date(row, column, cs).map_or(false, |d| d > *date),
+            FilterPredicate::DateBefore { column, date }        => Self::as_date(row, column, cs).map_or(false, |d| d < *date),
+            FilterPredicate::DateBetween { column, start, end } => Self::as_date(row, column, cs).map_or(false, |d| d >= *start && d <= *end),
+            FilterPredicate::InSet    { column, values } => Self::as_json(row, column, cs).map_or(false, |v| values.contains(&v)),
+            FilterPredicate::NotInSet { column, values } => Self::as_json(row, column, cs).map_or(true, |v| !values.contains(&v)),
+            FilterPredicate::TagIncludes  { tag, .. }   => row.tags.contains(tag),
+            FilterPredicate::HasRiskSeverity { severity } => row.risk_flags.iter().any(|r| &r.severity == severity),
+            FilterPredicate::HasComplianceFlag { flag }   => row.compliance_flags.contains(flag),
+            FilterPredicate::IsEmpty    { column } => Self::as_json(row, column, cs).is_none(),
+            FilterPredicate::IsNotEmpty { column } => Self::as_json(row, column, cs).is_some(),
+            FilterPredicate::IsTrue     { column } => Self::as_f64(row, column, cs).map_or(false, |v| v != 0.0),
+            FilterPredicate::IsFalse    { column } => Self::as_f64(row, column, cs).map_or(false, |v| v == 0.0),
+            FilterPredicate::OwnedByMe =>
+                row.owners.contains(&actor.user_id)
+                || actor.org_ids.iter().any(|oid| row.owners.contains(oid)),
+            FilterPredicate::HealthScoreAbove { threshold } =>
+                cs.get(&row.component_id, "health_score").and_then(|v| v.as_f64()).map_or(false, |s| s > *threshold),
+            FilterPredicate::HealthScoreBelow { threshold } =>
+                cs.get(&row.component_id, "health_score").and_then(|v| v.as_f64()).map_or(false, |s| s < *threshold),
+            FilterPredicate::RiskScoreAbove { threshold } =>
+                cs.get(&row.component_id, "risk_score").and_then(|v| v.as_f64()).map_or(false, |s| s > *threshold),
+        }
+    }
+
+    // ── Column accessor helpers ───────────────────────────────────────────────
+
+    pub fn as_f64(row: &PortfolioRow, col: &str, cs: &CellStore) -> Option<f64> {
+        if let Some(v) = cs.get(&row.component_id, col) { return v.as_f64(); }
+        match col {
+            "progress_pct"             => Some(row.progress_pct as f64),
+            "budget_spent"             => row.budget_spent.to_string().parse().ok(),
+            "budget_allocated"         => row.budget_allocated?.to_string().parse().ok(),
+            "revenue"                  => row.revenue.to_string().parse().ok(),
+            "expenses"                 => row.expenses.to_string().parse().ok(),
+            "views"                    => Some(row.views as f64),
+            "clicks"                   => Some(row.clicks as f64),
+            "shares"                   => Some(row.shares as f64),
+            "followers"                => Some(row.followers as f64),
+            "resource_units_allocated" => Some(row.resource_units_allocated),
+            "allocation_pct"           => Some(row.allocation_pct),
+            "merge_conflicts"          => Some(row.merge_conflicts as f64),
+            _                          => None,
+        }
+    }
+
+    pub fn as_str(row: &PortfolioRow, col: &str, cs: &CellStore) -> Option<String> {
+        if let Some(CellValue::Text(s)) = cs.get(&row.component_id, col) { return Some(s.clone()); }
+        match col {
+            "name"             => Some(row.name.clone()),
+            "slug"             => Some(row.slug.clone()),
+            "status"           => Some(row.status.clone()),
+            "state"            => Some(row.state.clone()),
+            "visibility"       => Some(row.visibility.clone()),
+            "component_type"   => Some(row.component_type.clone()),
+            "item_type"        => row.item_type.clone(),
+            "container_type"   => row.container_type.clone(),
+            "domain"           => row.domain.clone(),
+            "display_name"     => row.display_name.clone().or_else(|| Some(row.name.clone())),
+            "governance_model" => row.governance_model.clone(),
+            "approval_status"  => row.approval_status.clone(),
+            "tax_category"     => row.tax_category.clone(),
+            "payment_status"   => row.payment_status.clone(),
+            "benefit_type"     => row.benefit_type.clone(),
+            "benefit_provider" => row.benefit_provider.clone(),
+            "engagement_type"  => row.engagement_type.clone(),
+            "platform"         => row.platform.clone(),
+            "campaign_type"    => row.campaign_type.clone(),
+            "funding_type"     => row.funding_type.clone(),
+            "quarter"          => row.quarter.clone(),
+            _                  => None,
+        }
+    }
+
+    pub fn as_date(row: &PortfolioRow, col: &str, cs: &CellStore) -> Option<NaiveDate> {
+        if let Some(CellValue::Date(d)) = cs.get(&row.component_id, col) { return Some(*d); }
+        match col {
+            "start_date" => row.start_date,
+            "end_date"   => row.end_date,
+            "due_date"   => row.due_date,
+            "close_date" => row.close_date,
+            _            => None,
+        }
+    }
+
+    pub fn as_json(row: &PortfolioRow, col: &str, cs: &CellStore) -> Option<serde_json::Value> {
+        if let Some(cv) = cs.get(&row.component_id, col) {
+            return serde_json::to_value(cv).ok();
+        }
+        match col {
+            "status"         => Some(serde_json::json!(row.status)),
+            "visibility"     => Some(serde_json::json!(row.visibility)),
+            "item_type"      => row.item_type.as_ref().map(|t| serde_json::json!(t)),
+            "component_type" => Some(serde_json::json!(row.component_type)),
+            "name"           => Some(serde_json::json!(row.name)),
+            "platform"       => row.platform.as_ref().map(|p| serde_json::json!(p)),
+            "benefit_type"   => row.benefit_type.as_ref().map(|b| serde_json::json!(b)),
+            "quarter"        => row.quarter.as_ref().map(|q| serde_json::json!(q)),
+            _                => None,
+        }
+    }
+
+    // ── Grouping ──────────────────────────────────────────────────────────────
+
+    fn group(
+        rows:     &[&PortfolioRow],
+        groups:   &[ViewGroup],
+        summary:  &Option<SummaryRowConfig>,
+        cs:       &CellStore,
+    ) -> Vec<ViewRow> {
+        if groups.is_empty() {
+            return rows.iter().map(|r| ViewRow::Data(r.component_id)).collect();
+        }
+        let g = &groups[0];
+        let mut order: Vec<String> = Vec::new();
+        let mut buckets: HashMap<String, Vec<&PortfolioRow>> = HashMap::new();
+        for row in rows {
+            let key = Self::as_str(row, &g.column_id, cs).unwrap_or("(empty)".into());
+            if !buckets.contains_key(&key) { order.push(key.clone()); }
+            buckets.entry(key).or_default().push(row);
+        }
+        let mut out = Vec::new();
+        for key in &order {
+            let bucket = &buckets[key];
+            out.push(ViewRow::GroupHeader(GroupHeader {
+                group_key:    g.column_id.clone(),
+                group_value:  key.clone(),
+                row_count:    bucket.len(),
+                is_collapsed: g.collapse_default,
+                aggregates:   HashMap::new(),
+            }));
+            if !g.collapse_default {
+                out.extend(Self::group(bucket, &groups[1..], &None, cs));
+            }
+        }
+        if let Some(sr) = summary {
+            out.push(ViewRow::SummaryRow(Self::summary(rows, &sr.columns, cs)));
+        }
+        out
+    }
+
+    // ── Aggregation ───────────────────────────────────────────────────────────
+
+    fn summary(rows: &[&PortfolioRow], cols: &[(ColumnId, Aggregation)], cs: &CellStore) -> HashMap<ColumnId, f64> {
+        cols.iter().filter_map(|(col, agg)| {
+            let vals: Vec<f64> = rows.iter().filter_map(|r| Self::as_f64(r, col, cs)).collect();
+            Self::aggregate(&vals, agg).map(|v| (col.clone(), v))
+        }).collect()
+    }
+
+    pub fn aggregate(values: &[f64], agg: &Aggregation) -> Option<f64> {
+        if values.is_empty() { return None; }
+        match agg {
+            Aggregation::Sum          => Some(values.iter().sum()),
+            Aggregation::Avg          => Some(values.iter().sum::<f64>() / values.len() as f64),
+            Aggregation::Min          => values.iter().cloned().reduce(f64::min),
+            Aggregation::Max          => values.iter().cloned().reduce(f64::max),
+            Aggregation::Count        => Some(values.len() as f64),
+            Aggregation::CountNonEmpty=> Some(values.len() as f64),
+            Aggregation::CountTrue    => Some(values.iter().filter(|&&v| v != 0.0).count() as f64),
+            Aggregation::PctTrue      => {
+                let t = values.iter().filter(|&&v| v != 0.0).count() as f64;
+                Some(t / values.len() as f64 * 100.0)
+            },
+            Aggregation::Median => {
+                let mut s = values.to_vec();
+                s.sort_by(|a, b| a.partial_cmp(b).unwrap_or(std::cmp::Ordering::Equal));
+                let m = s.len() / 2;
+                if s.len() % 2 == 0 { Some((s[m-1]+s[m])/2.0) } else { Some(s[m]) }
+            },
+            _ => None,
+        }
+    }
+
+    fn compare_by_col(a: &PortfolioRow, b: &PortfolioRow, col: &str, cs: &CellStore, nulls: &NullPlacement) -> std::cmp::Ordering {
+        match (Self::as_f64(a, col, cs), Self::as_f64(b, col, cs)) {
+            (None, None)     => std::cmp::Ordering::Equal,
+            (None, Some(_))  => if *nulls == NullPlacement::First { std::cmp::Ordering::Less  } else { std::cmp::Ordering::Greater },
+            (Some(_), None)  => if *nulls == NullPlacement::First { std::cmp::Ordering::Greater } else { std::cmp::Ordering::Less },
+            (Some(va), Some(vb)) => va.partial_cmp(&vb).unwrap_or(std::cmp::Ordering::Equal),
+        }
+    }
+
+    // ── Pivot ─────────────────────────────────────────────────────────────────
+
+    pub fn compute_pivot(cfg: &PivotConfig, rows: &[&PortfolioRow], cs: &CellStore) -> PivotTable {
+        let mut row_vals: Vec<String> = Vec::new();
+        let mut col_vals: Vec<String> = Vec::new();
+        let mut rv_seen  = HashSet::new();
+        let mut cv_seen  = HashSet::new();
+        for row in rows {
+            let rv = Self::as_str(row, &cfg.row_field, cs).unwrap_or("(empty)".into());
+            let cv = Self::as_str(row, &cfg.col_field, cs).unwrap_or("(empty)".into());
+            if rv_seen.insert(rv.clone()) { row_vals.push(rv); }
+            if cv_seen.insert(cv.clone()) { col_vals.push(cv); }
+        }
+        row_vals.sort(); col_vals.sort();
+
+        let mut buckets: HashMap<(String, String), Vec<f64>> = HashMap::new();
+        for row in rows {
+            let rv = Self::as_str(row, &cfg.row_field, cs).unwrap_or("(empty)".into());
+            let cv = Self::as_str(row, &cfg.col_field, cs).unwrap_or("(empty)".into());
+            if let Some(v) = Self::as_f64(row, &cfg.value_field, cs) {
+                buckets.entry((rv, cv)).or_default().push(v);
+            }
+        }
+
+        let cells: Vec<Vec<Option<f64>>> = row_vals.iter().map(|rv| {
+            col_vals.iter().map(|cv| {
+                buckets.get(&(rv.clone(), cv.clone()))
+                    .and_then(|vals| Self::aggregate(vals, &cfg.aggregation))
+            }).collect()
+        }).collect();
+
+        let row_totals: Vec<Option<f64>> = cells.iter().map(|row| {
+            let v: Vec<f64> = row.iter().filter_map(|v| *v).collect();
+            Self::aggregate(&v, &cfg.aggregation)
+        }).collect();
+
+        let col_totals: Vec<Option<f64>> = (0..col_vals.len()).map(|ci| {
+            let v: Vec<f64> = cells.iter().filter_map(|row| row[ci]).collect();
+            Self::aggregate(&v, &cfg.aggregation)
+        }).collect();
+
+        let all: Vec<f64> = cells.iter().flatten().filter_map(|v| *v).collect();
+        PivotTable { row_headers: row_vals, col_headers: col_vals, cells, row_totals, col_totals, grand_total: Self::aggregate(&all, &cfg.aggregation) }
+    }
+}
+
+// =============================================================================
+// §11 — BUILT-IN VIEW TEMPLATES
+// =============================================================================
+
+pub struct ViewTemplates;
+
+impl ViewTemplates {
+    pub fn at_risk_this_week(created_by: EntityId) -> ViewDefinition {
+        let mut vd = ViewDefinition::new("At Risk This Week", "SHT-001", created_by);
+        let today     = chrono::Utc::now().date_naive();
+        let next_week = today + chrono::Duration::days(7);
+        vd.filters = vec![ViewFilter::Or(vec![
+            ViewFilter::Predicate(FilterPredicate::HealthScoreBelow { threshold: 60.0 }),
+            ViewFilter::And(vec![
+                ViewFilter::Predicate(FilterPredicate::DateBefore { column: "due_date".into(), date: next_week }),
+                ViewFilter::Predicate(FilterPredicate::DateAfter  { column: "due_date".into(), date: today }),
+                ViewFilter::Predicate(FilterPredicate::Equals { column: "status".into(), value: serde_json::json!("Active") }),
+            ]),
+        ])];
+        vd.sorts = vec![ViewSort::asc("due_date")];
+        vd
+    }
+
+    pub fn my_active_projects(created_by: EntityId) -> ViewDefinition {
+        let mut vd = ViewDefinition::new("My Active Projects", "SHT-004", created_by);
+        vd.base_row_filter = Some(ViewFilter::And(vec![
+            ViewFilter::Predicate(FilterPredicate::OwnedByMe),
+            ViewFilter::Predicate(FilterPredicate::Equals { column: "status".into(), value: serde_json::json!("Active") }),
+        ]));
+        vd.sorts = vec![ViewSort::asc("due_date")];
+        vd
+    }
+
+    pub fn kanban_board(created_by: EntityId) -> ViewDefinition {
+        let mut vd = ViewDefinition::new("Kanban Board", "SHT-005", created_by);
+        vd.board_config = Some(BoardConfig {
+            mode: BoardMode::Kanban,
+            kanban_lanes: Some(vec![
+                KanbanLane { status: "Draft".into(),     color: Some("#94a3b8".into()), wip_limit: None },
+                KanbanLane { status: "Active".into(),    color: Some("#3b82f6".into()), wip_limit: Some(5) },
+                KanbanLane { status: "Blocked".into(),   color: Some("#ef4444".into()), wip_limit: None },
+                KanbanLane { status: "Completed".into(), color: Some("#22c55e".into()), wip_limit: None },
+            ]),
+            gantt: None, calendar_date_column: None, treemap_size_column: None,
+            card_columns: vec!["owners".into(), "due_date".into(), "health_score".into()],
+        });
+        vd.sorts = vec![ViewSort::desc("progress_pct")];
+        vd
+    }
+}
+
+// =============================================================================
+// §12 — TESTS
+// =============================================================================
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::portfolio_spreadsheet_substrate::{CellStore, PortfolioRow, RowStore};
+
+    fn owner() -> EntityId { Uuid::new_v4() }
+    fn actor(id: EntityId) -> ActorContext { ActorContext { user_id: id, org_ids: vec![] } }
+
+    fn row(name: &str, status: &str, itype: &str, owner: EntityId, progress: f32) -> PortfolioRow {
+        let mut r = PortfolioRow::new(Uuid::new_v4(), "item", name, owner);
+        r.status = status.into(); r.item_type = Some(itype.into()); r.progress_pct = progress;
+        r
+    }
+
+    #[test] fn test_equals_filter() {
+        let o = owner(); let cs = CellStore::new(); let a = actor(o);
+        let r = row("P", "Active", "Project", o, 50.0);
+        assert!( ViewEngine::evaluate_filter(&ViewFilter::Predicate(FilterPredicate::Equals { column: "status".into(), value: serde_json::json!("Active") }), &r, &cs, &a));
+        assert!(!ViewEngine::evaluate_filter(&ViewFilter::Predicate(FilterPredicate::Equals { column: "status".into(), value: serde_json::json!("Draft")  }), &r, &cs, &a));
+    }
+
+    #[test] fn test_gt_filter() {
+        let o = owner(); let cs = CellStore::new(); let a = actor(o);
+        let r = row("P", "Active", "Project", o, 75.0);
+        assert!( ViewEngine::evaluate_filter(&ViewFilter::Predicate(FilterPredicate::GreaterThan { column: "progress_pct".into(), value: 50.0 }), &r, &cs, &a));
+        assert!(!ViewEngine::evaluate_filter(&ViewFilter::Predicate(FilterPredicate::GreaterThan { column: "progress_pct".into(), value: 90.0 }), &r, &cs, &a));
+    }
+
+    #[test] fn test_and_filter() {
+        let o = owner(); let cs = CellStore::new(); let a = actor(o);
+        let r = row("P", "Active", "Project", o, 80.0);
+        let f = ViewFilter::And(vec![
+            ViewFilter::Predicate(FilterPredicate::Equals { column: "status".into(), value: serde_json::json!("Active") }),
+            ViewFilter::Predicate(FilterPredicate::GreaterThan { column: "progress_pct".into(), value: 70.0 }),
+        ]);
+        assert!(ViewEngine::evaluate_filter(&f, &r, &cs, &a));
+    }
+
+    #[test] fn test_owned_by_me() {
+        let me = owner(); let other = Uuid::new_v4();
+        let cs = CellStore::new();
+        let r = row("P", "Active", "Project", me, 50.0);
+        assert!( ViewEngine::evaluate_filter(&ViewFilter::Predicate(FilterPredicate::OwnedByMe), &r, &cs, &actor(me)));
+        assert!(!ViewEngine::evaluate_filter(&ViewFilter::Predicate(FilterPredicate::OwnedByMe), &r, &cs, &actor(other)));
+    }
+
+    #[test] fn test_sort() {
+        let o = owner(); let a = actor(o);
+        let mut rs = RowStore::new(); let cs = CellStore::new();
+        let ids: Vec<ComponentId> = vec![30.0f32, 10.0, 20.0].into_iter().map(|p| {
+            let r = row(&p.to_string(), "Active", "Project", o, p);
+            let id = r.component_id; rs.insert(r); id
+        }).collect();
+        let mut vd = ViewDefinition::new("T", "SHT-004", o);
+        vd.sorts = vec![ViewSort::desc("progress_pct")];
+        let mv = ViewEngine::apply(&vd, &rs, &cs, &a, &ids);
+        let names: Vec<_> = mv.rows.iter().filter_map(|r| match r {
+            ViewRow::Data(id) => rs.get(id).map(|r| r.name.clone()),
+            _ => None,
+        }).collect();
+        assert_eq!(names, vec!["30", "20", "10"]);
+    }
+
+    #[test] fn test_aggregation_values() {
+        let v = vec![10.0, 20.0, 30.0, 40.0];
+        assert_eq!(ViewEngine::aggregate(&v, &Aggregation::Sum),    Some(100.0));
+        assert_eq!(ViewEngine::aggregate(&v, &Aggregation::Avg),    Some(25.0));
+        assert_eq!(ViewEngine::aggregate(&v, &Aggregation::Min),    Some(10.0));
+        assert_eq!(ViewEngine::aggregate(&v, &Aggregation::Max),    Some(40.0));
+        assert_eq!(ViewEngine::aggregate(&v, &Aggregation::Median), Some(25.0));
+    }
+
+    #[test] fn test_pivot() {
+        let o = owner(); let cs = CellStore::new();
+        let rows: Vec<PortfolioRow> = [("Uber", 100.0), ("DoorDash", 200.0), ("Uber", 150.0)].iter().map(|(p, amt)| {
+            let mut r = PortfolioRow::new(Uuid::new_v4(), "item", "Gig", o);
+            r.platform = Some(p.to_string());
+            r.quarter  = Some("Q1".into());
+            r.revenue  = rust_decimal::Decimal::from(*amt as i64);
+            r
+        }).collect();
+        let refs: Vec<&PortfolioRow> = rows.iter().collect();
+        let cfg = PivotConfig { row_field: "platform".into(), col_field: "quarter".into(), value_field: "revenue".into(), aggregation: Aggregation::Sum, show_totals: true };
+        let pt = ViewEngine::compute_pivot(&cfg, &refs, &cs);
+        assert_eq!(pt.grand_total.unwrap(), 450.0);
+    }
+}
