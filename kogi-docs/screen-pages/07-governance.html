@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><title>Kogi — Governance</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#080e1c;--bg2:#0d1525;--bg3:#111d30;--border:#1c2d45;--border2:#253a55;--text:#e2e8f0;--text-dim:#94a3b8;--text-muted:#4e6380;--blue:#3b82f6;--blue2:#1d4ed8;--blue-soft:#1e3a5f;--green:#22c55e;--green-soft:#14532d;--red:#ef4444;--red-soft:#450a0a;--orange:#f97316;--yellow:#eab308;--purple:#a855f7;--cyan:#06b6d4;--teal:#14b8a6;}
+body{background:var(--bg);color:var(--text);font-family:'IBM Plex Sans',sans-serif;font-size:12px;line-height:1.4;height:100vh;overflow:hidden;display:flex;flex-direction:column}
+.topbar{height:30px;min-height:30px;background:var(--bg2);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 8px;gap:8px}
+.logo{display:flex;align-items:center;gap:4px;font-size:11px;font-weight:700}
+.k-badge{width:16px;height:16px;background:var(--blue);border-radius:3px;display:grid;place-items:center;font-size:9px;font-weight:800;color:#fff}
+.search{max-width:200px;height:20px;background:var(--bg3);border:1px solid var(--border);border-radius:3px;display:flex;align-items:center;padding:0 6px;font-size:10px;color:var(--text-muted)}
+.ts-row{display:flex;align-items:center;margin-left:auto}
+.ts-item{display:flex;align-items:center;gap:3px;padding:2px 8px;font-size:10px;border-right:1px solid var(--border)}
+.ts-item:last-child{border-right:none}
+.ts-val{font-weight:600}.ts-lbl{color:var(--text-muted)}
+.btn-icon{width:20px;height:20px;background:var(--bg3);border:1px solid var(--border);border-radius:3px;display:grid;place-items:center;font-size:9px;color:var(--text-dim)}
+.btn-primary{height:20px;padding:0 8px;background:var(--blue);color:#fff;border:none;border-radius:3px;cursor:pointer;font-size:10px;font-weight:600;font-family:inherit}
+.app-body{display:flex;flex:1;overflow:hidden}
+.sidebar{width:130px;min-width:130px;background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow-y:auto;padding:4px 0}
+.nav-item{display:flex;align-items:center;gap:5px;padding:4px 8px;cursor:pointer;font-size:10px;color:var(--text-dim)}
+.nav-item:hover{background:var(--bg3)}.nav-item.active{background:var(--blue-soft);color:var(--blue);border-left:2px solid var(--blue)}
+.nav-badge{margin-left:auto;background:var(--blue);color:#fff;font-size:8px;font-weight:700;padding:1px 4px;border-radius:8px;min-width:14px;text-align:center}
+.sidebar-footer{margin-top:auto;padding:6px 8px;border-top:1px solid var(--border);display:flex;align-items:center;gap:5px}
+.avatar{width:20px;height:20px;border-radius:50%;background:linear-gradient(135deg,var(--purple),var(--blue));display:grid;place-items:center;font-size:8px;font-weight:700;color:#fff}
+.user-name{font-size:10px;font-weight:600}.user-plan{font-size:8px;color:var(--text-muted)}
+.main{flex:1;overflow-y:auto;overflow-x:hidden;background:var(--bg);display:flex;flex-direction:column}
+/* COOP HEADER */
+.coop-header{background:var(--bg2);border-bottom:1px solid var(--border);padding:10px 12px;display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:center}
+.coop-icon{width:36px;height:36px;background:linear-gradient(135deg,var(--purple),var(--blue));border-radius:6px;display:grid;place-items:center;font-size:16px;flex-shrink:0}
+.coop-name{font-size:14px;font-weight:700}
+.coop-meta{font-size:10px;color:var(--text-muted)}
+.coop-stats{display:flex;gap:0;background:var(--border);border:1px solid var(--border);border-radius:4px;overflow:hidden}
+.cs-item{padding:5px 10px;background:var(--bg3);border-right:1px solid var(--border);text-align:center}
+.cs-item:last-child{border-right:none}
+.cs-val{font-size:16px;font-weight:700;font-family:'IBM Plex Mono',monospace}
+.cs-lbl{font-size:8px;color:var(--text-muted);margin-top:1px}
+/* TABS */
+.tabs{display:flex;background:var(--bg2);border-bottom:1px solid var(--border);padding:0 12px;gap:0}
+.tab{padding:7px 12px;font-size:11px;cursor:pointer;color:var(--text-muted);border-bottom:2px solid transparent}
+.tab.active{color:var(--blue);border-bottom-color:var(--blue)}
+/* CONTENT */
+.gov-body{display:grid;grid-template-columns:1fr 220px;gap:1px;background:var(--border);flex:1;min-height:0}
+.proposals-panel{background:var(--bg);padding:10px;display:flex;flex-direction:column;gap:6px;overflow-y:auto}
+.side-panel{background:var(--bg2);padding:10px;display:flex;flex-direction:column;gap:8px;overflow-y:auto}
+/* PROPOSAL CARDS */
+.prop-card{background:var(--bg2);border:1px solid var(--border);border-radius:4px;overflow:hidden}
+.prop-top{padding:8px 10px;border-bottom:1px solid var(--border);display:flex;gap:6px;align-items:flex-start}
+.prop-status-row{display:flex;gap:4px;align-items:center;flex-wrap:wrap;margin-bottom:4px}
+.badge{display:inline-flex;align-items:center;padding:1px 5px;border-radius:2px;font-size:8px;font-weight:700;text-transform:uppercase}
+.badge-green{background:var(--green-soft);color:var(--green)}
+.badge-blue{background:var(--blue-soft);color:var(--blue)}
+.badge-orange{background:rgba(249,115,22,.15);color:var(--orange)}
+.badge-yellow{background:rgba(234,179,8,.15);color:var(--yellow)}
+.badge-red{background:var(--red-soft);color:var(--red)}
+.badge-purple{background:rgba(168,85,247,.15);color:var(--purple)}
+.prop-id{font-size:9px;color:var(--text-muted)}
+.prop-title{font-size:12px;font-weight:700;color:var(--text);margin-bottom:3px}
+.prop-desc{font-size:10px;color:var(--text-dim);line-height:1.5}
+.prop-closes{font-size:10px;font-weight:700;color:var(--orange);margin-left:auto;white-space:nowrap}
+.prop-vote{padding:7px 10px;display:flex;flex-direction:column;gap:5px}
+.vote-counts{display:flex;align-items:center;justify-content:space-between;font-size:10px}
+.for-count{color:var(--green);font-weight:600}
+.against-count{color:var(--red);font-weight:600}
+.progress-bar{height:4px;background:var(--border);border-radius:2px;overflow:hidden;display:flex}
+.fill-green{background:var(--green)}.fill-red{background:var(--red)}
+.quorum-note{font-size:9px;color:var(--text-muted)}
+.vote-btns{display:flex;gap:4px;margin-top:3px}
+.vote-btn{height:22px;padding:0 10px;border:none;border-radius:3px;font-size:10px;font-weight:700;cursor:pointer;font-family:inherit}
+.vb-for{background:var(--green-soft);color:var(--green)}
+.vb-against{background:var(--red-soft);color:var(--red)}
+.vb-abstain{background:var(--bg3);color:var(--text-muted);border:1px solid var(--border)}
+.view-link{margin-left:auto;font-size:10px;color:var(--blue);cursor:pointer}
+/* STEP PROGRESS */
+.step-progress{display:flex;flex-direction:column;gap:3px}
+.sp-bar{height:4px;background:var(--border);border-radius:2px;overflow:hidden}
+.sp-fill{height:100%;background:linear-gradient(90deg,var(--green),var(--teal));border-radius:2px}
+.sp-note{font-size:9px;color:var(--teal);margin-top:1px}
+/* MEMBERS */
+.member-row{display:flex;align-items:center;gap:6px;padding:4px 0;border-bottom:1px solid var(--border)}
+.member-row:last-child{border-bottom:none}
+.mem-av{width:18px;height:18px;border-radius:50%;display:grid;place-items:center;font-size:8px;font-weight:700;color:#fff;flex-shrink:0}
+.mem-info{flex:1}
+.mem-name{font-size:10px;font-weight:500}
+.mem-role{font-size:9px;color:var(--text-muted)}
+.mem-vote-status{font-size:9px;font-weight:600}
+/* SIDE PANEL SECTIONS */
+.sp-section-label{font-size:9px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--text-muted);margin-bottom:5px}
+.sp-stat-row{display:grid;grid-template-columns:1fr 1fr;gap:4px}
+.sp-stat{background:var(--bg3);border:1px solid var(--border);border-radius:3px;padding:5px 6px}
+.sp-sv{font-size:14px;font-weight:700;font-family:'IBM Plex Mono',monospace}
+.sp-sl{font-size:9px;color:var(--text-muted)}
+</style>
+</head>
+<body>
+<div class="topbar">
+  <div class="logo"><div class="k-badge">K</div> kogi</div>
+  <div class="search">⌘ Search...</div>
+  <div class="ts-row">
+    <div class="ts-item"><span class="ts-val">12</span><span class="ts-lbl">Members</span></div>
+    <div class="ts-item"><span class="ts-val">3</span><span class="ts-lbl">Proposals</span></div>
+    <div class="ts-item"><span class="ts-val" style="color:var(--green)">$84K</span><span class="ts-lbl">Q4 Revenue</span></div>
+    <div class="ts-item"><span class="ts-val">7/12</span><span class="ts-lbl">Quorum</span></div>
+  </div>
+  <div style="display:flex;gap:4px;align-items:center;margin-left:auto">
+    <div class="btn-icon">◑</div><div class="btn-icon">?</div>
+    <button class="btn-primary">+ New Proposal</button>
+  </div>
+</div>
+<div class="app-body">
+<nav class="sidebar">
+  <div class="nav-item"><span>◇</span>Dashboard</div>
+  <div class="nav-item"><span>▦</span>Portfolio</div>
+  <div class="nav-item"><span>▤</span>Work Board<span class="nav-badge">3</span></div>
+  <div class="nav-item"><span>◈</span>Marketplace</div>
+  <div class="nav-item"><span>⊙</span>Exchange<span class="nav-badge">2</span></div>
+  <div class="nav-item"><span>⊚</span>Idea Studio</div>
+  <div class="nav-item"><span>✦</span>Community<span class="nav-badge">7</span></div>
+  <div class="nav-item"><span>◆</span>Work & OKRs</div>
+  <div class="nav-item"><span>⊛</span>Funding</div>
+  <div class="nav-item active"><span>▣</span>Governance<span class="nav-badge">1</span></div>
+  <div class="nav-item"><span>◈</span>AI Agent</div>
+  <div class="nav-item"><span>◈</span>Analytics</div>
+  <div class="nav-item"><span>⊙</span>Settings</div>
+  <div class="sidebar-footer">
+    <div class="avatar">JD</div>
+    <div><div class="user-name">Jordan Davis</div><div class="user-plan">Pro Plan</div></div>
+  </div>
+</nav>
+<main class="main">
+  <!-- COOP HEADER -->
+  <div class="coop-header">
+    <div class="coop-icon">🏢</div>
+    <div>
+      <div class="coop-name">TechWorkers Cooperative</div>
+      <div class="coop-meta">12 members · 1M1V voting · Est. 2023 · Charter v2.1</div>
+    </div>
+    <div class="coop-stats">
+      <div class="cs-item"><div class="cs-val">12</div><div class="cs-lbl">Members</div></div>
+      <div class="cs-item"><div class="cs-val">3</div><div class="cs-lbl">Active props</div></div>
+      <div class="cs-item"><div class="cs-val" style="color:var(--green)">$84K</div><div class="cs-lbl">Q4 Revenue</div></div>
+      <div class="cs-item"><div class="cs-val">7/12</div><div class="cs-lbl">Quorum met</div></div>
+    </div>
+  </div>
+  <!-- TABS -->
+  <div class="tabs">
+    <div class="tab active">Proposals</div>
+    <div class="tab">Members</div>
+    <div class="tab">Charter</div>
+    <div class="tab">Treasury</div>
+    <div class="tab">Audit Log</div>
+  </div>
+  <!-- BODY -->
+  <div class="gov-body">
+    <div class="proposals-panel">
+      <!-- PROPOSAL 1 -->
+      <div class="prop-card">
+        <div class="prop-top">
+          <div style="flex:1">
+            <div class="prop-status-row">
+              <span class="badge badge-blue">Open</span>
+              <span class="badge badge-green">Voting</span>
+              <span class="prop-id">PROP-2025-007 · Capital Allocation</span>
+            </div>
+            <div class="prop-title">Allocate $8,000 from Q4 surplus for developer tooling</div>
+            <div class="prop-desc">Purchase GitHub Copilot licenses, upgrade CI/CD infrastructure, and acquire 2 new dev laptops for incoming members. Full breakdown in attached budget document.</div>
+          </div>
+          <div class="prop-closes">Closes in<br>2 days 14h</div>
+        </div>
+        <div class="prop-vote">
+          <div class="vote-counts">
+            <span class="for-count">✓ For: 7 votes</span>
+            <span style="color:var(--text-muted);font-size:10px">Abstain: 2</span>
+            <span class="against-count">✗ Against: 1</span>
+          </div>
+          <div class="progress-bar">
+            <div class="fill-green" style="width:70%"></div>
+            <div class="fill-red" style="width:10%"></div>
+          </div>
+          <div style="display:flex;justify-content:space-between">
+            <div class="quorum-note">7/10 required for passage (quorum met)</div>
+            <div class="quorum-note" style="color:var(--orange)">2 members haven't voted</div>
+          </div>
+          <div style="display:flex;align-items:center">
+            <div class="vote-btns">
+              <button class="vote-btn vb-for">✓ Vote For</button>
+              <button class="vote-btn vb-against">✗ Vote Against</button>
+              <button class="vote-btn vb-abstain">Abstain</button>
+            </div>
+            <div class="view-link">View full proposal →</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- PROPOSAL 2 -->
+      <div class="prop-card">
+        <div class="prop-top">
+          <div style="flex:1">
+            <div class="prop-status-row">
+              <span class="badge badge-green">Passed</span>
+              <span class="badge badge-yellow">Executing</span>
+              <span class="prop-id">PROP-2025-006 · Member Admission</span>
+            </div>
+            <div class="prop-title">Admit Priya Nair as full member (developer)</div>
+            <div class="prop-desc">Passed 10–0 on March 1, 2025. Onboarding documents sent. Equity stake allocated. Smart execution in progress.</div>
+          </div>
+        </div>
+        <div class="prop-vote">
+          <div class="step-progress">
+            <div class="sp-bar"><div class="sp-fill" style="width:75%"></div></div>
+            <div class="sp-note">Step 3/4 — Wallet created, awaiting charter sign</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- PROPOSAL 3 -->
+      <div class="prop-card">
+        <div class="prop-top">
+          <div style="flex:1">
+            <div class="prop-status-row">
+              <span class="badge" style="background:var(--bg3);color:var(--text-muted)">Draft</span>
+              <span class="prop-id">PROP-2025-008 · Profit Distribution</span>
+            </div>
+            <div class="prop-title">Q4 2024 profit distribution — $62,400 to members</div>
+            <div class="prop-desc">Last edited by you · 2 hours ago · Waiting on final accounting sign-off</div>
+          </div>
+          <button class="btn-primary" style="white-space:nowrap;font-size:9px;height:22px">Submit for vote</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- SIDE PANEL -->
+    <div class="side-panel">
+      <div>
+        <div class="sp-section-label">Treasury</div>
+        <div class="sp-stat-row">
+          <div class="sp-stat"><div class="sp-sv" style="color:var(--green);font-size:16px">$84K</div><div class="sp-sl">Q4 Revenue</div></div>
+          <div class="sp-stat"><div class="sp-sv" style="color:var(--blue);font-size:16px">$23K</div><div class="sp-sl">Reserve</div></div>
+          <div class="sp-stat"><div class="sp-sv" style="font-size:16px">$8K</div><div class="sp-sl">Proposed alloc.</div></div>
+          <div class="sp-stat"><div class="sp-sv" style="color:var(--yellow);font-size:16px">$62K</div><div class="sp-sl">For distribution</div></div>
+        </div>
+      </div>
+      <div>
+        <div class="sp-section-label">Members (12)</div>
+        <div class="member-row">
+          <div class="mem-av" style="background:linear-gradient(135deg,var(--purple),var(--blue))">JD</div>
+          <div class="mem-info"><div class="mem-name">Jordan Davis (you)</div><div class="mem-role">Founder · 15% stake</div></div>
+          <div class="mem-vote-status" style="color:var(--green)">Voted</div>
+        </div>
+        <div class="member-row">
+          <div class="mem-av" style="background:var(--blue)">AK</div>
+          <div class="mem-info"><div class="mem-name">Alex Kim</div><div class="mem-role">Developer · 12% stake</div></div>
+          <div class="mem-vote-status" style="color:var(--green)">Voted</div>
+        </div>
+        <div class="member-row">
+          <div class="mem-av" style="background:var(--teal)">SM</div>
+          <div class="mem-info"><div class="mem-name">Sofia Moreira</div><div class="mem-role">Designer · 10% stake</div></div>
+          <div class="mem-vote-status" style="color:var(--orange)">Pending</div>
+        </div>
+        <div class="member-row">
+          <div class="mem-av" style="background:var(--green)">RN</div>
+          <div class="mem-info"><div class="mem-name">Rania Nair</div><div class="mem-role">Analyst · 8% stake</div></div>
+          <div class="mem-vote-status" style="color:var(--green)">Voted</div>
+        </div>
+        <div class="member-row">
+          <div class="mem-av" style="background:var(--yellow)">MC</div>
+          <div class="mem-info"><div class="mem-name">Marcus Chen</div><div class="mem-role">Dev · 8% stake</div></div>
+          <div class="mem-vote-status" style="color:var(--orange)">Pending</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+</div>
+</body>
+</html>

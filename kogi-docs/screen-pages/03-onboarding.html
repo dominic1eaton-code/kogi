@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kogi — Welcome</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#080e1c;--bg2:#0d1525;--bg3:#111d30;
+  --border:#1c2d45;--border2:#253a55;
+  --text:#e2e8f0;--text-dim:#94a3b8;--text-muted:#4e6380;
+  --blue:#3b82f6;--blue2:#1d4ed8;--blue-soft:#1e3a5f;
+  --green:#22c55e;--purple:#a855f7;--cyan:#06b6d4;--orange:#f97316;
+}
+body{background:var(--bg);color:var(--text);font-family:'IBM Plex Sans',sans-serif;font-size:12px;line-height:1.4;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:flex-start}
+.rainbow-top{height:2px;width:100%;background:linear-gradient(90deg,var(--blue),var(--purple),var(--cyan),var(--green))}
+.page-wrap{width:100%;max-width:560px;padding:20px 0 40px}
+/* HEADER */
+.ob-header{text-align:center;padding:16px 0 20px}
+.ob-logo{display:inline-flex;align-items:center;gap:6px;margin-bottom:14px}
+.k-badge{width:22px;height:22px;background:var(--blue);border-radius:4px;display:grid;place-items:center;font-size:12px;font-weight:800;color:#fff}
+.ob-logo span{font-size:16px;font-weight:700}
+.ob-title{font-size:26px;font-weight:700;letter-spacing:-.4px;margin-bottom:4px}
+.ob-sub{font-size:11px;color:var(--text-dim)}
+/* STEP INDICATOR — mosaic style (compact numbered row) */
+.step-track{display:flex;align-items:center;justify-content:center;gap:0;margin-bottom:20px;background:var(--bg2);border:1px solid var(--border);border-radius:4px;overflow:hidden;max-width:280px;margin-left:auto;margin-right:auto}
+.step-node{flex:1;display:flex;flex-direction:column;align-items:center;padding:5px 8px;font-size:9px;border-right:1px solid var(--border);cursor:pointer}
+.step-node:last-child{border-right:none}
+.step-node.active{background:var(--blue-soft)}
+.step-num{width:16px;height:16px;border-radius:50%;background:var(--bg3);border:1px solid var(--border);display:grid;place-items:center;font-size:9px;font-weight:700;margin-bottom:2px}
+.step-node.active .step-num{background:var(--blue);border-color:var(--blue);color:#fff}
+.step-node.done .step-num{background:var(--green);border-color:var(--green);color:#fff}
+.step-lbl{color:var(--text-muted);font-size:8px}
+.step-node.active .step-lbl{color:var(--blue)}
+/* ROLE CARDS — mosaic compact grid */
+.roles-grid{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--border);border:1px solid var(--border);border-radius:4px;overflow:hidden;margin-bottom:8px}
+.role-card{background:var(--bg2);padding:12px 14px;display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer;transition:background .15s;text-align:center;border:2px solid transparent}
+.role-card:hover{background:var(--bg3)}
+.role-card.selected{background:var(--blue-soft);border-color:var(--blue)}
+.role-icon{font-size:20px;line-height:1}
+.role-name{font-size:12px;font-weight:600;color:var(--text)}
+.role-desc{font-size:10px;color:var(--text-dim)}
+/* BADGE */
+.popular-badge{display:inline-block;padding:2px 6px;background:var(--blue-soft);color:var(--blue);font-size:8px;font-weight:700;border-radius:10px;letter-spacing:.3px}
+/* SINGLE ROLE - for wider items */
+.role-card-wide{background:var(--bg2);border:1px solid var(--border);border-radius:4px;padding:10px 14px;display:flex;align-items:center;gap:12px;cursor:pointer;transition:background .15s;margin-bottom:4px}
+.role-card-wide:hover{background:var(--bg3);border-color:var(--blue-soft)}
+.role-card-wide .rw-icon{font-size:20px;flex-shrink:0}
+.role-card-wide .rw-body{}
+.role-card-wide .rw-name{font-size:12px;font-weight:600}
+.role-card-wide .rw-desc{font-size:10px;color:var(--text-dim)}
+/* PROGRESS BAR */
+.ob-progress{display:grid;grid-template-columns:repeat(4,1fr);gap:2px;margin:10px auto;max-width:280px}
+.ob-step-bar{height:3px;background:var(--border);border-radius:2px}
+.ob-step-bar.fill{background:var(--blue)}
+/* FOOTER */
+.ob-footer{display:flex;align-items:center;justify-content:space-between;margin-top:16px;padding:0 4px}
+.ob-meta{font-size:10px;color:var(--text-muted)}
+.btn-next{height:28px;padding:0 16px;background:var(--blue);color:#fff;border:none;border-radius:4px;font-size:11px;font-weight:700;font-family:inherit;cursor:pointer}
+/* STATS STRIP */
+.ob-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:0;background:var(--border);border:1px solid var(--border);border-radius:4px;overflow:hidden;margin-top:16px}
+.ob-stat{background:var(--bg2);padding:8px 10px;border-right:1px solid var(--border);text-align:center}
+.ob-stat:last-child{border-right:none}
+.ob-stat .v{font-size:16px;font-weight:700;font-family:'IBM Plex Mono',monospace;color:var(--text)}
+.ob-stat .l{font-size:9px;color:var(--text-muted);margin-top:1px}
+</style>
+</head>
+<body>
+<div class="rainbow-top"></div>
+
+<div class="page-wrap">
+  <div class="ob-header">
+    <div class="ob-logo">
+      <div class="k-badge">K</div>
+      <span>kogi</span>
+    </div>
+    <div class="ob-title">Welcome, Jordan! 👋</div>
+    <div class="ob-sub">Let's personalize your workspace. What describes you best?</div>
+  </div>
+
+  <!-- STEP INDICATOR -->
+  <div class="step-track">
+    <div class="step-node active"><div class="step-num">1</div><div class="step-lbl">Role</div></div>
+    <div class="step-node"><div class="step-num">2</div><div class="step-lbl">Focus</div></div>
+    <div class="step-node"><div class="step-num">3</div><div class="step-lbl">Goals</div></div>
+    <div class="step-node"><div class="step-num">4</div><div class="step-lbl">Setup</div></div>
+  </div>
+
+  <!-- ROLE CARDS GRID (mosaic dense) -->
+  <div class="roles-grid">
+    <div class="role-card selected">
+      <div class="role-icon">⚒</div>
+      <div class="role-name">Freelancer</div>
+      <div class="role-desc">Designer, developer, writer, consultant</div>
+      <div class="popular-badge">Most popular</div>
+    </div>
+    <div class="role-card">
+      <div class="role-icon">👥</div>
+      <div class="role-name">Micro-Agency</div>
+      <div class="role-desc">Small team of 2–15 collaborators</div>
+    </div>
+    <div class="role-card">
+      <div class="role-icon">🏢</div>
+      <div class="role-name">Cooperative</div>
+      <div class="role-desc">Worker co-op or collective with shared ownership</div>
+    </div>
+    <div class="role-card">
+      <div class="role-icon">💡</div>
+      <div class="role-name">Explorer</div>
+      <div class="role-desc">Just checking out the platform</div>
+    </div>
+  </div>
+
+  <!-- FOCUS AREAS (compact tags) -->
+  <div style="background:var(--bg2);border:1px solid var(--border);border-radius:4px;padding:10px;margin-bottom:8px">
+    <div style="font-size:10px;font-weight:600;color:var(--text);margin-bottom:7px">Primary focus areas <span style="color:var(--text-muted)">(select all that apply)</span></div>
+    <div style="display:flex;flex-wrap:wrap;gap:4px">
+      <div style="padding:3px 8px;border-radius:3px;font-size:10px;border:1px solid var(--blue);background:var(--blue-soft);color:var(--blue);cursor:pointer">Design</div>
+      <div style="padding:3px 8px;border-radius:3px;font-size:10px;border:1px solid var(--blue);background:var(--blue-soft);color:var(--blue);cursor:pointer">Development</div>
+      <div style="padding:3px 8px;border-radius:3px;font-size:10px;border:1px solid var(--border);color:var(--text-dim);cursor:pointer">Writing</div>
+      <div style="padding:3px 8px;border-radius:3px;font-size:10px;border:1px solid var(--border);color:var(--text-dim);cursor:pointer">Marketing</div>
+      <div style="padding:3px 8px;border-radius:3px;font-size:10px;border:1px solid var(--border);color:var(--text-dim);cursor:pointer">Strategy</div>
+      <div style="padding:3px 8px;border-radius:3px;font-size:10px;border:1px solid var(--border);color:var(--text-dim);cursor:pointer">Finance</div>
+      <div style="padding:3px 8px;border-radius:3px;font-size:10px;border:1px solid var(--border);color:var(--text-dim);cursor:pointer">Video</div>
+      <div style="padding:3px 8px;border-radius:3px;font-size:10px;border:1px solid var(--border);color:var(--text-dim);cursor:pointer">Audio</div>
+    </div>
+  </div>
+
+  <!-- PROGRESS BAR -->
+  <div class="ob-progress">
+    <div class="ob-step-bar fill"></div>
+    <div class="ob-step-bar"></div>
+    <div class="ob-step-bar"></div>
+    <div class="ob-step-bar"></div>
+  </div>
+
+  <!-- FOOTER -->
+  <div class="ob-footer">
+    <div class="ob-meta">Step 1 of 4 — About 2 minutes</div>
+    <button class="btn-next">Continue →</button>
+  </div>
+
+  <!-- STATS -->
+  <div class="ob-stats">
+    <div class="ob-stat"><div class="v">12K+</div><div class="l">Active members</div></div>
+    <div class="ob-stat"><div class="v">4.2K</div><div class="l">Service listings</div></div>
+    <div class="ob-stat"><div class="v">$8M+</div><div class="l">Paid out YTD</div></div>
+  </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kogi — Sign In</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#080e1c;--bg2:#0d1525;--bg3:#111d30;--bg4:#162038;
+  --border:#1c2d45;--border2:#253a55;
+  --text:#e2e8f0;--text-dim:#94a3b8;--text-muted:#4e6380;
+  --blue:#3b82f6;--blue2:#1d4ed8;--blue-soft:#1e3a5f;
+  --green:#22c55e;--purple:#a855f7;--cyan:#06b6d4;
+}
+body{background:var(--bg);color:var(--text);font-family:'IBM Plex Sans',sans-serif;font-size:12px;line-height:1.4;min-height:100vh;display:flex;flex-direction:column}
+/* DECORATIVE ORBS */
+.orb{position:absolute;border-radius:50%;filter:blur(80px);opacity:.12;pointer-events:none}
+.orb1{width:400px;height:400px;background:var(--blue);top:-100px;left:-80px}
+.orb2{width:300px;height:300px;background:var(--purple);bottom:0;right:20%;top:auto}
+/* TOP STRIP */
+.top-strip{height:2px;background:linear-gradient(90deg,var(--blue),var(--purple),var(--cyan))}
+/* LAYOUT */
+.layout{display:grid;grid-template-columns:1fr 1fr;flex:1;min-height:calc(100vh - 2px);position:relative;overflow:hidden}
+/* LEFT PANEL */
+.left-panel{background:linear-gradient(160deg,#0a1628 0%,#080e1c 100%);display:flex;flex-direction:column;justify-content:center;padding:40px 48px;position:relative;z-index:1}
+.lp-logo{display:flex;align-items:center;gap:6px;margin-bottom:32px}
+.k-badge{width:22px;height:22px;background:var(--blue);border-radius:4px;display:grid;place-items:center;font-size:12px;font-weight:800;color:#fff}
+.lp-logo span{font-size:16px;font-weight:700}
+.lp-headline{font-size:36px;font-weight:700;line-height:1.1;letter-spacing:-.5px;margin-bottom:10px}
+.lp-sub{font-size:13px;color:var(--text-dim);line-height:1.6;max-width:340px;margin-bottom:24px}
+/* TAG PILLS */
+.tag-row{display:flex;flex-wrap:wrap;gap:6px}
+.tag{padding:3px 10px;border-radius:20px;font-size:10px;font-weight:600;border:1px solid}
+.tag-blue{border-color:var(--blue);color:var(--blue);background:var(--blue-soft)}
+.tag-green{border-color:var(--green);color:var(--green);background:rgba(34,197,94,.1)}
+.tag-purple{border-color:var(--purple);color:var(--purple);background:rgba(168,85,247,.1)}
+.tag-orange{border-color:#f97316;color:#f97316;background:rgba(249,115,22,.1)}
+/* STATS GRID - mosaic-style dense */
+.lp-stats{display:grid;grid-template-columns:1fr 1fr 1fr;gap:1px;background:var(--border);border:1px solid var(--border);border-radius:4px;overflow:hidden;margin-top:24px}
+.lp-stat{background:var(--bg2);padding:8px 10px}
+.lp-stat .v{font-size:18px;font-weight:700;font-family:'IBM Plex Mono',monospace;color:var(--text)}
+.lp-stat .l{font-size:9px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px;margin-top:1px}
+/* RIGHT PANEL */
+.right-panel{background:var(--bg2);display:flex;flex-direction:column;justify-content:center;padding:40px 48px;border-left:1px solid var(--border)}
+.form-title{font-size:22px;font-weight:700;margin-bottom:4px}
+.form-sub{font-size:11px;color:var(--text-dim);margin-bottom:20px}
+/* OAUTH BTNS */
+.oauth-row{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:14px}
+.oauth-btn{height:30px;background:var(--bg3);border:1px solid var(--border);border-radius:4px;display:flex;align-items:center;justify-content:center;gap:6px;font-size:11px;font-weight:500;color:var(--text);cursor:pointer;transition:border-color .15s}
+.oauth-btn:hover{border-color:var(--blue-soft)}
+/* DIVIDER */
+.divider{display:flex;align-items:center;gap:8px;margin:10px 0;font-size:10px;color:var(--text-muted)}
+.divider::before,.divider::after{content:'';flex:1;height:1px;background:var(--border)}
+/* FORM FIELDS */
+.field-group{display:flex;flex-direction:column;gap:8px;margin-bottom:12px}
+.field-label{font-size:10px;color:var(--text-dim);font-weight:500;display:flex;justify-content:space-between}
+.field-label a{color:var(--blue);cursor:pointer}
+.field-input{width:100%;height:30px;background:var(--bg3);border:1px solid var(--border);border-radius:4px;padding:0 10px;font-size:11px;color:var(--text);font-family:inherit;outline:none;transition:border-color .15s}
+.field-input:focus{border-color:var(--blue)}
+.field-input::placeholder{color:var(--text-muted)}
+/* CHECKBOX */
+.checkbox-row{display:flex;align-items:center;gap:6px;font-size:10px;color:var(--text-dim);margin-bottom:12px}
+.checkbox-row input{accent-color:var(--blue)}
+/* SUBMIT */
+.submit-btn{width:100%;height:32px;background:var(--blue);color:#fff;border:none;border-radius:4px;font-size:12px;font-weight:700;font-family:inherit;cursor:pointer;transition:background .15s}
+.submit-btn:hover{background:var(--blue2)}
+.form-footer{text-align:center;font-size:10px;color:var(--text-muted);margin-top:10px}
+.form-footer a{color:var(--blue);cursor:pointer}
+/* COMPACT FEATURE LIST */
+.feature-list{display:flex;flex-direction:column;gap:3px;margin-top:20px}
+.feature-item{display:flex;align-items:center;gap:6px;font-size:10px;color:var(--text-dim);padding:3px 0}
+.fi-dot{width:5px;height:5px;border-radius:50%;background:var(--blue);flex-shrink:0}
+</style>
+</head>
+<body>
+<div class="top-strip"></div>
+<div class="orb orb1"></div>
+<div class="orb orb2"></div>
+
+<div class="layout">
+  <!-- LEFT -->
+  <div class="left-panel">
+    <div class="lp-logo">
+      <div class="k-badge">K</div>
+      <span>kogi</span>
+    </div>
+    <h1 class="lp-headline">Your independent<br>work, unified.</h1>
+    <p class="lp-sub">Portfolio, marketplace, finance, governance, and AI — all in one platform built for the independent worker.</p>
+    <div class="tag-row">
+      <div class="tag tag-blue">Portfolio OS</div>
+      <div class="tag tag-green">2.5% Marketplace</div>
+      <div class="tag tag-purple">AI Agent</div>
+      <div class="tag tag-orange">Co-op Governance</div>
+    </div>
+    <div class="lp-stats">
+      <div class="lp-stat"><div class="v">4,200+</div><div class="l">Active listings</div></div>
+      <div class="lp-stat"><div class="v">2.5%</div><div class="l">Platform fee</div></div>
+      <div class="lp-stat"><div class="v">Escrow</div><div class="l">Protected</div></div>
+    </div>
+    <div class="feature-list">
+      <div class="feature-item"><div class="fi-dot"></div>Manage projects, sprints, and OKRs in one workspace</div>
+      <div class="feature-item"><div class="fi-dot"></div>Built-in wallet, invoicing, and escrow payments</div>
+      <div class="feature-item"><div class="fi-dot"></div>AI Agent monitors your portfolio 24/7</div>
+      <div class="feature-item"><div class="fi-dot"></div>Co-op governance with on-chain proposal voting</div>
+    </div>
+  </div>
+
+  <!-- RIGHT -->
+  <div class="right-panel">
+    <div class="form-title">Welcome back</div>
+    <div class="form-sub">Sign in to your Kogi account</div>
+
+    <div class="oauth-row">
+      <div class="oauth-btn">G &nbsp;Continue with Google</div>
+      <div class="oauth-btn">◆ &nbsp;GitHub</div>
+    </div>
+    <div class="divider">or continue with email</div>
+
+    <div class="field-group">
+      <div>
+        <div class="field-label">Email address</div>
+        <input class="field-input" type="email" value="jordan@studio.io" placeholder="you@example.com">
+      </div>
+      <div>
+        <div class="field-label"><span>Password</span><a>Forgot password?</a></div>
+        <input class="field-input" type="password" value="••••••••••••" placeholder="Your password">
+      </div>
+    </div>
+
+    <div class="checkbox-row">
+      <input type="checkbox" checked>
+      <span>Keep me signed in for 30 days</span>
+    </div>
+
+    <button class="submit-btn">Sign in</button>
+    <div class="form-footer">Don't have an account? <a>Create one free</a></div>
+
+    <!-- Mini stats strip -->
+    <div style="margin-top:24px;background:var(--bg3);border:1px solid var(--border);border-radius:4px;overflow:hidden">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:0;background:var(--border)">
+        <div style="background:var(--bg3);padding:8px 10px;border-right:1px solid var(--border)">
+          <div style="font-size:14px;font-weight:700;font-family:'IBM Plex Mono',monospace">12K+</div>
+          <div style="font-size:9px;color:var(--text-muted)">Independent workers</div>
+        </div>
+        <div style="background:var(--bg3);padding:8px 10px">
+          <div style="font-size:14px;font-weight:700;font-family:'IBM Plex Mono',monospace">$8M+</div>
+          <div style="font-size:9px;color:var(--text-muted)">Paid out YTD</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

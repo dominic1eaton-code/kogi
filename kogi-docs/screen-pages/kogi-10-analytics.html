@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kogi — Analytics</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#080e1c;--bg-card:#0c1526;--bg-sidebar:#090e1d;--bg-hover:#111e33;--border:#17253d;--border-hi:#253a56;--tp:#e2ecf8;--ts:#6b87a8;--tm:#3a5270;--blue:#3b82f6;--blue-d:#1a3a6e;--green:#10b981;--red:#ef4444;--amber:#f59e0b;--purple:#8b5cf6;--cyan:#06b6d4;--sw:208px;--th:52px;--font:'Outfit',sans-serif;--mono:'Space Mono',monospace}
+html,body{height:100%;background:var(--bg);color:var(--tp);font-family:var(--font);font-size:13px;overflow:hidden}
+.sidebar{position:fixed;left:0;top:0;width:var(--sw);height:100%;background:var(--bg-sidebar);border-right:1px solid var(--border);display:flex;flex-direction:column;z-index:10}
+.logo{display:flex;align-items:center;gap:8px;padding:14px 16px;border-bottom:1px solid var(--border)}
+.logo-icon{width:28px;height:28px;background:linear-gradient(135deg,#2563eb,#06b6d4);border-radius:7px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;color:#fff}
+.logo-name{font-weight:700;font-size:16px}
+.nav{flex:1;padding:10px 8px}
+.nav-item{display:flex;align-items:center;gap:9px;padding:7px 10px;border-radius:7px;cursor:pointer;color:var(--ts);font-size:12.5px;font-weight:500;margin-bottom:1px;transition:all .15s}
+.nav-item:hover{background:var(--bg-hover);color:var(--tp)}
+.nav-item.active{background:var(--blue-d);color:var(--blue);font-weight:600}
+.badge{margin-left:auto;font-size:10px;font-weight:700;padding:1px 5px;border-radius:10px;font-family:var(--mono);color:#fff}
+.badge.red{background:#ef4444}.badge.blue{background:var(--blue)}.badge.purple{background:var(--purple)}
+.user-row{padding:12px 14px;border-top:1px solid var(--border);display:flex;align-items:center;gap:9px}
+.avatar{width:30px;height:30px;background:linear-gradient(135deg,#7c3aed,#3b82f6);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff}
+.topbar{position:fixed;left:var(--sw);top:0;right:0;height:var(--th);background:var(--bg-sidebar);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 20px;gap:10px;z-index:9}
+.topbar-title{font-size:15px;font-weight:700;flex:1}
+.search-box{display:flex;align-items:center;gap:7px;background:var(--bg-card);border:1px solid var(--border);border-radius:7px;padding:5px 10px;color:var(--ts);font-size:12px;cursor:pointer;min-width:180px}
+.topbar-btn{background:var(--bg-card);border:1px solid var(--border);color:var(--ts);padding:5px 9px;border-radius:6px;cursor:pointer;font-size:12px}
+.btn-primary{background:var(--blue);border:none;color:#fff;padding:6px 13px;border-radius:7px;cursor:pointer;font-size:12.5px;font-weight:600;font-family:var(--font)}
+.main{margin-left:var(--sw);margin-top:var(--th);height:calc(100vh - var(--th));overflow-y:auto;padding:16px}
+/* Page header */
+.page-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:14px}
+.page-header h2{font-size:17px;font-weight:800}.page-header p{font-size:11.5px;color:var(--ts);margin-top:2px}
+.export-btn{background:var(--bg-card);border:1px solid var(--border);color:var(--ts);padding:6px 12px;border-radius:7px;cursor:pointer;font-size:12px;font-weight:500;display:flex;align-items:center;gap:5px}
+/* v3 3-col metrics then 2-col */
+.top-metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:10px}
+.metric-card{background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:12px 14px;position:relative;overflow:hidden}
+.metric-card::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;border-radius:3px 0 0 3px}
+.mc-green::before{background:var(--green)}.mc-blue::before{background:var(--blue)}.mc-amber::before{background:var(--amber)}.mc-purple::before{background:var(--purple)}.mc-cyan::before{background:var(--cyan)}.mc-red::before{background:var(--red)}
+.metric-num{font-family:var(--mono);font-size:26px;font-weight:700;line-height:1;margin-bottom:3px}
+.metric-label{font-size:11px;color:var(--ts);font-weight:500;margin-bottom:4px}
+.metric-sub{font-size:10.5px;font-weight:600}
+.metric-sub.up{color:var(--green)}.metric-sub.warn{color:var(--amber)}
+/* 3-col second row */
+.mid-metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:10px}
+/* Chart area */
+.chart-card{background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:14px;margin-bottom:10px}
+.chart-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.chart-header h3{font-size:13px;font-weight:700}
+.chart-tabs{display:flex;gap:0}
+.ctab{padding:4px 10px;font-size:11.5px;font-weight:600;cursor:pointer;color:var(--ts);border-bottom:2px solid transparent}
+.ctab.active{color:var(--blue);border-bottom-color:var(--blue)}
+/* SVG sparkline area */
+.chart-area{height:120px;position:relative}
+.chart-svg{width:100%;height:100%}
+/* Bottom 2-col */
+.bottom-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.data-table{background:var(--bg-card);border:1px solid var(--border);border-radius:8px;overflow:hidden}
+.dt-header{padding:10px 14px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center}
+.dt-header h3{font-size:12.5px;font-weight:700}
+.dt-row{padding:8px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;font-size:12px}
+.dt-row:last-child{border-bottom:none}
+.dt-label{color:var(--ts);font-weight:500}
+.dt-val{font-family:var(--mono);font-weight:700}
+.dt-val.green{color:var(--green)}.dt-val.amber{color:var(--amber)}.dt-val.blue{color:var(--blue)}.dt-val.red{color:var(--red)}
+</style>
+</head>
+<body>
+<aside class="sidebar">
+  <div class="logo"><div class="logo-icon">K</div><span class="logo-name">kogi</span></div>
+  <nav class="nav">
+    <div class="nav-item"><span>◇</span>Dashboard</div>
+    <div class="nav-item"><span>☰</span>Portfolio</div>
+    <div class="nav-item"><span>⊞</span>Work Board<span class="badge red">3</span></div>
+    <div class="nav-item"><span>◈</span>Marketplace</div>
+    <div class="nav-item"><span>◎</span>Exchange<span class="badge blue">2</span></div>
+    <div class="nav-item"><span>◉</span>Idea Studio</div>
+    <div class="nav-item"><span>✦</span>Community<span class="badge purple">7</span></div>
+    <div class="nav-item"><span>◆</span>Work &amp; OKRs</div>
+    <div class="nav-item"><span>◎</span>Funding</div>
+    <div class="nav-item"><span>⊟</span>Governance<span class="badge red">1</span></div>
+    <div class="nav-item"><span>◈</span>AI Agent</div>
+    <div class="nav-item active"><span>◈</span>Analytics</div>
+    <div class="nav-item"><span>◎</span>Search</div>
+    <div class="nav-item"><span>◎</span>Settings</div>
+  </nav>
+  <div class="user-row"><div class="avatar">JD</div><div><div style="font-size:12.5px;font-weight:600">Jordan Davis</div><div style="font-size:11px;color:var(--ts)">Pro Plan</div></div></div>
+</aside>
+<header class="topbar">
+  <div class="topbar-title">Analytics</div>
+  <div class="search-box">⌕ Search everything… <span style="margin-left:auto;color:var(--tm);font-family:var(--mono);font-size:10px">⌘K</span></div>
+  <button class="topbar-btn">◑</button><button class="topbar-btn">?</button>
+  <select style="background:var(--bg-card);border:1px solid var(--border);color:var(--ts);padding:5px 9px;border-radius:6px;font-size:12px;font-family:var(--font)"><option>Last 30 days</option></select>
+</header>
+<main class="main">
+  <div class="page-header">
+    <div>
+      <h2>Analytics Overview</h2>
+      <p>Your platform performance · Feb 7 – Mar 7, 2025</p>
+    </div>
+    <button class="export-btn">↓ Export CSV</button>
+  </div>
+
+  <div class="top-metrics">
+    <div class="metric-card mc-green">
+      <div class="metric-num" style="font-size:22px;color:#10b981">$12,340</div>
+      <div class="metric-label">Total Revenue (30d)</div>
+      <div class="metric-sub up">▲ 23% vs last period</div>
+    </div>
+    <div class="metric-card mc-blue">
+      <div class="metric-num">18</div>
+      <div class="metric-label">Orders Completed</div>
+      <div class="metric-sub up">▲ 6 more</div>
+    </div>
+    <div class="metric-card mc-cyan">
+      <div class="metric-num">147</div>
+      <div class="metric-label">Profile Views</div>
+      <div class="metric-sub up">▲ 31% growth</div>
+    </div>
+  </div>
+
+  <div class="mid-metrics">
+    <div class="metric-card mc-amber">
+      <div class="metric-num" style="font-size:20px">4.9★</div>
+      <div class="metric-label">Average Rating</div>
+      <div class="metric-sub" style="color:var(--ts)">Based on 42 reviews</div>
+    </div>
+    <div class="metric-card mc-purple">
+      <div class="metric-num">62<span style="font-size:16px">%</span></div>
+      <div class="metric-label">OKR Progress</div>
+      <div class="metric-sub warn">Revenue goal Q3</div>
+    </div>
+    <div class="metric-card mc-red">
+      <div class="metric-num">2</div>
+      <div class="metric-label">Overdue Invoices</div>
+      <div class="metric-sub" style="color:var(--red)">$3,400 outstanding</div>
+    </div>
+  </div>
+
+  <div class="chart-card">
+    <div class="chart-header">
+      <h3>Revenue Over Time</h3>
+      <div class="chart-tabs">
+        <div class="ctab active">Daily</div>
+        <div class="ctab">Weekly</div>
+      </div>
+    </div>
+    <div class="chart-area">
+      <svg class="chart-svg" viewBox="0 0 600 110" preserveAspectRatio="none">
+        <defs>
+          <linearGradient id="chartGrad" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#3b82f6" stop-opacity="0.3"/>
+            <stop offset="100%" stop-color="#3b82f6" stop-opacity="0"/>
+          </linearGradient>
+        </defs>
+        <path d="M0,90 L30,80 L60,85 L90,70 L120,75 L150,55 L180,60 L210,45 L240,50 L270,35 L300,40 L330,25 L360,30 L390,20 L420,25 L450,15 L480,20 L510,10 L540,15 L570,8 L600,12 L600,110 L0,110 Z" fill="url(#chartGrad)"/>
+        <path d="M0,90 L30,80 L60,85 L90,70 L120,75 L150,55 L180,60 L210,45 L240,50 L270,35 L300,40 L330,25 L360,30 L390,20 L420,25 L450,15 L480,20 L510,10 L540,15 L570,8 L600,12" fill="none" stroke="#3b82f6" stroke-width="2"/>
+        <!-- Grid lines -->
+        <line x1="0" y1="25" x2="600" y2="25" stroke="#17253d" stroke-width="1"/>
+        <line x1="0" y1="55" x2="600" y2="55" stroke="#17253d" stroke-width="1"/>
+        <line x1="0" y1="85" x2="600" y2="85" stroke="#17253d" stroke-width="1"/>
+      </svg>
+    </div>
+  </div>
+
+  <div class="bottom-grid">
+    <div class="data-table">
+      <div class="dt-header"><h3>Revenue by Program</h3></div>
+      <div class="dt-row"><div class="dt-label">Design Studio 2025</div><div class="dt-val green">$8,200</div></div>
+      <div class="dt-row"><div class="dt-label">Content &amp; Education</div><div class="dt-val green">$2,940</div></div>
+      <div class="dt-row"><div class="dt-label">SaaS Product Dev</div><div class="dt-val" style="color:var(--ts)">$0</div></div>
+      <div class="dt-row"><div class="dt-label">Consulting</div><div class="dt-val green">$1,200</div></div>
+    </div>
+    <div class="data-table">
+      <div class="dt-header"><h3>Top Metrics</h3></div>
+      <div class="dt-row"><div class="dt-label">Avg. project size</div><div class="dt-val blue">$685</div></div>
+      <div class="dt-row"><div class="dt-label">Repeat client rate</div><div class="dt-val green">68%</div></div>
+      <div class="dt-row"><div class="dt-label">Response time</div><div class="dt-val">2.4 hrs</div></div>
+      <div class="dt-row"><div class="dt-label">Conversion rate</div><div class="dt-val amber">12%</div></div>
+    </div>
+  </div>
+</main>
+</body>
+</html>

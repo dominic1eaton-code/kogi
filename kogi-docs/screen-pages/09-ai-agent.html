@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><title>Kogi — AI Agent</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#080e1c;--bg2:#0d1525;--bg3:#111d30;--border:#1c2d45;--border2:#253a55;--text:#e2e8f0;--text-dim:#94a3b8;--text-muted:#4e6380;--blue:#3b82f6;--blue-soft:#1e3a5f;--green:#22c55e;--green-soft:#14532d;--red:#ef4444;--red-soft:#450a0a;--orange:#f97316;--yellow:#eab308;--purple:#a855f7;--cyan:#06b6d4;--teal:#14b8a6;--pink:#ec4899;}
+body{background:var(--bg);color:var(--text);font-family:'IBM Plex Sans',sans-serif;font-size:12px;line-height:1.4;height:100vh;overflow:hidden;display:flex;flex-direction:column}
+.topbar{height:30px;min-height:30px;background:var(--bg2);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 8px;gap:8px}
+.logo{display:flex;align-items:center;gap:4px;font-size:11px;font-weight:700}
+.k-badge{width:16px;height:16px;background:var(--blue);border-radius:3px;display:grid;place-items:center;font-size:9px;font-weight:800;color:#fff}
+.search{max-width:200px;height:20px;background:var(--bg3);border:1px solid var(--border);border-radius:3px;display:flex;align-items:center;padding:0 6px;font-size:10px;color:var(--text-muted)}
+.ts-row{display:flex;align-items:center;margin-left:auto}
+.ts-item{display:flex;align-items:center;gap:3px;padding:2px 8px;font-size:10px;border-right:1px solid var(--border)}
+.ts-item:last-child{border-right:none}
+.ts-val{font-weight:600}.ts-lbl{color:var(--text-muted)}
+.btn-icon{width:20px;height:20px;background:var(--bg3);border:1px solid var(--border);border-radius:3px;display:grid;place-items:center;font-size:9px;color:var(--text-dim)}
+.btn-outline{height:20px;padding:0 8px;background:transparent;color:var(--text-dim);border:1px solid var(--border);border-radius:3px;cursor:pointer;font-size:10px;font-family:inherit}
+.app-body{display:flex;flex:1;overflow:hidden}
+.sidebar{width:130px;min-width:130px;background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow-y:auto;padding:4px 0}
+.nav-item{display:flex;align-items:center;gap:5px;padding:4px 8px;cursor:pointer;font-size:10px;color:var(--text-dim)}
+.nav-item:hover{background:var(--bg3)}.nav-item.active{background:var(--blue-soft);color:var(--blue);border-left:2px solid var(--blue)}
+.nav-badge{margin-left:auto;background:var(--blue);color:#fff;font-size:8px;font-weight:700;padding:1px 4px;border-radius:8px;min-width:14px;text-align:center}
+.sidebar-footer{margin-top:auto;padding:6px 8px;border-top:1px solid var(--border);display:flex;align-items:center;gap:5px}
+.avatar{width:20px;height:20px;border-radius:50%;background:linear-gradient(135deg,var(--purple),var(--blue));display:grid;place-items:center;font-size:8px;font-weight:700;color:#fff}
+.user-name{font-size:10px;font-weight:600}.user-plan{font-size:8px;color:var(--text-muted)}
+.main{flex:1;overflow:hidden;background:var(--bg);display:flex;flex-direction:column}
+/* AI AGENT LAYOUT */
+.agent-body{display:grid;grid-template-columns:200px 1fr;flex:1;min-height:0;gap:0;background:var(--border)}
+/* CONTEXT SIDEBAR */
+.ctx-sidebar{background:var(--bg2);display:flex;flex-direction:column;overflow-y:auto;border-right:1px solid var(--border)}
+.ctx-sidebar::-webkit-scrollbar{width:3px}
+.ctx-section-label{font-size:8px;font-weight:700;letter-spacing:.7px;text-transform:uppercase;color:var(--text-muted);padding:8px 10px 4px}
+.ctx-proj-card{padding:6px 10px;border-bottom:1px solid var(--border);cursor:pointer}
+.ctx-proj-card:hover{background:var(--bg3)}
+.cpj-title{font-size:11px;font-weight:600;color:var(--text)}
+.cpj-meta{font-size:9px;color:var(--text-muted);margin-top:1px}
+.badge{display:inline-flex;align-items:center;padding:1px 5px;border-radius:2px;font-size:8px;font-weight:700;text-transform:uppercase;margin-top:3px}
+.badge-green{background:var(--green-soft);color:var(--green)}.badge-orange{background:rgba(249,115,22,.15);color:var(--orange)}.badge-blue{background:var(--blue-soft);color:var(--blue)}.badge-red{background:var(--red-soft);color:var(--red)}
+/* WALLET MINI */
+.wallet-section{padding:8px 10px;border-bottom:1px solid var(--border)}
+.w-bal{font-size:18px;font-weight:700;font-family:'IBM Plex Mono',monospace;color:var(--green)}
+.w-meta{font-size:9px;color:var(--text-muted);margin-top:1px}
+/* OKR STATUS */
+.okr-mini{padding:8px 10px;border-bottom:1px solid var(--border)}
+.okr-row-item{display:flex;align-items:center;justify-content:space-between;font-size:10px;margin-bottom:4px}
+.progress-bar{height:3px;background:var(--border);border-radius:2px;overflow:hidden}
+.fill-blue{background:var(--blue)}.fill-green{background:var(--green)}.fill-orange{background:var(--orange)}
+/* SUGGESTED ACTIONS */
+.action-item{padding:5px 10px;border-bottom:1px solid var(--border);font-size:10px;cursor:pointer;color:var(--text-dim);transition:background .1s}
+.action-item:hover{background:var(--bg3);color:var(--text)}
+.action-item.urgent{border-left:2px solid var(--orange)}
+.action-item.blocked{border-left:2px solid var(--red)}
+/* CHAT PANEL */
+.chat-panel{display:flex;flex-direction:column;background:var(--bg);overflow:hidden}
+.chat-messages{flex:1;overflow-y:auto;padding:10px;display:flex;flex-direction:column;gap:8px}
+.chat-messages::-webkit-scrollbar{width:4px}.chat-messages::-webkit-scrollbar-thumb{background:var(--border2)}
+/* MESSAGES */
+.ai-msg{display:flex;align-items:flex-start;gap:8px;max-width:85%}
+.ai-av{width:24px;height:24px;border-radius:50%;background:linear-gradient(135deg,var(--blue),var(--purple));display:grid;place-items:center;font-size:10px;flex-shrink:0}
+.ai-bubble{background:var(--bg2);border:1px solid var(--border);border-radius:4px;padding:8px 10px;flex:1}
+.ai-tools{font-size:9px;color:var(--text-muted);padding:3px 0;background:var(--bg3);border:1px solid var(--border);border-radius:3px;padding:2px 6px;margin-bottom:5px;display:inline-flex;gap:3px;align-items:center}
+.user-msg{display:flex;align-items:flex-start;gap:8px;align-self:flex-end;max-width:80%}
+.user-bubble{background:var(--blue-soft);border:1px solid var(--blue);border-radius:4px;padding:8px 10px;font-size:11px;color:var(--text)}
+.user-av{width:24px;height:24px;border-radius:50%;background:linear-gradient(135deg,var(--purple),var(--blue));display:grid;place-items:center;font-size:10px;font-weight:700;flex-shrink:0;order:2}
+.msg-ts{font-size:9px;color:var(--text-muted);margin-top:3px}
+/* INSIGHT ITEMS */
+.insight-item{display:flex;align-items:flex-start;gap:6px;padding:5px 0;border-bottom:1px solid var(--border)}
+.insight-item:last-child{border-bottom:none}
+.ins-bar{width:3px;min-height:100%;border-radius:2px;flex-shrink:0;align-self:stretch}
+.ins-text{font-size:11px;color:var(--text);line-height:1.5}
+/* ACTION BTNS */
+.action-btns{display:flex;gap:4px;flex-wrap:wrap;margin-top:6px}
+.ab{height:20px;padding:0 8px;border-radius:3px;font-size:10px;font-weight:600;font-family:inherit;cursor:pointer;border:none}
+.ab-blue{background:var(--blue);color:#fff}
+.ab-outline{background:var(--bg3);border:1px solid var(--border);color:var(--text-dim)}
+/* TYPING DOTS */
+.typing-dots{display:flex;gap:3px;padding:4px 0}
+.td{width:5px;height:5px;background:var(--blue);border-radius:50%;animation:bounce .8s infinite alternate}
+.td:nth-child(2){animation-delay:.2s}.td:nth-child(3){animation-delay:.4s}
+@keyframes bounce{to{transform:translateY(-4px);opacity:.5}}
+/* INPUT */
+.chat-input-row{border-top:1px solid var(--border);padding:8px;background:var(--bg2)}
+.quick-actions-row{display:flex;gap:4px;margin-bottom:5px;flex-wrap:wrap}
+.qa-pill{padding:2px 7px;background:var(--bg3);border:1px solid var(--border);border-radius:10px;font-size:9px;color:var(--text-muted);cursor:pointer}
+.qa-pill:hover{border-color:var(--blue);color:var(--blue)}
+.input-row{display:flex;gap:6px;align-items:center}
+.chat-input{flex:1;height:30px;background:var(--bg3);border:1px solid var(--border);border-radius:4px;padding:0 10px;font-size:11px;color:var(--text);font-family:inherit;outline:none}
+.chat-input:focus{border-color:var(--blue)}
+.send-btn{width:30px;height:30px;background:var(--blue);border:none;border-radius:4px;display:grid;place-items:center;cursor:pointer;font-size:14px;color:#fff}
+</style>
+</head>
+<body>
+<div class="topbar">
+  <div class="logo"><div class="k-badge">K</div> kogi</div>
+  <div class="search">⌘ Search everything...</div>
+  <div class="ts-row">
+    <div class="ts-item"><span class="ts-val">3</span><span class="ts-lbl">Actions</span></div>
+    <div class="ts-item"><span class="ts-val">$4,820</span><span class="ts-lbl">Balance</span></div>
+    <div class="ts-item"><span class="ts-val">62%</span><span class="ts-lbl">OKR</span></div>
+  </div>
+  <div style="display:flex;gap:4px;align-items:center;margin-left:auto">
+    <div class="btn-icon">◑</div><div class="btn-icon">?</div>
+    <button class="btn-outline">📋 History</button>
+  </div>
+</div>
+<div class="app-body">
+<nav class="sidebar">
+  <div class="nav-item"><span>◇</span>Dashboard</div>
+  <div class="nav-item"><span>▦</span>Portfolio</div>
+  <div class="nav-item"><span>▤</span>Work Board<span class="nav-badge">3</span></div>
+  <div class="nav-item"><span>◈</span>Marketplace</div>
+  <div class="nav-item"><span>⊙</span>Exchange<span class="nav-badge">2</span></div>
+  <div class="nav-item"><span>⊚</span>Idea Studio</div>
+  <div class="nav-item"><span>✦</span>Community<span class="nav-badge">7</span></div>
+  <div class="nav-item"><span>◆</span>Work & OKRs</div>
+  <div class="nav-item"><span>▣</span>Governance<span class="nav-badge">1</span></div>
+  <div class="nav-item active"><span>◈</span>AI Agent</div>
+  <div class="nav-item"><span>◈</span>Analytics</div>
+  <div class="nav-item"><span>⊙</span>Settings</div>
+  <div class="sidebar-footer">
+    <div class="avatar">JD</div>
+    <div><div class="user-name">Jordan Davis</div><div class="user-plan">Pro Plan</div></div>
+  </div>
+</nav>
+<main class="main">
+  <div class="agent-body">
+    <!-- CONTEXT SIDEBAR -->
+    <div class="ctx-sidebar">
+      <div class="ctx-section-label">Portfolio Context</div>
+      <div class="ctx-section-label" style="padding-top:4px">Active Projects</div>
+      <div class="ctx-proj-card">
+        <div class="cpj-title">E-commerce Build</div>
+        <div class="cpj-meta">Sprint 4 · 2 blocked</div>
+        <span class="badge badge-orange">At risk</span>
+      </div>
+      <div class="ctx-proj-card">
+        <div class="cpj-title">Brand Identity</div>
+        <div class="cpj-meta">4 in progress</div>
+        <span class="badge badge-green">On track</span>
+      </div>
+      <div class="ctx-section-label">Wallet</div>
+      <div class="wallet-section">
+        <div class="w-bal">$4,820</div>
+        <div class="w-meta">Available · 2 invoices overdue</div>
+      </div>
+      <div class="ctx-section-label">OKR Status</div>
+      <div class="okr-mini">
+        <div class="okr-row-item"><span style="color:var(--text-dim)">Revenue goal</span><span style="font-weight:700;color:var(--orange)">62%</span></div>
+        <div class="progress-bar" style="margin-bottom:5px"><div class="fill-orange" style="width:62%"></div></div>
+        <div class="okr-row-item"><span style="color:var(--text-dim)">New services</span><span style="font-weight:700;color:var(--blue)">67%</span></div>
+        <div class="progress-bar"><div class="fill-blue" style="width:67%"></div></div>
+      </div>
+      <div class="ctx-section-label">Suggested Actions</div>
+      <div class="action-item blocked">⚡ Unblock 2 blocked stories</div>
+      <div class="action-item urgent">🧾 Chase 2 overdue invoices</div>
+      <div class="action-item">📊 OKR: revenue at risk</div>
+    </div>
+
+    <!-- CHAT -->
+    <div class="chat-panel">
+      <div class="chat-messages">
+        <!-- AI MSG 1 -->
+        <div class="ai-msg">
+          <div class="ai-av">✦</div>
+          <div style="flex:1">
+            <div class="ai-bubble">
+              <div style="font-size:11px;font-weight:600;margin-bottom:5px">Good morning, Jordan. I've reviewed your portfolio and have 3 actionable insights:</div>
+              <div class="insight-item">
+                <div class="ins-bar" style="background:var(--red)"></div>
+                <div class="ins-text"><strong style="color:var(--red)">⚠ Blocked:</strong> "Set up Stripe payment gateway" has been blocked for 3 days. I found 2 Stripe-certified developers on the Marketplace. Want me to send inquiry requests?</div>
+              </div>
+              <div class="insight-item">
+                <div class="ins-bar" style="background:var(--orange)"></div>
+                <div class="ins-text"><strong style="color:var(--orange)">🧾 Overdue:</strong> Invoice INV-2024-108 for $2,000 is 14 days overdue from DesignCo. I can draft a polite payment reminder email.</div>
+              </div>
+              <div class="insight-item">
+                <div class="ins-bar" style="background:var(--blue)"></div>
+                <div class="ins-text"><strong style="color:var(--blue)">📈 OKR:</strong> Your Q3 revenue goal is at 62% with 28 days left. At current velocity you'll reach $12.4K vs $15K target. I suggest increasing your marketplace listing visibility.</div>
+              </div>
+              <div class="action-btns">
+                <button class="ab ab-blue">Send marketplace inquiries</button>
+                <button class="ab ab-outline">Draft invoice reminder</button>
+                <button class="ab ab-outline">Show OKR analysis</button>
+              </div>
+            </div>
+            <div class="msg-ts">Kogi AI · 9:02 AM · 3 tools used</div>
+          </div>
+        </div>
+
+        <!-- USER MSG -->
+        <div class="user-msg">
+          <div class="user-av">JD</div>
+          <div>
+            <div class="user-bubble">Yes, send inquiries to both developers. Also, create a sprint planning summary for the E-commerce project — I need to share it with the client this afternoon.</div>
+            <div class="msg-ts" style="text-align:right">Jordan · 9:05 AM</div>
+          </div>
+        </div>
+
+        <!-- AI MSG 2 (streaming) -->
+        <div class="ai-msg">
+          <div class="ai-av">✦</div>
+          <div style="flex:1">
+            <div class="ai-tools">Using: search_marketplace, read_wbs, create_document</div>
+            <div class="ai-bubble">
+              <div class="insight-item">
+                <div class="ins-bar" style="background:var(--green)"></div>
+                <div class="ins-text"><strong style="color:var(--green)">✓ Inquiries sent</strong> to Alex Kim and Marcus Chen on Marketplace (Order requests created)</div>
+              </div>
+              <div class="insight-item">
+                <div class="ins-bar" style="background:var(--blue)"></div>
+                <div class="ins-text"><strong style="color:var(--blue)">📄 Sprint Summary generating...</strong></div>
+              </div>
+              <div class="typing-dots"><div class="td"></div><div class="td"></div><div class="td"></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- INPUT -->
+      <div class="chat-input-row">
+        <div class="quick-actions-row">
+          <span style="font-size:9px;color:var(--text-muted)">Quick actions:</span>
+          <span class="qa-pill">Plan sprint</span>
+          <span class="qa-pill">Check OKRs</span>
+          <span class="qa-pill">Create invoice</span>
+          <span class="qa-pill">Search market</span>
+        </div>
+        <div class="input-row">
+          <div class="btn-icon">@</div>
+          <input class="chat-input" placeholder="Ask anything about your portfolio, projects, finances...">
+          <button class="send-btn">→</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+</div>
+</body>
+</html>

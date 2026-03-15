@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kogi — Exchange</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#080e1c;--bg2:#0d1525;--bg3:#111d30;--border:#1c2d45;--border2:#253a55;--text:#e2e8f0;--text-dim:#94a3b8;--text-muted:#4e6380;--blue:#3b82f6;--blue2:#1d4ed8;--blue-soft:#1e3a5f;--green:#22c55e;--green-soft:#14532d;--red:#ef4444;--red-soft:#450a0a;--orange:#f97316;--yellow:#eab308;--purple:#a855f7;--cyan:#06b6d4;--teal:#14b8a6;--pink:#ec4899;}
+body{background:var(--bg);color:var(--text);font-family:'IBM Plex Sans',sans-serif;font-size:12px;line-height:1.4;height:100vh;overflow:hidden;display:flex;flex-direction:column}
+.topbar{height:30px;min-height:30px;background:var(--bg2);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 8px;gap:8px}
+.logo{display:flex;align-items:center;gap:4px;font-size:11px;font-weight:700}
+.k-badge{width:16px;height:16px;background:var(--blue);border-radius:3px;display:grid;place-items:center;font-size:9px;font-weight:800;color:#fff}
+.search{flex:1;max-width:200px;height:20px;background:var(--bg3);border:1px solid var(--border);border-radius:3px;display:flex;align-items:center;padding:0 6px;gap:4px;font-size:10px;color:var(--text-muted)}
+.ts-row{display:flex;align-items:center;margin-left:auto}
+.ts-item{display:flex;align-items:center;gap:3px;padding:2px 8px;font-size:10px;border-right:1px solid var(--border)}
+.ts-item:last-child{border-right:none}
+.ts-val{font-weight:600}.ts-lbl{color:var(--text-muted)}
+.btn-icon{width:20px;height:20px;background:var(--bg3);border:1px solid var(--border);border-radius:3px;display:grid;place-items:center;cursor:pointer;font-size:9px;color:var(--text-dim)}
+.btn-primary{height:20px;padding:0 8px;background:var(--blue);color:#fff;border:none;border-radius:3px;cursor:pointer;font-size:10px;font-weight:600;font-family:inherit}
+.btn-outline{height:20px;padding:0 8px;background:transparent;color:var(--text-dim);border:1px solid var(--border);border-radius:3px;cursor:pointer;font-size:10px;font-family:inherit}
+.topbar-gap{display:flex;gap:4px;align-items:center}
+.app-body{display:flex;flex:1;overflow:hidden}
+.sidebar{width:130px;min-width:130px;background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow-y:auto;padding:4px 0}
+.sidebar::-webkit-scrollbar{width:3px}.sidebar::-webkit-scrollbar-thumb{background:var(--border2)}
+.nav-item{display:flex;align-items:center;gap:5px;padding:4px 8px;cursor:pointer;font-size:10px;color:var(--text-dim)}
+.nav-item:hover{background:var(--bg3)}.nav-item.active{background:var(--blue-soft);color:var(--blue);border-left:2px solid var(--blue)}
+.nav-badge{margin-left:auto;background:var(--blue);color:#fff;font-size:8px;font-weight:700;padding:1px 4px;border-radius:8px;min-width:14px;text-align:center}
+.sidebar-footer{margin-top:auto;padding:6px 8px;border-top:1px solid var(--border);display:flex;align-items:center;gap:5px}
+.avatar{width:20px;height:20px;border-radius:50%;background:linear-gradient(135deg,var(--purple),var(--blue));display:grid;place-items:center;font-size:8px;font-weight:700;color:#fff;flex-shrink:0}
+.user-name{font-size:10px;font-weight:600;color:var(--text)}.user-plan{font-size:8px;color:var(--text-muted)}
+.main{flex:1;overflow-y:auto;overflow-x:hidden;background:var(--bg);display:flex;flex-direction:column}
+.main::-webkit-scrollbar{width:4px}.main::-webkit-scrollbar-thumb{background:var(--border2)}
+/* EXCHANGE HERO */
+.exchange-hero{background:linear-gradient(135deg,#0a2040 0%,#071428 50%,#0d2535 100%);padding:14px 16px;border-bottom:1px solid var(--border);display:grid;grid-template-columns:1fr auto;gap:12px;align-items:center}
+.eh-balance{font-size:32px;font-weight:700;font-family:'IBM Plex Mono',monospace;letter-spacing:-1px}
+.eh-kyc{font-size:10px;color:var(--text-dim);margin-top:2px}
+.eh-actions{display:flex;gap:4px;flex-wrap:wrap}
+.eh-btn{height:26px;padding:0 12px;border-radius:3px;font-size:10px;font-weight:700;font-family:inherit;cursor:pointer;border:none}
+.eh-btn-light{background:rgba(255,255,255,.12);color:var(--text)}
+.eh-btn-blue{background:var(--blue);color:#fff}
+/* STATS STRIP */
+.stats-strip{display:grid;grid-template-columns:repeat(4,1fr);gap:0;background:var(--border);border-bottom:1px solid var(--border)}
+.stat-cell{background:var(--bg2);padding:8px 10px;border-right:1px solid var(--border)}
+.stat-cell:last-child{border-right:none}
+.s-val{font-size:20px;font-weight:700;line-height:1;font-family:'IBM Plex Mono',monospace}
+.s-lbl{font-size:10px;color:var(--text-dim);margin-top:1px}
+.s-delta{font-size:10px;margin-top:1px}
+.up{color:var(--green)}.down{color:var(--red)}.warn{color:var(--orange)}.info{color:var(--cyan)}
+/* CONTENT */
+.content-grid{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--border);flex:1}
+.panel{background:var(--bg2);padding:10px;display:flex;flex-direction:column;gap:6px;overflow:hidden}
+.panel-header{display:flex;align-items:center;padding-bottom:5px;border-bottom:1px solid var(--border)}
+.panel-header h3{font-size:11px;font-weight:600}
+.ph-tabs{display:flex;gap:0;margin-left:auto;background:var(--bg3);border-radius:3px;overflow:hidden;border:1px solid var(--border)}
+.ph-tab{padding:2px 8px;font-size:9px;cursor:pointer;color:var(--text-muted);border:none;background:none;font-family:inherit}
+.ph-tab.active{background:var(--blue);color:#fff}
+/* TRANSACTION LIST */
+.tx-row{display:flex;align-items:center;gap:6px;padding:5px 0;border-bottom:1px solid var(--border)}
+.tx-row:last-child{border-bottom:none}
+.tx-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.tx-info{flex:1}
+.tx-title{font-size:11px;font-weight:500;color:var(--text)}
+.tx-meta{font-size:9px;color:var(--text-muted)}
+.tx-amount{font-size:12px;font-weight:700;font-family:'IBM Plex Mono',monospace;text-align:right}
+.tx-date{font-size:9px;color:var(--text-muted);text-align:right;margin-top:1px}
+/* INVOICE LIST */
+.inv-row{background:var(--bg3);border:1px solid var(--border);border-radius:3px;padding:6px 8px;display:grid;grid-template-columns:1fr auto;gap:6px}
+.inv-title{font-size:11px;font-weight:600;color:var(--text)}
+.inv-meta{font-size:10px;color:var(--text-dim);margin-top:1px}
+.inv-amount{font-size:13px;font-weight:700;font-family:'IBM Plex Mono',monospace;text-align:right}
+.badge{display:inline-flex;align-items:center;padding:1px 5px;border-radius:2px;font-size:8px;font-weight:700;text-transform:uppercase}
+.badge-orange{background:rgba(249,115,22,.15);color:var(--orange)}
+.badge-green{background:var(--green-soft);color:var(--green)}
+.badge-red{background:var(--red-soft);color:var(--red)}
+.badge-blue{background:var(--blue-soft);color:var(--blue)}
+</style>
+</head>
+<body>
+<div class="topbar">
+  <div class="logo"><div class="k-badge">K</div> kogi</div>
+  <div class="search">⌘ Search everything... <span style="margin-left:auto;font-size:9px">⌘K</span></div>
+  <div class="ts-row">
+    <div class="ts-item"><span class="ts-val">$12,340</span><span class="ts-lbl">YTD</span></div>
+    <div class="ts-item"><span class="ts-val">$2,180</span><span class="ts-lbl">Escrow</span></div>
+    <div class="ts-item"><span class="ts-val">$4,820</span><span class="ts-lbl">Available</span></div>
+    <div class="ts-item"><span class="ts-val" style="color:var(--red)">2</span><span class="ts-lbl">Overdue</span></div>
+  </div>
+  <div class="topbar-gap">
+    <div class="btn-icon">◑</div><div class="btn-icon">?</div>
+    <button class="btn-primary">+ Add Funds</button>
+  </div>
+</div>
+<div class="app-body">
+<nav class="sidebar">
+  <div class="nav-item"><span>◇</span>Dashboard</div>
+  <div class="nav-item"><span>▦</span>Portfolio</div>
+  <div class="nav-item"><span>▤</span>Work Board<span class="nav-badge">3</span></div>
+  <div class="nav-item"><span>◈</span>Marketplace</div>
+  <div class="nav-item active"><span>⊙</span>Exchange<span class="nav-badge">2</span></div>
+  <div class="nav-item"><span>⊚</span>Idea Studio</div>
+  <div class="nav-item"><span>✦</span>Community<span class="nav-badge">7</span></div>
+  <div class="nav-item"><span>◆</span>Work & OKRs</div>
+  <div class="nav-item"><span>⊛</span>Funding</div>
+  <div class="nav-item"><span>▣</span>Governance<span class="nav-badge">1</span></div>
+  <div class="nav-item"><span>◈</span>AI Agent</div>
+  <div class="nav-item"><span>◈</span>Analytics</div>
+  <div class="nav-item"><span>⊙</span>Settings</div>
+  <div class="sidebar-footer">
+    <div class="avatar">JD</div>
+    <div><div class="user-name">Jordan Davis</div><div class="user-plan">Pro Plan</div></div>
+  </div>
+</nav>
+<main class="main">
+  <!-- HERO -->
+  <div class="exchange-hero">
+    <div>
+      <div style="font-size:10px;color:var(--text-muted);margin-bottom:2px">Available Balance</div>
+      <div class="eh-balance">$4,820.00</div>
+      <div class="eh-kyc">KYC Level 2 · Wire transfers enabled</div>
+    </div>
+    <div class="eh-actions">
+      <button class="eh-btn eh-btn-blue">↑ Withdraw</button>
+      <button class="eh-btn eh-btn-light">↓ Deposit</button>
+      <button class="eh-btn eh-btn-light">→ Send</button>
+      <button class="eh-btn eh-btn-light">🧾 Invoice</button>
+    </div>
+  </div>
+
+  <!-- STATS -->
+  <div class="stats-strip">
+    <div class="stat-cell"><div class="s-val" style="font-size:18px">$12,340</div><div class="s-lbl">Revenue (YTD)</div><div class="s-delta up">▲ $3,200 vs last year</div></div>
+    <div class="stat-cell"><div class="s-val" style="font-size:18px">$2,180</div><div class="s-lbl">In Escrow</div><div class="s-delta info">2 active orders</div></div>
+    <div class="stat-cell"><div class="s-val" style="font-size:18px">$4,820</div><div class="s-lbl">Available</div><div class="s-delta" style="color:var(--teal)">Ready to withdraw</div></div>
+    <div class="stat-cell"><div class="s-val">2</div><div class="s-lbl">Overdue Invoices</div><div class="s-delta warn">$3,400 outstanding</div></div>
+  </div>
+
+  <!-- CONTENT -->
+  <div class="content-grid">
+    <!-- Transaction History -->
+    <div class="panel">
+      <div class="panel-header">
+        <h3>Transaction History</h3>
+        <div class="ph-tabs">
+          <button class="ph-tab active">All</button>
+          <button class="ph-tab">Income</button>
+          <button class="ph-tab">Expenses</button>
+          <button class="ph-tab">Escrow</button>
+        </div>
+      </div>
+      <div class="tx-row">
+        <div class="tx-dot" style="background:var(--green)"></div>
+        <div class="tx-info"><div class="tx-title">Invoice #108 — DesignCo</div><div class="tx-meta">Payment received · Mar 5, 2025</div></div>
+        <div><div class="tx-amount" style="color:var(--green)">+$2,000</div><div class="tx-date">3 days ago</div></div>
+      </div>
+      <div class="tx-row">
+        <div class="tx-dot" style="background:var(--blue)"></div>
+        <div class="tx-info"><div class="tx-title">Escrow release — TechCorp</div><div class="tx-meta">Order #ORD-2024-089 complete</div></div>
+        <div><div class="tx-amount" style="color:var(--green)">+$1,200</div><div class="tx-date">5 days ago</div></div>
+      </div>
+      <div class="tx-row">
+        <div class="tx-dot" style="background:var(--red)"></div>
+        <div class="tx-info"><div class="tx-title">Figma subscription</div><div class="tx-meta">Monthly recurring · Auto-pay</div></div>
+        <div><div class="tx-amount" style="color:var(--red)">-$45</div><div class="tx-date">Mar 1</div></div>
+      </div>
+      <div class="tx-row">
+        <div class="tx-dot" style="background:var(--green)"></div>
+        <div class="tx-info"><div class="tx-title">Invoice #107 — StartupXYZ</div><div class="tx-meta">Partial payment received</div></div>
+        <div><div class="tx-amount" style="color:var(--green)">+$800</div><div class="tx-date">Feb 28</div></div>
+      </div>
+      <div class="tx-row">
+        <div class="tx-dot" style="background:var(--orange)"></div>
+        <div class="tx-info"><div class="tx-title">Kogi Pro plan</div><div class="tx-meta">Monthly subscription</div></div>
+        <div><div class="tx-amount" style="color:var(--red)">-$45</div><div class="tx-date">Feb 28</div></div>
+      </div>
+      <div class="tx-row">
+        <div class="tx-dot" style="background:var(--cyan)"></div>
+        <div class="tx-info"><div class="tx-title">Marketplace order — Alex Kim</div><div class="tx-meta">Escrow deposit locked</div></div>
+        <div><div class="tx-amount" style="color:var(--cyan)">~$980</div><div class="tx-date">Feb 26</div></div>
+      </div>
+    </div>
+
+    <!-- Invoices & Escrow -->
+    <div class="panel">
+      <div class="panel-header"><h3>Invoices</h3><button class="btn-primary" style="margin-left:auto;font-size:9px;height:18px;padding:0 6px">+ New Invoice</button></div>
+      <div style="display:flex;flex-direction:column;gap:4px">
+        <div class="inv-row" style="border-left:2px solid var(--red)">
+          <div><div class="inv-title">INV-2024-108</div><div class="inv-meta">DesignCo · 14 days overdue</div><div style="margin-top:3px"><span class="badge badge-red">Overdue</span></div></div>
+          <div><div class="inv-amount" style="color:var(--red)">$2,000</div></div>
+        </div>
+        <div class="inv-row" style="border-left:2px solid var(--orange)">
+          <div><div class="inv-title">INV-2024-109</div><div class="inv-meta">StartupXYZ · 7 days overdue</div><div style="margin-top:3px"><span class="badge badge-orange">Overdue</span></div></div>
+          <div><div class="inv-amount" style="color:var(--orange)">$1,400</div></div>
+        </div>
+        <div class="inv-row" style="border-left:2px solid var(--green)">
+          <div><div class="inv-title">INV-2024-110</div><div class="inv-meta">TechCorp · Due Mar 20</div><div style="margin-top:3px"><span class="badge badge-green">Pending</span></div></div>
+          <div><div class="inv-amount" style="color:var(--green)">$3,200</div></div>
+        </div>
+        <div class="inv-row" style="border-left:2px solid var(--blue)">
+          <div><div class="inv-title">INV-2024-111</div><div class="inv-meta">FintechApp · Draft</div><div style="margin-top:3px"><span class="badge badge-blue">Draft</span></div></div>
+          <div><div class="inv-amount" style="color:var(--text-dim)">$800</div></div>
+        </div>
+      </div>
+      <div class="panel-header" style="margin-top:6px"><h3>Active Escrow Orders</h3></div>
+      <div class="inv-row" style="border-left:2px solid var(--cyan)">
+        <div><div class="inv-title">Order #ORD-2025-001</div><div class="inv-meta">Alex Kim · React dev · In progress</div></div>
+        <div><div class="inv-amount" style="color:var(--cyan)">$1,200</div></div>
+      </div>
+      <div class="inv-row" style="border-left:2px solid var(--purple)">
+        <div><div class="inv-title">Order #ORD-2025-002</div><div class="inv-meta">Marcus Chen · Design · Review</div></div>
+        <div><div class="inv-amount" style="color:var(--purple)">$980</div></div>
+      </div>
+    </div>
+  </div>
+</main>
+</div>
+</body>
+</html>

@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kogi — Marketplace</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#080e1c;--bg-card:#0c1526;--bg-sidebar:#090e1d;--bg-hover:#111e33;
+  --border:#17253d;--border-hi:#253a56;
+  --tp:#e2ecf8;--ts:#6b87a8;--tm:#3a5270;
+  --blue:#3b82f6;--blue-d:#1a3a6e;--green:#10b981;--red:#ef4444;--amber:#f59e0b;--purple:#8b5cf6;--cyan:#06b6d4;
+  --sw:208px;--th:52px;
+  --font:'Outfit',sans-serif;--mono:'Space Mono',monospace;
+}
+html,body{height:100%;background:var(--bg);color:var(--tp);font-family:var(--font);font-size:13px;overflow:hidden}
+.sidebar{position:fixed;left:0;top:0;width:var(--sw);height:100%;background:var(--bg-sidebar);border-right:1px solid var(--border);display:flex;flex-direction:column;z-index:10}
+.logo{display:flex;align-items:center;gap:8px;padding:14px 16px;border-bottom:1px solid var(--border)}
+.logo-icon{width:28px;height:28px;background:linear-gradient(135deg,#2563eb,#06b6d4);border-radius:7px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;color:#fff}
+.logo-name{font-weight:700;font-size:16px}
+.nav{flex:1;padding:10px 8px}
+.nav-item{display:flex;align-items:center;gap:9px;padding:7px 10px;border-radius:7px;cursor:pointer;color:var(--ts);font-size:12.5px;font-weight:500;margin-bottom:1px;transition:all .15s}
+.nav-item:hover{background:var(--bg-hover);color:var(--tp)}
+.nav-item.active{background:var(--blue-d);color:var(--blue);font-weight:600}
+.badge{margin-left:auto;font-size:10px;font-weight:700;padding:1px 5px;border-radius:10px;font-family:var(--mono);color:#fff}
+.badge.red{background:#ef4444}.badge.blue{background:var(--blue)}.badge.purple{background:var(--purple)}
+.user-row{padding:12px 14px;border-top:1px solid var(--border);display:flex;align-items:center;gap:9px}
+.avatar{width:30px;height:30px;background:linear-gradient(135deg,#7c3aed,#3b82f6);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff}
+.topbar{position:fixed;left:var(--sw);top:0;right:0;height:var(--th);background:var(--bg-sidebar);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 20px;gap:10px;z-index:9}
+.topbar-title{font-size:15px;font-weight:700;flex:1}
+.search-box{display:flex;align-items:center;gap:7px;background:var(--bg-card);border:1px solid var(--border);border-radius:7px;padding:5px 10px;color:var(--ts);font-size:12px;cursor:pointer;min-width:180px}
+.topbar-btn{background:var(--bg-card);border:1px solid var(--border);color:var(--ts);padding:5px 9px;border-radius:6px;cursor:pointer;font-size:12px}
+.btn-primary{background:var(--blue);border:none;color:#fff;padding:6px 13px;border-radius:7px;cursor:pointer;font-size:12.5px;font-weight:600;font-family:var(--font)}
+.main{margin-left:var(--sw);margin-top:var(--th);height:calc(100vh - var(--th));overflow-y:auto;padding:16px;display:grid;grid-template-columns:180px 1fr;gap:12px;align-content:start}
+/* Hero search (full width) */
+.search-hero{grid-column:1/-1;background:linear-gradient(135deg,#0d1f40,#071830);border:1px solid var(--border-hi);border-radius:10px;padding:16px 18px;margin-bottom:2px}
+.search-hero h2{font-size:16px;font-weight:800;margin-bottom:3px}
+.search-hero p{font-size:11.5px;color:var(--ts);margin-bottom:12px}
+.search-bar{display:flex;gap:8px}
+.search-input{flex:1;background:var(--bg-card);border:1px solid var(--border);border-radius:7px;padding:8px 12px;font-size:12.5px;color:var(--tp);outline:none;font-family:var(--font)}
+.search-input:focus{border-color:var(--blue)}
+.search-select{background:var(--bg-card);border:1px solid var(--border);border-radius:7px;padding:8px 10px;font-size:12px;color:var(--ts);font-family:var(--font)}
+.search-btn{background:var(--blue);border:none;color:#fff;padding:8px 16px;border-radius:7px;cursor:pointer;font-size:12.5px;font-weight:700;font-family:var(--font)}
+.popular-row{margin-top:8px;display:flex;align-items:center;gap:6px;font-size:11.5px;color:var(--ts)}
+.pop-tag{background:var(--bg-hover);border:1px solid var(--border);border-radius:5px;padding:3px 8px;font-size:11px;font-weight:600;cursor:pointer;color:var(--tp)}
+.pop-tag:hover{border-color:var(--blue);color:var(--blue)}
+/* Sidebar filters */
+.filter-panel{display:flex;flex-direction:column;gap:10px}
+.filter-section{background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:12px}
+.filter-title{font-size:11.5px;font-weight:700;margin-bottom:8px;color:var(--tp)}
+.filter-list{display:flex;flex-direction:column;gap:3px}
+.filter-row{display:flex;align-items:center;justify-content:space-between;cursor:pointer;padding:4px 6px;border-radius:5px;color:var(--ts);font-size:11.5px;font-weight:500;transition:all .12s}
+.filter-row:hover{background:var(--bg-hover);color:var(--tp)}
+.filter-row.active{color:var(--blue);font-weight:600}
+.filter-count{font-family:var(--mono);font-size:10.5px;color:var(--tm)}
+.range-inputs{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:8px}
+.range-input{background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:6px 8px;font-size:12px;color:var(--tp);font-family:var(--mono);width:100%;outline:none}
+.range-slider{width:100%;height:4px;background:var(--border);border-radius:2px}
+.check-filter{display:flex;align-items:center;gap:7px;font-size:11.5px;color:var(--ts);padding:3px 0;cursor:pointer}
+.check-filter input{width:13px;height:13px;accent-color:var(--blue)}
+/* Listing results */
+.results-area{display:flex;flex-direction:column;gap:0}
+.results-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.results-header span{font-size:12px;color:var(--ts)}
+.sort-select{background:var(--bg-card);border:1px solid var(--border);border-radius:6px;padding:5px 9px;font-size:12px;color:var(--ts);font-family:var(--font)}
+.listing-card{background:var(--bg-card);border:1px solid var(--border);border-radius:8px;overflow:hidden;margin-bottom:8px;display:grid;grid-template-columns:120px 1fr}
+.listing-thumb{height:90px;display:flex;align-items:center;justify-content:center;font-size:28px}
+.thumb-1{background:linear-gradient(135deg,#0f2a5e,#073a4a)}
+.thumb-2{background:linear-gradient(135deg,#2a0f5e,#4a0750)}
+.thumb-3{background:linear-gradient(135deg,#0f3a1a,#0a2a10)}
+.listing-info{padding:10px 12px;display:flex;flex-direction:column;gap:3px}
+.listing-title{font-size:13px;font-weight:700}
+.seller-row{display:flex;align-items:center;gap:6px;font-size:11px}
+.seller-avatar{width:16px;height:16px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:700;color:#fff}
+.verified{background:#0d2150;color:var(--blue);border:1px solid var(--blue-d);padding:1px 5px;border-radius:4px;font-size:9.5px;font-weight:700}
+.ai-match{background:#1e0d50;color:#a78bfa;border:1px solid #3b1e6e;padding:1px 5px;border-radius:4px;font-size:9.5px;font-weight:700}
+.rating-row{display:flex;align-items:center;gap:5px;font-size:11.5px;color:var(--ts)}
+.stars{color:var(--amber)}
+.price{font-family:var(--mono);font-size:13px;font-weight:700;color:var(--tp);margin-top:auto}
+</style>
+</head>
+<body>
+<aside class="sidebar">
+  <div class="logo"><div class="logo-icon">K</div><span class="logo-name">kogi</span></div>
+  <nav class="nav">
+    <div class="nav-item"><span>◇</span>Dashboard</div>
+    <div class="nav-item"><span>☰</span>Portfolio</div>
+    <div class="nav-item"><span>⊞</span>Work Board<span class="badge red">3</span></div>
+    <div class="nav-item active"><span>◈</span>Marketplace</div>
+    <div class="nav-item"><span>◎</span>Exchange<span class="badge blue">2</span></div>
+    <div class="nav-item"><span>◉</span>Idea Studio</div>
+    <div class="nav-item"><span>✦</span>Community<span class="badge purple">7</span></div>
+    <div class="nav-item"><span>◆</span>Work &amp; OKRs</div>
+    <div class="nav-item"><span>◎</span>Funding</div>
+    <div class="nav-item"><span>⊟</span>Governance<span class="badge red">1</span></div>
+    <div class="nav-item"><span>◈</span>AI Agent</div>
+    <div class="nav-item"><span>◈</span>Analytics</div>
+    <div class="nav-item"><span>◎</span>Search</div>
+    <div class="nav-item"><span>◎</span>Settings</div>
+  </nav>
+  <div class="user-row"><div class="avatar">JD</div><div><div style="font-size:12.5px;font-weight:600">Jordan Davis</div><div style="font-size:11px;color:var(--ts)">Pro Plan</div></div></div>
+</aside>
+<header class="topbar">
+  <div class="topbar-title">Marketplace</div>
+  <div class="search-box">⌕ Search everything… <span style="margin-left:auto;color:var(--tm);font-family:var(--mono);font-size:10px">⌘K</span></div>
+  <button class="topbar-btn">◑</button><button class="topbar-btn">?</button>
+  <button class="btn-primary">+ List a Service</button>
+</header>
+<main class="main">
+  <div class="search-hero">
+    <h2>Find independent talent &amp; services</h2>
+    <p>2.5% platform fee · Escrow protected · 4,200+ active listings</p>
+    <div class="search-bar">
+      <input class="search-input" value="React developer for SaaS startup…">
+      <select class="search-select"><option>All Categories</option></select>
+      <button class="search-btn">Search</button>
+    </div>
+    <div class="popular-row">Popular:
+      <span class="pop-tag">React developer</span>
+      <span class="pop-tag">Logo design</span>
+      <span class="pop-tag">SEO writing</span>
+      <span class="pop-tag">Data analysis</span>
+      <span class="pop-tag">Video editing</span>
+    </div>
+  </div>
+
+  <div class="filter-panel">
+    <div class="filter-section">
+      <div class="filter-title">Category</div>
+      <div class="filter-list">
+        <div class="filter-row active">All Services <span class="filter-count">4,200</span></div>
+        <div class="filter-row">Development <span class="filter-count">1,820</span></div>
+        <div class="filter-row">Design <span class="filter-count">960</span></div>
+        <div class="filter-row">Writing &amp; Content <span class="filter-count">640</span></div>
+        <div class="filter-row">Marketing <span class="filter-count">380</span></div>
+        <div class="filter-row">Data &amp; Analytics <span class="filter-count">240</span></div>
+      </div>
+    </div>
+    <div class="filter-section">
+      <div class="filter-title">Budget</div>
+      <div class="range-inputs">
+        <input class="range-input" value="$50"><input class="range-input" value="$500">
+      </div>
+      <input type="range" class="range-slider">
+    </div>
+    <div class="filter-section">
+      <div class="filter-title">Filters</div>
+      <label class="check-filter"><input type="checkbox" checked> Top Rated (4.8+)</label>
+      <label class="check-filter"><input type="checkbox"> Kogi Verified</label>
+      <label class="check-filter"><input type="checkbox"> Fast delivery (&lt;48h)</label>
+      <label class="check-filter"><input type="checkbox" checked> Portfolio shown</label>
+    </div>
+  </div>
+
+  <div class="results-area">
+    <div class="results-header">
+      <span>Showing 1–12 of 1,820 results</span>
+      <select class="sort-select"><option>Best Match</option></select>
+    </div>
+    <div class="listing-card">
+      <div class="listing-thumb thumb-1">⊟</div>
+      <div class="listing-info">
+        <div class="listing-title">React / Next.js Full-Stack Development</div>
+        <div class="seller-row"><div class="seller-avatar" style="background:#1e3a8a">AK</div>Alex Kim <span class="verified">Verified</span></div>
+        <div class="rating-row"><span class="stars">★</span> 4.9 <span style="color:var(--tm)">(124)</span></div>
+        <div class="price">from $120/hr</div>
+      </div>
+    </div>
+    <div class="listing-card">
+      <div class="listing-thumb thumb-2">✦</div>
+      <div class="listing-info">
+        <div class="listing-title">Brand Identity Design — Logo + Guidelines</div>
+        <div class="seller-row"><div class="seller-avatar" style="background:#7c1d6f">SM</div>Sofia M. <span class="verified">Verified</span></div>
+        <div class="rating-row"><span class="stars">★</span> 5.0 <span style="color:var(--tm)">(88)</span></div>
+        <div class="price">$850 fixed</div>
+      </div>
+    </div>
+    <div class="listing-card">
+      <div class="listing-thumb thumb-3">⊞</div>
+      <div class="listing-info">
+        <div class="listing-title">Data Analysis &amp; Business Intelligence Reports</div>
+        <div class="seller-row"><div class="seller-avatar" style="background:#064e3b">RN</div>Rania N. <span class="verified">Verified</span> <span class="ai-match">AI Match</span></div>
+        <div class="rating-row"><span class="stars">★</span> 4.8 <span style="color:var(--tm)">(62)</span></div>
+        <div class="price">from $200/proj</div>
+      </div>
+    </div>
+  </div>
+</main>
+</body>
+</html>

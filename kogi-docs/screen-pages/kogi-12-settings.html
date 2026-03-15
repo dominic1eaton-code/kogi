@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kogi — Settings</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#080e1c;--bg-card:#0c1526;--bg-sidebar:#090e1d;--bg-hover:#111e33;--border:#17253d;--border-hi:#253a56;--tp:#e2ecf8;--ts:#6b87a8;--tm:#3a5270;--blue:#3b82f6;--blue-d:#1a3a6e;--green:#10b981;--red:#ef4444;--amber:#f59e0b;--purple:#8b5cf6;--sw:208px;--th:52px;--font:'Outfit',sans-serif;--mono:'Space Mono',monospace}
+html,body{height:100%;background:var(--bg);color:var(--tp);font-family:var(--font);font-size:13px;overflow:hidden}
+.sidebar{position:fixed;left:0;top:0;width:var(--sw);height:100%;background:var(--bg-sidebar);border-right:1px solid var(--border);display:flex;flex-direction:column;z-index:10}
+.logo{display:flex;align-items:center;gap:8px;padding:14px 16px;border-bottom:1px solid var(--border)}
+.logo-icon{width:28px;height:28px;background:linear-gradient(135deg,#2563eb,#06b6d4);border-radius:7px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;color:#fff}
+.logo-name{font-weight:700;font-size:16px}
+.nav{flex:1;padding:10px 8px}
+.nav-item{display:flex;align-items:center;gap:9px;padding:7px 10px;border-radius:7px;cursor:pointer;color:var(--ts);font-size:12.5px;font-weight:500;margin-bottom:1px;transition:all .15s}
+.nav-item:hover{background:var(--bg-hover);color:var(--tp)}
+.nav-item.active{background:var(--blue-d);color:var(--blue);font-weight:600}
+.badge{margin-left:auto;font-size:10px;font-weight:700;padding:1px 5px;border-radius:10px;font-family:var(--mono);color:#fff}
+.badge.red{background:#ef4444}.badge.blue{background:var(--blue)}.badge.purple{background:var(--purple)}
+.user-row{padding:12px 14px;border-top:1px solid var(--border);display:flex;align-items:center;gap:9px}
+.avatar{width:30px;height:30px;background:linear-gradient(135deg,#7c3aed,#3b82f6);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff}
+.topbar{position:fixed;left:var(--sw);top:0;right:0;height:var(--th);background:var(--bg-sidebar);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 20px;gap:10px;z-index:9}
+.topbar-title{font-size:15px;font-weight:700;flex:1}
+.search-box{display:flex;align-items:center;gap:7px;background:var(--bg-card);border:1px solid var(--border);border-radius:7px;padding:5px 10px;color:var(--ts);font-size:12px;cursor:pointer;min-width:180px}
+.topbar-btn{background:var(--bg-card);border:1px solid var(--border);color:var(--ts);padding:5px 9px;border-radius:6px;cursor:pointer;font-size:12px}
+.main{margin-left:var(--sw);margin-top:var(--th);height:calc(100vh - var(--th));overflow-y:auto;padding:16px;display:grid;grid-template-columns:200px 1fr;gap:12px;align-content:start}
+/* Settings nav panel */
+.settings-nav{display:flex;flex-direction:column;gap:2px}
+.sn-group{margin-bottom:12px}
+.sn-label{font-size:9.5px;font-weight:800;letter-spacing:0.8px;color:var(--tm);text-transform:uppercase;padding:0 8px;margin-bottom:4px}
+.sn-item{padding:7px 10px;border-radius:7px;cursor:pointer;color:var(--ts);font-size:12.5px;font-weight:500;transition:all .15s;display:flex;align-items:center;justify-content:space-between}
+.sn-item:hover{background:var(--bg-hover);color:var(--tp)}
+.sn-item.active{background:var(--blue-d);color:var(--blue);font-weight:600}
+.sn-del{color:var(--red);cursor:pointer;padding:7px 10px;border-radius:7px;font-size:12.5px;font-weight:600;transition:all .15s}
+.sn-del:hover{background:#2e050520}
+/* Settings content */
+.settings-content{display:flex;flex-direction:column;gap:10px}
+/* Plan card */
+.plan-card{background:var(--bg-card);border:1px solid var(--border-hi);border-radius:10px;padding:16px;position:relative;overflow:hidden}
+.plan-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--blue),var(--cyan,#06b6d4))}
+.plan-label{font-size:10.5px;font-weight:700;color:var(--ts);letter-spacing:0.5px;margin-bottom:4px;text-transform:uppercase}
+.plan-name{font-size:22px;font-weight:800;letter-spacing:-0.5px;margin-bottom:2px}
+.plan-renewal{font-size:11.5px;color:var(--ts);margin-bottom:12px}
+.plan-row{display:flex;align-items:center;justify-content:space-between}
+.upgrade-btn{background:var(--blue);border:none;color:#fff;padding:7px 16px;border-radius:7px;cursor:pointer;font-size:12.5px;font-weight:700;font-family:var(--font)}
+.upgrade-sub{font-size:11px;color:var(--ts);text-align:right;margin-top:2px}
+/* Notification prefs - v3 dense grid */
+.notif-card{background:var(--bg-card);border:1px solid var(--border);border-radius:8px;overflow:hidden}
+.nc-header{padding:10px 14px;border-bottom:1px solid var(--border);font-size:12.5px;font-weight:700}
+.notif-row{padding:9px 14px;border-bottom:1px solid var(--border);display:grid;grid-template-columns:1fr auto;align-items:center;gap:10px;font-size:12px}
+.notif-row:last-child{border-bottom:none}
+.notif-label{font-weight:600;margin-bottom:1px}
+.notif-desc{font-size:11px;color:var(--ts)}
+.toggle-group{display:flex;gap:5px}
+.tog{padding:3px 9px;border-radius:5px;font-size:11px;font-weight:600;cursor:pointer;border:1px solid var(--border);color:var(--ts)}
+.tog.on{background:var(--blue-d);border-color:var(--blue);color:var(--blue)}
+/* Security items */
+.sec-card{background:var(--bg-card);border:1px solid var(--border);border-radius:8px;overflow:hidden}
+.sec-row{padding:11px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;font-size:12.5px}
+.sec-row:last-child{border-bottom:none}
+.sec-label{font-weight:600}
+.sec-val{color:var(--ts);font-size:12px}
+.sec-btn{background:var(--bg-hover);border:1px solid var(--border);color:var(--ts);padding:4px 10px;border-radius:6px;cursor:pointer;font-size:11.5px;font-family:var(--font)}
+.enabled{color:var(--green);font-weight:700;font-size:11px}
+</style>
+</head>
+<body>
+<aside class="sidebar">
+  <div class="logo"><div class="logo-icon">K</div><span class="logo-name">kogi</span></div>
+  <nav class="nav">
+    <div class="nav-item"><span>◇</span>Dashboard</div>
+    <div class="nav-item"><span>☰</span>Portfolio</div>
+    <div class="nav-item"><span>⊞</span>Work Board<span class="badge red">3</span></div>
+    <div class="nav-item"><span>◈</span>Marketplace</div>
+    <div class="nav-item"><span>◎</span>Exchange<span class="badge blue">2</span></div>
+    <div class="nav-item"><span>◉</span>Idea Studio</div>
+    <div class="nav-item"><span>✦</span>Community<span class="badge purple">7</span></div>
+    <div class="nav-item"><span>◆</span>Work &amp; OKRs</div>
+    <div class="nav-item"><span>◎</span>Funding</div>
+    <div class="nav-item"><span>⊟</span>Governance<span class="badge red">1</span></div>
+    <div class="nav-item"><span>◈</span>AI Agent</div>
+    <div class="nav-item"><span>◈</span>Analytics</div>
+    <div class="nav-item"><span>◎</span>Search</div>
+    <div class="nav-item active"><span>◎</span>Settings</div>
+  </nav>
+  <div class="user-row"><div class="avatar">JD</div><div><div style="font-size:12.5px;font-weight:600">Jordan Davis</div><div style="font-size:11px;color:var(--ts)">Pro Plan</div></div></div>
+</aside>
+<header class="topbar">
+  <div class="topbar-title">Settings</div>
+  <div class="search-box">⌕ Search everything… <span style="margin-left:auto;color:var(--tm);font-family:var(--mono);font-size:10px">⌘K</span></div>
+  <button class="topbar-btn">◑</button><button class="topbar-btn">?</button>
+</header>
+<main class="main">
+  <div class="settings-nav">
+    <div class="sn-group">
+      <div class="sn-label">Account</div>
+      <div class="sn-item active">Profile &amp; Identity</div>
+      <div class="sn-item">Notifications</div>
+      <div class="sn-item">Privacy &amp; Visibility</div>
+    </div>
+    <div class="sn-group">
+      <div class="sn-label">Security</div>
+      <div class="sn-item">Password &amp; Auth</div>
+      <div class="sn-item">Two-Factor Auth</div>
+      <div class="sn-item">Sessions &amp; Devices</div>
+    </div>
+    <div class="sn-group">
+      <div class="sn-label">Billing</div>
+      <div class="sn-item">Plan &amp; Subscription</div>
+      <div class="sn-item">Payment Methods</div>
+    </div>
+    <div class="sn-group">
+      <div class="sn-label">Platform</div>
+      <div class="sn-item">Integrations</div>
+      <div class="sn-item">AI Agent Settings</div>
+      <div class="sn-item">Data Export</div>
+    </div>
+    <div class="sn-del">Delete Account</div>
+  </div>
+
+  <div class="settings-content">
+    <div class="plan-card">
+      <div class="plan-label">Current Plan</div>
+      <div class="plan-row">
+        <div>
+          <div class="plan-name">Pro · $45/month</div>
+          <div class="plan-renewal">Renews April 1, 2025 · 200 AI credits/mo</div>
+        </div>
+        <div style="text-align:right">
+          <button class="upgrade-btn">Upgrade to Team</button>
+          <div class="upgrade-sub">$120/mo · 3 seats</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="notif-card">
+      <div class="nc-header">Notification Preferences</div>
+      <div class="notif-row">
+        <div><div class="notif-label">Marketplace orders</div><div class="notif-desc">New orders, messages, disputes</div></div>
+        <div class="toggle-group">
+          <div class="tog on">Email</div>
+          <div class="tog on">Push</div>
+          <div class="tog">SMS</div>
+        </div>
+      </div>
+      <div class="notif-row">
+        <div><div class="notif-label">Invoice updates</div><div class="notif-desc">Payments received, overdue alerts</div></div>
+        <div class="toggle-group">
+          <div class="tog on">Email</div>
+          <div class="tog on">Push</div>
+          <div class="tog on">SMS</div>
+        </div>
+      </div>
+      <div class="notif-row">
+        <div><div class="notif-label">AI Agent activity</div><div class="notif-desc">Completed tasks, suggestions</div></div>
+        <div class="toggle-group">
+          <div class="tog">Email</div>
+          <div class="tog on">Push</div>
+          <div class="tog">SMS</div>
+        </div>
+      </div>
+      <div class="notif-row">
+        <div><div class="notif-label">Governance &amp; proposals</div><div class="notif-desc">Votes, quorum alerts</div></div>
+        <div class="toggle-group">
+          <div class="tog on">Email</div>
+          <div class="tog on">Push</div>
+          <div class="tog">SMS</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="sec-card">
+      <div class="sec-row"><div><div class="sec-label">Password</div><div class="sec-val">Last changed 3 months ago</div></div><button class="sec-btn">Change password</button></div>
+      <div class="sec-row"><div><div class="sec-label">Two-Factor Authentication</div><div class="sec-val enabled">● Enabled — Authenticator app</div></div><button class="sec-btn">Manage</button></div>
+      <div class="sec-row"><div><div class="sec-label">Active sessions</div><div class="sec-val">3 devices</div></div><button class="sec-btn">View all</button></div>
+    </div>
+  </div>
+</main>
+</body>
+</html>

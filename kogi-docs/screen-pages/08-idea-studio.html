@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><title>Kogi — Idea Studio</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#080e1c;--bg2:#0d1525;--bg3:#111d30;--border:#1c2d45;--border2:#253a55;--text:#e2e8f0;--text-dim:#94a3b8;--text-muted:#4e6380;--blue:#3b82f6;--blue-soft:#1e3a5f;--green:#22c55e;--green-soft:#14532d;--red:#ef4444;--orange:#f97316;--yellow:#eab308;--purple:#a855f7;--cyan:#06b6d4;--teal:#14b8a6;--pink:#ec4899;}
+body{background:var(--bg);color:var(--text);font-family:'IBM Plex Sans',sans-serif;font-size:12px;line-height:1.4;height:100vh;overflow:hidden;display:flex;flex-direction:column}
+.topbar{height:30px;min-height:30px;background:var(--bg2);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 8px;gap:8px}
+.logo{display:flex;align-items:center;gap:4px;font-size:11px;font-weight:700}
+.k-badge{width:16px;height:16px;background:var(--blue);border-radius:3px;display:grid;place-items:center;font-size:9px;font-weight:800;color:#fff}
+.search{max-width:200px;height:20px;background:var(--bg3);border:1px solid var(--border);border-radius:3px;display:flex;align-items:center;padding:0 6px;font-size:10px;color:var(--text-muted)}
+.ts-row{display:flex;align-items:center;margin-left:auto}
+.ts-item{display:flex;align-items:center;gap:3px;padding:2px 8px;font-size:10px;border-right:1px solid var(--border)}
+.ts-item:last-child{border-right:none}
+.ts-val{font-weight:600}.ts-lbl{color:var(--text-muted)}
+.btn-icon{width:20px;height:20px;background:var(--bg3);border:1px solid var(--border);border-radius:3px;display:grid;place-items:center;font-size:9px;color:var(--text-dim)}
+.btn-primary{height:20px;padding:0 8px;background:var(--blue);color:#fff;border:none;border-radius:3px;cursor:pointer;font-size:10px;font-weight:600;font-family:inherit}
+.app-body{display:flex;flex:1;overflow:hidden}
+.sidebar{width:130px;min-width:130px;background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow-y:auto;padding:4px 0}
+.nav-item{display:flex;align-items:center;gap:5px;padding:4px 8px;cursor:pointer;font-size:10px;color:var(--text-dim)}
+.nav-item:hover{background:var(--bg3)}.nav-item.active{background:var(--blue-soft);color:var(--blue);border-left:2px solid var(--blue)}
+.nav-badge{margin-left:auto;background:var(--blue);color:#fff;font-size:8px;font-weight:700;padding:1px 4px;border-radius:8px;min-width:14px;text-align:center}
+.sidebar-footer{margin-top:auto;padding:6px 8px;border-top:1px solid var(--border);display:flex;align-items:center;gap:5px}
+.avatar{width:20px;height:20px;border-radius:50%;background:linear-gradient(135deg,var(--purple),var(--blue));display:grid;place-items:center;font-size:8px;font-weight:700;color:#fff}
+.user-name{font-size:10px;font-weight:600}.user-plan{font-size:8px;color:var(--text-muted)}
+.main{flex:1;overflow-y:auto;overflow-x:hidden;background:var(--bg);display:flex;flex-direction:column}
+/* PAGE HEADER */
+.page-header{padding:8px 12px;background:var(--bg2);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.page-header h1{font-size:14px;font-weight:700}
+.ph-meta{font-size:10px;color:var(--text-muted);margin-top:1px}
+.view-tabs{display:flex;background:var(--bg3);border:1px solid var(--border);border-radius:3px;overflow:hidden}
+.vt{padding:3px 8px;font-size:10px;cursor:pointer;color:var(--text-muted);border:none;background:none;font-family:inherit}
+.vt.active{background:var(--blue);color:#fff}
+/* STATS STRIP */
+.stats-strip{display:grid;grid-template-columns:repeat(5,1fr);gap:0;background:var(--border);border-bottom:1px solid var(--border)}
+.stat-cell{background:var(--bg2);padding:7px 10px;border-right:1px solid var(--border)}
+.stat-cell:last-child{border-right:none}
+.s-val{font-size:18px;font-weight:700;line-height:1;font-family:'IBM Plex Mono',monospace}
+.s-lbl{font-size:9px;color:var(--text-dim);margin-top:1px}
+/* PIPELINE BODY */
+.pipeline-body{display:grid;grid-template-columns:180px 1fr;flex:1;background:var(--border);gap:1px;min-height:0}
+.stage-sidebar{background:var(--bg2);display:flex;flex-direction:column;gap:0;overflow-y:auto}
+.stage-item{padding:10px;border-bottom:1px solid var(--border);display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;transition:background .15s}
+.stage-item:hover{background:var(--bg3)}
+.stage-item.active{background:var(--bg3);border-left:2px solid}
+.stage-icon{font-size:16px}
+.stage-name{font-size:11px;font-weight:600;color:var(--text)}
+.stage-count{font-size:20px;font-weight:700;font-family:'IBM Plex Mono',monospace}
+/* IDEA CARDS */
+.ideas-panel{background:var(--bg);padding:10px;overflow-y:auto;display:flex;flex-direction:column;gap:6px}
+.idea-card{background:var(--bg2);border:1px solid var(--border);border-radius:4px;padding:8px 10px;display:flex;flex-direction:column;gap:5px;cursor:pointer;transition:border-color .15s}
+.idea-card:hover{border-color:var(--blue-soft)}
+.badge{display:inline-flex;align-items:center;padding:1px 5px;border-radius:2px;font-size:8px;font-weight:700;text-transform:uppercase}
+.badge-blue{background:var(--blue-soft);color:var(--blue)}.badge-green{background:var(--green-soft);color:var(--green)}.badge-orange{background:rgba(249,115,22,.15);color:var(--orange)}.badge-yellow{background:rgba(234,179,8,.15);color:var(--yellow)}.badge-purple{background:rgba(168,85,247,.15);color:var(--purple)}
+.ic-top{display:flex;align-items:center;gap:5px;flex-wrap:wrap}
+.ic-title{font-size:12px;font-weight:700;color:var(--text)}
+.ic-meta{display:flex;gap:8px;font-size:10px;color:var(--text-muted)}
+.validation-score{margin-left:auto;font-size:11px;font-weight:700;font-family:'IBM Plex Mono',monospace}
+.vs-high{color:var(--green)}.vs-mid{color:var(--yellow)}.vs-low{color:var(--red)}
+.ic-desc{font-size:10px;color:var(--text-dim);line-height:1.5}
+.progress-bar{height:3px;background:var(--border);border-radius:2px;overflow:hidden}
+.fill-green{background:var(--green)}.fill-blue{background:var(--blue)}.fill-yellow{background:var(--yellow)}.fill-orange{background:var(--orange)}.fill-purple{background:var(--purple)}
+</style>
+</head>
+<body>
+<div class="topbar">
+  <div class="logo"><div class="k-badge">K</div> kogi</div>
+  <div class="search">⌘ Search ideas...</div>
+  <div class="ts-row">
+    <div class="ts-item"><span class="ts-val">14</span><span class="ts-lbl">Active ideas</span></div>
+    <div class="ts-item"><span class="ts-val">5</span><span class="ts-lbl">Stages</span></div>
+    <div class="ts-item"><span class="ts-val">84</span><span class="ts-lbl">Top score</span></div>
+    <div class="ts-item"><span class="ts-val">3</span><span class="ts-lbl">IP timestamped</span></div>
+  </div>
+  <div style="display:flex;gap:4px;align-items:center;margin-left:auto">
+    <div class="btn-icon">◑</div><div class="btn-icon">?</div>
+    <button class="btn-primary">+ Capture Idea</button>
+  </div>
+</div>
+<div class="app-body">
+<nav class="sidebar">
+  <div class="nav-item"><span>◇</span>Dashboard</div>
+  <div class="nav-item"><span>▦</span>Portfolio</div>
+  <div class="nav-item"><span>▤</span>Work Board<span class="nav-badge">3</span></div>
+  <div class="nav-item"><span>◈</span>Marketplace</div>
+  <div class="nav-item"><span>⊙</span>Exchange<span class="nav-badge">2</span></div>
+  <div class="nav-item active"><span>⊚</span>Idea Studio</div>
+  <div class="nav-item"><span>✦</span>Community<span class="nav-badge">7</span></div>
+  <div class="nav-item"><span>◆</span>Work & OKRs</div>
+  <div class="nav-item"><span>▣</span>Governance<span class="nav-badge">1</span></div>
+  <div class="nav-item"><span>◈</span>AI Agent</div>
+  <div class="nav-item"><span>◈</span>Analytics</div>
+  <div class="nav-item"><span>⊙</span>Settings</div>
+  <div class="sidebar-footer">
+    <div class="avatar">JD</div>
+    <div><div class="user-name">Jordan Davis</div><div class="user-plan">Pro Plan</div></div>
+  </div>
+</nav>
+<main class="main">
+  <div class="page-header">
+    <div><h1>Idea Studio</h1><div class="ph-meta">5-stage innovation pipeline · 14 active ideas</div></div>
+    <div style="display:flex;gap:4px">
+      <div class="view-tabs"><button class="vt active">Pipeline</button><button class="vt">Gallery</button><button class="vt">Archive</button></div>
+    </div>
+  </div>
+  <div class="stats-strip">
+    <div class="stat-cell"><div class="s-val">6</div><div class="s-lbl">Capture</div></div>
+    <div class="stat-cell"><div class="s-val">4</div><div class="s-lbl" style="color:var(--purple)">Validate</div></div>
+    <div class="stat-cell"><div class="s-val">2</div><div class="s-lbl" style="color:var(--blue)">Design</div></div>
+    <div class="stat-cell"><div class="s-val">1</div><div class="s-lbl" style="color:var(--orange)">Prototype</div></div>
+    <div class="stat-cell"><div class="s-val">1</div><div class="s-lbl" style="color:var(--green)">Launch</div></div>
+  </div>
+  <div class="pipeline-body">
+    <!-- STAGE SIDEBAR -->
+    <div class="stage-sidebar">
+      <div class="stage-item" style="border-left-color:var(--text-muted)">
+        <div class="stage-icon">★</div>
+        <div class="stage-name">1. Capture</div>
+        <div class="stage-count">6</div>
+        <div style="font-size:9px;color:var(--text-muted)">ideas</div>
+      </div>
+      <div class="stage-item" style="border-left-color:var(--purple)">
+        <div class="stage-icon">🔍</div>
+        <div class="stage-name" style="color:var(--purple)">2. Validate</div>
+        <div class="stage-count" style="color:var(--purple)">4</div>
+        <div style="font-size:9px;color:var(--text-muted)">ideas</div>
+      </div>
+      <div class="stage-item active" style="border-left-color:var(--blue)">
+        <div class="stage-icon">👁</div>
+        <div class="stage-name" style="color:var(--blue)">3. Design</div>
+        <div class="stage-count" style="color:var(--blue)">2</div>
+        <div style="font-size:9px;color:var(--text-muted)">ideas</div>
+      </div>
+      <div class="stage-item" style="border-left-color:var(--orange)">
+        <div class="stage-icon">🚀</div>
+        <div class="stage-name" style="color:var(--orange)">4. Prototype</div>
+        <div class="stage-count" style="color:var(--orange)">1</div>
+        <div style="font-size:9px;color:var(--text-muted)">ideas</div>
+      </div>
+      <div class="stage-item" style="border-left-color:var(--green)">
+        <div class="stage-icon">🎉</div>
+        <div class="stage-name" style="color:var(--green)">5. Launch</div>
+        <div class="stage-count" style="color:var(--green)">1</div>
+        <div style="font-size:9px;color:var(--text-muted)">ideas</div>
+      </div>
+    </div>
+
+    <!-- IDEAS PANEL -->
+    <div class="ideas-panel">
+      <div class="idea-card" style="border-left:2px solid var(--blue)">
+        <div class="ic-top">
+          <span class="badge badge-blue">Stage 3 — Design</span>
+          <span class="badge badge-orange">SaaS</span>
+          <span style="font-size:9px;color:var(--teal)">🔒 IP Timestamped</span>
+          <div class="validation-score vs-high">84/100</div>
+        </div>
+        <div class="ic-title">AI-powered resume scoring for freelancers</div>
+        <div class="ic-desc">Automated scoring system that evaluates portfolio quality vs. job requirements, surfacing skill gaps and suggesting improvements. Validation: 23 beta signups, 4 paying pilot users committed.</div>
+        <div class="ic-meta">
+          <span>Created 3 weeks ago</span>
+          <span>6 notes</span>
+          <span>2 mockups</span>
+          <span style="color:var(--blue)">Linked: Design Studio</span>
+        </div>
+        <div class="progress-bar"><div class="fill-blue" style="width:84%"></div></div>
+      </div>
+      <div class="idea-card" style="border-left:2px solid var(--purple)">
+        <div class="ic-top">
+          <span class="badge badge-purple">Stage 2 — Validate</span>
+          <span class="badge badge-blue">Community</span>
+          <div class="validation-score vs-mid">61/100</div>
+        </div>
+        <div class="ic-title">Peer accountability circles for solopreneurs</div>
+        <div class="ic-desc">Weekly async accountability groups of 4–6 independent workers. Structured check-ins via Kogi Community with OKR tracking integration.</div>
+        <div class="ic-meta"><span>Created 1 month ago</span><span>3 notes</span><span>1 survey · 12 responses</span></div>
+        <div class="progress-bar"><div class="fill-purple" style="width:61%"></div></div>
+      </div>
+      <div class="idea-card" style="border-left:2px solid var(--green)">
+        <div class="ic-top">
+          <span class="badge badge-green">Stage 5 — Launch</span>
+          <span class="badge badge-orange">Tool</span>
+          <span style="font-size:9px;color:var(--teal)">🔒 IP Timestamped</span>
+          <div class="validation-score vs-high">92/100</div>
+        </div>
+        <div class="ic-title">Kogi Widget — embeddable portfolio card</div>
+        <div class="ic-desc">One-line embed code to display your Kogi portfolio on any website. Auto-updates with live stats. 78 beta users, $0 cost to serve.</div>
+        <div class="ic-meta"><span>Launching Mar 20</span><span>78 waitlist</span><span style="color:var(--green)">Revenue model: freemium</span></div>
+        <div class="progress-bar"><div class="fill-green" style="width:92%"></div></div>
+      </div>
+      <div class="idea-card" style="border-left:2px solid var(--yellow)">
+        <div class="ic-top">
+          <span class="badge badge-yellow">Stage 1 — Capture</span>
+          <span class="badge badge-blue">Marketplace</span>
+          <div class="validation-score vs-low">22/100</div>
+        </div>
+        <div class="ic-title">Skill verification via micro-tasks</div>
+        <div class="ic-desc">Quick, paid skill-assessment tasks that verify marketplace seller competence. Replaces credential theatrics with real proof of work.</div>
+        <div class="ic-meta"><span>Captured 2 days ago</span><span>1 note</span></div>
+        <div class="progress-bar"><div class="fill-yellow" style="width:22%"></div></div>
+      </div>
+    </div>
+  </div>
+</main>
+</div>
+</body>
+</html>
