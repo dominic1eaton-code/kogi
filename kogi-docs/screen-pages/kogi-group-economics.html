@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>KOGI · Group Economics · Cooperative Banking</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap');
+:root{--bg:#070910;--sidebar:#0b0d16;--card:#0f1221;--card2:#131729;--border:#1a2035;--border2:#232a42;--teal:#0ccfca;--teal-dim:#0a9994;--amber:#e8a030;--amber-dim:#b07820;--green:#22c55e;--green-dim:#15803d;--blue:#3b82f6;--red:#ef4444;--purple:#a855f7;--mag:#d946ef;--text:#dde4f0;--text2:#7a879e;--text3:#3d4a62;}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--bg);color:var(--text);font-family:'IBM Plex Sans',sans-serif;font-size:13px;display:flex;min-height:100vh;}
+.sidebar{width:200px;min-width:200px;background:var(--sidebar);border-right:1px solid var(--border);display:flex;flex-direction:column;}
+.logo{padding:18px 16px;border-bottom:1px solid var(--border);}
+.logo-text{font-family:'IBM Plex Mono',monospace;font-size:18px;font-weight:600;letter-spacing:.08em;color:var(--teal);}
+.logo-sub{font-size:9px;color:var(--text3);letter-spacing:.15em;text-transform:uppercase;margin-top:2px;}
+.nav{padding:12px 0;flex:1;overflow-y:auto;}
+.ns{padding:8px 16px 4px;font-size:9px;color:var(--text3);letter-spacing:.18em;text-transform:uppercase;font-family:'IBM Plex Mono',monospace;}
+.ni{display:flex;align-items:center;gap:10px;padding:7px 16px;color:var(--text2);cursor:pointer;font-size:12px;border-left:2px solid transparent;}
+.ni.on{color:var(--teal);background:rgba(12,207,202,.07);border-left-color:var(--teal);}
+.ni-ic{width:14px;text-align:center;font-size:12px;}
+.pb{padding:12px 16px;border-top:1px solid var(--border);}
+.pm{display:flex;align-items:center;gap:8px;}
+.avsm{width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,#0ccfca,#3b82f6);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:#fff;}
+.main{flex:1;overflow-y:auto;}
+.topbar{height:48px;border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 20px;gap:12px;background:var(--sidebar);position:sticky;top:0;z-index:10;}
+.tp{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text3);}
+.tp span{color:var(--text2);}
+.tp span.cur{color:var(--text);}
+.sp{flex:1;}
+.btn{padding:5px 12px;border-radius:4px;font-size:11px;font-family:'IBM Plex Mono',monospace;cursor:pointer;border:1px solid;}
+.bt{background:rgba(12,207,202,.12);border-color:var(--teal-dim);color:var(--teal);}
+.bg{background:transparent;border-color:var(--border2);color:var(--text2);}
+.ba{background:rgba(232,160,48,.1);border-color:var(--amber-dim);color:var(--amber);}
+
+/* Org selector bar */
+.org-bar{padding:12px 20px;background:var(--sidebar);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px;}
+.org-btn{display:flex;align-items:center;gap:7px;padding:6px 12px;border-radius:5px;cursor:pointer;border:1px solid var(--border);background:var(--card2);}
+.org-btn.on{border-color:var(--teal-dim);background:rgba(12,207,202,.06);}
+.org-ic{width:22px;height:22px;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:11px;}
+.org-name{font-size:11px;font-weight:500;}
+.org-btn.on .org-name{color:var(--teal);}
+.org-type{font-size:9px;font-family:'IBM Plex Mono',monospace;color:var(--text3);}
+
+/* Stats */
+.stats-row{display:grid;grid-template-columns:repeat(6,1fr);gap:1px;background:var(--border);border-bottom:1px solid var(--border);}
+.sb{background:var(--card);padding:12px 16px;}
+.sv{font-family:'IBM Plex Mono',monospace;font-size:18px;font-weight:600;}
+.sl{font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.1em;margin-top:1px;}
+
+.content{padding:20px;display:grid;grid-template-columns:1fr 320px;gap:16px;}
+
+/* Cards */
+.card{background:var(--card);border:1px solid var(--border);border-radius:6px;overflow:hidden;margin-bottom:16px;}
+.card-hdr{padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+.card-title{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text2);text-transform:uppercase;letter-spacing:.1em;}
+.card-act{font-size:10px;color:var(--teal);cursor:pointer;font-family:'IBM Plex Mono',monospace;}
+
+/* Account cards */
+.accounts-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:14px;}
+.acc-card{background:var(--card2);border:1px solid var(--border);border-radius:6px;padding:12px;position:relative;overflow:hidden;}
+.acc-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;}
+.acc-op::before{background:var(--teal);}
+.acc-pay::before{background:var(--green);}
+.acc-res::before{background:var(--amber);}
+.acc-tax::before{background:var(--red);}
+.acc-inv::before{background:var(--purple);}
+.acc-eq::before{background:var(--blue);}
+.acc-type{font-size:9px;font-family:'IBM Plex Mono',monospace;text-transform:uppercase;letter-spacing:.1em;color:var(--text3);margin-bottom:4px;}
+.acc-bal{font-family:'IBM Plex Mono',monospace;font-size:20px;font-weight:600;margin-bottom:2px;}
+.acc-change{font-size:10px;font-family:'IBM Plex Mono',monospace;}
+.acc-label{font-size:11px;color:var(--text3);margin-top:4px;}
+
+/* Revenue bars */
+.rev-bar-row{display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid var(--border);}
+.rev-bar-row:last-child{border-bottom:none;}
+.rev-label{font-size:11px;color:var(--text);width:120px;flex-shrink:0;}
+.rev-track{flex:1;height:7px;background:var(--border);border-radius:4px;overflow:hidden;}
+.rev-fill{height:100%;border-radius:4px;}
+.rev-val{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text2);width:60px;text-align:right;}
+
+/* Member distribution table */
+.dist-row{display:grid;grid-template-columns:30px 1fr 80px 80px 80px 80px;gap:10px;align-items:center;padding:9px 14px;border-bottom:1px solid var(--border);}
+.dist-row:last-child{border-bottom:none;}
+.dist-hdr-row{background:var(--card2);}
+.dist-col{font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.1em;font-family:'IBM Plex Mono',monospace;}
+.dist-av{width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:600;color:#fff;flex-shrink:0;}
+.dist-name{font-size:12px;color:var(--text);}
+.dist-role{font-size:9px;color:var(--text3);font-family:'IBM Plex Mono',monospace;}
+.dist-pct{font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--teal);}
+.dist-amount{font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--green);}
+.dist-status{font-size:9px;font-family:'IBM Plex Mono',monospace;padding:2px 6px;border-radius:3px;border:1px solid;}
+
+/* Ledger rows */
+.ledger-row{display:grid;grid-template-columns:80px 1fr 90px 80px 90px;gap:10px;align-items:center;padding:8px 14px;border-bottom:1px solid var(--border);}
+.ledger-row:last-child{border-bottom:none;}
+.lr-type{font-size:9px;font-family:'IBM Plex Mono',monospace;padding:2px 7px;border-radius:3px;border:1px solid;}
+.lr-debit{background:rgba(239,68,68,.06);border-color:#991b1b;color:var(--red);}
+.lr-credit{background:rgba(34,197,94,.06);border-color:var(--green-dim);color:var(--green);}
+.lr-desc{font-size:11px;color:var(--text2);}
+.lr-amt{font-family:'IBM Plex Mono',monospace;font-size:12px;}
+.lr-bal{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text3);}
+.lr-ref{font-size:9px;color:var(--text3);font-family:'IBM Plex Mono',monospace;}
+
+/* Right column */
+.payroll-alert{background:rgba(34,197,94,.04);border:1px solid var(--green-dim);border-radius:6px;padding:14px;margin-bottom:16px;}
+.pa-title{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--green);text-transform:uppercase;margin-bottom:8px;}
+.pa-amount{font-family:'IBM Plex Mono',monospace;font-size:24px;font-weight:600;color:var(--green);margin-bottom:4px;}
+.pa-sub{font-size:11px;color:var(--text3);}
+.pa-btns{display:flex;gap:6px;margin-top:10px;}
+.pa-btn{flex:1;padding:7px;text-align:center;border-radius:4px;font-size:11px;font-family:'IBM Plex Mono',monospace;cursor:pointer;border:1px solid;}
+
+/* Equity table */
+.eq-row{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);}
+.eq-row:last-child{border-bottom:none;}
+.eq-av{width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:600;color:#fff;}
+.eq-name{flex:1;font-size:11px;color:var(--text);}
+.eq-units{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--text3);}
+.eq-pct{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--blue);}
+.eq-bar{height:4px;border-radius:2px;background:var(--blue);margin-top:3px;}
+
+/* Fed reserves -->
+.fed-row{display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid var(--border);}
+.fed-row:last-child{border-bottom:none;}
+.fed-ic{width:22px;height:22px;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:10px;flex-shrink:0;}
+.fed-name{flex:1;font-size:11px;color:var(--text2);}
+.fed-val{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text2);}
+</style>
+</head>
+<body>
+<div class="sidebar">
+  <div class="logo"><div class="logo-text">KOGI</div><div class="logo-sub">Independent Worker OS</div></div>
+  <nav class="nav">
+    <div class="ns">Core</div>
+    <div class="ni"><span class="ni-ic">⌂</span>Dashboard</div>
+    <div class="ni"><span class="ni-ic">◫</span>Office</div>
+    <div class="ns">Finance</div>
+    <div class="ni"><span class="ni-ic">♦</span>Bank</div>
+    <div class="ni"><span class="ni-ic">💳</span>Wallet</div>
+    <div class="ni on"><span class="ni-ic">🏛</span>Group Economics</div>
+    <div class="ni"><span class="ni-ic">📊</span>Accounting</div>
+    <div class="ni"><span class="ni-ic">🧾</span>Taxes</div>
+    <div class="ni"><span class="ni-ic">📄</span>Invoices</div>
+    <div class="ns">Capital</div>
+    <div class="ni"><span class="ni-ic">📈</span>Investments</div>
+    <div class="ni"><span class="ni-ic">🎯</span>Campaigns</div>
+    <div class="ns">Platform</div>
+    <div class="ni"><span class="ni-ic">⬡</span>Exchange</div>
+    <div class="ni"><span class="ni-ic">⊗</span>Marketplace</div>
+  </nav>
+  <div class="pb"><div class="pm"><div class="avsm">JC</div><div><div style="font-size:12px;">Jordan Chen</div><div style="font-size:10px;color:var(--text3);">@jordan.dev</div></div></div></div>
+</div>
+
+<div class="main">
+  <div class="topbar">
+    <div class="tp">KBNK / <span>Group Economics</span> / <span class="cur">Mesh Studio Cooperative</span></div>
+    <div class="sp"></div>
+    <button class="btn bg">Full Ledger</button>
+    <button class="btn bg">Reports</button>
+    <button class="btn ba">⚖ Governance Proposal</button>
+    <button class="btn bt">Run Payroll</button>
+  </div>
+
+  <!-- Org selector -->
+  <div class="org-bar">
+    <div style="font-size:11px;color:var(--text3);font-family:'IBM Plex Mono',monospace;">Entity:</div>
+    <div class="org-btn on">
+      <div class="org-ic" style="background:rgba(12,207,202,.1);">⚙</div>
+      <div><div class="org-name">Mesh Studio</div><div class="org-type">COOPERATIVE</div></div>
+    </div>
+    <div class="org-btn">
+      <div class="org-ic" style="background:rgba(168,85,247,.1);">◈</div>
+      <div><div class="org-name">OS Collective</div><div class="org-type">COLLECTIVE</div></div>
+    </div>
+    <div class="org-btn">
+      <div class="org-ic" style="background:rgba(59,130,246,.1);">🌐</div>
+      <div><div class="org-name">Builder Network</div><div class="org-type">COMMUNITY</div></div>
+    </div>
+  </div>
+
+  <!-- Stats -->
+  <div class="stats-row">
+    <div class="sb"><div class="sv" style="color:var(--green);">$124,500</div><div class="sl">Treasury Balance</div></div>
+    <div class="sb"><div class="sv" style="color:var(--teal);">$28,400</div><div class="sl">MRR</div></div>
+    <div class="sb"><div class="sv" style="color:var(--amber);">$18,200</div><div class="sl">Q1 Distribution</div></div>
+    <div class="sb"><div class="sv">8</div><div class="sl">Members</div></div>
+    <div class="sb"><div class="sv" style="color:var(--blue);">$48,000</div><div class="sl">Reserves</div></div>
+    <div class="sb"><div class="sv" style="color:var(--red);">$4,200</div><div class="sl">Tax Reserve</div></div>
+  </div>
+
+  <div class="content">
+    <div>
+
+      <!-- Accounts Grid -->
+      <div class="card">
+        <div class="card-hdr">
+          <div class="card-title">Organizational Accounts</div>
+          <div class="card-act">+ New Account →</div>
+        </div>
+        <div class="accounts-grid">
+          <div class="acc-card acc-op">
+            <div class="acc-type">Operating Account</div>
+            <div class="acc-bal" style="color:var(--teal);">$124,500</div>
+            <div class="acc-change" style="color:var(--green);">+$28,400 this month</div>
+            <div class="acc-label">Primary revenue & expense</div>
+          </div>
+          <div class="acc-card acc-pay">
+            <div class="acc-type">Payroll Account</div>
+            <div class="acc-bal" style="color:var(--green);">$18,200</div>
+            <div class="acc-change" style="color:var(--amber);">Distribution pending</div>
+            <div class="acc-label">Q1 member distributions</div>
+          </div>
+          <div class="acc-card acc-res">
+            <div class="acc-type">Reserve Account</div>
+            <div class="acc-bal" style="color:var(--amber);">$48,000</div>
+            <div class="acc-change" style="color:var(--text3);">3-month runway</div>
+            <div class="acc-label">Contingency capital</div>
+          </div>
+          <div class="acc-card acc-tax">
+            <div class="acc-type">Tax Reserve</div>
+            <div class="acc-bal" style="color:var(--red);">$4,200</div>
+            <div class="acc-change" style="color:var(--amber);">Q1 payment due</div>
+            <div class="acc-label">SE tax + Corp estimated</div>
+          </div>
+          <div class="acc-card acc-inv">
+            <div class="acc-type">Investment Account</div>
+            <div class="acc-bal" style="color:var(--purple);">$12,000</div>
+            <div class="acc-change" style="color:var(--green);">+14% YTD</div>
+            <div class="acc-label">Collective portfolio assets</div>
+          </div>
+          <div class="acc-card acc-eq">
+            <div class="acc-type">Equity Pool</div>
+            <div class="acc-bal" style="color:var(--blue);">100%</div>
+            <div class="acc-change" style="color:var(--text3);">8 shareholders</div>
+            <div class="acc-label">Member cap table</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Revenue breakdown -->
+      <div class="card">
+        <div class="card-hdr">
+          <div class="card-title">Revenue by Source · March 2026</div>
+          <div class="card-act">Full P&L →</div>
+        </div>
+        <div style="padding:14px;">
+          <div class="rev-bar-row">
+            <div class="rev-label">Client Contracts</div>
+            <div class="rev-track"><div class="rev-fill" style="width:80%;background:var(--teal);"></div></div>
+            <div class="rev-val">$22,700</div>
+          </div>
+          <div class="rev-bar-row">
+            <div class="rev-label">Marketplace Sales</div>
+            <div class="rev-track"><div class="rev-fill" style="width:20%;background:var(--blue);"></div></div>
+            <div class="rev-val">$3,800</div>
+          </div>
+          <div class="rev-bar-row">
+            <div class="rev-label">Consulting Retainer</div>
+            <div class="rev-track"><div class="rev-fill" style="width:14%;background:var(--purple);"></div></div>
+            <div class="rev-val">$1,900</div>
+          </div>
+          <div class="rev-bar-row">
+            <div class="rev-label">Campaign Inflows</div>
+            <div class="rev-track"><div class="rev-fill" style="width:0%;background:var(--green);"></div></div>
+            <div class="rev-val">$0</div>
+          </div>
+          <div style="border-top:1px solid var(--border);padding-top:10px;margin-top:4px;display:flex;justify-content:space-between;">
+            <span style="font-size:12px;color:var(--text2);">Total Revenue</span>
+            <span style="font-family:'IBM Plex Mono',monospace;font-size:14px;font-weight:600;color:var(--green);">$28,400</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Member Distribution -->
+      <div class="card">
+        <div class="card-hdr">
+          <div class="card-title">Q1 Member Distribution · Patronage Model</div>
+          <div style="display:flex;gap:6px;">
+            <div class="card-act">Governance Approval →</div>
+            <button class="btn bt" style="font-size:10px;padding:3px 8px;">Execute Payroll</button>
+          </div>
+        </div>
+        <div class="dist-row dist-hdr-row">
+          <div></div>
+          <div class="dist-col">Member</div>
+          <div class="dist-col">Patronage %</div>
+          <div class="dist-col">Distribution</div>
+          <div class="dist-col">Vested</div>
+          <div class="dist-col">Status</div>
+        </div>
+        <div class="dist-row">
+          <div class="dist-av" style="background:linear-gradient(135deg,#0ccfca,#3b82f6);">JC</div>
+          <div><div class="dist-name">Jordan Chen</div><div class="dist-role">Co-Founder · Lead Eng</div></div>
+          <div class="dist-pct">28%</div>
+          <div class="dist-amount">$5,096</div>
+          <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--green);">100%</div>
+          <div><div class="dist-status" style="background:rgba(232,160,48,.06);border-color:var(--amber-dim);color:var(--amber);">Pending</div></div>
+        </div>
+        <div class="dist-row">
+          <div class="dist-av" style="background:linear-gradient(135deg,#0ccfca,#3b82f6);">AK</div>
+          <div><div class="dist-name">Amara Kofi</div><div class="dist-role">Co-Founder · Design Sys</div></div>
+          <div class="dist-pct">26%</div>
+          <div class="dist-amount">$4,732</div>
+          <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--green);">100%</div>
+          <div><div class="dist-status" style="background:rgba(232,160,48,.06);border-color:var(--amber-dim);color:var(--amber);">Pending</div></div>
+        </div>
+        <div class="dist-row">
+          <div class="dist-av" style="background:linear-gradient(135deg,#22c55e,#16a34a);">MP</div>
+          <div><div class="dist-name">Marcus Park</div><div class="dist-role">Treasurer · Infra</div></div>
+          <div class="dist-pct">18%</div>
+          <div class="dist-amount">$3,276</div>
+          <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--green);">100%</div>
+          <div><div class="dist-status" style="background:rgba(232,160,48,.06);border-color:var(--amber-dim);color:var(--amber);">Pending</div></div>
+        </div>
+        <div class="dist-row">
+          <div class="dist-av" style="background:linear-gradient(135deg,#a855f7,#ec4899);">SR</div>
+          <div><div class="dist-name">Sofia Reyes</div><div class="dist-role">Designer</div></div>
+          <div class="dist-pct">12%</div>
+          <div class="dist-amount">$2,184</div>
+          <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--green);">100%</div>
+          <div><div class="dist-status" style="background:rgba(232,160,48,.06);border-color:var(--amber-dim);color:var(--amber);">Pending</div></div>
+        </div>
+        <div class="dist-row">
+          <div class="dist-av" style="background:linear-gradient(135deg,#e8a030,#d97706);">LM</div>
+          <div><div class="dist-name">Lena Maier</div><div class="dist-role">Gov Lead · Strategy</div></div>
+          <div class="dist-pct">10%</div>
+          <div class="dist-amount">$1,820</div>
+          <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--green);">100%</div>
+          <div><div class="dist-status" style="background:rgba(232,160,48,.06);border-color:var(--amber-dim);color:var(--amber);">Pending</div></div>
+        </div>
+        <div style="padding:10px 14px;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;">
+          <span style="font-size:11px;color:var(--text3);">5 of 8 members shown · Total distribution</span>
+          <span style="font-family:'IBM Plex Mono',monospace;font-size:14px;color:var(--green);font-weight:600;">$18,200</span>
+        </div>
+      </div>
+
+      <!-- Ledger -->
+      <div class="card">
+        <div class="card-hdr">
+          <div class="card-title">Recent Ledger Entries · Operating Account</div>
+          <div class="card-act">Full Ledger →</div>
+        </div>
+        <div class="dist-row dist-hdr-row">
+          <div class="dist-col">Type</div>
+          <div class="dist-col" style="grid-column:2/4;">Description</div>
+          <div class="dist-col">Amount</div>
+          <div class="dist-col">Balance After</div>
+          <div class="dist-col">Reference</div>
+        </div>
+        <div class="ledger-row">
+          <div class="lr-type lr-credit">CREDIT</div>
+          <div class="lr-desc" style="grid-column:2/4;">Client payment — Aisha Patel · Brand Identity v2</div>
+          <div class="lr-amt" style="color:var(--green);">+$4,200</div>
+          <div class="lr-bal">$124,500</div>
+          <div class="lr-ref">INV-2026-031</div>
+        </div>
+        <div class="ledger-row">
+          <div class="lr-type lr-debit">DEBIT</div>
+          <div class="lr-desc" style="grid-column:2/4;">Platform fee — kogi-bank (2.5%)</div>
+          <div class="lr-amt" style="color:var(--red);">−$105</div>
+          <div class="lr-bal">$120,300</div>
+          <div class="lr-ref">FEE-4841</div>
+        </div>
+        <div class="ledger-row">
+          <div class="lr-type lr-debit">DEBIT</div>
+          <div class="lr-desc" style="grid-column:2/4;">Tax reserve auto-split (15% of income)</div>
+          <div class="lr-amt" style="color:var(--red);">−$630</div>
+          <div class="lr-bal">$120,405</div>
+          <div class="lr-ref">TAX-AUTO</div>
+        </div>
+        <div class="ledger-row">
+          <div class="lr-type lr-credit">CREDIT</div>
+          <div class="lr-desc" style="grid-column:2/4;">Marketplace sale — CRDT Library License × 2</div>
+          <div class="lr-amt" style="color:var(--green);">+$840</div>
+          <div class="lr-bal">$121,035</div>
+          <div class="lr-ref">MKT-7721</div>
+        </div>
+        <div class="ledger-row">
+          <div class="lr-type lr-debit">DEBIT</div>
+          <div class="lr-desc" style="grid-column:2/4;">AWS infrastructure — March 2026</div>
+          <div class="lr-amt" style="color:var(--red);">−$1,240</div>
+          <div class="lr-bal">$120,195</div>
+          <div class="lr-ref">EXP-AWS-031</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right Column -->
+    <div>
+      <!-- Payroll ready -->
+      <div class="payroll-alert">
+        <div class="pa-title">💰 Q1 Payroll Ready to Run</div>
+        <div class="pa-amount">$18,200</div>
+        <div class="pa-sub">8 members · Patronage-based distribution<br/>Governance Proposal #12 approved · Vote 5/8</div>
+        <div class="pa-btns">
+          <div class="pa-btn" style="background:rgba(34,197,94,.1);border-color:var(--green-dim);color:var(--green);">Execute Now</div>
+          <div class="pa-btn" style="background:transparent;border-color:var(--border2);color:var(--text3);">Schedule</div>
+        </div>
+      </div>
+
+      <!-- Equity Pool cap table -->
+      <div class="card">
+        <div class="card-hdr">
+          <div class="card-title">Equity Pool · Cap Table</div>
+          <div class="card-act">Full cap table →</div>
+        </div>
+        <div style="padding:12px 14px;">
+          <div class="eq-row">
+            <div class="eq-av" style="background:linear-gradient(135deg,#0ccfca,#3b82f6);">JC</div>
+            <div><div class="eq-name">Jordan Chen</div><div class="eq-bar" style="width:28%;"></div></div>
+            <div class="eq-units">28 units</div>
+            <div class="eq-pct">28%</div>
+          </div>
+          <div class="eq-row">
+            <div class="eq-av" style="background:linear-gradient(135deg,#0ccfca,#3b82f6);">AK</div>
+            <div><div class="eq-name">Amara Kofi</div><div class="eq-bar" style="width:26%;"></div></div>
+            <div class="eq-units">26 units</div>
+            <div class="eq-pct">26%</div>
+          </div>
+          <div class="eq-row">
+            <div class="eq-av" style="background:linear-gradient(135deg,#22c55e,#16a34a);">MP</div>
+            <div><div class="eq-name">Marcus Park</div><div class="eq-bar" style="width:18%;"></div></div>
+            <div class="eq-units">18 units</div>
+            <div class="eq-pct">18%</div>
+          </div>
+          <div class="eq-row">
+            <div class="eq-av" style="background:linear-gradient(135deg,#a855f7,#ec4899);">SR</div>
+            <div><div class="eq-name">Sofia Reyes</div><div class="eq-bar" style="width:12%;"></div></div>
+            <div class="eq-units">12 units</div>
+            <div class="eq-pct">12%</div>
+          </div>
+          <div class="eq-row">
+            <div class="eq-av" style="background:var(--border2);">+4</div>
+            <div><div class="eq-name" style="color:var(--text3);">4 more members</div></div>
+            <div class="eq-units" style="color:var(--text3);">16 units</div>
+            <div class="eq-pct" style="color:var(--text3);">16%</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Federation coordination -->
+      <div class="card">
+        <div class="card-hdr">
+          <div class="card-title">Federation & Linked Orgs</div>
+          <div class="card-act">Transfer →</div>
+        </div>
+        <div style="padding:12px 14px;">
+          <div class="fed-row">
+            <div class="fed-ic" style="background:rgba(12,207,202,.1);border:1px solid var(--teal-dim);">⊛</div>
+            <div><div class="fed-name">OS Collective Reserve</div><div style="font-size:9px;color:var(--text3);">Collective · Shared pool</div></div>
+            <div class="fed-val" style="color:var(--teal);">$8,400</div>
+          </div>
+          <div class="fed-row">
+            <div class="fed-ic" style="background:rgba(59,130,246,.1);border:1px solid #1d4ed8;">🌐</div>
+            <div><div class="fed-name">Builder Network Reserve</div><div style="font-size:9px;color:var(--text3);">Community · Fee pool</div></div>
+            <div class="fed-val">$22,100</div>
+          </div>
+          <div class="fed-row">
+            <div class="fed-ic" style="background:rgba(232,160,48,.1);border:1px solid var(--amber-dim);">🎓</div>
+            <div><div class="fed-name">Freelancers Guild Mutual Aid</div><div style="font-size:9px;color:var(--text3);">Guild · Mutual aid fund</div></div>
+            <div class="fed-val" style="color:var(--amber);">$5,200</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Oba Financial Briefing -->
+      <div class="card" style="border-color:var(--teal-dim);">
+        <div class="card-hdr" style="background:rgba(12,207,202,.03);">
+          <div class="card-title" style="color:var(--teal);">◉ Oba · Financial Briefing</div>
+        </div>
+        <div style="padding:12px 14px;display:flex;flex-direction:column;gap:8px;">
+          <div style="font-size:11px;color:var(--text2);line-height:1.5;">Q1 payroll is ready. All 8 members will receive distributions. <strong style="color:var(--green);">Proposal #12 approved</strong> — you can execute now.</div>
+          <div style="font-size:11px;color:var(--amber);line-height:1.5;">⚠ Q1 estimated tax payment of <strong>$4,200</strong> is due March 31. Current tax reserve covers it.</div>
+          <div style="font-size:11px;color:var(--text3);line-height:1.5;">At current burn rate ($8,400/mo), reserves cover 5.7 months. Consider growing reserves to 6 months.</div>
+          <div style="display:flex;gap:6px;margin-top:4px;">
+            <button class="btn bt" style="flex:1;font-size:10px;padding:5px;">Execute Payroll</button>
+            <button class="btn bg" style="font-size:10px;padding:5px;">Pay Tax</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>KOGI · Tax Center</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap');
+:root{--bg:#070910;--sidebar:#0b0d16;--card:#0f1221;--card2:#131729;--border:#1a2035;--border2:#232a42;--teal:#0ccfca;--teal-dim:#0a9994;--amber:#e8a030;--amber-dim:#b07820;--green:#22c55e;--green-dim:#15803d;--blue:#3b82f6;--red:#ef4444;--purple:#a855f7;--mag:#d946ef;--text:#dde4f0;--text2:#7a879e;--text3:#3d4a62;}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--bg);color:var(--text);font-family:'IBM Plex Sans',sans-serif;font-size:13px;display:flex;min-height:100vh;}
+.sidebar{width:200px;min-width:200px;background:var(--sidebar);border-right:1px solid var(--border);display:flex;flex-direction:column;}
+.logo{padding:18px 16px;border-bottom:1px solid var(--border);}
+.logo-text{font-family:'IBM Plex Mono',monospace;font-size:18px;font-weight:600;letter-spacing:.08em;color:var(--teal);}
+.logo-sub{font-size:9px;color:var(--text3);letter-spacing:.15em;text-transform:uppercase;margin-top:2px;}
+.nav{padding:12px 0;flex:1;overflow-y:auto;}
+.ns{padding:8px 16px 4px;font-size:9px;color:var(--text3);letter-spacing:.18em;text-transform:uppercase;font-family:'IBM Plex Mono',monospace;}
+.ni{display:flex;align-items:center;gap:10px;padding:7px 16px;color:var(--text2);cursor:pointer;font-size:12px;border-left:2px solid transparent;}
+.ni.on{color:var(--teal);background:rgba(12,207,202,.07);border-left-color:var(--teal);}
+.ni-ic{width:14px;text-align:center;font-size:12px;}
+.pb{padding:12px 16px;border-top:1px solid var(--border);}
+.pm{display:flex;align-items:center;gap:8px;}
+.avsm{width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,#0ccfca,#3b82f6);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:#fff;}
+.main{flex:1;overflow-y:auto;}
+.topbar{height:48px;border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 20px;gap:12px;background:var(--sidebar);position:sticky;top:0;z-index:10;}
+.tp{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text3);}
+.tp span{color:var(--text2);}
+.tp span.cur{color:var(--text);}
+.sp{flex:1;}
+.btn{padding:5px 12px;border-radius:4px;font-size:11px;font-family:'IBM Plex Mono',monospace;cursor:pointer;border:1px solid;}
+.bt{background:rgba(12,207,202,.12);border-color:var(--teal-dim);color:var(--teal);}
+.bg{background:transparent;border-color:var(--border2);color:var(--text2);}
+.ba{background:rgba(232,160,48,.1);border-color:var(--amber-dim);color:var(--amber);}
+.br{background:rgba(239,68,68,.1);border-color:#991b1b;color:var(--red);}
+
+/* Tax liability hero */
+.tax-hero{padding:20px 24px;background:var(--sidebar);border-bottom:1px solid var(--border);display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:1px;}
+.th-box{padding:14px 18px;background:var(--card);position:relative;overflow:hidden;}
+.th-box::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;}
+.th-q1::before{background:var(--red);}
+.th-ytd::before{background:var(--amber);}
+.th-res::before{background:var(--green);}
+.th-gap::before{background:var(--purple);}
+.th-label{font-size:9px;font-family:'IBM Plex Mono',monospace;text-transform:uppercase;letter-spacing:.12em;color:var(--text3);margin-bottom:4px;}
+.th-amount{font-family:'IBM Plex Mono',monospace;font-size:24px;font-weight:600;margin-bottom:2px;}
+.th-sub{font-size:10px;color:var(--text3);}
+.th-action{margin-top:8px;}
+
+.content{padding:20px;display:grid;grid-template-columns:1fr 320px;gap:16px;}
+.card{background:var(--card);border:1px solid var(--border);border-radius:6px;overflow:hidden;margin-bottom:14px;}
+.ch{padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+.ct{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text2);text-transform:uppercase;letter-spacing:.1em;}
+.ca{font-size:10px;color:var(--teal);cursor:pointer;font-family:'IBM Plex Mono',monospace;}
+
+/* Quarter cards */
+.quarters{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px;}
+.qcard{background:var(--card);border:1px solid var(--border);border-radius:6px;padding:14px;cursor:pointer;transition:all .12s;position:relative;}
+.qcard:hover{border-color:var(--border2);}
+.qcard.due{border-color:var(--red);}
+.qcard.paid{border-color:var(--green-dim);}
+.qcard.upcoming{border-color:var(--border2);}
+.qcard-label{font-family:'IBM Plex Mono',monospace;font-size:10px;text-transform:uppercase;letter-spacing:.1em;margin-bottom:4px;}
+.qcard-amount{font-family:'IBM Plex Mono',monospace;font-size:18px;font-weight:600;margin-bottom:4px;}
+.qcard-date{font-size:10px;color:var(--text3);}
+.qcard-status{position:absolute;top:10px;right:10px;font-size:9px;font-family:'IBM Plex Mono',monospace;padding:2px 7px;border-radius:3px;border:1px solid;}
+
+/* Income breakdown */
+.income-row{display:grid;grid-template-columns:1fr 100px 100px 80px;gap:10px;align-items:center;padding:9px 16px;border-bottom:1px solid var(--border);}
+.income-row:last-child{border-bottom:none;}
+.ir-hdr{background:var(--card2);padding:7px 16px;}
+.ir-col{font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.1em;font-family:'IBM Plex Mono',monospace;}
+.ir-source{font-size:12px;color:var(--text);}
+.ir-type{font-size:9px;color:var(--text3);font-family:'IBM Plex Mono',monospace;margin-top:1px;}
+.ir-amount{font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--text2);}
+.ir-se{font-size:10px;font-family:'IBM Plex Mono',monospace;}
+
+/* Tax bracket viz */
+.bracket-row{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);}
+.bracket-row:last-child{border-bottom:none;}
+.br-label{font-size:11px;color:var(--text2);width:110px;}
+.br-track{flex:1;height:8px;background:var(--border);border-radius:4px;overflow:hidden;}
+.br-fill{height:100%;border-radius:4px;}
+.br-pct{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--text3);width:35px;text-align:right;}
+.br-amt{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text2);width:70px;text-align:right;}
+
+/* Deduction category cards */
+.ded-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:14px;}
+.ded-card{background:var(--card2);border:1px solid var(--border);border-radius:5px;padding:12px;cursor:pointer;}
+.ded-card:hover{border-color:var(--border2);}
+.dc-ic{font-size:18px;margin-bottom:5px;}
+.dc-name{font-size:11px;font-weight:600;color:var(--text);margin-bottom:2px;}
+.dc-amount{font-family:'IBM Plex Mono',monospace;font-size:15px;font-weight:600;color:var(--green);}
+.dc-count{font-size:9px;color:var(--text3);margin-top:1px;}
+.dc-bar{height:3px;background:var(--border);border-radius:2px;margin-top:6px;overflow:hidden;}
+.dc-bar-fill{height:100%;border-radius:2px;background:var(--green);}
+
+/* 1099 table */
+.ten99-row{display:grid;grid-template-columns:1fr 90px 90px 90px 80px;gap:10px;align-items:center;padding:9px 16px;border-bottom:1px solid var(--border);}
+.ten99-row:last-child{border-bottom:none;}
+.tr-payer{font-size:12px;color:var(--text);}
+.tr-ein{font-size:9px;color:var(--text3);font-family:'IBM Plex Mono',monospace;}
+.tr-amt{font-family:'IBM Plex Mono',monospace;font-size:12px;}
+.tr-status{font-size:9px;font-family:'IBM Plex Mono',monospace;padding:2px 6px;border-radius:3px;border:1px solid;}
+
+/* Right column */
+.tax-summary-box{background:var(--card);border:1px solid var(--border);border-radius:6px;overflow:hidden;margin-bottom:14px;}
+.tsb-hdr{padding:12px 14px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;}
+.tsb-title{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--text2);text-transform:uppercase;letter-spacing:.1em;}
+.tsb-year{font-size:10px;color:var(--text3);}
+.tsb-body{padding:14px;}
+.tl-row{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border);}
+.tl-row:last-child{border-bottom:none;}
+.tl-key{font-size:11px;color:var(--text3);}
+.tl-val{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text2);}
+.tl-val.red{color:var(--red);}
+.tl-val.green{color:var(--green);}
+.tl-val.amber{color:var(--amber);}
+.tl-val.teal{color:var(--teal);}
+.tl-divider{height:1px;background:var(--border);margin:6px 0;}
+.tl-total{display:flex;justify-content:space-between;padding:8px 0;}
+.tl-total-key{font-size:12px;font-weight:600;color:var(--text);}
+.tl-total-val{font-family:'IBM Plex Mono',monospace;font-size:16px;font-weight:600;color:var(--red);}
+
+/* Timeline */
+.timeline-item{display:flex;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);}
+.timeline-item:last-child{border-bottom:none;}
+.tli-dot{width:8px;height:8px;border-radius:50%;margin-top:4px;flex-shrink:0;}
+.tli-content{flex:1;}
+.tli-title{font-size:11px;color:var(--text);}
+.tli-date{font-size:10px;color:var(--text3);font-family:'IBM Plex Mono',monospace;}
+.tli-amount{font-family:'IBM Plex Mono',monospace;font-size:11px;margin-top:2px;}
+
+/* Auto-split config */
+.split-row{display:flex;align-items:center;gap:10px;padding:8px 14px;border-bottom:1px solid var(--border);}
+.split-row:last-child{border-bottom:none;}
+.split-label{flex:1;font-size:11px;color:var(--text);}
+.split-pct{font-family:'IBM Plex Mono',monospace;font-size:13px;font-weight:600;width:40px;text-align:center;}
+.split-bar{flex:2;height:6px;background:var(--border);border-radius:3px;overflow:hidden;}
+.split-fill{height:100%;border-radius:3px;}
+</style>
+</head>
+<body>
+<div class="sidebar">
+  <div class="logo"><div class="logo-text">KOGI</div><div class="logo-sub">Independent Worker OS</div></div>
+  <nav class="nav">
+    <div class="ns">Core</div>
+    <div class="ni"><span class="ni-ic">⌂</span>Dashboard</div>
+    <div class="ns">Finance</div>
+    <div class="ni"><span class="ni-ic">♦</span>Bank</div>
+    <div class="ni"><span class="ni-ic">💳</span>Wallet</div>
+    <div class="ni"><span class="ni-ic">📄</span>Invoices</div>
+    <div class="ni"><span class="ni-ic">📊</span>Accounting</div>
+    <div class="ni on"><span class="ni-ic">🧾</span>Tax Center</div>
+    <div class="ni"><span class="ni-ic">📈</span>Investments</div>
+    <div class="ni"><span class="ni-ic">🎯</span>Campaigns</div>
+    <div class="ns">Platform</div>
+    <div class="ni"><span class="ni-ic">⬡</span>Exchange</div>
+    <div class="ni"><span class="ni-ic">⊗</span>Marketplace</div>
+    <div class="ni"><span class="ni-ic">🏛</span>Group Econ</div>
+  </nav>
+  <div class="pb"><div class="pm"><div class="avsm">JC</div><div><div style="font-size:12px;">Jordan Chen</div><div style="font-size:10px;color:var(--text3);">2026 Tax Year</div></div></div></div>
+</div>
+
+<div class="main">
+  <div class="topbar">
+    <div class="tp">KTAX / <span class="cur">Tax Center · 2026</span></div>
+    <div class="sp"></div>
+    <select style="background:var(--card);border:1px solid var(--border2);color:var(--text2);font-size:11px;padding:4px 8px;border-radius:4px;font-family:'IBM Plex Mono',monospace;">
+      <option>Tax Year: 2026</option><option>Tax Year: 2025</option><option>Tax Year: 2024</option>
+    </select>
+    <button class="btn bg">Export Tax Report</button>
+    <button class="btn br">Pay Q1 Tax Now</button>
+  </div>
+
+  <!-- Tax hero -->
+  <div class="tax-hero">
+    <div class="th-box th-q1">
+      <div class="th-label">Q1 Tax Due · Mar 31</div>
+      <div class="th-amount" style="color:var(--red);">$12,200</div>
+      <div class="th-sub">SE tax $8,540 + Federal $3,660</div>
+      <div class="th-action"><button class="btn br" style="font-size:10px;padding:4px 10px;">Pay Now →</button></div>
+    </div>
+    <div class="th-box th-ytd">
+      <div class="th-label">Estimated YTD Liability</div>
+      <div class="th-amount" style="color:var(--amber);">$28,400</div>
+      <div class="th-sub">Through Mar 14 · AI-computed</div>
+      <div class="th-action"><button class="btn ba" style="font-size:10px;padding:4px 10px;">View Breakdown →</button></div>
+    </div>
+    <div class="th-box th-res">
+      <div class="th-label">Tax Reserve Balance</div>
+      <div class="th-amount" style="color:var(--green);">$12,200</div>
+      <div class="th-sub">Auto-accumulated · Q1 covered ✓</div>
+      <div class="th-action"><button class="btn bg" style="font-size:10px;padding:4px 10px;">Manage Reserve →</button></div>
+    </div>
+    <div class="th-box th-gap">
+      <div class="th-label">Total Deductions YTD</div>
+      <div class="th-amount" style="color:var(--purple);">$18,400</div>
+      <div class="th-sub">Saving ~$4,048 in tax</div>
+      <div class="th-action"><button class="btn bg" style="font-size:10px;padding:4px 10px;">Add Deduction →</button></div>
+    </div>
+  </div>
+
+  <div class="content">
+    <div>
+
+      <!-- Quarterly schedule -->
+      <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.14em;margin-bottom:10px;">2026 Quarterly Estimated Tax Schedule</div>
+      <div class="quarters">
+        <div class="qcard due">
+          <div class="qcard-status" style="background:rgba(239,68,68,.08);border-color:#991b1b;color:var(--red);">DUE SOON</div>
+          <div class="qcard-label" style="color:var(--red);">Q1 2026</div>
+          <div class="qcard-amount" style="color:var(--red);">$12,200</div>
+          <div class="qcard-date">Due March 31, 2026</div>
+          <div style="margin-top:8px;"><button class="btn br" style="width:100%;padding:5px;font-size:10px;">Pay Q1</button></div>
+        </div>
+        <div class="qcard upcoming">
+          <div class="qcard-status" style="background:rgba(59,130,246,.06);border-color:#1d4ed8;color:var(--blue);">UPCOMING</div>
+          <div class="qcard-label" style="color:var(--blue);">Q2 2026</div>
+          <div class="qcard-amount" style="color:var(--blue);">~$14,200</div>
+          <div class="qcard-date">Due June 15, 2026</div>
+          <div style="margin-top:8px;"><button class="btn bg" style="width:100%;padding:5px;font-size:10px;">Pre-pay</button></div>
+        </div>
+        <div class="qcard upcoming">
+          <div class="qcard-status" style="background:rgba(122,135,158,.06);border-color:var(--text3);color:var(--text3);">FUTURE</div>
+          <div class="qcard-label" style="color:var(--text3);">Q3 2026</div>
+          <div class="qcard-amount" style="color:var(--text3);">~$14,200</div>
+          <div class="qcard-date">Due Sep 15, 2026</div>
+          <div style="margin-top:8px;"><button class="btn bg" style="width:100%;padding:5px;font-size:10px;">Set Reminder</button></div>
+        </div>
+        <div class="qcard upcoming">
+          <div class="qcard-status" style="background:rgba(122,135,158,.06);border-color:var(--text3);color:var(--text3);">FUTURE</div>
+          <div class="qcard-label" style="color:var(--text3);">Q4 / Annual</div>
+          <div class="qcard-amount" style="color:var(--text3);">~$TBD</div>
+          <div class="qcard-date">Due Jan 15, 2027</div>
+          <div style="margin-top:8px;"><button class="btn bg" style="width:100%;padding:5px;font-size:10px;">Set Reminder</button></div>
+        </div>
+      </div>
+
+      <!-- Income breakdown by source -->
+      <div class="card">
+        <div class="ch">
+          <div class="ct">Income by Source · YTD 2026</div>
+          <div class="ca">Full income report →</div>
+        </div>
+        <div class="income-row ir-hdr">
+          <div class="ir-col">Source</div><div class="ir-col">Gross Amount</div><div class="ir-col">SE Taxable</div><div class="ir-col">SE Tax Est.</div>
+        </div>
+        <div class="income-row">
+          <div><div class="ir-source">Client Contract — Patel Ventures</div><div class="ir-type">SELF-EMPLOYMENT · 1099-NEC</div></div>
+          <div class="ir-amount">$42,000</div>
+          <div class="ir-amount">$42,000</div>
+          <div class="ir-se" style="color:var(--red);">$6,426</div>
+        </div>
+        <div class="income-row">
+          <div><div class="ir-source">Mesh Studio Payroll Distribution</div><div class="ir-type">COOPERATIVE · K-1 / Schedule E</div></div>
+          <div class="ir-amount">$18,200</div>
+          <div class="ir-amount">$18,200</div>
+          <div class="ir-se" style="color:var(--red);">$2,785</div>
+        </div>
+        <div class="income-row">
+          <div><div class="ir-source">Marketplace — crdt-rs License Sales</div><div class="ir-type">SELF-EMPLOYMENT · Platform 1099-K</div></div>
+          <div class="ir-amount">$8,400</div>
+          <div class="ir-amount">$8,400</div>
+          <div class="ir-se" style="color:var(--red);">$1,285</div>
+        </div>
+        <div class="income-row">
+          <div><div class="ir-source">Architecture Consulting Retainer</div><div class="ir-type">SELF-EMPLOYMENT · 1099-NEC</div></div>
+          <div class="ir-amount">$9,600</div>
+          <div class="ir-amount">$9,600</div>
+          <div class="ir-se" style="color:var(--red);">$1,469</div>
+        </div>
+        <div class="income-row">
+          <div><div class="ir-source">Revenue Share Distribution — crdt-rs Fund</div><div class="ir-type">INVESTMENT · Schedule B</div></div>
+          <div class="ir-amount">$1,240</div>
+          <div class="ir-amount" style="color:var(--text3);">$0</div>
+          <div class="ir-se" style="color:var(--text3);">—</div>
+        </div>
+        <div style="padding:10px 16px;border-top:1px solid var(--border);display:grid;grid-template-columns:1fr 100px 100px 80px;gap:10px;">
+          <div style="font-size:12px;font-weight:600;color:var(--text);">Total YTD</div>
+          <div style="font-family:'IBM Plex Mono',monospace;font-size:13px;color:var(--teal);font-weight:600;">$79,440</div>
+          <div style="font-family:'IBM Plex Mono',monospace;font-size:13px;color:var(--amber);font-weight:600;">$78,200</div>
+          <div style="font-family:'IBM Plex Mono',monospace;font-size:13px;color:var(--red);font-weight:600;">$11,965</div>
+        </div>
+      </div>
+
+      <!-- Tax bracket visualization -->
+      <div class="card">
+        <div class="ch"><div class="ct">Federal Tax Bracket Exposure · 2026</div><div style="font-size:10px;color:var(--text3);">Single filer · After deductions</div></div>
+        <div style="padding:14px;">
+          <div class="bracket-row">
+            <div class="br-label">10% (≤$11,600)</div>
+            <div class="br-track"><div class="br-fill" style="width:100%;background:var(--green);"></div></div>
+            <div class="br-pct">10%</div>
+            <div class="br-amt" style="color:var(--green);">$1,160</div>
+          </div>
+          <div class="bracket-row">
+            <div class="br-label">12% ($11k–$47k)</div>
+            <div class="br-track"><div class="br-fill" style="width:100%;background:var(--teal);"></div></div>
+            <div class="br-pct">12%</div>
+            <div class="br-amt" style="color:var(--teal);">$4,248</div>
+          </div>
+          <div class="bracket-row">
+            <div class="br-label">22% ($47k–$100k)</div>
+            <div class="br-track"><div class="br-fill" style="width:52%;background:var(--amber);"></div></div>
+            <div class="br-pct">22%</div>
+            <div class="br-amt" style="color:var(--amber);">$7,392</div>
+          </div>
+          <div class="bracket-row">
+            <div class="br-label" style="color:var(--text3);">24% ($100k–$201k)</div>
+            <div class="br-track"><div class="br-fill" style="width:0%;background:var(--red);"></div></div>
+            <div class="br-pct" style="color:var(--text3);">—</div>
+            <div class="br-amt" style="color:var(--text3);">$0</div>
+          </div>
+          <div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;">
+            <div>
+              <div style="font-size:11px;color:var(--text2);">Effective tax rate (all-in)</div>
+              <div style="font-size:10px;color:var(--text3);">Federal + SE + State (est)</div>
+            </div>
+            <div style="font-family:'IBM Plex Mono',monospace;font-size:20px;font-weight:600;color:var(--amber);">35.7%</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Deductions -->
+      <div class="card">
+        <div class="ch"><div class="ct">Deductions Tracker · YTD $18,400</div><div class="ca">Add Deduction +</div></div>
+        <div class="ded-grid">
+          <div class="ded-card">
+            <div class="dc-ic">🏠</div>
+            <div class="dc-name">Home Office</div>
+            <div class="dc-amount">$4,200</div>
+            <div class="dc-count">Schedule C · 8 receipts · 200 sq ft</div>
+            <div class="dc-bar"><div class="dc-bar-fill" style="width:85%;"></div></div>
+          </div>
+          <div class="ded-card">
+            <div class="dc-ic">💻</div>
+            <div class="dc-name">Equipment & Hardware</div>
+            <div class="dc-amount">$3,840</div>
+            <div class="dc-count">Section 179 · 3 items · Auto-captured</div>
+            <div class="dc-bar"><div class="dc-bar-fill" style="width:70%;"></div></div>
+          </div>
+          <div class="ded-card">
+            <div class="dc-ic">☁</div>
+            <div class="dc-name">Software & SaaS</div>
+            <div class="dc-amount">$3,720</div>
+            <div class="dc-count">Schedule C · 12 subscriptions</div>
+            <div class="dc-bar"><div class="dc-bar-fill" style="width:68%;"></div></div>
+          </div>
+          <div class="ded-card">
+            <div class="dc-ic">📚</div>
+            <div class="dc-name">Professional Development</div>
+            <div class="dc-amount">$2,840</div>
+            <div class="dc-count">Courses, conferences, books</div>
+            <div class="dc-bar"><div class="dc-bar-fill" style="width:50%;"></div></div>
+          </div>
+          <div class="ded-card">
+            <div class="dc-ic">🏥</div>
+            <div class="dc-name">Health Insurance</div>
+            <div class="dc-amount">$2,400</div>
+            <div class="dc-count">Self-employed above-the-line</div>
+            <div class="dc-bar"><div class="dc-bar-fill" style="width:44%;"></div></div>
+          </div>
+          <div class="ded-card">
+            <div class="dc-ic">💰</div>
+            <div class="dc-name">SEP-IRA Contributions</div>
+            <div class="dc-amount">$1,400</div>
+            <div class="dc-count">Pre-tax retirement · ~25% of net</div>
+            <div class="dc-bar"><div class="dc-bar-fill" style="width:30%;background:var(--purple);"></div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 1099 Management -->
+      <div class="card">
+        <div class="ch"><div class="ct">1099 & Tax Document Management</div><div class="ca">Request W-9 →</div></div>
+        <div class="income-row ir-hdr">
+          <div class="ir-col">Payer</div><div class="ir-col">EIN</div><div class="ir-col">Box 1 (NEC)</div><div class="ir-col">Received</div><div class="ir-col">Status</div>
+        </div>
+        <div class="ten99-row">
+          <div><div class="tr-payer">Patel Ventures LLC</div><div class="tr-ein">84-1234567</div></div>
+          <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--text3);">84-1234567</div>
+          <div class="tr-amt" style="color:var(--teal);">$42,000</div>
+          <div style="font-size:10px;color:var(--green);font-family:'IBM Plex Mono',monospace;">Jan 31</div>
+          <div><div class="tr-status" style="background:rgba(34,197,94,.06);border-color:var(--green-dim);color:var(--green);">Received</div></div>
+        </div>
+        <div class="ten99-row">
+          <div><div class="tr-payer">Kogi Platform (1099-K)</div><div class="tr-ein">kogi-platform</div></div>
+          <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--text3);">Platform</div>
+          <div class="tr-amt" style="color:var(--teal);">$8,400</div>
+          <div style="font-size:10px;color:var(--green);font-family:'IBM Plex Mono',monospace;">Feb 1</div>
+          <div><div class="tr-status" style="background:rgba(34,197,94,.06);border-color:var(--green-dim);color:var(--green);">Received</div></div>
+        </div>
+        <div class="ten99-row">
+          <div><div class="tr-payer">Mesh Studio Cooperative</div><div class="tr-ein">K-1 / Sched-E</div></div>
+          <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--text3);">Cooperative</div>
+          <div class="tr-amt" style="color:var(--amber);">$18,200</div>
+          <div style="font-size:10px;color:var(--amber);font-family:'IBM Plex Mono',monospace;">Mar 15</div>
+          <div><div class="tr-status" style="background:rgba(232,160,48,.06);border-color:var(--amber-dim);color:var(--amber);">Pending</div></div>
+        </div>
+        <div class="ten99-row">
+          <div><div class="tr-payer">Digital Ocean (cloud expense W-9)</div><div class="tr-ein">—</div></div>
+          <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--text3);">—</div>
+          <div class="tr-amt" style="color:var(--text3);">—</div>
+          <div style="font-size:10px;color:var(--text3);font-family:'IBM Plex Mono',monospace;">—</div>
+          <div><div class="tr-status" style="background:rgba(59,130,246,.06);border-color:#1d4ed8;color:var(--blue);">W-9 On file</div></div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Right column -->
+    <div>
+
+      <!-- Tax Summary Box -->
+      <div class="tax-summary-box">
+        <div class="tsb-hdr"><div class="tsb-title">Tax Liability Summary</div><div class="tsb-year">FY 2026 YTD</div></div>
+        <div class="tsb-body">
+          <div class="tl-row"><span class="tl-key">Gross Income</span><span class="tl-val teal">$79,440</span></div>
+          <div class="tl-row"><span class="tl-key">Total Deductions</span><span class="tl-val green">−$18,400</span></div>
+          <div class="tl-divider"></div>
+          <div class="tl-row"><span class="tl-key">Adjusted Gross Income</span><span class="tl-val">$61,040</span></div>
+          <div class="tl-row"><span class="tl-key">Standard Deduction</span><span class="tl-val green">−$14,600</span></div>
+          <div class="tl-divider"></div>
+          <div class="tl-row"><span class="tl-key">Taxable Income</span><span class="tl-val amber">$46,440</span></div>
+          <div class="tl-row"><span class="tl-key">Federal Income Tax</span><span class="tl-val red">$5,328</span></div>
+          <div class="tl-row"><span class="tl-key">Self-Employment Tax</span><span class="tl-val red">$8,540</span></div>
+          <div class="tl-row"><span class="tl-key">CA State Tax (est.)</span><span class="tl-val red">$3,840</span></div>
+          <div class="tl-row"><span class="tl-key">SE Deduction (½)</span><span class="tl-val green">−$4,270</span></div>
+          <div class="tl-divider"></div>
+          <div class="tl-total"><span class="tl-total-key">Est. Total Liability</span><span class="tl-total-val">$13,438</span></div>
+          <div class="tl-row"><span class="tl-key">Tax Reserve Balance</span><span class="tl-val green">$12,200</span></div>
+          <div class="tl-row"><span class="tl-key">Coverage Gap</span><span class="tl-val amber">$1,238</span></div>
+        </div>
+        <div style="padding:10px 14px;border-top:1px solid var(--border);display:flex;gap:6px;">
+          <button class="btn br" style="flex:1;padding:6px;font-size:10px;">Pay Q1 Tax $12,200</button>
+          <button class="btn bg" style="font-size:10px;padding:6px;">Export</button>
+        </div>
+      </div>
+
+      <!-- Auto-split config -->
+      <div class="card">
+        <div class="ch"><div class="ct">Tax Reserve Auto-Split</div><div class="ca">Configure →</div></div>
+        <div style="padding:4px 0;">
+          <div class="split-row">
+            <div class="split-label">Checking Account</div>
+            <div class="split-pct" style="color:var(--teal);">60%</div>
+            <div class="split-bar"><div class="split-fill" style="width:60%;background:var(--teal);"></div></div>
+          </div>
+          <div class="split-row">
+            <div class="split-label">Tax Reserve Account</div>
+            <div class="split-pct" style="color:var(--red);">20%</div>
+            <div class="split-bar"><div class="split-fill" style="width:20%;background:var(--red);"></div></div>
+          </div>
+          <div class="split-row">
+            <div class="split-label">Operations Account</div>
+            <div class="split-pct" style="color:var(--blue);">15%</div>
+            <div class="split-bar"><div class="split-fill" style="width:15%;background:var(--blue);"></div></div>
+          </div>
+          <div class="split-row">
+            <div class="split-label">SEP-IRA Contribution</div>
+            <div class="split-pct" style="color:var(--purple);">5%</div>
+            <div class="split-bar"><div class="split-fill" style="width:5%;background:var(--purple);"></div></div>
+          </div>
+        </div>
+        <div style="padding:8px 14px;background:rgba(12,207,202,.03);border-top:1px solid var(--border);font-size:10px;color:var(--text3);">Applied automatically on every inbound deposit · Configurable anytime</div>
+      </div>
+
+      <!-- Tax timeline -->
+      <div class="card">
+        <div class="ch"><div class="ct">Tax Calendar · Key Dates</div></div>
+        <div style="padding:12px 14px;">
+          <div class="timeline-item">
+            <div class="tli-dot" style="background:var(--red);"></div>
+            <div class="tli-content">
+              <div class="tli-title">Q1 Estimated Tax Payment</div>
+              <div class="tli-date">March 31, 2026 · DUE</div>
+              <div class="tli-amount" style="color:var(--red);">$12,200</div>
+            </div>
+          </div>
+          <div class="timeline-item">
+            <div class="tli-dot" style="background:var(--amber);"></div>
+            <div class="tli-content">
+              <div class="tli-title">Tax Extension Deadline</div>
+              <div class="tli-date">April 15, 2026</div>
+              <div class="tli-amount" style="color:var(--text3);">File or extend</div>
+            </div>
+          </div>
+          <div class="timeline-item">
+            <div class="tli-dot" style="background:var(--blue);"></div>
+            <div class="tli-content">
+              <div class="tli-title">Q2 Estimated Tax Payment</div>
+              <div class="tli-date">June 15, 2026</div>
+              <div class="tli-amount" style="color:var(--blue);">~$14,200</div>
+            </div>
+          </div>
+          <div class="timeline-item">
+            <div class="tli-dot" style="background:var(--border2);"></div>
+            <div class="tli-content">
+              <div class="tli-title">Q3 Estimated Tax Payment</div>
+              <div class="tli-date">September 15, 2026</div>
+              <div class="tli-amount" style="color:var(--text3);">~$14,200</div>
+            </div>
+          </div>
+          <div class="timeline-item">
+            <div class="tli-dot" style="background:var(--border2);"></div>
+            <div class="tli-content">
+              <div class="tli-title">Annual / Q4 Payment + Filing</div>
+              <div class="tli-date">January 15 + April 15, 2027</div>
+              <div class="tli-amount" style="color:var(--text3);">TBD</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Oba tax briefing -->
+      <div class="card" style="border-color:var(--teal-dim);">
+        <div class="ch" style="background:rgba(12,207,202,.03);">
+          <div class="ct" style="color:var(--teal);">◉ Oba · Tax Intelligence</div>
+        </div>
+        <div style="padding:12px 14px;display:flex;flex-direction:column;gap:8px;">
+          <div style="font-size:11px;color:var(--text2);line-height:1.5;">Q1 estimated tax of <strong style="color:var(--red);">$12,200</strong> is due March 31. Your reserve covers it. Ready to execute in one click.</div>
+          <div style="font-size:11px;color:var(--amber);line-height:1.5;">⚠ Gap detected: Reserve covers $12,200 but total Q1 liability is $13,438. You're $1,238 short. Consider topping up before paying.</div>
+          <div style="font-size:11px;color:var(--text3);line-height:1.5;">💡 Missing deduction: No vehicle or travel expenses detected YTD. If you have any business travel receipts, add them for an estimated $800–$2,400 additional deduction.</div>
+          <div style="display:flex;gap:6px;margin-top:4px;">
+            <button class="btn br" style="flex:1;font-size:10px;padding:5px;">Pay Q1 Tax</button>
+            <button class="btn ba" style="flex:1;font-size:10px;padding:5px;">Add Deduction</button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+</body>
+</html>

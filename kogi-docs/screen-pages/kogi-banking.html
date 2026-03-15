@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>KOGI · Bank · Wallet · Accounting · Taxes</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap');
+:root{--bg:#070910;--sidebar:#0b0d16;--card:#0f1221;--card2:#131729;--border:#1a2035;--border2:#232a42;--teal:#0ccfca;--teal-dim:#0a9994;--amber:#e8a030;--amber-dim:#b07820;--green:#22c55e;--green-dim:#15803d;--blue:#3b82f6;--red:#ef4444;--purple:#a855f7;--mag:#d946ef;--text:#dde4f0;--text2:#7a879e;--text3:#3d4a62;}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--bg);color:var(--text);font-family:'IBM Plex Sans',sans-serif;font-size:13px;display:flex;min-height:100vh;}
+.sidebar{width:200px;min-width:200px;background:var(--sidebar);border-right:1px solid var(--border);display:flex;flex-direction:column;}
+.logo{padding:18px 16px;border-bottom:1px solid var(--border);}
+.logo-text{font-family:'IBM Plex Mono',monospace;font-size:18px;font-weight:600;letter-spacing:.08em;color:var(--teal);}
+.logo-sub{font-size:9px;color:var(--text3);letter-spacing:.15em;text-transform:uppercase;margin-top:2px;}
+.nav{padding:12px 0;flex:1;overflow-y:auto;}
+.ns{padding:8px 16px 4px;font-size:9px;color:var(--text3);letter-spacing:.18em;text-transform:uppercase;font-family:'IBM Plex Mono',monospace;}
+.ni{display:flex;align-items:center;gap:10px;padding:7px 16px;color:var(--text2);cursor:pointer;font-size:12px;border-left:2px solid transparent;}
+.ni.on{color:var(--teal);background:rgba(12,207,202,.07);border-left-color:var(--teal);}
+.ni-ic{width:14px;text-align:center;font-size:12px;}
+.pb{padding:12px 16px;border-top:1px solid var(--border);}
+.pm{display:flex;align-items:center;gap:8px;}
+.avsm{width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,#0ccfca,#3b82f6);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:#fff;}
+.main{flex:1;overflow-y:auto;}
+.topbar{height:48px;border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 20px;gap:12px;background:var(--sidebar);position:sticky;top:0;z-index:10;}
+.tp{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text3);}
+.tp span{color:var(--text2);}
+.tp span.cur{color:var(--text);}
+.sp{flex:1;}
+.btn{padding:5px 12px;border-radius:4px;font-size:11px;font-family:'IBM Plex Mono',monospace;cursor:pointer;border:1px solid;}
+.bt{background:rgba(12,207,202,.12);border-color:var(--teal-dim);color:var(--teal);}
+.bg{background:transparent;border-color:var(--border2);color:var(--text2);}
+.ba{background:rgba(232,160,48,.1);border-color:var(--amber-dim);color:var(--amber);}
+
+/* Net worth hero */
+.hero{padding:24px 28px;background:var(--sidebar);border-bottom:1px solid var(--border);display:flex;align-items:flex-start;gap:24px;}
+.hero-main{flex:1;}
+.hero-label{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.15em;margin-bottom:4px;}
+.hero-amount{font-family:'IBM Plex Mono',monospace;font-size:36px;font-weight:600;color:var(--teal);letter-spacing:-.02em;}
+.hero-delta{font-size:12px;color:var(--green);margin-top:4px;font-family:'IBM Plex Mono',monospace;}
+.hero-actions{display:flex;gap:8px;margin-top:12px;}
+.hero-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;}
+.hs-box{background:var(--card);border:1px solid var(--border);border-radius:5px;padding:12px 14px;}
+.hs-val{font-family:'IBM Plex Mono',monospace;font-size:18px;font-weight:600;}
+.hs-lbl{font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.1em;margin-top:2px;}
+.hs-change{font-size:10px;font-family:'IBM Plex Mono',monospace;margin-top:2px;}
+
+.content{padding:20px;display:grid;grid-template-columns:1fr 300px;gap:16px;}
+
+/* Account cards */
+.accounts-scroll{display:flex;gap:10px;overflow-x:auto;padding-bottom:4px;margin-bottom:16px;}
+.acc-mini{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:14px;min-width:180px;flex-shrink:0;cursor:pointer;transition:all .12s;position:relative;overflow:hidden;}
+.acc-mini:hover{border-color:var(--border2);}
+.acc-mini.active{border-color:var(--teal-dim);}
+.acc-mini::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;}
+.acc-checking::before{background:var(--teal);}
+.acc-savings::before{background:var(--green);}
+.acc-ops::before{background:var(--blue);}
+.acc-taxr::before{background:var(--red);}
+.acc-ret::before{background:var(--purple);}
+.acc-invest::before{background:var(--amber);}
+.am-type{font-size:9px;font-family:'IBM Plex Mono',monospace;color:var(--text3);text-transform:uppercase;margin-bottom:4px;}
+.am-bal{font-family:'IBM Plex Mono',monospace;font-size:18px;font-weight:600;margin-bottom:2px;}
+.am-name{font-size:10px;color:var(--text3);}
+
+/* Transactions list */
+.card{background:var(--card);border:1px solid var(--border);border-radius:6px;overflow:hidden;margin-bottom:14px;}
+.card-hdr{padding:11px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+.card-title{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text2);text-transform:uppercase;letter-spacing:.1em;}
+.card-act{font-size:10px;color:var(--teal);cursor:pointer;font-family:'IBM Plex Mono',monospace;}
+/* tx row */
+.tx-hdr{display:grid;grid-template-columns:36px 1fr 100px 100px 80px;gap:10px;padding:7px 16px;background:var(--card2);border-bottom:1px solid var(--border);}
+.tx-col{font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.1em;font-family:'IBM Plex Mono',monospace;}
+.tx-row{display:grid;grid-template-columns:36px 1fr 100px 100px 80px;gap:10px;padding:9px 16px;border-bottom:1px solid var(--border);align-items:center;cursor:pointer;transition:background .1s;}
+.tx-row:hover{background:rgba(255,255,255,.015);}
+.tx-row:last-child{border-bottom:none;}
+.tx-ic{width:28px;height:28px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:12px;border:1px solid;flex-shrink:0;}
+.tx-desc{font-size:12px;color:var(--text);}
+.tx-cat{font-size:10px;color:var(--text3);font-family:'IBM Plex Mono',monospace;margin-top:1px;}
+.tx-type-badge{font-size:9px;font-family:'IBM Plex Mono',monospace;padding:2px 6px;border-radius:3px;border:1px solid;display:inline-block;}
+.tx-amount{font-family:'IBM Plex Mono',monospace;font-size:13px;font-weight:600;}
+.tx-amount.in{color:var(--green);}
+.tx-amount.out{color:var(--red);}
+.tx-status{font-size:10px;font-family:'IBM Plex Mono',monospace;}
+
+/* Accounting charts placeholder */
+.chart-placeholder{height:120px;background:var(--card2);border-radius:4px;display:flex;align-items:flex-end;gap:3px;padding:12px 8px 8px;overflow:hidden;}
+.cp-bar{border-radius:2px 2px 0 0;transition:opacity .15s;}
+.cp-bar:hover{opacity:.8;}
+/* Income vs expense bars */
+.income-bar{background:var(--green);}
+.expense-bar{background:rgba(239,68,68,.5);}
+
+/* Tax section */
+.tax-alert{background:rgba(232,160,48,.04);border:1px solid var(--amber-dim);border-radius:6px;padding:14px;margin-bottom:14px;}
+.ta-title{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--amber);text-transform:uppercase;margin-bottom:8px;display:flex;align-items:center;gap:6px;}
+.tax-row{display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);}
+.tax-row:last-child{border-bottom:none;}
+.tr-label{font-size:12px;color:var(--text);}
+.tr-sub{font-size:10px;color:var(--text3);}
+.tr-amt{font-family:'IBM Plex Mono',monospace;font-size:13px;font-weight:600;}
+.tr-status{font-size:10px;font-family:'IBM Plex Mono',monospace;padding:2px 7px;border-radius:3px;border:1px solid;}
+
+/* Deduction rows */
+.deduct-row{display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid var(--border);}
+.deduct-row:last-child{border-bottom:none;}
+.ded-ic{font-size:14px;flex-shrink:0;}
+.ded-desc{flex:1;font-size:11px;color:var(--text2);}
+.ded-amt{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--green);}
+.ded-cat{font-size:9px;font-family:'IBM Plex Mono',monospace;color:var(--text3);}
+
+/* Cash flow */
+.cf-row{display:flex;align-items:center;gap:10px;padding:6px 0;border-bottom:1px solid var(--border);}
+.cf-row:last-child{border-bottom:none;}
+.cf-date{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--text3);width:70px;}
+.cf-desc{flex:1;font-size:11px;color:var(--text2);}
+.cf-amt{font-family:'IBM Plex Mono',monospace;font-size:11px;}
+.cf-in{color:var(--green);}
+.cf-out{color:var(--red);}
+</style>
+</head>
+<body>
+<div class="sidebar">
+  <div class="logo"><div class="logo-text">KOGI</div><div class="logo-sub">Independent Worker OS</div></div>
+  <nav class="nav">
+    <div class="ns">Core</div>
+    <div class="ni"><span class="ni-ic">⌂</span>Dashboard</div>
+    <div class="ni"><span class="ni-ic">◫</span>Office</div>
+    <div class="ns">Finance</div>
+    <div class="ni on"><span class="ni-ic">♦</span>Bank Overview</div>
+    <div class="ni"><span class="ni-ic">💳</span>Wallet</div>
+    <div class="ni"><span class="ni-ic">🏛</span>Group Economics</div>
+    <div class="ni"><span class="ni-ic">🎯</span>Campaigns</div>
+    <div class="ni"><span class="ni-ic">📈</span>Investments</div>
+    <div class="ni"><span class="ni-ic">📄</span>Invoices</div>
+    <div class="ni"><span class="ni-ic">📊</span>Accounting</div>
+    <div class="ni"><span class="ni-ic">🧾</span>Taxes</div>
+    <div class="ns">Platform</div>
+    <div class="ni"><span class="ni-ic">⬡</span>Exchange</div>
+    <div class="ni"><span class="ni-ic">⊗</span>Marketplace</div>
+  </nav>
+  <div class="pb"><div class="pm"><div class="avsm">JC</div><div><div style="font-size:12px;">Jordan Chen</div><div style="font-size:10px;color:var(--text3);">@jordan.dev</div></div></div></div>
+</div>
+
+<div class="main">
+  <div class="topbar">
+    <div class="tp">KBNK / <span class="cur">Banking · Wallet · Accounting · Taxes</span></div>
+    <div class="sp"></div>
+    <button class="btn ba">Pay Tax $4,200</button>
+    <button class="btn bg">Send Money</button>
+    <button class="btn bt">+ New Invoice</button>
+  </div>
+
+  <!-- Hero -->
+  <div class="hero">
+    <div class="hero-main">
+      <div class="hero-label">Total Net Worth · Jordan Chen</div>
+      <div class="hero-amount">$186,400</div>
+      <div class="hero-delta">↑ +$12,840 this month · +7.4%</div>
+      <div class="hero-actions">
+        <button class="btn bt">Send</button>
+        <button class="btn bg">Request</button>
+        <button class="btn bg">Transfer</button>
+        <button class="btn bg">Invest</button>
+      </div>
+    </div>
+    <div class="hero-stats">
+      <div class="hs-box">
+        <div class="hs-val" style="color:var(--teal);">$84,200</div>
+        <div class="hs-lbl">Liquid Cash</div>
+        <div class="hs-change" style="color:var(--green);">+$8,400 MRR</div>
+      </div>
+      <div class="hs-box">
+        <div class="hs-val" style="color:var(--green);">$42,000</div>
+        <div class="hs-lbl">Investments</div>
+        <div class="hs-change" style="color:var(--green);">+14% YTD</div>
+      </div>
+      <div class="hs-box">
+        <div class="hs-val" style="color:var(--amber);">$48,000</div>
+        <div class="hs-lbl">Coop Share</div>
+        <div class="hs-change" style="color:var(--text3);">Mesh Studio</div>
+      </div>
+      <div class="hs-box">
+        <div class="hs-val" style="color:var(--red);">$12,200</div>
+        <div class="hs-lbl">Tax Reserves</div>
+        <div class="hs-change" style="color:var(--amber);">Due Mar 31</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="content">
+    <div>
+
+      <!-- Account Cards -->
+      <div style="margin-bottom:4px;font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.14em;">My Accounts</div>
+      <div class="accounts-scroll">
+        <div class="acc-mini acc-checking active">
+          <div class="am-type">Checking · Primary</div>
+          <div class="am-bal" style="color:var(--teal);">$42,800</div>
+          <div class="am-name">Day-to-day spending</div>
+        </div>
+        <div class="acc-mini acc-savings">
+          <div class="am-type">Savings · Emergency</div>
+          <div class="am-bal" style="color:var(--green);">$24,000</div>
+          <div class="am-name">6-month runway</div>
+        </div>
+        <div class="acc-mini acc-ops">
+          <div class="am-type">Operations</div>
+          <div class="am-bal" style="color:var(--blue);">$8,400</div>
+          <div class="am-name">Business expenses</div>
+        </div>
+        <div class="acc-mini acc-taxr">
+          <div class="am-type">Tax Reserve</div>
+          <div class="am-bal" style="color:var(--red);">$12,200</div>
+          <div class="am-name">SE tax · Q1 due</div>
+        </div>
+        <div class="acc-mini acc-ret">
+          <div class="am-type">Retirement</div>
+          <div class="am-bal" style="color:var(--purple);">$18,400</div>
+          <div class="am-name">SEP-IRA · Portable</div>
+        </div>
+        <div class="acc-mini acc-invest">
+          <div class="am-type">Investment</div>
+          <div class="am-bal" style="color:var(--amber);">$42,000</div>
+          <div class="am-name">Portfolio + equity</div>
+        </div>
+      </div>
+
+      <!-- Recent Transactions -->
+      <div class="card">
+        <div class="card-hdr">
+          <div class="card-title">Recent Transactions · Checking</div>
+          <div class="card-act">All transactions →</div>
+        </div>
+        <div class="tx-hdr">
+          <div></div><div class="tx-col">Description</div><div class="tx-col">Type</div><div class="tx-col">Amount</div><div class="tx-col">Status</div>
+        </div>
+        <div class="tx-row">
+          <div class="tx-ic" style="background:rgba(34,197,94,.08);border-color:var(--green-dim);">💳</div>
+          <div><div class="tx-desc">Aisha Patel — Brand Identity Invoice</div><div class="tx-cat">Income · Client Payment</div></div>
+          <div><div class="tx-type-badge" style="background:rgba(34,197,94,.06);border-color:var(--green-dim);color:var(--green);">CREDIT</div></div>
+          <div class="tx-amount in">+$4,200</div>
+          <div class="tx-status" style="color:var(--green);">Completed</div>
+        </div>
+        <div class="tx-row">
+          <div class="tx-ic" style="background:rgba(239,68,68,.06);border-color:#991b1b;">🔒</div>
+          <div><div class="tx-desc">Tax reserve auto-split (15%)</div><div class="tx-cat">Tax · Auto-transfer</div></div>
+          <div><div class="tx-type-badge" style="background:rgba(239,68,68,.06);border-color:#991b1b;color:var(--red);">DEBIT</div></div>
+          <div class="tx-amount out">−$630</div>
+          <div class="tx-status" style="color:var(--green);">Auto</div>
+        </div>
+        <div class="tx-row">
+          <div class="tx-ic" style="background:rgba(59,130,246,.06);border-color:#1d4ed8;">📦</div>
+          <div><div class="tx-desc">crdt-rs License Sale × 2</div><div class="tx-cat">Income · Marketplace</div></div>
+          <div><div class="tx-type-badge" style="background:rgba(34,197,94,.06);border-color:var(--green-dim);color:var(--green);">CREDIT</div></div>
+          <div class="tx-amount in">+$840</div>
+          <div class="tx-status" style="color:var(--green);">Completed</div>
+        </div>
+        <div class="tx-row">
+          <div class="tx-ic" style="background:rgba(232,160,48,.06);border-color:var(--amber-dim);">☁</div>
+          <div><div class="tx-desc">AWS Infrastructure — March</div><div class="tx-cat">Expense · Infrastructure</div></div>
+          <div><div class="tx-type-badge" style="background:rgba(239,68,68,.06);border-color:#991b1b;color:var(--red);">DEBIT</div></div>
+          <div class="tx-amount out">−$1,240</div>
+          <div class="tx-status" style="color:var(--green);">Completed</div>
+        </div>
+        <div class="tx-row">
+          <div class="tx-ic" style="background:rgba(12,207,202,.06);border-color:var(--teal-dim);">⚙</div>
+          <div><div class="tx-desc">Mesh Studio Q1 Distribution</div><div class="tx-cat">Income · Cooperative payroll</div></div>
+          <div><div class="tx-type-badge" style="background:rgba(34,197,94,.06);border-color:var(--green-dim);color:var(--green);">CREDIT</div></div>
+          <div class="tx-amount in">+$5,096</div>
+          <div class="tx-status" style="color:var(--amber);">Pending</div>
+        </div>
+      </div>
+
+      <!-- Accounting: Income vs Expenses -->
+      <div class="card">
+        <div class="card-hdr">
+          <div class="card-title">Income vs Expenses · 2026</div>
+          <div class="card-act">Full P&L →</div>
+        </div>
+        <div style="padding:14px;">
+          <div style="display:flex;gap:12px;margin-bottom:10px;">
+            <div style="display:flex;align-items:center;gap:5px;font-size:10px;color:var(--text3);"><div style="width:10px;height:10px;border-radius:2px;background:var(--green);"></div>Income</div>
+            <div style="display:flex;align-items:center;gap:5px;font-size:10px;color:var(--text3);"><div style="width:10px;height:10px;border-radius:2px;background:rgba(239,68,68,.5);"></div>Expenses</div>
+          </div>
+          <!-- simplified bar chart -->
+          <div style="display:flex;gap:8px;align-items:flex-end;height:90px;margin-bottom:8px;">
+            <div style="flex:1;display:flex;gap:2px;align-items:flex-end;"><div class="cp-bar income-bar" style="flex:1;height:55px;"></div><div class="cp-bar expense-bar" style="flex:1;height:28px;"></div></div>
+            <div style="flex:1;display:flex;gap:2px;align-items:flex-end;"><div class="cp-bar income-bar" style="flex:1;height:60px;"></div><div class="cp-bar expense-bar" style="flex:1;height:30px;"></div></div>
+            <div style="flex:1;display:flex;gap:2px;align-items:flex-end;"><div class="cp-bar income-bar" style="flex:1;height:80px;"></div><div class="cp-bar expense-bar" style="flex:1;height:32px;"></div></div>
+          </div>
+          <div style="display:flex;justify-content:space-between;font-size:9px;color:var(--text3);font-family:'IBM Plex Mono',monospace;margin-bottom:12px;"><span>Jan</span><span>Feb</span><span>Mar</span></div>
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;">
+            <div style="background:var(--card2);border-radius:4px;padding:10px;text-align:center;">
+              <div style="font-family:'IBM Plex Mono',monospace;font-size:15px;font-weight:600;color:var(--green);">$84,200</div>
+              <div style="font-size:9px;color:var(--text3);margin-top:2px;">YTD Income</div>
+            </div>
+            <div style="background:var(--card2);border-radius:4px;padding:10px;text-align:center;">
+              <div style="font-family:'IBM Plex Mono',monospace;font-size:15px;font-weight:600;color:var(--red);">$28,400</div>
+              <div style="font-size:9px;color:var(--text3);margin-top:2px;">YTD Expenses</div>
+            </div>
+            <div style="background:var(--card2);border-radius:4px;padding:10px;text-align:center;">
+              <div style="font-family:'IBM Plex Mono',monospace;font-size:15px;font-weight:600;color:var(--teal);">$55,800</div>
+              <div style="font-size:9px;color:var(--text3);margin-top:2px;">Net Profit</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Right column -->
+    <div>
+
+      <!-- Tax Alert -->
+      <div class="tax-alert">
+        <div class="ta-title">🧾 Tax Summary · Q1 2026 <span style="background:rgba(239,68,68,.1);border:1px solid #991b1b;padding:2px 7px;border-radius:3px;font-size:9px;color:var(--red);">DUE MAR 31</span></div>
+        <div class="tax-row">
+          <div><div class="tr-label">Self-Employment Tax (15.3%)</div><div class="tr-sub">Net income × SE rate</div></div>
+          <div style="text-align:right;"><div class="tr-amt" style="color:var(--red);">$8,540</div><div style="font-size:9px;color:var(--text3);">Q1 estimated</div></div>
+        </div>
+        <div class="tax-row">
+          <div><div class="tr-label">Federal Income Tax</div><div class="tr-sub">After deductions · 22% bracket</div></div>
+          <div style="text-align:right;"><div class="tr-amt" style="color:var(--amber);">$3,660</div><div style="font-size:9px;color:var(--text3);">Estimated</div></div>
+        </div>
+        <div class="tax-row">
+          <div><div class="tr-label">Tax Reserve Balance</div><div class="tr-sub">Auto-accumulated</div></div>
+          <div style="text-align:right;"><div class="tr-amt" style="color:var(--green);">$12,200</div><div style="font-size:9px;color:var(--text3);">Covers full amount</div></div>
+        </div>
+        <div style="border-top:1px solid var(--border);padding-top:10px;margin-top:4px;display:flex;gap:6px;">
+          <button class="btn ba" style="flex:1;padding:6px;font-size:10px;">Pay Q1 Tax $12,200</button>
+          <button class="btn bg" style="font-size:10px;padding:6px;">Review</button>
+        </div>
+      </div>
+
+      <!-- Deductions tracker -->
+      <div class="card">
+        <div class="card-hdr">
+          <div class="card-title">Tax Deductions · YTD</div>
+          <div class="card-act">$18,400 total →</div>
+        </div>
+        <div style="padding:12px 14px;">
+          <div class="deduct-row">
+            <div class="ded-ic">🏠</div>
+            <div><div class="ded-desc">Home Office</div><div class="ded-cat">Schedule C · Auto-categorized</div></div>
+            <div class="ded-amt">$4,200</div>
+          </div>
+          <div class="deduct-row">
+            <div class="ded-ic">💻</div>
+            <div><div class="ded-desc">Equipment & Tools</div><div class="ded-cat">Schedule C · Depreciation</div></div>
+            <div class="ded-amt">$3,840</div>
+          </div>
+          <div class="deduct-row">
+            <div class="ded-ic">☁</div>
+            <div><div class="ded-desc">Cloud & SaaS (AWS, etc.)</div><div class="ded-cat">Schedule C · Auto-captured</div></div>
+            <div class="ded-amt">$3,720</div>
+          </div>
+          <div class="deduct-row">
+            <div class="ded-ic">📚</div>
+            <div><div class="ded-desc">Professional Development</div><div class="ded-cat">Schedule C · Education</div></div>
+            <div class="ded-amt">$2,840</div>
+          </div>
+          <div class="deduct-row">
+            <div class="ded-ic">🏥</div>
+            <div><div class="ded-desc">Health Insurance Premium</div><div class="ded-cat">Above-line deduction</div></div>
+            <div class="ded-amt">$2,400</div>
+          </div>
+          <div class="deduct-row">
+            <div class="ded-ic">💰</div>
+            <div><div class="ded-desc">SEP-IRA Contributions</div><div class="ded-cat">Retirement · Pre-tax</div></div>
+            <div class="ded-amt">$1,400</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 30-day cash flow forecast -->
+      <div class="card">
+        <div class="card-hdr">
+          <div class="card-title">30-Day Cash Flow Forecast</div>
+          <div class="card-act">Full forecast →</div>
+        </div>
+        <div style="padding:12px 14px;">
+          <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--text3);margin-bottom:8px;">Starting balance: $42,800</div>
+          <div class="cf-row">
+            <div class="cf-date">Mar 15</div>
+            <div class="cf-desc">Mesh Studio retainer invoice</div>
+            <div class="cf-amt cf-in">+$8,000</div>
+          </div>
+          <div class="cf-row">
+            <div class="cf-date">Mar 18</div>
+            <div class="cf-desc">AWS · April billing</div>
+            <div class="cf-amt cf-out">−$1,240</div>
+          </div>
+          <div class="cf-row">
+            <div class="cf-date">Mar 31</div>
+            <div class="cf-desc">Q1 estimated tax payment</div>
+            <div class="cf-amt cf-out">−$12,200</div>
+          </div>
+          <div class="cf-row">
+            <div class="cf-date">Apr 1</div>
+            <div class="cf-desc">Coop payroll distribution</div>
+            <div class="cf-amt cf-in">+$5,096</div>
+          </div>
+          <div class="cf-row">
+            <div class="cf-date">Apr 5</div>
+            <div class="cf-desc">Brand Identity contract milestone</div>
+            <div class="cf-amt cf-in">+$14,000</div>
+          </div>
+          <div style="border-top:1px solid var(--border);padding-top:8px;margin-top:4px;display:flex;justify-content:space-between;">
+            <span style="font-size:11px;color:var(--text3);">Projected balance Apr 15</span>
+            <span style="font-family:'IBM Plex Mono',monospace;font-size:14px;color:var(--green);font-weight:600;">$56,456</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Payment rails -->
+      <div class="card" style="border-bottom:none;">
+        <div class="card-hdr"><div class="card-title">Payment Rails</div><div class="card-act">Add rail →</div></div>
+        <div style="padding:12px 14px;display:flex;flex-direction:column;gap:7px;">
+          <div style="display:flex;align-items:center;justify-content:space-between;">
+            <div style="display:flex;align-items:center;gap:8px;"><span style="font-size:14px;">💳</span><div><div style="font-size:11px;color:var(--text);">Stripe</div><div style="font-size:9px;color:var(--text3);">Card payments · Instant</div></div></div>
+            <div style="font-size:10px;color:var(--green);font-family:'IBM Plex Mono',monospace;">Active</div>
+          </div>
+          <div style="display:flex;align-items:center;justify-content:space-between;">
+            <div style="display:flex;align-items:center;gap:8px;"><span style="font-size:14px;">🏦</span><div><div style="font-size:11px;color:var(--text);">ACH via Plaid</div><div style="font-size:9px;color:var(--text3);">Bank transfer · 1-3 days</div></div></div>
+            <div style="font-size:10px;color:var(--green);font-family:'IBM Plex Mono',monospace;">Active</div>
+          </div>
+          <div style="display:flex;align-items:center;justify-content:space-between;">
+            <div style="display:flex;align-items:center;gap:8px;"><span style="font-size:14px;">🔵</span><div><div style="font-size:11px;color:var(--text);">PayPal</div><div style="font-size:9px;color:var(--text3);">P2P · 1-3 day payout</div></div></div>
+            <div style="font-size:10px;color:var(--green);font-family:'IBM Plex Mono',monospace;">Active</div>
+          </div>
+          <div style="display:flex;align-items:center;justify-content:space-between;">
+            <div style="display:flex;align-items:center;gap:8px;"><span style="font-size:14px;">⬡</span><div><div style="font-size:11px;color:var(--text);">Ethereum / ERC-20</div><div style="font-size:9px;color:var(--text3);">Crypto bridge · Minutes</div></div></div>
+            <div style="font-size:10px;color:var(--text3);font-family:'IBM Plex Mono',monospace;">Add</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>KOGI · Escrow Management</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap');
+:root{
+  --bg:#070910;--sidebar:#0b0d16;--card:#0f1221;--card2:#131729;
+  --border:#1a2035;--border2:#232a42;
+  --teal:#0ccfca;--teal-dim:#0a9994;
+  --amber:#e8a030;--amber-dim:#b07820;
+  --green:#22c55e;--green-dim:#15803d;
+  --blue:#3b82f6;--red:#ef4444;--purple:#a855f7;--mag:#d946ef;
+  --text:#dde4f0;--text2:#7a879e;--text3:#3d4a62;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--bg);color:var(--text);font-family:'IBM Plex Sans',sans-serif;font-size:13px;display:flex;height:100vh;overflow:hidden;}
+.sidebar{width:200px;min-width:200px;background:var(--sidebar);border-right:1px solid var(--border);display:flex;flex-direction:column;}
+.logo{padding:18px 16px;border-bottom:1px solid var(--border);}
+.logo-text{font-family:'IBM Plex Mono',monospace;font-size:18px;font-weight:600;letter-spacing:.08em;color:var(--teal);}
+.logo-sub{font-size:9px;color:var(--text3);letter-spacing:.15em;text-transform:uppercase;margin-top:2px;}
+.nav{padding:12px 0;flex:1;overflow-y:auto;}
+.ns{padding:8px 16px 4px;font-size:9px;color:var(--text3);letter-spacing:.18em;text-transform:uppercase;font-family:'IBM Plex Mono',monospace;}
+.ni{display:flex;align-items:center;gap:10px;padding:7px 16px;color:var(--text2);cursor:pointer;font-size:12px;border-left:2px solid transparent;}
+.ni.on{color:var(--teal);background:rgba(12,207,202,.07);border-left-color:var(--teal);}
+.ni-ic{width:14px;text-align:center;font-size:12px;}
+.nbadge{background:var(--amber);color:var(--bg);border-radius:9px;font-size:9px;padding:1px 5px;font-family:'IBM Plex Mono',monospace;margin-left:auto;}
+.pb{padding:12px 16px;border-top:1px solid var(--border);}
+.pm{display:flex;align-items:center;gap:8px;}
+.avsm{width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,#0ccfca,#3b82f6);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:#fff;}
+/* Main */
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden;}
+.topbar{height:48px;border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 20px;gap:12px;background:var(--sidebar);flex-shrink:0;}
+.tp{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text3);}
+.tp span{color:var(--text2);}
+.tp .cur{color:var(--text);}
+.sp{flex:1;}
+.btn{padding:5px 12px;border-radius:4px;font-size:11px;font-family:'IBM Plex Mono',monospace;cursor:pointer;border:1px solid;}
+.bt{background:rgba(12,207,202,.12);border-color:var(--teal-dim);color:var(--teal);}
+.bg{background:transparent;border-color:var(--border2);color:var(--text2);}
+.ba{background:rgba(232,160,48,.1);border-color:var(--amber-dim);color:var(--amber);}
+.br{background:rgba(239,68,68,.1);border-color:#991b1b;color:var(--red);}
+.bv{background:rgba(168,85,247,.1);border-color:#7c3aed;color:var(--purple);}
+/* Stats */
+.stats{display:grid;grid-template-columns:repeat(6,1fr);gap:1px;background:var(--border);border-bottom:1px solid var(--border);flex-shrink:0;}
+.sb{background:var(--card);padding:11px 14px;}
+.sv{font-family:'IBM Plex Mono',monospace;font-size:17px;font-weight:600;}
+.sl{font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.1em;margin-top:1px;}
+/* 3-col layout */
+.layout{flex:1;display:grid;grid-template-columns:260px 1fr 280px;overflow:hidden;}
+/* Escrow list */
+.elist{background:var(--sidebar);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden;}
+.el-hdr{padding:12px 14px;border-bottom:1px solid var(--border);flex-shrink:0;}
+.el-title{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text2);margin-bottom:8px;}
+.el-tabs{display:flex;gap:0;margin-bottom:8px;}
+.et{flex:1;padding:5px;text-align:center;font-size:10px;font-family:'IBM Plex Mono',monospace;color:var(--text3);cursor:pointer;border-bottom:2px solid transparent;}
+.et.on{color:var(--teal);border-bottom-color:var(--teal);}
+.el-search{position:relative;}
+.el-s{width:100%;background:var(--card);border:1px solid var(--border);border-radius:4px;padding:6px 10px 6px 26px;color:var(--text2);font-size:11px;outline:none;font-family:'IBM Plex Sans',sans-serif;}
+.el-s::placeholder{color:var(--text3);}
+.el-sic{position:absolute;left:8px;top:50%;transform:translateY(-50%);color:var(--text3);font-size:11px;}
+.el-scroll{flex:1;overflow-y:auto;}
+.el-sec{padding:5px 14px 3px;font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.14em;font-family:'IBM Plex Mono',monospace;background:var(--card2);border-bottom:1px solid var(--border);}
+/* Escrow list item */
+.ei{display:flex;align-items:flex-start;gap:9px;padding:11px 14px;border-bottom:1px solid var(--border);cursor:pointer;position:relative;border-left:2px solid transparent;}
+.ei:hover{background:rgba(255,255,255,.015);}
+.ei.on{background:rgba(12,207,202,.05);border-left-color:var(--teal);}
+.ei.dispute{border-left-color:var(--red) !important;}
+.ei-ic{width:32px;height:32px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;border:1px solid;}
+.ei-body{flex:1;min-width:0;}
+.ei-name{font-size:12px;color:var(--text);font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.ei-deal{font-size:9px;color:var(--text3);font-family:'IBM Plex Mono',monospace;margin-top:1px;}
+.ei-meta{flex-shrink:0;text-align:right;}
+.ei-amount{font-family:'IBM Plex Mono',monospace;font-size:12px;font-weight:600;}
+.ei-status{font-size:9px;font-family:'IBM Plex Mono',monospace;padding:1px 5px;border-radius:3px;border:1px solid;margin-top:3px;display:inline-block;}
+/* Main detail */
+.detail{display:flex;flex-direction:column;overflow:hidden;}
+/* Escrow header */
+.esc-hdr{padding:16px 20px;border-bottom:1px solid var(--border);background:var(--card);flex-shrink:0;}
+.eh-top{display:flex;align-items:flex-start;gap:12px;margin-bottom:12px;}
+.eh-title{font-size:15px;font-weight:600;color:var(--text);}
+.eh-deal{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--text3);margin-top:2px;}
+.eh-type{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--amber);margin-top:2px;}
+.eh-actions{margin-left:auto;display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end;}
+/* Amounts bar */
+.esc-amounts{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--border);}
+.ea-box{background:var(--card2);padding:12px 14px;}
+.ea-lbl{font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.1em;font-family:'IBM Plex Mono',monospace;margin-bottom:3px;}
+.ea-val{font-family:'IBM Plex Mono',monospace;font-size:17px;font-weight:600;}
+/* Progress bar */
+.esc-progress{padding:14px 20px;background:var(--card);border-bottom:1px solid var(--border);flex-shrink:0;}
+.ep-label{display:flex;justify-content:space-between;font-size:10px;color:var(--text3);font-family:'IBM Plex Mono',monospace;margin-bottom:6px;}
+.ep-track{height:10px;background:var(--border);border-radius:5px;overflow:hidden;position:relative;}
+.ep-released{height:100%;background:var(--green);border-radius:5px 0 0 5px;position:absolute;left:0;}
+.ep-pending{height:100%;background:var(--amber);position:absolute;border-radius:0;}
+.ep-locked{height:100%;background:var(--border2);}
+/* Milestones */
+.milestones{flex:1;overflow-y:auto;padding:16px 20px;}
+.ms-hdr{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--text2);text-transform:uppercase;letter-spacing:.12em;margin-bottom:12px;display:flex;align-items:center;justify-content:space-between;}
+.ms-card{background:var(--card);border:1px solid var(--border);border-radius:6px;padding:14px;margin-bottom:10px;position:relative;overflow:hidden;}
+.ms-card.completed{border-color:var(--green-dim);}
+.ms-card.active{border-color:var(--teal-dim);}
+.ms-card.pending{border-color:var(--border);}
+.ms-card.dispute{border-color:var(--red);}
+.ms-card::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;}
+.ms-card.completed::before{background:var(--green);}
+.ms-card.active::before{background:var(--teal);}
+.ms-card.pending::before{background:var(--border2);}
+.ms-card.dispute::before{background:var(--red);}
+.ms-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:8px;}
+.ms-num{font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--text3);}
+.ms-title{font-size:13px;font-weight:600;color:var(--text);margin-top:2px;}
+.ms-amount{font-family:'IBM Plex Mono',monospace;font-size:16px;font-weight:600;text-align:right;}
+.ms-pct{font-size:10px;color:var(--text3);text-align:right;margin-top:1px;}
+.ms-status-badge{font-size:9px;font-family:'IBM Plex Mono',monospace;padding:3px 8px;border-radius:4px;border:1px solid;display:inline-block;margin-bottom:8px;}
+.ms-desc{font-size:11px;color:var(--text3);line-height:1.5;margin-bottom:10px;}
+.ms-meta{display:flex;gap:16px;font-size:10px;color:var(--text3);margin-bottom:10px;font-family:'IBM Plex Mono',monospace;}
+.ms-actions{display:flex;gap:6px;}
+.msa{padding:5px 12px;border-radius:4px;font-size:10px;font-family:'IBM Plex Mono',monospace;cursor:pointer;border:1px solid;}
+/* Dispute banner */
+.dispute-banner{background:rgba(239,68,68,.06);border:1px solid var(--red);border-radius:6px;padding:14px;margin-bottom:12px;}
+.db-title{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--red);text-transform:uppercase;letter-spacing:.1em;margin-bottom:6px;display:flex;align-items:center;gap:6px;}
+.db-dot{width:7px;height:7px;border-radius:50%;background:var(--red);animation:pulse 1.4s infinite;}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+.db-body{font-size:11px;color:var(--text2);line-height:1.5;margin-bottom:10px;}
+.db-actions{display:flex;gap:6px;}
+/* Info panel */
+.info{background:var(--sidebar);border-left:1px solid var(--border);overflow-y:auto;display:flex;flex-direction:column;}
+.is{padding:12px 14px;border-bottom:1px solid var(--border);}
+.is-title{font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.14em;margin-bottom:8px;}
+.isr{display:flex;justify-content:space-between;margin-bottom:5px;align-items:center;}
+.isk{font-size:11px;color:var(--text3);}
+.isv{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text2);}
+.isv.t{color:var(--teal);}
+.isv.g{color:var(--green);}
+.isv.a{color:var(--amber);}
+.isv.r{color:var(--red);}
+/* Parties */
+.party{display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--border);}
+.party:last-child{border-bottom:none;}
+.pav{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:600;color:#fff;flex-shrink:0;}
+.pname{flex:1;font-size:11px;color:var(--text);}
+.prole{font-size:9px;font-family:'IBM Plex Mono',monospace;}
+/* Activity log */
+.act-item{display:flex;gap:8px;padding:7px 0;border-bottom:1px solid var(--border);}
+.act-item:last-child{border-bottom:none;}
+.act-dot{width:7px;height:7px;border-radius:50%;margin-top:3px;flex-shrink:0;}
+.act-body{flex:1;}
+.act-desc{font-size:11px;color:var(--text2);}
+.act-time{font-size:9px;color:var(--text3);font-family:'IBM Plex Mono',monospace;margin-top:1px;}
+/* Doughnut ring visualization */
+.escrow-ring{display:flex;align-items:center;justify-content:center;padding:14px 0;gap:20px;}
+.ring-legend{display:flex;flex-direction:column;gap:6px;}
+.rl-item{display:flex;align-items:center;gap:6px;font-size:10px;color:var(--text3);}
+.rl-dot{width:8px;height:8px;border-radius:50%;}
+</style>
+</head>
+<body>
+<div class="sidebar">
+  <div class="logo"><div class="logo-text">KOGI</div><div class="logo-sub">Independent Worker OS</div></div>
+  <nav class="nav">
+    <div class="ns">Finance</div>
+    <div class="ni"><span class="ni-ic">♦</span>Bank</div>
+    <div class="ni"><span class="ni-ic">💳</span>Wallet</div>
+    <div class="ni on"><span class="ni-ic">🔒</span>Escrow <span class="nbadge">1</span></div>
+    <div class="ni"><span class="ni-ic">📄</span>Invoices</div>
+    <div class="ni"><span class="ni-ic">🧾</span>Tax Center</div>
+    <div class="ns">Platform</div>
+    <div class="ni"><span class="ni-ic">💼</span>Deal Rooms</div>
+    <div class="ni"><span class="ni-ic">⬡</span>Exchange</div>
+    <div class="ni"><span class="ni-ic">⊗</span>Marketplace</div>
+    <div class="ns">Core</div>
+    <div class="ni"><span class="ni-ic">⌂</span>Dashboard</div>
+    <div class="ni"><span class="ni-ic">◫</span>Office</div>
+  </nav>
+  <div class="pb"><div class="pm"><div class="avsm">JC</div><div><div style="font-size:12px;">Jordan Chen</div><div style="font-size:10px;color:var(--text3);">@jordan.dev</div></div></div></div>
+</div>
+
+<div class="main">
+  <div class="topbar">
+    <div class="tp">KESC / <span class="cur">Escrow Management</span></div>
+    <div class="sp"></div>
+    <button class="btn bg">History</button>
+    <button class="btn br">⚠ Open Dispute</button>
+    <button class="btn bt">+ Fund New Escrow</button>
+  </div>
+
+  <div class="stats">
+    <div class="sb"><div class="sv" style="color:var(--teal);">$84,000</div><div class="sl">Total Locked</div></div>
+    <div class="sb"><div class="sv">5</div><div class="sl">Active Escrows</div></div>
+    <div class="sb"><div class="sv" style="color:var(--green);">$28,400</div><div class="sl">Released YTD</div></div>
+    <div class="sb"><div class="sv" style="color:var(--amber);">$14,000</div><div class="sl">Pending Release</div></div>
+    <div class="sb"><div class="sv" style="color:var(--red);">1</div><div class="sl">Disputed</div></div>
+    <div class="sb"><div class="sv">3 days</div><div class="sl">Avg Release Time</div></div>
+  </div>
+
+  <div class="layout">
+    <!-- Escrow list -->
+    <div class="elist">
+      <div class="el-hdr">
+        <div class="el-title">Active Escrows</div>
+        <div class="el-tabs">
+          <div class="et on">Active <span style="background:rgba(12,207,202,.12);color:var(--teal);border-radius:3px;padding:0 5px;font-size:9px;">5</span></div>
+          <div class="et">Completed</div>
+          <div class="et">Disputed</div>
+        </div>
+        <div class="el-search"><div class="el-sic">⌕</div><input class="el-s" placeholder="Search escrows…"/></div>
+      </div>
+      <div class="el-scroll">
+        <div class="el-sec">⚠ Requires Attention</div>
+
+        <!-- Disputed escrow -->
+        <div class="ei dispute on">
+          <div class="ei-ic" style="background:rgba(239,68,68,.1);border-color:#991b1b;">🔒</div>
+          <div class="ei-body">
+            <div class="ei-name">Brand Identity System v2.0</div>
+            <div class="ei-deal">DEAL-2026-012 · Patel Ventures · Disputed</div>
+          </div>
+          <div class="ei-meta">
+            <div class="ei-amount" style="color:var(--red);">$28,000</div>
+            <div class="ei-status" style="background:rgba(239,68,68,.08);border-color:#991b1b;color:var(--red);">DISPUTED</div>
+          </div>
+        </div>
+
+        <div class="el-sec">Active · In Progress</div>
+
+        <div class="ei">
+          <div class="ei-ic" style="background:rgba(12,207,202,.1);border-color:var(--teal-dim);">🔒</div>
+          <div class="ei-body">
+            <div class="ei-name">Rust Systems Engineer · 6mo</div>
+            <div class="ei-deal">DEAL-2026-018 · Coop Tech Inc · M3/6</div>
+          </div>
+          <div class="ei-meta">
+            <div class="ei-amount" style="color:var(--teal);">$43,200</div>
+            <div class="ei-status" style="background:rgba(12,207,202,.06);border-color:var(--teal-dim);color:var(--teal);">FUNDED</div>
+          </div>
+        </div>
+
+        <div class="ei">
+          <div class="ei-ic" style="background:rgba(34,197,94,.1);border-color:var(--green-dim);">🔒</div>
+          <div class="ei-body">
+            <div class="ei-name">CRDT Library License × 2</div>
+            <div class="ei-deal">MKT-7721 · Instant delivery</div>
+          </div>
+          <div class="ei-meta">
+            <div class="ei-amount" style="color:var(--green);">$1,680</div>
+            <div class="ei-status" style="background:rgba(34,197,94,.06);border-color:var(--green-dim);color:var(--green);">PENDING REL.</div>
+          </div>
+        </div>
+
+        <div class="ei">
+          <div class="ei-ic" style="background:rgba(168,85,247,.1);border-color:#7c3aed;">🔒</div>
+          <div class="ei-body">
+            <div class="ei-name">DeFi Architecture Proposal</div>
+            <div class="ei-deal">DEAL-2026-021 · Protocol Inc · M1/4</div>
+          </div>
+          <div class="ei-meta">
+            <div class="ei-amount" style="color:var(--purple);">$11,250</div>
+            <div class="ei-status" style="background:rgba(168,85,247,.06);border-color:#7c3aed;color:var(--purple);">FUNDED</div>
+          </div>
+        </div>
+
+        <div class="ei">
+          <div class="ei-ic" style="background:rgba(59,130,246,.1);border-color:#1d4ed8;">🔒</div>
+          <div class="ei-body">
+            <div class="ei-name">Cooperative Design System Kit</div>
+            <div class="ei-deal">MKT-7744 · Awaiting buyer confirm</div>
+          </div>
+          <div class="ei-meta">
+            <div class="ei-amount" style="color:var(--blue);">$249</div>
+            <div class="ei-status" style="background:rgba(59,130,246,.06);border-color:#1d4ed8;color:var(--blue);">AUTO-REL. 5d</div>
+          </div>
+        </div>
+
+        <div class="el-sec">Recently Closed</div>
+        <div class="ei" style="opacity:.6;">
+          <div class="ei-ic" style="background:var(--card2);border-color:var(--border2);">✓</div>
+          <div class="ei-body">
+            <div class="ei-name">Acme Auth Module Contract</div>
+            <div class="ei-deal">DEAL-2025-041 · Fully released</div>
+          </div>
+          <div class="ei-meta">
+            <div class="ei-amount" style="color:var(--text3);">$24,000</div>
+            <div class="ei-status" style="background:var(--card2);border-color:var(--border2);color:var(--text3);">RELEASED</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main: Brand Identity disputed escrow detail -->
+    <div class="detail">
+      <div class="esc-hdr">
+        <div class="eh-top">
+          <div>
+            <div class="eh-title">Brand Identity System v2.0 — Milestone Escrow</div>
+            <div class="eh-deal">DEAL-2026-012 · ESC-2026-008 · Patel Ventures ↔ Jordan Chen</div>
+            <div class="eh-type">MILESTONE ESCROW · 4 MILESTONES · DISPUTE HOLD</div>
+          </div>
+          <div class="eh-actions">
+            <button class="btn bg" style="font-size:10px;padding:4px 8px;">View Deal Room</button>
+            <button class="btn bv" style="font-size:10px;padding:4px 8px;">Mediation</button>
+            <button class="btn br" style="font-size:10px;padding:4px 8px;">Escalate</button>
+          </div>
+        </div>
+        <div class="esc-amounts">
+          <div class="ea-box"><div class="ea-lbl">Total Locked</div><div class="ea-val" style="color:var(--red);">$28,000</div></div>
+          <div class="ea-box"><div class="ea-lbl">Released to Seller</div><div class="ea-val" style="color:var(--green);">$0</div></div>
+          <div class="ea-box"><div class="ea-lbl">In Dispute Hold</div><div class="ea-val" style="color:var(--red);">$28,000</div></div>
+          <div class="ea-box"><div class="ea-lbl">Dispute Window</div><div class="ea-val" style="color:var(--amber);">12 days left</div></div>
+        </div>
+      </div>
+
+      <!-- Progress bar -->
+      <div class="esc-progress">
+        <div class="ep-label">
+          <span>0% Released · 100% In Dispute Hold</span>
+          <span style="color:var(--red);">⚠ Funds frozen — dispute in progress</span>
+        </div>
+        <div class="ep-track">
+          <div class="ep-released" style="width:0%;"></div>
+          <div style="position:absolute;left:0;right:0;top:0;bottom:0;background:rgba(239,68,68,.25);"></div>
+        </div>
+        <div style="display:flex;gap:16px;margin-top:6px;font-size:9px;font-family:'IBM Plex Mono',monospace;color:var(--text3);">
+          <span style="color:var(--green);">■ Released: $0</span>
+          <span style="color:var(--red);">■ Dispute Hold: $28,000</span>
+          <span style="color:var(--text3);">■ Unreleased: $0</span>
+        </div>
+      </div>
+
+      <div class="milestones">
+
+        <!-- Dispute banner -->
+        <div class="dispute-banner">
+          <div class="db-title"><div class="db-dot"></div>DISPUTE OPEN · Filed by Aisha Patel · March 12, 2026</div>
+          <div class="db-body">
+            <strong>Dispute reason:</strong> "Deliverables for Milestone 1 (Initial Concepts) did not match the agreed spec — 3 logo concepts delivered but brief required 5. Requesting partial refund or revised delivery."<br><br>
+            <strong>Your response:</strong> "The brief was updated after initial kickoff — original scope was 3 concepts. Delivered as originally agreed. Willing to provide 2 additional concepts as goodwill at no charge."
+          </div>
+          <div class="db-actions">
+            <button class="btn ba" style="font-size:10px;padding:5px 12px;">Respond to Dispute</button>
+            <button class="btn bv" style="font-size:10px;padding:5px 12px;">Request Mediation</button>
+            <button class="btn bg" style="font-size:10px;padding:5px 12px;">Submit Evidence</button>
+            <button class="btn bt" style="font-size:10px;padding:5px 12px;">Propose Settlement</button>
+          </div>
+        </div>
+
+        <div class="ms-hdr">
+          <span>Milestone Schedule · 4 Milestones</span>
+          <span style="font-size:10px;color:var(--text3);">All funds held pending resolution</span>
+        </div>
+
+        <!-- M1 - disputed -->
+        <div class="ms-card dispute">
+          <div class="ms-top">
+            <div>
+              <div class="ms-num">MILESTONE 1 OF 4</div>
+              <div class="ms-title">Initial Brand Concepts</div>
+            </div>
+            <div>
+              <div class="ms-amount" style="color:var(--red);">$7,000</div>
+              <div class="ms-pct">25% of total</div>
+            </div>
+          </div>
+          <div class="ms-status-badge" style="background:rgba(239,68,68,.08);border-color:#991b1b;color:var(--red);">⚠ DISPUTED · Funds frozen</div>
+          <div class="ms-desc">Deliver 3–5 initial brand concept directions with logo sketches, color palette options, and typography explorations. Due March 10.</div>
+          <div class="ms-meta">
+            <span>Due: Mar 10 · Delivered: Mar 9</span>
+            <span>Dispute filed: Mar 12</span>
+          </div>
+          <div class="ms-actions">
+            <div class="msa" style="background:rgba(168,85,247,.1);border-color:#7c3aed;color:var(--purple);">View Evidence</div>
+            <div class="msa" style="background:rgba(12,207,202,.08);border-color:var(--teal-dim);color:var(--teal);">Propose Settlement</div>
+          </div>
+        </div>
+
+        <!-- M2 - pending (locked) -->
+        <div class="ms-card pending">
+          <div class="ms-top">
+            <div>
+              <div class="ms-num">MILESTONE 2 OF 4</div>
+              <div class="ms-title">Brand Identity System — Full Delivery</div>
+            </div>
+            <div>
+              <div class="ms-amount" style="color:var(--text3);">$9,000</div>
+              <div class="ms-pct">32% of total</div>
+            </div>
+          </div>
+          <div class="ms-status-badge" style="background:var(--card2);border-color:var(--border2);color:var(--text3);">LOCKED · Awaiting dispute resolution</div>
+          <div class="ms-desc">Full logo system, color system, typography, icon set, and brand guidelines document. Estimated delivery: March 28.</div>
+          <div class="ms-meta">
+            <span>Due: Mar 28 · Not started</span>
+            <span>Locked pending M1 resolution</span>
+          </div>
+        </div>
+
+        <!-- M3 -->
+        <div class="ms-card pending">
+          <div class="ms-top">
+            <div>
+              <div class="ms-num">MILESTONE 3 OF 4</div>
+              <div class="ms-title">Component Library & Figma Source</div>
+            </div>
+            <div>
+              <div class="ms-amount" style="color:var(--text3);">$8,000</div>
+              <div class="ms-pct">29% of total</div>
+            </div>
+          </div>
+          <div class="ms-status-badge" style="background:var(--card2);border-color:var(--border2);color:var(--text3);">LOCKED</div>
+          <div class="ms-desc">Full Figma design system with component library. Export-ready tokens. React component stubs. Due April 14.</div>
+          <div class="ms-meta">
+            <span>Due: Apr 14</span>
+          </div>
+        </div>
+
+        <!-- M4 -->
+        <div class="ms-card pending">
+          <div class="ms-top">
+            <div>
+              <div class="ms-num">MILESTONE 4 OF 4</div>
+              <div class="ms-title">Final Delivery & Handoff</div>
+            </div>
+            <div>
+              <div class="ms-amount" style="color:var(--text3);">$4,000</div>
+              <div class="ms-pct">14% of total</div>
+            </div>
+          </div>
+          <div class="ms-status-badge" style="background:var(--card2);border-color:var(--border2);color:var(--text3);">LOCKED</div>
+          <div class="ms-desc">Final brand package, documentation, print-ready assets, and 30-day revision window. Due April 28.</div>
+          <div class="ms-meta">
+            <span>Due: Apr 28</span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Info panel -->
+    <div class="info">
+      <div class="is">
+        <div class="is-title">Escrow Details</div>
+        <div class="isr"><span class="isk">Escrow ID</span><span class="isv">ESC-2026-008</span></div>
+        <div class="isr"><span class="isk">Type</span><span class="isv a">Milestone · 4-stage</span></div>
+        <div class="isr"><span class="isk">Status</span><span class="isv r">Disputed · Frozen</span></div>
+        <div class="isr"><span class="isk">Total value</span><span class="isv">$28,000</span></div>
+        <div class="isr"><span class="isk">Funded by</span><span class="isv">Aisha Patel</span></div>
+        <div class="isr"><span class="isk">Funded on</span><span class="isv">Mar 10, 2026</span></div>
+        <div class="isr"><span class="isk">Dispute window</span><span class="isv r">14 days (12 left)</span></div>
+        <div class="isr"><span class="isk">Auto-release</span><span class="isv t">7 days after delivery</span></div>
+        <div class="isr"><span class="isk">kogi fee</span><span class="isv">2.5% ($700)</span></div>
+      </div>
+
+      <div class="is">
+        <div class="is-title">Escrow Allocation</div>
+        <div class="escrow-ring">
+          <!-- Simple ring chart using CSS -->
+          <svg width="80" height="80" viewBox="0 0 80 80">
+            <circle cx="40" cy="40" r="30" fill="none" stroke="#1a2035" stroke-width="12"/>
+            <circle cx="40" cy="40" r="30" fill="none" stroke="#ef4444" stroke-width="12" stroke-dasharray="188.5" stroke-dashoffset="0" transform="rotate(-90 40 40)" opacity=".8"/>
+          </svg>
+          <div class="ring-legend">
+            <div class="rl-item"><div class="rl-dot" style="background:var(--red);"></div>In dispute: $28,000</div>
+            <div class="rl-item"><div class="rl-dot" style="background:var(--green);"></div>Released: $0</div>
+            <div class="rl-item"><div class="rl-dot" style="background:var(--border2);"></div>Future: $0</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="is">
+        <div class="is-title">Parties</div>
+        <div class="party">
+          <div class="pav" style="background:linear-gradient(135deg,#e8a030,#d97706);">AP</div>
+          <div><div class="pname">Aisha Patel</div><div class="prole" style="color:var(--red);">Buyer · Dispute Initiator</div></div>
+        </div>
+        <div class="party">
+          <div class="pav" style="background:linear-gradient(135deg,#0ccfca,#3b82f6);">JC</div>
+          <div><div class="pname">Jordan Chen</div><div class="prole" style="color:var(--teal);">Seller · You</div></div>
+        </div>
+        <div class="party">
+          <div class="pav" style="background:rgba(168,85,247,.15);border:1px solid #7c3aed;color:var(--purple);font-size:12px;">⚖</div>
+          <div><div class="pname">Kogi Mediation</div><div class="prole" style="color:var(--purple);">Optional arbiter · On-call</div></div>
+        </div>
+      </div>
+
+      <div class="is">
+        <div class="is-title">Resolution Options</div>
+        <div style="display:flex;flex-direction:column;gap:6px;">
+          <button class="btn" style="width:100%;padding:7px;background:rgba(12,207,202,.08);border-color:var(--teal-dim);color:var(--teal);font-size:10px;">Propose Settlement Terms</button>
+          <button class="btn" style="width:100%;padding:7px;background:rgba(168,85,247,.08);border-color:#7c3aed;color:var(--purple);font-size:10px;">Request Kogi Mediation</button>
+          <button class="btn" style="width:100%;padding:7px;background:transparent;border-color:var(--border2);color:var(--text3);font-size:10px;">Submit Additional Evidence</button>
+          <button class="btn" style="width:100%;padding:7px;background:rgba(34,197,94,.08);border-color:var(--green-dim);color:var(--green);font-size:10px;">Accept Revised Delivery</button>
+        </div>
+      </div>
+
+      <div class="is" style="border-bottom:none;">
+        <div class="is-title">Activity Log</div>
+        <div class="act-item">
+          <div class="act-dot" style="background:var(--red);"></div>
+          <div class="act-body"><div class="act-desc">Dispute opened by Aisha Patel</div><div class="act-time">Mar 12 · 2:41 PM</div></div>
+        </div>
+        <div class="act-item">
+          <div class="act-dot" style="background:var(--teal);"></div>
+          <div class="act-body"><div class="act-desc">Milestone 1 delivery submitted</div><div class="act-time">Mar 9 · 11:00 AM</div></div>
+        </div>
+        <div class="act-item">
+          <div class="act-dot" style="background:var(--green);"></div>
+          <div class="act-body"><div class="act-desc">Escrow funded · $28,000 locked</div><div class="act-time">Mar 3 · 9:30 AM</div></div>
+        </div>
+        <div class="act-item">
+          <div class="act-dot" style="background:var(--amber);"></div>
+          <div class="act-body"><div class="act-desc">Escrow created from deal acceptance</div><div class="act-time">Mar 2 · 4:15 PM</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

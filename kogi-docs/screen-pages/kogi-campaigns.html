@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>KOGI · Campaigns · Group Economics</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap');
+:root{--bg:#070910;--sidebar:#0b0d16;--card:#0f1221;--card2:#131729;--border:#1a2035;--border2:#232a42;--teal:#0ccfca;--teal-dim:#0a9994;--amber:#e8a030;--amber-dim:#b07820;--green:#22c55e;--green-dim:#15803d;--blue:#3b82f6;--red:#ef4444;--purple:#a855f7;--mag:#d946ef;--text:#dde4f0;--text2:#7a879e;--text3:#3d4a62;}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--bg);color:var(--text);font-family:'IBM Plex Sans',sans-serif;font-size:13px;display:flex;min-height:100vh;}
+.sidebar{width:200px;min-width:200px;background:var(--sidebar);border-right:1px solid var(--border);display:flex;flex-direction:column;}
+.logo{padding:18px 16px;border-bottom:1px solid var(--border);}
+.logo-text{font-family:'IBM Plex Mono',monospace;font-size:18px;font-weight:600;letter-spacing:.08em;color:var(--teal);}
+.logo-sub{font-size:9px;color:var(--text3);letter-spacing:.15em;text-transform:uppercase;margin-top:2px;}
+.nav{padding:12px 0;flex:1;overflow-y:auto;}
+.ns{padding:8px 16px 4px;font-size:9px;color:var(--text3);letter-spacing:.18em;text-transform:uppercase;font-family:'IBM Plex Mono',monospace;}
+.ni{display:flex;align-items:center;gap:10px;padding:7px 16px;color:var(--text2);cursor:pointer;font-size:12px;border-left:2px solid transparent;}
+.ni.on{color:var(--teal);background:rgba(12,207,202,.07);border-left-color:var(--teal);}
+.ni-ic{width:14px;text-align:center;font-size:12px;}
+.pb{padding:12px 16px;border-top:1px solid var(--border);}
+.pm{display:flex;align-items:center;gap:8px;}
+.avsm{width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,#0ccfca,#3b82f6);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:#fff;}
+.main{flex:1;overflow-y:auto;}
+.topbar{height:48px;border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 20px;gap:12px;background:var(--sidebar);position:sticky;top:0;z-index:10;}
+.tbpath{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text3);}
+.tbpath span{color:var(--text2);}
+.tbpath span.cur{color:var(--text);}
+.sp{flex:1;}
+.btn{padding:5px 12px;border-radius:4px;font-size:11px;font-family:'IBM Plex Mono',monospace;cursor:pointer;border:1px solid;}
+.bt{background:rgba(12,207,202,.12);border-color:var(--teal-dim);color:var(--teal);}
+.bg{background:transparent;border-color:var(--border2);color:var(--text2);}
+.stats-row{display:grid;grid-template-columns:repeat(5,1fr);gap:1px;background:var(--border);border-bottom:1px solid var(--border);}
+.sb{background:var(--card);padding:12px 16px;}
+.sv{font-family:'IBM Plex Mono',monospace;font-size:18px;font-weight:600;}
+.sl{font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.1em;margin-top:1px;}
+.content{padding:20px;}
+.section-hdr{display:flex;align-items:center;gap:10px;margin-bottom:14px;}
+.sh-title{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text2);text-transform:uppercase;letter-spacing:.12em;}
+.sh-line{flex:1;height:1px;background:var(--border);}
+.sh-action{font-size:10px;color:var(--teal);cursor:pointer;font-family:'IBM Plex Mono',monospace;}
+/* type tabs */
+.type-tabs{display:flex;gap:0;border-bottom:1px solid var(--border);margin-bottom:20px;}
+.tt{padding:8px 16px;font-size:11px;font-family:'IBM Plex Mono',monospace;color:var(--text3);cursor:pointer;border-bottom:2px solid transparent;}
+.tt.on{color:var(--teal);border-bottom-color:var(--teal);}
+/* campaign cards grid */
+.camp-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin-bottom:24px;}
+.camp-card{background:var(--card);border:1px solid var(--border);border-radius:8px;overflow:hidden;cursor:pointer;transition:all .15s;}
+.camp-card:hover{border-color:var(--border2);}
+.camp-card.mine{border-top:3px solid;}
+.cc-hdr{padding:14px 16px;border-bottom:1px solid var(--border);position:relative;}
+.cc-type-badge{font-size:9px;font-family:'IBM Plex Mono',monospace;padding:2px 8px;border-radius:3px;border:1px solid;margin-bottom:8px;display:inline-block;}
+.cc-title{font-size:14px;font-weight:600;color:var(--text);margin-bottom:4px;}
+.cc-desc{font-size:11px;color:var(--text3);line-height:1.5;}
+.cc-creator{display:flex;align-items:center;gap:7px;margin-top:8px;}
+.cc-av{width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:600;color:#fff;}
+.cc-cname{font-size:11px;color:var(--text2);}
+.cc-body{padding:14px 16px;}
+/* progress */
+.prog-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:5px;}
+.prog-raised{font-family:'IBM Plex Mono',monospace;font-size:18px;font-weight:600;}
+.prog-goal{font-size:11px;color:var(--text3);}
+.prog-pct{font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:600;}
+.prog-bar{height:7px;background:var(--border2);border-radius:4px;overflow:hidden;margin-bottom:10px;}
+.pb-fill{height:100%;border-radius:4px;}
+.cc-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:0;background:var(--border);border-radius:4px;overflow:hidden;margin-bottom:10px;}
+.cs{background:var(--card2);padding:8px;text-align:center;}
+.csv{font-family:'IBM Plex Mono',monospace;font-size:13px;font-weight:600;}
+.csl{font-size:9px;color:var(--text3);}
+.cc-footer{display:flex;align-items:center;gap:8px;justify-content:space-between;}
+.cc-deadline{font-size:10px;color:var(--text3);font-family:'IBM Plex Mono',monospace;}
+.cc-actions{display:flex;gap:6px;}
+.cc-btn{padding:5px 12px;border-radius:4px;font-size:10px;font-family:'IBM Plex Mono',monospace;cursor:pointer;border:1px solid;}
+/* group economics section */
+.grp-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:24px;}
+.grp-card{background:var(--card);border:1px solid var(--border);border-radius:6px;padding:14px;}
+.gc-top{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
+.gc-ic{width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:18px;border:1px solid;}
+.gc-name{font-size:13px;font-weight:600;color:var(--text);}
+.gc-type{font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--text3);}
+.gc-bal{font-family:'IBM Plex Mono',monospace;font-size:20px;font-weight:600;margin:8px 0 4px;}
+.gc-stats{display:flex;gap:12px;flex-wrap:wrap;}
+.gc-stat{font-size:10px;color:var(--text3);}
+.gc-stat strong{color:var(--text2);}
+.gc-divider{height:1px;background:var(--border);margin:10px 0;}
+.gc-actions{display:flex;gap:6px;}
+.gc-btn{flex:1;padding:5px;text-align:center;border-radius:4px;font-size:10px;font-family:'IBM Plex Mono',monospace;cursor:pointer;border:1px solid;}
+</style>
+</head>
+<body>
+<div class="sidebar">
+  <div class="logo"><div class="logo-text">KOGI</div><div class="logo-sub">Independent Worker OS</div></div>
+  <nav class="nav">
+    <div class="ns">Finance</div>
+    <div class="ni"><span class="ni-ic">◉</span>Bank Home</div>
+    <div class="ni"><span class="ni-ic">⊞</span>Accounts</div>
+    <div class="ni"><span class="ni-ic">◈</span>Wallets</div>
+    <div class="ni"><span class="ni-ic">📄</span>Invoices</div>
+    <div class="ni"><span class="ni-ic">🔒</span>Escrow</div>
+    <div class="ni"><span class="ni-ic">📈</span>Investments</div>
+    <div class="ni on"><span class="ni-ic">🎯</span>Campaigns</div>
+    <div class="ni"><span class="ni-ic">📊</span>Reports</div>
+    <div class="ni"><span class="ni-ic">💵</span>Tax Center</div>
+    <div class="ns">Exchange</div>
+    <div class="ni"><span class="ni-ic">⬡</span>Exchange</div>
+    <div class="ni"><span class="ni-ic">⊗</span>Marketplace</div>
+    <div class="ns">Spaces</div>
+    <div class="ni"><span class="ni-ic">⊕</span>Community</div>
+    <div class="ni"><span class="ni-ic">⊛</span>Spaces</div>
+  </nav>
+  <div class="pb"><div class="pm"><div class="avsm">JC</div><div><div style="font-size:12px;">Jordan Chen</div><div style="font-size:10px;color:var(--text3);">@jordan.dev</div></div></div></div>
+</div>
+<div class="main">
+  <div class="topbar">
+    <div class="tbpath">KBNK / <span>Campaigns</span> / <span class="cur">Group Economics</span></div>
+    <div class="sp"></div>
+    <button class="btn bg">Backer History</button>
+    <button class="btn bt">+ Create Campaign</button>
+  </div>
+  <div class="stats-row">
+    <div class="sb"><div class="sv" style="color:var(--teal);">3</div><div class="sl">My Campaigns</div></div>
+    <div class="sb"><div class="sv" style="color:var(--amber);">$124,500</div><div class="sl">Raised Total</div></div>
+    <div class="sb"><div class="sv">284</div><div class="sl">Backers</div></div>
+    <div class="sb"><div class="sv" style="color:var(--green);">7</div><div class="sl">Backed Campaigns</div></div>
+    <div class="sb"><div class="sv" style="color:var(--purple);">$4,200</div><div class="sl">Contributed</div></div>
+  </div>
+
+  <div class="content">
+    <!-- Tabs -->
+    <div class="type-tabs">
+      <div class="tt on">All Campaigns</div>
+      <div class="tt">My Campaigns</div>
+      <div class="tt">Backing</div>
+      <div class="tt">Fundraise</div>
+      <div class="tt">Equity</div>
+      <div class="tt">Revenue Share</div>
+      <div class="tt">Mutual Aid</div>
+      <div class="tt">Group Buy</div>
+    </div>
+
+    <!-- Active Campaigns -->
+    <div class="section-hdr"><div class="sh-title">Active · My Campaigns</div><div class="sh-line"></div><div class="sh-action">+ New Campaign</div></div>
+    <div class="camp-grid">
+
+      <!-- Equity Campaign -->
+      <div class="camp-card mine" style="border-top-color:var(--purple);">
+        <div class="cc-hdr">
+          <div class="cc-type-badge" style="background:rgba(168,85,247,.08);border-color:#7c3aed;color:var(--purple);">EQUITY CROWDFUNDING</div>
+          <div class="cc-title">Kogi Platform Series A Infrastructure Round</div>
+          <div class="cc-desc">Raising to scale kogi-bank, kogi-exchange, and the distributed PortfolioSystem to 100K+ independent workers.</div>
+          <div class="cc-creator">
+            <div class="cc-av" style="background:linear-gradient(135deg,#0ccfca,#3b82f6);">JC</div>
+            <div class="cc-cname">Jordan Chen · Mesh Studio · 8% equity offered · $2.4M pre-money</div>
+          </div>
+        </div>
+        <div class="cc-body">
+          <div class="prog-row">
+            <div class="prog-raised" style="color:var(--purple);">$124,500</div>
+            <div>
+              <div class="prog-goal">of $450,000 goal</div>
+              <div class="prog-pct" style="color:var(--purple);">27.7%</div>
+            </div>
+          </div>
+          <div class="prog-bar"><div class="pb-fill" style="width:27.7%;background:var(--purple);"></div></div>
+          <div class="cc-stats">
+            <div class="cs"><div class="csv" style="color:var(--purple);">42</div><div class="csl">Backers</div></div>
+            <div class="cs"><div class="csv">$4,500</div><div class="csl">Avg. invest</div></div>
+            <div class="cs"><div class="csv" style="color:var(--amber);">28d left</div><div class="csl">Deadline</div></div>
+          </div>
+          <div class="cc-footer">
+            <div class="cc-deadline">Closes Apr 11, 2026 · All-or-nothing</div>
+            <div class="cc-actions">
+              <div class="cc-btn" style="background:rgba(168,85,247,.1);border-color:#7c3aed;color:var(--purple);">Manage</div>
+              <div class="cc-btn" style="background:transparent;border-color:var(--border2);color:var(--text3);">Share</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Revenue Share Campaign -->
+      <div class="camp-card mine" style="border-top-color:var(--teal);">
+        <div class="cc-hdr">
+          <div class="cc-type-badge" style="background:rgba(12,207,202,.08);border-color:var(--teal-dim);color:var(--teal);">REVENUE SHARE POOL</div>
+          <div class="cc-title">crdt-rs Library Sustainability Fund</div>
+          <div class="cc-desc">Backers pool capital and receive 15% of crdt-rs commercial license revenue for 24 months in return.</div>
+          <div class="cc-creator">
+            <div class="cc-av" style="background:linear-gradient(135deg,#0ccfca,#3b82f6);">JC</div>
+            <div class="cc-cname">Jordan Chen · crdt-rs · 15% revenue share · 24 months</div>
+          </div>
+        </div>
+        <div class="cc-body">
+          <div class="prog-row">
+            <div class="prog-raised" style="color:var(--teal);">$18,400</div>
+            <div>
+              <div class="prog-goal">of $25,000 goal</div>
+              <div class="prog-pct" style="color:var(--teal);">73.6%</div>
+            </div>
+          </div>
+          <div class="prog-bar"><div class="pb-fill" style="width:73.6%;background:var(--teal);"></div></div>
+          <div class="cc-stats">
+            <div class="cs"><div class="csv" style="color:var(--teal);">28</div><div class="csl">Backers</div></div>
+            <div class="cs"><div class="csv">$657</div><div class="csl">Avg. invest</div></div>
+            <div class="cs"><div class="csv" style="color:var(--green);">14d left</div><div class="csl">Deadline</div></div>
+          </div>
+          <div class="cc-footer">
+            <div class="cc-deadline">Closes Mar 28, 2026 · Revenue begins Q2</div>
+            <div class="cc-actions">
+              <div class="cc-btn" style="background:rgba(12,207,202,.1);border-color:var(--teal-dim);color:var(--teal);">Manage</div>
+              <div class="cc-btn" style="background:transparent;border-color:var(--border2);color:var(--text3);">Share</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Fundraise Campaign -->
+      <div class="camp-card mine" style="border-top-color:var(--blue);">
+        <div class="cc-hdr">
+          <div class="cc-type-badge" style="background:rgba(59,130,246,.08);border-color:#1d4ed8;color:var(--blue);">FUNDRAISE · DONATION</div>
+          <div class="cc-title">Worker OS Open-Source Infrastructure Fund</div>
+          <div class="cc-desc">Non-equity donation campaign to fund 6 months of full-time development on open-source cooperative tooling.</div>
+          <div class="cc-creator">
+            <div class="cc-av" style="background:linear-gradient(135deg,#0ccfca,#3b82f6);">JC</div>
+            <div class="cc-cname">Jordan Chen · Worker OS Project · Non-equity</div>
+          </div>
+        </div>
+        <div class="cc-body">
+          <div class="prog-row">
+            <div class="prog-raised" style="color:var(--blue);">$8,240</div>
+            <div>
+              <div class="prog-goal">of $12,000 goal</div>
+              <div class="prog-pct" style="color:var(--blue);">68.7%</div>
+            </div>
+          </div>
+          <div class="prog-bar"><div class="pb-fill" style="width:68.7%;background:var(--blue);"></div></div>
+          <div class="cc-stats">
+            <div class="cs"><div class="csv" style="color:var(--blue);">214</div><div class="csl">Donors</div></div>
+            <div class="cs"><div class="csv">$38</div><div class="csl">Avg. donation</div></div>
+            <div class="cs"><div class="csv" style="color:var(--amber);">21d left</div><div class="csl">Deadline</div></div>
+          </div>
+          <div class="cc-footer">
+            <div class="cc-deadline">Closes Apr 4, 2026</div>
+            <div class="cc-actions">
+              <div class="cc-btn" style="background:rgba(59,130,246,.08);border-color:#1d4ed8;color:var(--blue);">Manage</div>
+              <div class="cc-btn" style="background:transparent;border-color:var(--border2);color:var(--text3);">Share</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Mutual Aid Campaign (backing) -->
+      <div class="camp-card">
+        <div class="cc-hdr">
+          <div class="cc-type-badge" style="background:rgba(34,197,94,.08);border-color:var(--green-dim);color:var(--green);">MUTUAL AID ROUND</div>
+          <div class="cc-title">Bay Area Freelancers Guild — Emergency Fund Round 3</div>
+          <div class="cc-desc">Collective emergency support pool for guild members facing income disruption. Governed by mutual aid policy.</div>
+          <div class="cc-creator">
+            <div class="cc-av" style="background:linear-gradient(135deg,#22c55e,#16a34a);">BA</div>
+            <div class="cc-cname">Bay Area Freelancers Guild · 840 members · Backed: $100</div>
+          </div>
+        </div>
+        <div class="cc-body">
+          <div class="prog-row">
+            <div class="prog-raised" style="color:var(--green);">$24,800</div>
+            <div>
+              <div class="prog-goal">of $30,000 goal</div>
+              <div class="prog-pct" style="color:var(--green);">82.7%</div>
+            </div>
+          </div>
+          <div class="prog-bar"><div class="pb-fill" style="width:82.7%;background:var(--green);"></div></div>
+          <div class="cc-stats">
+            <div class="cs"><div class="csv" style="color:var(--green);">342</div><div class="csl">Contributors</div></div>
+            <div class="cs"><div class="csv">$72</div><div class="csl">Avg. contrib</div></div>
+            <div class="cs"><div class="csv" style="color:var(--green);">7d left</div><div class="csl">Deadline</div></div>
+          </div>
+          <div class="cc-footer">
+            <div class="cc-deadline">Closes Mar 21 · You contributed $100</div>
+            <div class="cc-actions">
+              <div class="cc-btn" style="background:rgba(34,197,94,.08);border-color:var(--green-dim);color:var(--green);">Contribute More</div>
+              <div class="cc-btn" style="background:transparent;border-color:var(--border2);color:var(--text3);">View</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Group Economics: Org Pools -->
+    <div class="section-hdr"><div class="sh-title">Group Economics · Organizational Accounts</div><div class="sh-line"></div></div>
+    <div class="grp-grid">
+      <div class="grp-card">
+        <div class="gc-top">
+          <div class="gc-ic" style="background:rgba(12,207,202,.1);border-color:var(--teal-dim);">⚙</div>
+          <div><div class="gc-name">Mesh Studio</div><div class="gc-type">COOPERATIVE OPERATING ACCOUNT</div></div>
+        </div>
+        <div class="gc-bal" style="color:var(--teal);">$124,500</div>
+        <div class="gc-stats">
+          <div class="gc-stat">MRR: <strong>$28,400</strong></div>
+          <div class="gc-stat">Payroll: <strong>$18,200</strong></div>
+          <div class="gc-stat">Reserve: <strong>$48,000</strong></div>
+        </div>
+        <div class="gc-divider"></div>
+        <div class="gc-actions">
+          <div class="gc-btn" style="background:rgba(12,207,202,.08);border-color:var(--teal-dim);color:var(--teal);">Manage</div>
+          <div class="gc-btn" style="background:transparent;border-color:var(--border2);color:var(--text3);">Distribute</div>
+          <div class="gc-btn" style="background:transparent;border-color:var(--border2);color:var(--text3);">Propose</div>
+        </div>
+      </div>
+
+      <div class="grp-card">
+        <div class="gc-top">
+          <div class="gc-ic" style="background:rgba(168,85,247,.1);border-color:#7c3aed;">◈</div>
+          <div><div class="gc-name">OS Collective</div><div class="gc-type">COLLECTIVE OPERATING + MUTUAL AID</div></div>
+        </div>
+        <div class="gc-bal" style="color:var(--purple);">$18,400</div>
+        <div class="gc-stats">
+          <div class="gc-stat">Members: <strong>420</strong></div>
+          <div class="gc-stat">Mutual Aid: <strong>$4,200</strong></div>
+          <div class="gc-stat">Grants: <strong>$8,000</strong></div>
+        </div>
+        <div class="gc-divider"></div>
+        <div class="gc-actions">
+          <div class="gc-btn" style="background:rgba(168,85,247,.08);border-color:#7c3aed;color:var(--purple);">Manage</div>
+          <div class="gc-btn" style="background:transparent;border-color:var(--border2);color:var(--text3);">Grant</div>
+        </div>
+      </div>
+
+      <div class="grp-card">
+        <div class="gc-top">
+          <div class="gc-ic" style="background:rgba(59,130,246,.1);border-color:#1d4ed8;">🌐</div>
+          <div><div class="gc-name">Kogi Builder Network</div><div class="gc-type">COMMUNITY CAMPAIGN WALLET</div></div>
+        </div>
+        <div class="gc-bal" style="color:var(--blue);">$42,000</div>
+        <div class="gc-stats">
+          <div class="gc-stat">Active campaigns: <strong>4</strong></div>
+          <div class="gc-stat">Total backers: <strong>1,284</strong></div>
+        </div>
+        <div class="gc-divider"></div>
+        <div class="gc-actions">
+          <div class="gc-btn" style="background:rgba(59,130,246,.08);border-color:#1d4ed8;color:var(--blue);">Manage</div>
+          <div class="gc-btn" style="background:transparent;border-color:var(--border2);color:var(--text3);">Back</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

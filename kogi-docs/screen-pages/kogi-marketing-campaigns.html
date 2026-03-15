@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>KOGI · Marketing · Funding · Sales Campaigns</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap');
+:root{
+  --bg:#070910;--sidebar:#0b0d16;--card:#0f1221;--card2:#131729;
+  --border:#1a2035;--border2:#232a42;
+  --teal:#0ccfca;--teal-dim:#0a9994;
+  --amber:#e8a030;--amber-dim:#b07820;
+  --green:#22c55e;--green-dim:#15803d;
+  --blue:#3b82f6;--red:#ef4444;--purple:#a855f7;--mag:#d946ef;
+  --text:#dde4f0;--text2:#7a879e;--text3:#3d4a62;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--bg);color:var(--text);font-family:'IBM Plex Sans',sans-serif;font-size:13px;display:flex;min-height:100vh;}
+.sidebar{width:200px;min-width:200px;background:var(--sidebar);border-right:1px solid var(--border);display:flex;flex-direction:column;}
+.logo{padding:18px 16px;border-bottom:1px solid var(--border);}
+.logo-text{font-family:'IBM Plex Mono',monospace;font-size:18px;font-weight:600;letter-spacing:.08em;color:var(--teal);}
+.logo-sub{font-size:9px;color:var(--text3);letter-spacing:.15em;text-transform:uppercase;margin-top:2px;}
+.nav{padding:12px 0;flex:1;overflow-y:auto;}
+.ns{padding:8px 16px 4px;font-size:9px;color:var(--text3);letter-spacing:.18em;text-transform:uppercase;font-family:'IBM Plex Mono',monospace;}
+.ni{display:flex;align-items:center;gap:10px;padding:7px 16px;color:var(--text2);cursor:pointer;font-size:12px;border-left:2px solid transparent;}
+.ni.on{color:var(--teal);background:rgba(12,207,202,.07);border-left-color:var(--teal);}
+.ni-ic{width:14px;text-align:center;font-size:12px;}
+.pb{padding:12px 16px;border-top:1px solid var(--border);}
+.pm{display:flex;align-items:center;gap:8px;}
+.avsm{width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,#0ccfca,#3b82f6);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:#fff;}
+.main{flex:1;overflow-y:auto;}
+.topbar{height:48px;border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 20px;gap:12px;background:var(--sidebar);position:sticky;top:0;z-index:10;}
+.tp{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text3);}
+.tp span{color:var(--text2);}
+.tp .cur{color:var(--text);}
+.sp{flex:1;}
+.btn{padding:5px 12px;border-radius:4px;font-size:11px;font-family:'IBM Plex Mono',monospace;cursor:pointer;border:1px solid;}
+.bt{background:rgba(12,207,202,.12);border-color:var(--teal-dim);color:var(--teal);}
+.bg{background:transparent;border-color:var(--border2);color:var(--text2);}
+.ba{background:rgba(232,160,48,.1);border-color:var(--amber-dim);color:var(--amber);}
+/* Stats */
+.stats{display:grid;grid-template-columns:repeat(6,1fr);gap:1px;background:var(--border);border-bottom:1px solid var(--border);}
+.sb{background:var(--card);padding:11px 14px;}
+.sv{font-family:'IBM Plex Mono',monospace;font-size:17px;font-weight:600;}
+.sl{font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.1em;margin-top:1px;}
+/* Type nav tabs */
+.type-nav{background:var(--card);border-bottom:1px solid var(--border);display:flex;overflow-x:auto;}
+.tn{padding:10px 18px;font-size:11px;font-family:'IBM Plex Mono',monospace;color:var(--text3);cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap;display:flex;align-items:center;gap:6px;}
+.tn.on{color:var(--teal);border-bottom-color:var(--teal);}
+.tn-ic{font-size:13px;}
+/* Main content */
+.content{padding:20px;display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+/* Section headers */
+.sh{display:flex;align-items:center;gap:10px;margin-bottom:12px;}
+.sh-title{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text2);text-transform:uppercase;letter-spacing:.12em;}
+.sh-line{flex:1;height:1px;background:var(--border);}
+.sh-act{font-size:10px;color:var(--teal);cursor:pointer;font-family:'IBM Plex Mono',monospace;}
+/* Campaign card */
+.cmp-card{background:var(--card);border:1px solid var(--border);border-radius:8px;overflow:hidden;margin-bottom:12px;cursor:pointer;transition:all .12s;}
+.cmp-card:hover{border-color:var(--border2);}
+.cmp-banner{height:52px;position:relative;display:flex;align-items:center;padding:0 14px;}
+.cmp-icon{font-size:20px;margin-right:8px;}
+.cmp-label{font-family:'IBM Plex Mono',monospace;font-size:9px;text-transform:uppercase;letter-spacing:.12em;padding:2px 8px;border-radius:3px;border:1px solid;}
+.cmp-dot{position:absolute;top:10px;right:14px;width:7px;height:7px;border-radius:50%;}
+.cmp-dot-live{background:var(--green);box-shadow:0 0 0 3px rgba(34,197,94,.2);}
+.cmp-dot-paused{background:var(--amber);}
+.cmp-dot-draft{background:var(--text3);}
+.cmp-body{padding:14px;}
+.cmp-title{font-size:13px;font-weight:600;color:var(--text);margin-bottom:3px;}
+.cmp-desc{font-size:11px;color:var(--text3);line-height:1.5;margin-bottom:10px;}
+/* Funnel bar */
+.funnel{margin-bottom:10px;}
+.funnel-label{display:flex;justify-content:space-between;font-size:10px;color:var(--text3);font-family:'IBM Plex Mono',monospace;margin-bottom:4px;}
+.funnel-track{height:8px;background:var(--border);border-radius:4px;overflow:hidden;}
+.funnel-fill{height:100%;border-radius:4px;}
+/* KPI grid in card */
+.kpi-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--border);border-radius:4px;overflow:hidden;margin-bottom:10px;}
+.kpi-box{background:var(--card2);padding:8px 10px;text-align:center;}
+.kpi-val{font-family:'IBM Plex Mono',monospace;font-size:13px;font-weight:600;}
+.kpi-lbl{font-size:9px;color:var(--text3);margin-top:1px;}
+/* Channel breakdown */
+.ch-row{display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--border);}
+.ch-row:last-child{border-bottom:none;}
+.ch-ic{font-size:13px;flex-shrink:0;}
+.ch-name{flex:1;font-size:11px;color:var(--text2);}
+.ch-bar-wrap{width:80px;height:5px;background:var(--border);border-radius:3px;overflow:hidden;}
+.ch-bar{height:100%;border-radius:3px;}
+.ch-val{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--text3);width:40px;text-align:right;}
+.cmp-actions{display:flex;gap:6px;}
+.cmp-act{flex:1;padding:6px;text-align:center;border-radius:4px;font-size:10px;font-family:'IBM Plex Mono',monospace;cursor:pointer;border:1px solid;}
+/* Pipeline / CRM table */
+.pipeline-row{display:grid;grid-template-columns:1fr 80px 80px 70px 90px;gap:10px;align-items:center;padding:9px 14px;border-bottom:1px solid var(--border);}
+.pipeline-row:last-child{border-bottom:none;}
+.pr-hdr{background:var(--card2);font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.1em;font-family:'IBM Plex Mono',monospace;}
+.pr-contact{font-size:12px;color:var(--text);}
+.pr-org{font-size:10px;color:var(--text3);}
+.pr-stage{font-size:10px;font-family:'IBM Plex Mono',monospace;padding:2px 6px;border-radius:3px;border:1px solid;}
+.pr-val{font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--text2);}
+.pr-prob{font-family:'IBM Plex Mono',monospace;font-size:11px;}
+.pr-last{font-size:10px;color:var(--text3);}
+/* Outreach queue */
+.oq-row{display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid var(--border);cursor:pointer;}
+.oq-row:hover{background:rgba(255,255,255,.015);}
+.oq-row:last-child{border-bottom:none;}
+.oq-av{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:600;color:#fff;flex-shrink:0;}
+.oq-info{flex:1;}
+.oq-name{font-size:12px;color:var(--text);}
+.oq-reason{font-size:10px;color:var(--text3);}
+.oq-score{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--teal);}
+.oq-action{font-size:10px;font-family:'IBM Plex Mono',monospace;padding:4px 8px;border-radius:3px;border:1px solid var(--teal-dim);color:var(--teal);background:rgba(12,207,202,.06);cursor:pointer;}
+/* Oba intelligence block -->
+.oba-block{background:rgba(12,207,202,.04);border:1px solid var(--teal-dim);border-radius:6px;padding:12px;margin-bottom:12px;}
+.oba-head{font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--teal);text-transform:uppercase;margin-bottom:6px;}
+.oba-insight{font-size:11px;color:var(--text2);line-height:1.5;margin-bottom:5px;}
+.oba-actions{display:flex;gap:6px;margin-top:8px;}
+.oa-btn{padding:5px 12px;border-radius:4px;font-size:10px;font-family:'IBM Plex Mono',monospace;cursor:pointer;border:1px solid;}
+</style>
+</head>
+<body>
+<div class="sidebar">
+  <div class="logo"><div class="logo-text">KOGI</div><div class="logo-sub">Independent Worker OS</div></div>
+  <nav class="nav">
+    <div class="ns">Core</div>
+    <div class="ni"><span class="ni-ic">⌂</span>Dashboard</div>
+    <div class="ni"><span class="ni-ic">◫</span>Office</div>
+    <div class="ns">Growth & Sales</div>
+    <div class="ni on"><span class="ni-ic">📣</span>Campaigns</div>
+    <div class="ni"><span class="ni-ic">📊</span>Analytics</div>
+    <div class="ni"><span class="ni-ic">👥</span>Contacts / CRM</div>
+    <div class="ns">Platform</div>
+    <div class="ni"><span class="ni-ic">⊗</span>Marketplace</div>
+    <div class="ni"><span class="ni-ic">⬡</span>Exchange</div>
+    <div class="ni"><span class="ni-ic">🎯</span>Financial Campaigns</div>
+    <div class="ns">Finance</div>
+    <div class="ni"><span class="ni-ic">♦</span>Bank</div>
+    <div class="ni"><span class="ni-ic">💳</span>Wallet</div>
+    <div class="ns">Identity</div>
+    <div class="ni"><span class="ni-ic">◈</span>Portfolio</div>
+    <div class="ni"><span class="ni-ic">◉</span>Profile</div>
+  </nav>
+  <div class="pb"><div class="pm"><div class="avsm">JC</div><div><div style="font-size:12px;">Jordan Chen</div><div style="font-size:10px;color:var(--text3);">@jordan.dev</div></div></div></div>
+</div>
+
+<div class="main">
+  <div class="topbar">
+    <div class="tp">KCMP / <span class="cur">Marketing · Funding · Sales Campaigns</span></div>
+    <div class="sp"></div>
+    <button class="btn bg">Analytics</button>
+    <button class="btn bg">Templates</button>
+    <button class="btn ba">+ New Campaign</button>
+  </div>
+
+  <!-- Campaign type tabs -->
+  <div class="type-nav">
+    <div class="tn on"><span class="tn-ic">📊</span>All Campaigns</div>
+    <div class="tn"><span class="tn-ic">📣</span>Marketing</div>
+    <div class="tn"><span class="tn-ic">💰</span>Funding / Crowdfunding</div>
+    <div class="tn"><span class="tn-ic">🛒</span>Sales</div>
+    <div class="tn"><span class="tn-ic">🤝</span>Barter / Resource</div>
+    <div class="tn"><span class="tn-ic">📢</span>Advocacy</div>
+    <div class="tn"><span class="tn-ic">🎁</span>Referral / Affiliate</div>
+  </div>
+
+  <div class="stats">
+    <div class="sb"><div class="sv" style="color:var(--teal);">7</div><div class="sl">Active Campaigns</div></div>
+    <div class="sb"><div class="sv" style="color:var(--green);">$328,500</div><div class="sl">Total Raised</div></div>
+    <div class="sb"><div class="sv" style="color:var(--blue);">4,820</div><div class="sl">Leads Generated</div></div>
+    <div class="sb"><div class="sv" style="color:var(--amber);">$84,200</div><div class="sl">Pipeline Value</div></div>
+    <div class="sb"><div class="sv">12.4%</div><div class="sl">Avg Conversion</div></div>
+    <div class="sb"><div class="sv" style="color:var(--purple);">284</div><div class="sl">Backers Total</div></div>
+  </div>
+
+  <div class="content">
+    <!-- Left column -->
+    <div>
+
+      <!-- FUNDING CAMPAIGN -->
+      <div class="sh"><div class="sh-title">Funding Campaigns</div><div class="sh-line"></div><div class="sh-act">+ New →</div></div>
+
+      <div class="cmp-card">
+        <div class="cmp-banner" style="background:linear-gradient(135deg,#180828,#0d0420);">
+          <div class="cmp-icon">🚀</div>
+          <div class="cmp-label" style="background:rgba(168,85,247,.1);border-color:#7c3aed;color:var(--purple);">EQUITY CROWDFUNDING · SERIES SEED</div>
+          <div class="cmp-dot cmp-dot-live"></div>
+        </div>
+        <div class="cmp-body">
+          <div class="cmp-title">Kogi Engine — Series Seed · $450K</div>
+          <div class="cmp-desc">Raising $450K at $4.5M pre-money for the kogi-engine AI analytics platform. 10% equity offered. All-or-nothing. Closes April 12.</div>
+          <div class="funnel">
+            <div class="funnel-label"><span style="color:var(--purple);">73% funded · $328,500 raised</span><span>$450,000 goal · 28 days left</span></div>
+            <div class="funnel-track"><div class="funnel-fill" style="width:73%;background:var(--purple);"></div></div>
+          </div>
+          <div class="kpi-grid">
+            <div class="kpi-box"><div class="kpi-val" style="color:var(--purple);">42</div><div class="kpi-lbl">Backers</div></div>
+            <div class="kpi-box"><div class="kpi-val" style="color:var(--teal);">$7,821</div><div class="kpi-lbl">Avg. Invest</div></div>
+            <div class="kpi-box"><div class="kpi-val" style="color:var(--green);">+$48K</div><div class="kpi-lbl">Last 7 days</div></div>
+          </div>
+          <div style="margin-bottom:10px;">
+            <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--text3);text-transform:uppercase;margin-bottom:6px;">Traffic Sources</div>
+            <div class="ch-row"><div class="ch-ic">🌐</div><div class="ch-name">kogi-net / Profile</div><div class="ch-bar-wrap"><div class="ch-bar" style="width:60%;background:var(--teal);"></div></div><div class="ch-val">$192K</div></div>
+            <div class="ch-row"><div class="ch-ic">🐦</div><div class="ch-name">Twitter / X</div><div class="ch-bar-wrap"><div class="ch-bar" style="width:25%;background:var(--blue);"></div></div><div class="ch-val">$80K</div></div>
+            <div class="ch-row"><div class="ch-ic">💬</div><div class="ch-name">Direct DMs</div><div class="ch-bar-wrap"><div class="ch-bar" style="width:18%;background:var(--purple);"></div></div><div class="ch-val">$56K</div></div>
+          </div>
+          <div class="cmp-actions">
+            <div class="cmp-act" style="background:rgba(168,85,247,.1);border-color:#7c3aed;color:var(--purple);">Campaign Dashboard →</div>
+            <div class="cmp-act" style="background:transparent;border-color:var(--border2);color:var(--text3);">Outreach</div>
+            <div class="cmp-act" style="background:transparent;border-color:var(--border2);color:var(--text3);">Share</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- MARKETING CAMPAIGN -->
+      <div class="sh" style="margin-top:4px;"><div class="sh-title">Marketing Campaigns</div><div class="sh-line"></div><div class="sh-act">+ New →</div></div>
+
+      <div class="cmp-card">
+        <div class="cmp-banner" style="background:linear-gradient(135deg,#0a1f2e,#061428);">
+          <div class="cmp-icon">📣</div>
+          <div class="cmp-label" style="background:rgba(12,207,202,.1);border-color:var(--teal-dim);color:var(--teal);">CONTENT MARKETING · AWARENESS</div>
+          <div class="cmp-dot cmp-dot-live"></div>
+        </div>
+        <div class="cmp-body">
+          <div class="cmp-title">crdt-rs Launch — Developer Awareness Campaign</div>
+          <div class="cmp-desc">Multi-channel campaign for crdt-rs v2.4.0 launch. Blog posts, Twitter threads, community posts, Substack article, Hacker News. Goal: 10K impressions, 500 GitHub stars.</div>
+          <div class="kpi-grid">
+            <div class="kpi-box"><div class="kpi-val" style="color:var(--teal);">28,400</div><div class="kpi-lbl">Impressions</div></div>
+            <div class="kpi-box"><div class="kpi-val" style="color:var(--green);">1,284</div><div class="kpi-lbl">GitHub Stars</div></div>
+            <div class="kpi-box"><div class="kpi-val" style="color:var(--amber);">342</div><div class="kpi-lbl">New Followers</div></div>
+          </div>
+          <div style="margin-bottom:10px;">
+            <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--text3);text-transform:uppercase;margin-bottom:6px;">Channel Performance</div>
+            <div class="ch-row"><div class="ch-ic">🐦</div><div class="ch-name">Twitter · Launch Thread</div><div class="ch-bar-wrap"><div class="ch-bar" style="width:75%;background:var(--blue);"></div></div><div class="ch-val">14.2K</div></div>
+            <div class="ch-row"><div class="ch-ic">📰</div><div class="ch-name">Hacker News · Show HN</div><div class="ch-bar-wrap"><div class="ch-bar" style="width:55%;background:var(--amber);"></div></div><div class="ch-val">8,400</div></div>
+            <div class="ch-row"><div class="ch-ic">📝</div><div class="ch-name">Substack Article</div><div class="ch-bar-wrap"><div class="ch-bar" style="width:35%;background:var(--green);"></div></div><div class="ch-val">4,200</div></div>
+            <div class="ch-row"><div class="ch-ic">🌐</div><div class="ch-name">kogi-net Community Posts</div><div class="ch-bar-wrap"><div class="ch-bar" style="width:12%;background:var(--teal);"></div></div><div class="ch-val">1,600</div></div>
+          </div>
+          <div class="cmp-actions">
+            <div class="cmp-act" style="background:rgba(12,207,202,.1);border-color:var(--teal-dim);color:var(--teal);">Analytics →</div>
+            <div class="cmp-act" style="background:transparent;border-color:var(--border2);color:var(--text3);">Create Post</div>
+            <div class="cmp-act" style="background:transparent;border-color:var(--border2);color:var(--text3);">Schedule</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SALES CAMPAIGN -->
+      <div class="sh" style="margin-top:4px;"><div class="sh-title">Sales Campaigns</div><div class="sh-line"></div><div class="sh-act">+ New →</div></div>
+
+      <div class="cmp-card">
+        <div class="cmp-banner" style="background:linear-gradient(135deg,#0f1f0a,#090f06);">
+          <div class="cmp-icon">🛒</div>
+          <div class="cmp-label" style="background:rgba(34,197,94,.1);border-color:var(--green-dim);color:var(--green);">OUTBOUND SALES · CLIENT ACQUISITION</div>
+          <div class="cmp-dot cmp-dot-live"></div>
+        </div>
+        <div class="cmp-body">
+          <div class="cmp-title">Q2 Consulting Client Acquisition — 5 new retainers</div>
+          <div class="cmp-desc">Outbound campaign targeting Series A cooperatives and tech startups for architecture consulting retainer engagements. Target: 5 new clients at $3,200/mo each.</div>
+          <div class="funnel">
+            <div class="funnel-label"><span>Funnel: 84 leads → 14 qualified → 4 proposals → 2 signed</span></div>
+            <div style="display:flex;gap:1px;height:8px;border-radius:4px;overflow:hidden;background:var(--border);">
+              <div style="width:100%;height:100%;background:var(--blue);opacity:.25;"></div>
+              <div style="width:17%;height:100%;background:var(--blue);opacity:.5;position:absolute;"></div>
+            </div>
+            <div style="display:flex;gap:6px;margin-top:4px;font-size:9px;font-family:'IBM Plex Mono',monospace;color:var(--text3);">
+              <span style="color:var(--blue);">84 leads</span>
+              <span>→</span><span style="color:var(--teal);">14 qualified</span>
+              <span>→</span><span style="color:var(--amber);">4 proposals</span>
+              <span>→</span><span style="color:var(--green);">2 signed ✓</span>
+            </div>
+          </div>
+          <div class="kpi-grid">
+            <div class="kpi-box"><div class="kpi-val" style="color:var(--blue);">84</div><div class="kpi-lbl">Leads</div></div>
+            <div class="kpi-box"><div class="kpi-val" style="color:var(--green);">2/5</div><div class="kpi-lbl">Target Signed</div></div>
+            <div class="kpi-box"><div class="kpi-val" style="color:var(--amber);">$6.4K</div><div class="kpi-lbl">MRR Added</div></div>
+          </div>
+          <div class="cmp-actions">
+            <div class="cmp-act" style="background:rgba(34,197,94,.08);border-color:var(--green-dim);color:var(--green);">CRM Pipeline →</div>
+            <div class="cmp-act" style="background:transparent;border-color:var(--border2);color:var(--text3);">Outreach Queue</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Right column -->
+    <div>
+
+      <!-- Oba Campaign Intelligence -->
+      <div class="oba-block">
+        <div class="oba-head">◉ Oba · Campaign Intelligence</div>
+        <div class="oba-insight">Your Seed Round is at <strong style="color:var(--purple);">73%</strong> with 28 days left. At the current $6,900/day velocity you'll hit the goal in <strong>17.5 days</strong>. Consider a targeted outreach burst to the 12 warm leads who visited but didn't invest.</div>
+        <div class="oba-insight" style="color:var(--amber);">⚠ crdt-rs launch thread engagement is dropping since Mar 10. A follow-up thread about v2.4.0 benchmarks could spike momentum.</div>
+        <div class="oba-insight" style="color:var(--green);">💡 Sales pipeline: 2 proposals have been open for 8+ days with no response. Oba has drafted follow-up messages for your review.</div>
+        <div class="oba-actions">
+          <div class="oa-btn" style="background:rgba(168,85,247,.1);border-color:#7c3aed;color:var(--purple);">Draft Investor Outreach</div>
+          <div class="oa-btn" style="background:rgba(12,207,202,.1);border-color:var(--teal-dim);color:var(--teal);">Draft Follow-up Thread</div>
+        </div>
+      </div>
+
+      <!-- Sales pipeline (CRM) -->
+      <div style="background:var(--card);border:1px solid var(--border);border-radius:6px;overflow:hidden;margin-bottom:14px;">
+        <div style="padding:11px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;">
+          <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text2);text-transform:uppercase;letter-spacing:.1em;">Sales Pipeline · Q2</div>
+          <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--green);">$84,200 pipeline</div>
+        </div>
+        <div class="pipeline-row pr-hdr">
+          <div>Contact / Org</div><div>Stage</div><div>Value</div><div>Win%</div><div>Last Touch</div>
+        </div>
+        <div class="pipeline-row">
+          <div><div class="pr-contact">Nadia Wolff</div><div class="pr-org">Independent · Builder</div></div>
+          <div><div class="pr-stage" style="background:rgba(34,197,94,.06);border-color:var(--green-dim);color:var(--green);">SIGNED</div></div>
+          <div class="pr-val" style="color:var(--green);">$3,200/mo</div>
+          <div class="pr-prob" style="color:var(--green);">100%</div>
+          <div class="pr-last">Mar 12</div>
+        </div>
+        <div class="pipeline-row">
+          <div><div class="pr-contact">Open Coop Studio</div><div class="pr-org">Cooperative · Tech</div></div>
+          <div><div class="pr-stage" style="background:rgba(34,197,94,.06);border-color:var(--green-dim);color:var(--green);">SIGNED</div></div>
+          <div class="pr-val" style="color:var(--green);">$3,200/mo</div>
+          <div class="pr-prob" style="color:var(--green);">100%</div>
+          <div class="pr-last">Mar 10</div>
+        </div>
+        <div class="pipeline-row">
+          <div><div class="pr-contact">Protocol Inc</div><div class="pr-org">DAO · DeFi</div></div>
+          <div><div class="pr-stage" style="background:rgba(232,160,48,.06);border-color:var(--amber-dim);color:var(--amber);">PROPOSAL</div></div>
+          <div class="pr-val">$3,200/mo</div>
+          <div class="pr-prob" style="color:var(--amber);">70%</div>
+          <div class="pr-last">Mar 6 · 8d ago</div>
+        </div>
+        <div class="pipeline-row">
+          <div><div class="pr-contact">Pamoja Federation</div><div class="pr-org">Federation · Multi-org</div></div>
+          <div><div class="pr-stage" style="background:rgba(232,160,48,.06);border-color:var(--amber-dim);color:var(--amber);">PROPOSAL</div></div>
+          <div class="pr-val">$8,000/mo</div>
+          <div class="pr-prob" style="color:var(--amber);">55%</div>
+          <div class="pr-last">Mar 5 · 9d ago</div>
+        </div>
+        <div class="pipeline-row">
+          <div><div class="pr-contact">Bay Area Freelancers Guild</div><div class="pr-org">Guild · Community</div></div>
+          <div><div class="pr-stage" style="background:rgba(59,130,246,.06);border-color:#1d4ed8;color:var(--blue);">QUALIFIED</div></div>
+          <div class="pr-val">$3,200/mo</div>
+          <div class="pr-prob" style="color:var(--blue);">40%</div>
+          <div class="pr-last">Mar 13</div>
+        </div>
+        <div class="pipeline-row">
+          <div><div class="pr-contact">Solo Dev Collective</div><div class="pr-org">Community · Indie</div></div>
+          <div><div class="pr-stage" style="background:rgba(122,135,158,.06);border-color:var(--text3);color:var(--text3);">LEAD</div></div>
+          <div class="pr-val" style="color:var(--text3);">$3,200/mo</div>
+          <div class="pr-prob" style="color:var(--text3);">20%</div>
+          <div class="pr-last">Mar 14</div>
+        </div>
+      </div>
+
+      <!-- Oba outreach queue -->
+      <div style="background:var(--card);border:1px solid var(--border);border-radius:6px;overflow:hidden;margin-bottom:14px;">
+        <div style="padding:11px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;">
+          <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text2);text-transform:uppercase;letter-spacing:.1em;">◉ Oba Outreach Queue · Seed Round</div>
+          <div style="font-size:10px;color:var(--text3);">12 warm leads</div>
+        </div>
+        <div class="oq-row">
+          <div class="oq-av" style="background:linear-gradient(135deg,#0ccfca,#3b82f6);">TN</div>
+          <div class="oq-info"><div class="oq-name">Tariq Nasir</div><div class="oq-reason">Viewed campaign page 3× · Connected via Amara · $10K investment capacity</div></div>
+          <div class="oq-score">92</div>
+          <div class="oq-action">Send →</div>
+        </div>
+        <div class="oq-row">
+          <div class="oq-av" style="background:linear-gradient(135deg,#d946ef,#9d174d);">PB</div>
+          <div class="oq-info"><div class="oq-name">Priya Bose</div><div class="oq-reason">Research collaborator · High CRDT interest · Likely angel investor profile</div></div>
+          <div class="oq-score">88</div>
+          <div class="oq-action">Send →</div>
+        </div>
+        <div class="oq-row">
+          <div class="oq-av" style="background:linear-gradient(135deg,#e8a030,#d97706);">AP</div>
+          <div class="oq-info"><div class="oq-name">Aisha Patel</div><div class="oq-reason">Patel Ventures · Angel investor · Existing client · High trust</div></div>
+          <div class="oq-score">85</div>
+          <div class="oq-action">Send →</div>
+        </div>
+        <div style="padding:10px 14px;display:flex;gap:6px;">
+          <button class="btn bt" style="flex:1;padding:6px;font-size:10px;">Review All 12 Drafts →</button>
+          <button class="btn bg" style="font-size:10px;padding:6px;">Batch Send</button>
+        </div>
+      </div>
+
+      <!-- Referral / affiliate campaign -->
+      <div style="background:var(--card);border:1px solid var(--amber-dim);border-radius:6px;overflow:hidden;">
+        <div style="padding:11px 14px;border-bottom:1px solid var(--border);background:rgba(232,160,48,.04);display:flex;align-items:center;justify-content:space-between;">
+          <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--amber);text-transform:uppercase;letter-spacing:.1em;">🎁 Referral Program · Active</div>
+          <div style="font-size:10px;color:var(--text3);">15 referrers · $2,400 paid</div>
+        </div>
+        <div style="padding:12px 14px;display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+          <div style="background:var(--card2);border-radius:4px;padding:10px;text-align:center;">
+            <div style="font-family:'IBM Plex Mono',monospace;font-size:16px;font-weight:600;color:var(--amber);">$200</div>
+            <div style="font-size:9px;color:var(--text3);margin-top:2px;">Per Successful Referral</div>
+          </div>
+          <div style="background:var(--card2);border-radius:4px;padding:10px;text-align:center;">
+            <div style="font-family:'IBM Plex Mono',monospace;font-size:16px;font-weight:600;color:var(--green);">12</div>
+            <div style="font-size:9px;color:var(--text3);margin-top:2px;">Successful Conversions</div>
+          </div>
+        </div>
+        <div style="padding:0 14px 12px;display:flex;gap:6px;">
+          <button class="btn ba" style="flex:1;padding:6px;font-size:10px;">Share Referral Link</button>
+          <button class="btn bg" style="font-size:10px;padding:6px;">Manage Referrers</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+</body>
+</html>

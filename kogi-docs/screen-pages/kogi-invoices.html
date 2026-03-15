@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>KOGI · Invoices</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap');
+:root{--bg:#070910;--sidebar:#0b0d16;--card:#0f1221;--card2:#131729;--border:#1a2035;--border2:#232a42;--teal:#0ccfca;--teal-dim:#0a9994;--amber:#e8a030;--amber-dim:#b07820;--green:#22c55e;--green-dim:#15803d;--blue:#3b82f6;--red:#ef4444;--purple:#a855f7;--text:#dde4f0;--text2:#7a879e;--text3:#3d4a62;}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--bg);color:var(--text);font-family:'IBM Plex Sans',sans-serif;font-size:13px;display:flex;height:100vh;overflow:hidden;}
+.sidebar{width:200px;min-width:200px;background:var(--sidebar);border-right:1px solid var(--border);display:flex;flex-direction:column;}
+.logo{padding:18px 16px;border-bottom:1px solid var(--border);}
+.logo-text{font-family:'IBM Plex Mono',monospace;font-size:18px;font-weight:600;letter-spacing:.08em;color:var(--teal);}
+.logo-sub{font-size:9px;color:var(--text3);letter-spacing:.15em;text-transform:uppercase;margin-top:2px;}
+.nav{padding:12px 0;flex:1;overflow-y:auto;}
+.ns{padding:8px 16px 4px;font-size:9px;color:var(--text3);letter-spacing:.18em;text-transform:uppercase;font-family:'IBM Plex Mono',monospace;}
+.ni{display:flex;align-items:center;gap:10px;padding:7px 16px;color:var(--text2);cursor:pointer;font-size:12px;border-left:2px solid transparent;}
+.ni.on{color:var(--teal);background:rgba(12,207,202,.07);border-left-color:var(--teal);}
+.ni-ic{width:14px;text-align:center;font-size:12px;}
+.pb{padding:12px 16px;border-top:1px solid var(--border);}
+.pm{display:flex;align-items:center;gap:8px;}
+.avsm{width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,#0ccfca,#3b82f6);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:#fff;}
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden;}
+.topbar{height:48px;border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 20px;gap:12px;background:var(--sidebar);flex-shrink:0;}
+.tp{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text3);}
+.tp span{color:var(--text2);}
+.tp span.cur{color:var(--text);}
+.sp{flex:1;}
+.btn{padding:5px 12px;border-radius:4px;font-size:11px;font-family:'IBM Plex Mono',monospace;cursor:pointer;border:1px solid;}
+.bt{background:rgba(12,207,202,.12);border-color:var(--teal-dim);color:var(--teal);}
+.bg{background:transparent;border-color:var(--border2);color:var(--text2);}
+.ba{background:rgba(232,160,48,.1);border-color:var(--amber-dim);color:var(--amber);}
+
+/* Stats */
+.stats-row{display:grid;grid-template-columns:repeat(5,1fr);gap:1px;background:var(--border);border-bottom:1px solid var(--border);flex-shrink:0;}
+.sb{background:var(--card);padding:12px 16px;}
+.sv{font-family:'IBM Plex Mono',monospace;font-size:18px;font-weight:600;}
+.sl{font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.1em;margin-top:1px;}
+
+.layout{flex:1;display:grid;grid-template-columns:1fr 360px;overflow:hidden;}
+
+/* Invoice list */
+.inv-list{overflow-y:auto;background:var(--bg);}
+.il-toolbar{padding:10px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;background:var(--card);flex-shrink:0;}
+.il-search{flex:1;max-width:260px;background:var(--card2);border:1px solid var(--border2);border-radius:4px;padding:6px 10px;color:var(--text2);font-size:11px;outline:none;font-family:'IBM Plex Sans',sans-serif;}
+.il-search::placeholder{color:var(--text3);}
+.il-filter{background:var(--card2);border:1px solid var(--border2);color:var(--text2);font-size:11px;padding:5px 8px;border-radius:4px;font-family:'IBM Plex Mono',monospace;}
+/* status filter tabs */
+.status-tabs{display:flex;gap:0;overflow-x:auto;}
+.st{padding:8px 14px;font-size:11px;font-family:'IBM Plex Mono',monospace;color:var(--text3);cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap;}
+.st.on{color:var(--teal);border-bottom-color:var(--teal);}
+.st-count{display:inline-block;border-radius:3px;font-size:9px;padding:0 5px;margin-left:4px;}
+.st.on .st-count{background:rgba(12,207,202,.12);color:var(--teal);}
+
+/* Invoice rows */
+.inv-row{display:grid;grid-template-columns:100px 1fr 90px 110px 100px 80px;gap:12px;align-items:center;padding:12px 16px;border-bottom:1px solid var(--border);cursor:pointer;transition:background .1s;}
+.inv-row:hover{background:rgba(255,255,255,.015);}
+.inv-row.selected{background:rgba(12,207,202,.04);border-left:2px solid var(--teal);}
+.inv-hdr{background:var(--card2);padding:8px 16px;}
+.inv-col{font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.1em;font-family:'IBM Plex Mono',monospace;}
+.inv-num{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--teal);font-weight:600;}
+.inv-client{font-size:12px;color:var(--text);}
+.inv-ref{font-size:10px;color:var(--text3);}
+.inv-amount{font-family:'IBM Plex Mono',monospace;font-size:13px;font-weight:600;}
+.inv-date{font-size:11px;color:var(--text3);font-family:'IBM Plex Mono',monospace;}
+.inv-status{font-size:10px;font-family:'IBM Plex Mono',monospace;padding:3px 8px;border-radius:4px;border:1px solid;display:inline-block;}
+.s-paid{background:rgba(34,197,94,.06);border-color:var(--green-dim);color:var(--green);}
+.s-sent{background:rgba(12,207,202,.06);border-color:var(--teal-dim);color:var(--teal);}
+.s-overdue{background:rgba(239,68,68,.06);border-color:#991b1b;color:var(--red);}
+.s-draft{background:rgba(122,135,158,.06);border-color:var(--text3);color:var(--text3);}
+.s-partial{background:rgba(232,160,48,.06);border-color:var(--amber-dim);color:var(--amber);}
+.s-disputed{background:rgba(239,68,68,.08);border-color:#991b1b;color:var(--red);}
+.inv-actions{display:flex;gap:4px;opacity:0;}
+.inv-row:hover .inv-actions{opacity:1;}
+.ia-btn{padding:3px 7px;border-radius:3px;font-size:9px;cursor:pointer;border:1px solid var(--border2);color:var(--text3);font-family:'IBM Plex Mono',monospace;}
+.ia-btn:hover{border-color:var(--teal-dim);color:var(--teal);}
+
+/* Invoice detail panel */
+.detail{background:var(--sidebar);border-left:1px solid var(--border);overflow-y:auto;display:flex;flex-direction:column;}
+.detail-header{padding:16px;border-bottom:1px solid var(--border);}
+.dh-row{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:12px;}
+.dh-num{font-family:'IBM Plex Mono',monospace;font-size:13px;color:var(--teal);font-weight:600;}
+.dh-status{display:inline-block;}
+.dh-amount{font-family:'IBM Plex Mono',monospace;font-size:28px;font-weight:600;margin-bottom:2px;}
+.dh-due{font-size:11px;color:var(--text3);}
+.dh-client-row{display:flex;gap:10px;margin-bottom:12px;}
+.dh-av{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;color:#fff;flex-shrink:0;}
+.dh-name{font-size:13px;font-weight:600;color:var(--text);}
+.dh-org{font-size:10px;color:var(--text3);}
+.detail-actions{display:grid;grid-template-columns:1fr 1fr;gap:6px;}
+.da-btn{padding:7px;text-align:center;border-radius:4px;font-size:10px;font-family:'IBM Plex Mono',monospace;cursor:pointer;border:1px solid;}
+
+/* Line items */
+.detail-section{padding:12px 14px;border-bottom:1px solid var(--border);}
+.ds-title{font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.14em;margin-bottom:8px;}
+.li-row{display:flex;align-items:flex-start;gap:8px;padding:7px 0;border-bottom:1px solid var(--border);}
+.li-row:last-child{border-bottom:none;}
+.li-desc{flex:1;}
+.li-item{font-size:11px;color:var(--text);}
+.li-qty{font-size:10px;color:var(--text3);font-family:'IBM Plex Mono',monospace;margin-top:1px;}
+.li-unit{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text3);}
+.li-total{font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--text);font-weight:500;}
+.totals-row{display:flex;justify-content:space-between;padding:5px 0;}
+.tr-key{font-size:11px;color:var(--text3);}
+.tr-val{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text2);}
+
+/* Payment timeline -->
+.pay-event{display:flex;gap:8px;padding:6px 0;border-bottom:1px solid var(--border);}
+.pay-event:last-child{border-bottom:none;}
+.pe-dot{width:7px;height:7px;border-radius:50%;margin-top:3px;flex-shrink:0;}
+.pe-desc{flex:1;font-size:11px;color:var(--text2);}
+.pe-time{font-size:10px;color:var(--text3);font-family:'IBM Plex Mono',monospace;}
+</style>
+</head>
+<body>
+<div class="sidebar">
+  <div class="logo"><div class="logo-text">KOGI</div><div class="logo-sub">Independent Worker OS</div></div>
+  <nav class="nav">
+    <div class="ns">Finance</div>
+    <div class="ni"><span class="ni-ic">♦</span>Bank</div>
+    <div class="ni"><span class="ni-ic">💳</span>Wallet</div>
+    <div class="ni on"><span class="ni-ic">📄</span>Invoices</div>
+    <div class="ni"><span class="ni-ic">📊</span>Accounting</div>
+    <div class="ni"><span class="ni-ic">🧾</span>Tax Center</div>
+    <div class="ni"><span class="ni-ic">📈</span>Investments</div>
+    <div class="ns">Platform</div>
+    <div class="ni"><span class="ni-ic">⬡</span>Exchange</div>
+    <div class="ni"><span class="ni-ic">⊗</span>Marketplace</div>
+    <div class="ni"><span class="ni-ic">💼</span>Deal Rooms</div>
+    <div class="ns">Core</div>
+    <div class="ni"><span class="ni-ic">⌂</span>Dashboard</div>
+    <div class="ni"><span class="ni-ic">◫</span>Office</div>
+  </nav>
+  <div class="pb"><div class="pm"><div class="avsm">JC</div><div><div style="font-size:12px;">Jordan Chen</div><div style="font-size:10px;color:var(--text3);">@jordan.dev</div></div></div></div>
+</div>
+
+<div class="main">
+  <div class="topbar">
+    <div class="tp">KINV / <span class="cur">Invoices</span></div>
+    <div class="sp"></div>
+    <button class="btn bg">Import</button>
+    <button class="btn bg">Export</button>
+    <button class="btn bt">◉ AI Draft Invoice</button>
+    <button class="btn bt">+ New Invoice</button>
+  </div>
+
+  <div class="stats-row">
+    <div class="sb"><div class="sv" style="color:var(--amber);">$28,400</div><div class="sl">Outstanding</div></div>
+    <div class="sb"><div class="sv" style="color:var(--red);">$4,200</div><div class="sl">Overdue</div></div>
+    <div class="sb"><div class="sv" style="color:var(--green);">$186,400</div><div class="sl">Paid YTD</div></div>
+    <div class="sb"><div class="sv" style="color:var(--text3);">3</div><div class="sl">Draft</div></div>
+    <div class="sb"><div class="sv">28 days</div><div class="sl">Avg Collect Time</div></div>
+  </div>
+
+  <!-- Status filter tabs -->
+  <div style="background:var(--card);border-bottom:1px solid var(--border);display:flex;overflow-x:auto;flex-shrink:0;">
+    <div class="st on">All <span class="st-count">18</span></div>
+    <div class="st">Sent <span class="st-count">4</span></div>
+    <div class="st">Overdue <span class="st-count">2</span></div>
+    <div class="st">Draft <span class="st-count">3</span></div>
+    <div class="st">Paid <span class="st-count">8</span></div>
+    <div class="st">Partial <span class="st-count">1</span></div>
+    <div class="st">Recurring <span class="st-count">3</span></div>
+    <div class="st">Disputed <span class="st-count">0</span></div>
+  </div>
+
+  <div class="layout">
+    <div class="inv-list">
+      <div class="il-toolbar">
+        <input class="il-search" placeholder="Search invoices…"/>
+        <select class="il-filter"><option>All Clients</option><option>Patel Ventures</option><option>Mesh Studio</option></select>
+        <select class="il-filter"><option>Sort: Newest</option><option>Sort: Due Date</option><option>Sort: Amount</option></select>
+        <div class="sp"></div>
+        <button class="btn bg" style="font-size:10px;padding:4px 8px;">Export PDF</button>
+      </div>
+
+      <!-- Invoice table -->
+      <div class="inv-row inv-hdr">
+        <div class="inv-col">Invoice #</div><div class="inv-col">Client / Project</div><div class="inv-col">Amount</div>
+        <div class="inv-col">Due Date</div><div class="inv-col">Status</div><div></div>
+      </div>
+
+      <!-- OVERDUE -->
+      <div style="padding:5px 16px;font-size:9px;color:var(--red);background:rgba(239,68,68,.04);border-bottom:1px solid var(--border);font-family:'IBM Plex Mono',monospace;text-transform:uppercase;letter-spacing:.12em;">⚠ Overdue · Action Required</div>
+      <div class="inv-row selected">
+        <div class="inv-num">INV-2026-029</div>
+        <div><div class="inv-client">Aisha Patel — Patel Ventures</div><div class="inv-ref">Brand Identity Phase 2 · Milestone 1</div></div>
+        <div class="inv-amount" style="color:var(--red);">$4,200</div>
+        <div class="inv-date">Mar 1, 2026</div>
+        <div><div class="inv-status s-overdue">14 days overdue</div></div>
+        <div class="inv-actions"><div class="ia-btn">Remind</div><div class="ia-btn">⋯</div></div>
+      </div>
+
+      <!-- SENT / OUTSTANDING -->
+      <div style="padding:5px 16px;font-size:9px;color:var(--teal);background:rgba(12,207,202,.02);border-bottom:1px solid var(--border);font-family:'IBM Plex Mono',monospace;text-transform:uppercase;letter-spacing:.12em;">Sent · Awaiting Payment</div>
+      <div class="inv-row">
+        <div class="inv-num">INV-2026-031</div>
+        <div><div class="inv-client">Aisha Patel — Patel Ventures</div><div class="inv-ref">Brand Identity Phase 2 · Milestone 2</div></div>
+        <div class="inv-amount" style="color:var(--teal);">$14,000</div>
+        <div class="inv-date">Mar 28, 2026</div>
+        <div><div class="inv-status s-sent">Sent · Viewed</div></div>
+        <div class="inv-actions"><div class="ia-btn">Remind</div><div class="ia-btn">⋯</div></div>
+      </div>
+      <div class="inv-row">
+        <div class="inv-num">INV-2026-030</div>
+        <div><div class="inv-client">Tech Cooperative Inc</div><div class="inv-ref">Rust Systems Contract · Month 1</div></div>
+        <div class="inv-amount" style="color:var(--teal);">$7,200</div>
+        <div class="inv-date">Apr 1, 2026</div>
+        <div><div class="inv-status s-sent">Sent</div></div>
+        <div class="inv-actions"><div class="ia-btn">Remind</div><div class="ia-btn">⋯</div></div>
+      </div>
+      <div class="inv-row">
+        <div class="inv-num">INV-2026-028</div>
+        <div><div class="inv-client">DeFi Protocol Inc</div><div class="inv-ref">Architecture Consulting Retainer · Feb</div></div>
+        <div class="inv-amount" style="color:var(--amber);">$3,200</div>
+        <div class="inv-date">Mar 15, 2026</div>
+        <div><div class="inv-status s-partial">Partial · $1,600 paid</div></div>
+        <div class="inv-actions"><div class="ia-btn">Follow up</div><div class="ia-btn">⋯</div></div>
+      </div>
+
+      <!-- DRAFT -->
+      <div style="padding:5px 16px;font-size:9px;color:var(--text3);background:var(--card2);border-bottom:1px solid var(--border);font-family:'IBM Plex Mono',monospace;text-transform:uppercase;letter-spacing:.12em;">Draft · Not Sent</div>
+      <div class="inv-row" style="opacity:.7;">
+        <div class="inv-num" style="color:var(--text3);">INV-2026-032</div>
+        <div><div class="inv-client">Marcus Park · Mesh Studio</div><div class="inv-ref">CRDT Review Session · 4hrs</div></div>
+        <div class="inv-amount" style="color:var(--text3);">$720</div>
+        <div class="inv-date">—</div>
+        <div><div class="inv-status s-draft">Draft</div></div>
+        <div class="inv-actions"><div class="ia-btn">Send</div><div class="ia-btn">Edit</div></div>
+      </div>
+      <div class="inv-row" style="opacity:.7;">
+        <div class="inv-num" style="color:var(--text3);">INV-2026-033</div>
+        <div><div class="inv-client">Nadia Wolff</div><div class="inv-ref">Open Source Integration · Fixed project</div></div>
+        <div class="inv-amount" style="color:var(--text3);">$2,400</div>
+        <div class="inv-date">—</div>
+        <div><div class="inv-status s-draft">AI Draft · Review</div></div>
+        <div class="inv-actions"><div class="ia-btn">Send</div><div class="ia-btn">Edit</div></div>
+      </div>
+
+      <!-- PAID -->
+      <div style="padding:5px 16px;font-size:9px;color:var(--green);background:rgba(34,197,94,.02);border-bottom:1px solid var(--border);font-family:'IBM Plex Mono',monospace;text-transform:uppercase;letter-spacing:.12em;">Paid · Collected</div>
+      <div class="inv-row" style="opacity:.7;">
+        <div class="inv-num">INV-2026-027</div>
+        <div><div class="inv-client">Patel Ventures</div><div class="inv-ref">Brand Identity Phase 1 · Final</div></div>
+        <div class="inv-amount" style="color:var(--green);">$14,000</div>
+        <div class="inv-date">Feb 28, 2026</div>
+        <div><div class="inv-status s-paid">Paid · Feb 28</div></div>
+        <div class="inv-actions"><div class="ia-btn">Receipt</div><div class="ia-btn">⋯</div></div>
+      </div>
+      <div class="inv-row" style="opacity:.7;">
+        <div class="inv-num">INV-2026-025</div>
+        <div><div class="inv-client">Open Source Collective</div><div class="inv-ref">CRDT Workshop · 2-day session</div></div>
+        <div class="inv-amount" style="color:var(--green);">$3,600</div>
+        <div class="inv-date">Feb 15, 2026</div>
+        <div><div class="inv-status s-paid">Paid · Feb 14</div></div>
+        <div class="inv-actions"><div class="ia-btn">Receipt</div><div class="ia-btn">⋯</div></div>
+      </div>
+    </div>
+
+    <!-- Invoice detail -->
+    <div class="detail">
+      <div class="detail-header">
+        <div class="dh-row">
+          <div><div class="dh-num">INV-2026-029</div><div style="font-size:10px;color:var(--text3);margin-top:2px;">Created Mar 1, 2026</div></div>
+          <div class="inv-status s-overdue">14 days overdue</div>
+        </div>
+        <div class="dh-amount" style="color:var(--red);">$4,200</div>
+        <div class="dh-due">Due March 1, 2026 · Net 15 · <span style="color:var(--red);">$0 paid</span></div>
+        <div class="dh-client-row" style="margin-top:10px;">
+          <div class="dh-av" style="background:linear-gradient(135deg,#e8a030,#d97706);">AP</div>
+          <div>
+            <div class="dh-name">Aisha Patel</div>
+            <div class="dh-org">Patel Ventures · aisha@patel.vc</div>
+          </div>
+        </div>
+        <div class="detail-actions">
+          <div class="da-btn" style="background:rgba(239,68,68,.1);border-color:#991b1b;color:var(--red);">Send Reminder</div>
+          <div class="da-btn" style="background:rgba(12,207,202,.1);border-color:var(--teal-dim);color:var(--teal);">Copy Pay Link</div>
+          <div class="da-btn" style="background:transparent;border-color:var(--border2);color:var(--text3);">Download PDF</div>
+          <div class="da-btn" style="background:transparent;border-color:var(--border2);color:var(--text3);">Mark Paid</div>
+        </div>
+      </div>
+
+      <!-- Line items -->
+      <div class="detail-section">
+        <div class="ds-title">Line Items</div>
+        <div class="li-row">
+          <div class="li-desc">
+            <div class="li-item">Brand Identity System — Phase 2, Milestone 1</div>
+            <div class="li-qty">Systems architecture review · Deliverable: component spec</div>
+          </div>
+          <div class="li-unit">1 ×</div>
+          <div class="li-total">$4,200</div>
+        </div>
+        <div style="margin-top:10px;border-top:1px solid var(--border);padding-top:8px;">
+          <div class="totals-row"><span class="tr-key">Subtotal</span><span class="tr-val">$4,200</span></div>
+          <div class="totals-row"><span class="tr-key">Tax (0% — services)</span><span class="tr-val">$0</span></div>
+          <div class="totals-row" style="font-weight:600;"><span style="font-size:12px;color:var(--text);">Total Due</span><span style="font-family:'IBM Plex Mono',monospace;font-size:14px;color:var(--red);">$4,200</span></div>
+        </div>
+      </div>
+
+      <!-- Payment details -->
+      <div class="detail-section">
+        <div class="ds-title">Payment Terms</div>
+        <div style="display:flex;flex-direction:column;gap:5px;">
+          <div style="display:flex;justify-content:space-between;"><span class="tr-key">Terms</span><span style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text2);">Net 15</span></div>
+          <div style="display:flex;justify-content:space-between;"><span class="tr-key">Payment methods</span><span style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text2);">Stripe · ACH · Wire</span></div>
+          <div style="display:flex;justify-content:space-between;"><span class="tr-key">Linked deal</span><span style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--teal);">DEAL-2026-012</span></div>
+          <div style="display:flex;justify-content:space-between;"><span class="tr-key">Linked escrow</span><span style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text3);">None</span></div>
+        </div>
+      </div>
+
+      <!-- Activity log -->
+      <div class="detail-section">
+        <div class="ds-title">Activity Log</div>
+        <div class="pay-event">
+          <div class="pe-dot" style="background:var(--red);"></div>
+          <div class="pe-desc">Invoice now 14 days overdue · Oba drafted reminder</div>
+          <div class="pe-time">Today</div>
+        </div>
+        <div class="pay-event">
+          <div class="pe-dot" style="background:var(--amber);"></div>
+          <div class="pe-desc">Auto-reminder sent by Oba (7-day overdue)</div>
+          <div class="pe-time">Mar 8</div>
+        </div>
+        <div class="pay-event">
+          <div class="pe-dot" style="background:var(--blue);"></div>
+          <div class="pe-desc">Invoice viewed by recipient (Patel Ventures IP)</div>
+          <div class="pe-time">Mar 2</div>
+        </div>
+        <div class="pay-event">
+          <div class="pe-dot" style="background:var(--teal);"></div>
+          <div class="pe-desc">Invoice sent via email · Payment link active</div>
+          <div class="pe-time">Mar 1</div>
+        </div>
+        <div class="pay-event">
+          <div class="pe-dot" style="background:var(--green);"></div>
+          <div class="pe-desc">Invoice created from milestone approval (Oba draft)</div>
+          <div class="pe-time">Mar 1</div>
+        </div>
+      </div>
+
+      <!-- Oba recovery action -->
+      <div style="padding:12px 14px;background:rgba(239,68,68,.03);border-top:1px solid var(--border);">
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--red);text-transform:uppercase;margin-bottom:7px;">◉ Oba · Recovery Action</div>
+        <div style="font-size:11px;color:var(--text2);line-height:1.5;margin-bottom:8px;">INV-2026-029 is 14 days overdue. Oba has drafted a firm follow-up for your review. Aisha Patel's payment history is Excellent — this may be an oversight.</div>
+        <button style="width:100%;padding:7px;background:rgba(239,68,68,.08);border:1px solid #991b1b;color:var(--red);border-radius:4px;font-size:10px;font-family:'IBM Plex Mono',monospace;cursor:pointer;">Review & Send Reminder Draft →</button>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

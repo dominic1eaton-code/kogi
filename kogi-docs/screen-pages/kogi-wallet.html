@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>KOGI · Wallet</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap');
+:root{--bg:#070910;--sidebar:#0b0d16;--card:#0f1221;--card2:#131729;--border:#1a2035;--border2:#232a42;--teal:#0ccfca;--teal-dim:#0a9994;--amber:#e8a030;--amber-dim:#b07820;--green:#22c55e;--green-dim:#15803d;--blue:#3b82f6;--red:#ef4444;--purple:#a855f7;--text:#dde4f0;--text2:#7a879e;--text3:#3d4a62;}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--bg);color:var(--text);font-family:'IBM Plex Sans',sans-serif;font-size:13px;display:flex;min-height:100vh;}
+.sidebar{width:200px;min-width:200px;background:var(--sidebar);border-right:1px solid var(--border);display:flex;flex-direction:column;}
+.logo{padding:18px 16px;border-bottom:1px solid var(--border);}
+.logo-text{font-family:'IBM Plex Mono',monospace;font-size:18px;font-weight:600;letter-spacing:.08em;color:var(--teal);}
+.logo-sub{font-size:9px;color:var(--text3);letter-spacing:.15em;text-transform:uppercase;margin-top:2px;}
+.nav{padding:12px 0;flex:1;overflow-y:auto;}
+.ns{padding:8px 16px 4px;font-size:9px;color:var(--text3);letter-spacing:.18em;text-transform:uppercase;font-family:'IBM Plex Mono',monospace;}
+.ni{display:flex;align-items:center;gap:10px;padding:7px 16px;color:var(--text2);cursor:pointer;font-size:12px;border-left:2px solid transparent;}
+.ni.on{color:var(--teal);background:rgba(12,207,202,.07);border-left-color:var(--teal);}
+.ni-ic{width:14px;text-align:center;font-size:12px;}
+.pb{padding:12px 16px;border-top:1px solid var(--border);}
+.pm{display:flex;align-items:center;gap:8px;}
+.avsm{width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,#0ccfca,#3b82f6);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:#fff;}
+.main{flex:1;overflow-y:auto;}
+.topbar{height:48px;border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 20px;gap:12px;background:var(--sidebar);position:sticky;top:0;z-index:10;}
+.tp{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text3);}
+.tp span{color:var(--text2);}
+.tp span.cur{color:var(--text);}
+.sp{flex:1;}
+.btn{padding:5px 12px;border-radius:4px;font-size:11px;font-family:'IBM Plex Mono',monospace;cursor:pointer;border:1px solid;}
+.bt{background:rgba(12,207,202,.12);border-color:var(--teal-dim);color:var(--teal);}
+.bg{background:transparent;border-color:var(--border2);color:var(--text2);}
+
+.content{padding:20px;display:grid;grid-template-columns:1fr 300px;gap:16px;}
+.card{background:var(--card);border:1px solid var(--border);border-radius:6px;overflow:hidden;margin-bottom:14px;}
+.ch{padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+.ct{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text2);text-transform:uppercase;letter-spacing:.1em;}
+.ca{font-size:10px;color:var(--teal);cursor:pointer;font-family:'IBM Plex Mono',monospace;}
+
+/* Wallet cards - horizontally scrolling -->
+.wallet-scroll{display:flex;gap:12px;overflow-x:auto;padding:16px;padding-bottom:8px;margin-bottom:16px;}
+.wallet-card{min-width:220px;border-radius:10px;padding:18px;position:relative;overflow:hidden;cursor:pointer;flex-shrink:0;border:1px solid;}
+.wallet-card::before{content:'';position:absolute;top:-40px;right:-40px;width:100px;height:100px;border-radius:50%;opacity:.15;}
+.wc-primary{background:linear-gradient(135deg,#0a1f2e,#061428);border-color:var(--teal-dim);}
+.wc-primary::before{background:var(--teal);}
+.wc-marketplace{background:linear-gradient(135deg,#1a0e00,#0d0700);border-color:var(--amber-dim);}
+.wc-marketplace::before{background:var(--amber);}
+.wc-payroll{background:linear-gradient(135deg,#0a2010,#061208);border-color:var(--green-dim);}
+.wc-payroll::before{background:var(--green);}
+.wc-campaign{background:linear-gradient(135deg,#18082e,#0d0420);border-color:#7c3aed;}
+.wc-campaign::before{background:var(--purple);}
+.wc-crypto{background:linear-gradient(135deg,#0f1828,#080e18);border-color:#1d4ed8;}
+.wc-crypto::before{background:var(--blue);}
+.wc-label{font-family:'IBM Plex Mono',monospace;font-size:9px;text-transform:uppercase;letter-spacing:.14em;margin-bottom:6px;opacity:.7;}
+.wc-type{font-size:10px;margin-bottom:14px;opacity:.6;}
+.wc-balance{font-family:'IBM Plex Mono',monospace;font-size:22px;font-weight:600;margin-bottom:2px;}
+.wc-linked{font-size:10px;opacity:.6;}
+.wc-actions{display:flex;gap:6px;margin-top:12px;}
+.wc-btn{padding:4px 10px;border-radius:3px;font-size:9px;font-family:'IBM Plex Mono',monospace;cursor:pointer;border:1px solid rgba(255,255,255,.15);background:rgba(255,255,255,.06);color:rgba(255,255,255,.7);}
+
+/* Auto-split config -->
+.split-config{padding:14px;}
+.sc-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;}
+.sc-title{font-size:12px;font-weight:600;color:var(--text);}
+.sc-trigger{font-size:10px;color:var(--text3);}
+.split-visual{display:flex;height:16px;border-radius:8px;overflow:hidden;margin-bottom:10px;}
+.sv-seg{transition:width .3s;display:flex;align-items:center;justify-content:center;font-size:8px;font-family:'IBM Plex Mono',monospace;color:rgba(0,0,0,.7);font-weight:600;}
+.split-legs{display:flex;flex-direction:column;gap:6px;}
+.split-leg{display:flex;align-items:center;gap:10px;padding:8px 10px;background:var(--card2);border:1px solid var(--border);border-radius:5px;}
+.sl-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;}
+.sl-name{flex:1;font-size:12px;color:var(--text);}
+.sl-type{font-size:9px;color:var(--text3);font-family:'IBM Plex Mono',monospace;}
+.sl-pct{font-family:'IBM Plex Mono',monospace;font-size:14px;font-weight:600;width:36px;text-align:center;}
+.sl-handle{width:16px;color:var(--text3);cursor:grab;font-size:14px;}
+
+/* Transaction rules -->
+.rule-card{background:var(--card2);border:1px solid var(--border);border-radius:5px;padding:11px 13px;margin-bottom:8px;cursor:pointer;transition:border-color .12s;}
+.rule-card:hover{border-color:var(--border2);}
+.rule-if{font-size:10px;color:var(--text3);font-family:'IBM Plex Mono',monospace;margin-bottom:3px;}
+.rule-then{font-size:12px;color:var(--text);}
+.rule-status{display:flex;align-items:center;justify-content:space-between;margin-top:5px;}
+.rs-tag{font-size:9px;font-family:'IBM Plex Mono',monospace;padding:1px 6px;border-radius:3px;border:1px solid;}
+.toggle{width:30px;height:17px;border-radius:9px;background:var(--border2);position:relative;cursor:pointer;}
+.toggle.on{background:var(--teal-dim);}
+.toggle::after{content:'';position:absolute;top:2px;left:2px;width:13px;height:13px;border-radius:50%;background:#fff;transition:left .2s;}
+.toggle.on::after{left:15px;}
+
+/* Payment methods -->
+.pm-row{display:flex;align-items:center;gap:10px;padding:10px 16px;border-bottom:1px solid var(--border);}
+.pm-row:last-child{border-bottom:none;}
+.pm-ic{width:36px;height:24px;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;background:var(--card2);border:1px solid var(--border);flex-shrink:0;}
+.pm-name{flex:1;}
+.pm-label{font-size:12px;color:var(--text);}
+.pm-detail{font-size:10px;color:var(--text3);}
+.pm-status{font-size:9px;font-family:'IBM Plex Mono',monospace;padding:2px 6px;border-radius:3px;border:1px solid;}
+
+/* Recent sends -->
+.send-row{display:flex;align-items:center;gap:10px;padding:9px 16px;border-bottom:1px solid var(--border);}
+.send-row:last-child{border-bottom:none;}
+.sr-av{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:600;color:#fff;flex-shrink:0;}
+.sr-info{flex:1;}
+.sr-name{font-size:12px;color:var(--text);}
+.sr-method{font-size:10px;color:var(--text3);font-family:'IBM Plex Mono',monospace;}
+.sr-amount{font-family:'IBM Plex Mono',monospace;font-size:13px;font-weight:600;}
+.sr-date{font-size:10px;color:var(--text3);}
+
+/* Quick actions big buttons -->
+.quick-actions{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px;}
+.qa{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:16px;text-align:center;cursor:pointer;transition:all .12s;}
+.qa:hover{border-color:var(--border2);transform:translateY(-1px);}
+.qa-ic{font-size:24px;margin-bottom:6px;}
+.qa-label{font-size:11px;font-weight:600;color:var(--text);}
+.qa-sub{font-size:9px;color:var(--text3);margin-top:2px;}
+</style>
+</head>
+<body>
+<div class="sidebar">
+  <div class="logo"><div class="logo-text">KOGI</div><div class="logo-sub">Independent Worker OS</div></div>
+  <nav class="nav">
+    <div class="ns">Finance</div>
+    <div class="ni"><span class="ni-ic">♦</span>Bank</div>
+    <div class="ni on"><span class="ni-ic">💳</span>Wallet</div>
+    <div class="ni"><span class="ni-ic">📄</span>Invoices</div>
+    <div class="ni"><span class="ni-ic">📊</span>Accounting</div>
+    <div class="ni"><span class="ni-ic">🧾</span>Tax Center</div>
+    <div class="ni"><span class="ni-ic">📈</span>Investments</div>
+    <div class="ni"><span class="ni-ic">🎯</span>Campaigns</div>
+    <div class="ns">Platform</div>
+    <div class="ni"><span class="ni-ic">⬡</span>Exchange</div>
+    <div class="ni"><span class="ni-ic">⊗</span>Marketplace</div>
+    <div class="ns">Core</div>
+    <div class="ni"><span class="ni-ic">⌂</span>Dashboard</div>
+  </nav>
+  <div class="pb"><div class="pm"><div class="avsm">JC</div><div><div style="font-size:12px;">Jordan Chen</div><div style="font-size:10px;color:var(--text3);">@jordan.dev</div></div></div></div>
+</div>
+
+<div class="main">
+  <div class="topbar">
+    <div class="tp">KWLT / <span class="cur">Wallet</span></div>
+    <div class="sp"></div>
+    <button class="btn bg">Add Payment Method</button>
+    <button class="btn bg">Auto-Split Rules</button>
+    <button class="btn bt">+ New Wallet</button>
+  </div>
+
+  <div class="content">
+    <div>
+
+      <!-- Wallet Cards -->
+      <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.14em;margin-bottom:10px;">My Wallets · Swipe to see all →</div>
+      <div class="wallet-scroll">
+        <div class="wallet-card wc-primary">
+          <div class="wc-label" style="color:var(--teal);">Primary Wallet</div>
+          <div class="wc-type" style="color:var(--teal);">Personal · Receive + Send</div>
+          <div class="wc-balance" style="color:var(--teal);">$42,800</div>
+          <div class="wc-linked" style="color:var(--teal);">→ Checking · Tax Reserve · Operations</div>
+          <div class="wc-actions">
+            <div class="wc-btn">Send</div><div class="wc-btn">Receive</div><div class="wc-btn">History</div>
+          </div>
+        </div>
+        <div class="wallet-card wc-marketplace">
+          <div class="wc-label" style="color:var(--amber);">Marketplace Wallet</div>
+          <div class="wc-type" style="color:var(--amber);">Receives gig + listing payments</div>
+          <div class="wc-balance" style="color:var(--amber);">$8,400</div>
+          <div class="wc-linked" style="color:var(--amber);">→ Auto-splits on receipt</div>
+          <div class="wc-actions">
+            <div class="wc-btn">Send</div><div class="wc-btn">Payout</div><div class="wc-btn">Rules</div>
+          </div>
+        </div>
+        <div class="wallet-card wc-payroll">
+          <div class="wc-label" style="color:var(--green);">Payroll Wallet</div>
+          <div class="wc-type" style="color:var(--green);">Coop distributions + payroll</div>
+          <div class="wc-balance" style="color:var(--green);">$18,200</div>
+          <div class="wc-linked" style="color:var(--green);">→ Pending · Mesh Studio Q1</div>
+          <div class="wc-actions">
+            <div class="wc-btn">History</div><div class="wc-btn">Details</div>
+          </div>
+        </div>
+        <div class="wallet-card wc-campaign">
+          <div class="wc-label" style="color:var(--purple);">Campaign Wallet</div>
+          <div class="wc-type" style="color:var(--purple);">Campaign contributions held</div>
+          <div class="wc-balance" style="color:var(--purple);">$328,500</div>
+          <div class="wc-linked" style="color:var(--purple);">→ Kogi Engine Seed Round</div>
+          <div class="wc-actions">
+            <div class="wc-btn">Disburse</div><div class="wc-btn">Backers</div>
+          </div>
+        </div>
+        <div class="wallet-card wc-crypto">
+          <div class="wc-label" style="color:var(--blue);">Crypto Wallet</div>
+          <div class="wc-type" style="color:var(--blue);">ETH + ERC-20 · Bridge</div>
+          <div class="wc-balance" style="color:var(--blue);">$4,200</div>
+          <div class="wc-linked" style="color:var(--blue);">→ Bridge: Ethereum · Coinbase</div>
+          <div class="wc-actions">
+            <div class="wc-btn">Send ETH</div><div class="wc-btn">Receive</div><div class="wc-btn">Bridge</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick actions -->
+      <div class="quick-actions">
+        <div class="qa">
+          <div class="qa-ic">↑</div>
+          <div class="qa-label">Send</div>
+          <div class="qa-sub">Transfer to anyone</div>
+        </div>
+        <div class="qa">
+          <div class="qa-ic">↓</div>
+          <div class="qa-label">Request</div>
+          <div class="qa-sub">Generate pay link</div>
+        </div>
+        <div class="qa">
+          <div class="qa-ic">↔</div>
+          <div class="qa-label">Transfer</div>
+          <div class="qa-sub">Between accounts</div>
+        </div>
+        <div class="qa">
+          <div class="qa-ic">🔒</div>
+          <div class="qa-label">Escrow</div>
+          <div class="qa-sub">Fund a deal</div>
+        </div>
+      </div>
+
+      <!-- Auto-split config (Primary Wallet) -->
+      <div class="card">
+        <div class="ch">
+          <div class="ct">Auto-Split Rules · Primary Wallet</div>
+          <div class="ca">Edit Rules →</div>
+        </div>
+        <div class="split-config">
+          <div class="sc-header">
+            <div class="sc-title">On every inbound deposit → split to accounts</div>
+            <div class="sc-trigger">Trigger: deposit_received · Real-time</div>
+          </div>
+          <!-- Visual split bar -->
+          <div class="split-visual">
+            <div class="sv-seg" style="width:60%;background:var(--teal);">60%</div>
+            <div class="sv-seg" style="width:20%;background:var(--red);">20%</div>
+            <div class="sv-seg" style="width:15%;background:var(--blue);">15%</div>
+            <div class="sv-seg" style="width:5%;background:var(--purple);">5%</div>
+          </div>
+          <div class="split-legs">
+            <div class="split-leg">
+              <div class="sl-dot" style="background:var(--teal);"></div>
+              <div><div class="sl-name">Personal Checking</div><div class="sl-type">Day-to-day spending</div></div>
+              <div class="sl-pct" style="color:var(--teal);">60%</div>
+              <div class="sl-handle">⋮⋮</div>
+            </div>
+            <div class="split-leg">
+              <div class="sl-dot" style="background:var(--red);"></div>
+              <div><div class="sl-name">Tax Reserve Account</div><div class="sl-type">SE + Federal + State</div></div>
+              <div class="sl-pct" style="color:var(--red);">20%</div>
+              <div class="sl-handle">⋮⋮</div>
+            </div>
+            <div class="split-leg">
+              <div class="sl-dot" style="background:var(--blue);"></div>
+              <div><div class="sl-name">Operations Account</div><div class="sl-type">Business expenses</div></div>
+              <div class="sl-pct" style="color:var(--blue);">15%</div>
+              <div class="sl-handle">⋮⋮</div>
+            </div>
+            <div class="split-leg">
+              <div class="sl-dot" style="background:var(--purple);"></div>
+              <div><div class="sl-name">SEP-IRA Contribution</div><div class="sl-type">Retirement savings</div></div>
+              <div class="sl-pct" style="color:var(--purple);">5%</div>
+              <div class="sl-handle">⋮⋮</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Transaction rules -->
+      <div class="card">
+        <div class="ch"><div class="ct">Transaction Rules</div><div class="ca">+ Add Rule</div></div>
+        <div style="padding:12px 14px;">
+          <div class="rule-card">
+            <div class="rule-if">IF: inbound > $5,000 AND source = client_payment</div>
+            <div class="rule-then">THEN: require MFA confirmation before auto-split</div>
+            <div class="rule-status"><div class="rs-tag" style="background:rgba(34,197,94,.06);border-color:var(--green-dim);color:var(--green);">SECURITY</div><div class="toggle on"></div></div>
+          </div>
+          <div class="rule-card">
+            <div class="rule-if">IF: balance < $5,000 AND account = checking</div>
+            <div class="rule-then">THEN: alert Oba + notify via push</div>
+            <div class="rule-status"><div class="rs-tag" style="background:rgba(232,160,48,.06);border-color:var(--amber-dim);color:var(--amber);">ALERT</div><div class="toggle on"></div></div>
+          </div>
+          <div class="rule-card">
+            <div class="rule-if">IF: outbound > $1,000 AND type = expense</div>
+            <div class="rule-then">THEN: auto-categorize + tag for tax deduction review</div>
+            <div class="rule-status"><div class="rs-tag" style="background:rgba(59,130,246,.06);border-color:#1d4ed8;color:var(--blue);">TAX</div><div class="toggle on"></div></div>
+          </div>
+          <div class="rule-card">
+            <div class="rule-if">IF: marketplace_payout received</div>
+            <div class="rule-then">THEN: route to Marketplace Wallet → then primary split</div>
+            <div class="rule-status"><div class="rs-tag" style="background:rgba(12,207,202,.06);border-color:var(--teal-dim);color:var(--teal);">ROUTING</div><div class="toggle on"></div></div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Right column -->
+    <div>
+
+      <!-- Total across all wallets -->
+      <div style="background:var(--card);border:1px solid var(--teal-dim);border-radius:6px;padding:16px;margin-bottom:14px;position:relative;overflow:hidden;">
+        <div style="position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--teal),transparent);"></div>
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--teal);text-transform:uppercase;letter-spacing:.14em;margin-bottom:4px;">Total Wallet Balance</div>
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:28px;font-weight:600;color:var(--teal);margin-bottom:4px;">$402,100</div>
+        <div style="font-size:10px;color:var(--text3);">Across 5 wallets · 6 accounts · +$8,400 today</div>
+        <div style="display:flex;gap:6px;margin-top:10px;">
+          <button class="btn bt" style="flex:1;padding:6px;font-size:10px;">Send Money</button>
+          <button class="btn bg" style="flex:1;padding:6px;font-size:10px;">Request</button>
+        </div>
+      </div>
+
+      <!-- Payment methods -->
+      <div class="card">
+        <div class="ch"><div class="ct">Payment Methods</div><div class="ca">+ Add</div></div>
+        <div class="pm-row">
+          <div class="pm-ic" style="background:rgba(12,207,202,.08);border-color:var(--teal-dim);color:var(--teal);">KOGI</div>
+          <div class="pm-name"><div class="pm-label">kogi-bank (Internal)</div><div class="pm-detail">Platform-to-platform · Instant</div></div>
+          <div class="pm-status" style="background:rgba(34,197,94,.06);border-color:var(--green-dim);color:var(--green);">Primary</div>
+        </div>
+        <div class="pm-row">
+          <div class="pm-ic" style="color:var(--blue);">ST</div>
+          <div class="pm-name"><div class="pm-label">Stripe · Chase ····4821</div><div class="pm-detail">Card payments · Instant charge</div></div>
+          <div class="pm-status" style="background:rgba(34,197,94,.06);border-color:var(--green-dim);color:var(--green);">Active</div>
+        </div>
+        <div class="pm-row">
+          <div class="pm-ic" style="color:var(--green);">ACH</div>
+          <div class="pm-name"><div class="pm-label">ACH · Chase ····1240</div><div class="pm-detail">Bank transfer via Plaid · 1-3 days</div></div>
+          <div class="pm-status" style="background:rgba(34,197,94,.06);border-color:var(--green-dim);color:var(--green);">Active</div>
+        </div>
+        <div class="pm-row">
+          <div class="pm-ic" style="color:#0070ba;">PP</div>
+          <div class="pm-name"><div class="pm-label">PayPal · jordan@…</div><div class="pm-detail">P2P · 1-3 day payout</div></div>
+          <div class="pm-status" style="background:rgba(34,197,94,.06);border-color:var(--green-dim);color:var(--green);">Active</div>
+        </div>
+        <div class="pm-row" style="opacity:.6;">
+          <div class="pm-ic" style="color:#627eea;">ETH</div>
+          <div class="pm-name"><div class="pm-label">Ethereum Bridge</div><div class="pm-detail">0x3A2b…e4F1 · ERC-20</div></div>
+          <div class="pm-status" style="background:rgba(59,130,246,.06);border-color:#1d4ed8;color:var(--blue);">Beta</div>
+        </div>
+      </div>
+
+      <!-- Recent sends -->
+      <div class="card">
+        <div class="ch"><div class="ct">Recent Sends</div><div class="ca">All history →</div></div>
+        <div class="send-row">
+          <div class="sr-av" style="background:linear-gradient(135deg,#e8a030,#d97706);">AP</div>
+          <div class="sr-info"><div class="sr-name">Aisha Patel</div><div class="sr-method">Stripe · Invoice pay</div></div>
+          <div style="text-align:right;"><div class="sr-amount" style="color:var(--green);">+$4,200</div><div class="sr-date">Received</div></div>
+        </div>
+        <div class="send-row">
+          <div class="sr-av" style="background:linear-gradient(135deg,#3b82f6,#1d4ed8);">DO</div>
+          <div class="sr-info"><div class="sr-name">Digital Ocean</div><div class="sr-method">ACH · Auto-pay</div></div>
+          <div style="text-align:right;"><div class="sr-amount" style="color:var(--red);">−$1,240</div><div class="sr-date">2d ago</div></div>
+        </div>
+        <div class="send-row">
+          <div class="sr-av" style="background:linear-gradient(135deg,#0ccfca,#3b82f6);">AK</div>
+          <div class="sr-info"><div class="sr-name">Amara Kofi</div><div class="sr-method">kogi-bank · Milestone split</div></div>
+          <div style="text-align:right;"><div class="sr-amount" style="color:var(--red);">−$840</div><div class="sr-date">3d ago</div></div>
+        </div>
+        <div class="send-row">
+          <div class="sr-av" style="background:linear-gradient(135deg,#22c55e,#16a34a);">IRS</div>
+          <div class="sr-info"><div class="sr-name">IRS — Q4 2025 Tax</div><div class="sr-method">ACH · Tax payment</div></div>
+          <div style="text-align:right;"><div class="sr-amount" style="color:var(--red);">−$11,800</div><div class="sr-date">Jan 15</div></div>
+        </div>
+      </div>
+
+      <!-- Security -->
+      <div class="card" style="border-bottom:none;">
+        <div class="ch"><div class="ct">Security Settings</div></div>
+        <div style="padding:12px 14px;display:flex;flex-direction:column;gap:9px;">
+          <div style="display:flex;justify-content:space-between;align-items:center;">
+            <div><div style="font-size:12px;color:var(--text);">MFA for transactions</div><div style="font-size:10px;color:var(--text3);">Required above $1,000</div></div>
+            <div class="toggle on"></div>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center;">
+            <div><div style="font-size:12px;color:var(--text);">Large transfer alerts</div><div style="font-size:10px;color:var(--text3);">Notify above $5,000</div></div>
+            <div class="toggle on"></div>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center;">
+            <div><div style="font-size:12px;color:var(--text);">Daily spending limit</div><div style="font-size:10px;color:var(--text3);">$25,000 / day</div></div>
+            <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--teal);">$25K</div>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center;">
+            <div><div style="font-size:12px;color:var(--text);">KYC Status</div><div style="font-size:10px;color:var(--text3);">Identity verified</div></div>
+            <div style="font-size:10px;font-family:'IBM Plex Mono',monospace;color:var(--green);">✓ Verified</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+</body>
+</html>

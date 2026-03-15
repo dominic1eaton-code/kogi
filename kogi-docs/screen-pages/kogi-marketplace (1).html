@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>KOGI · Marketplace</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap');
+:root{--bg:#070910;--sidebar:#0b0d16;--card:#0f1221;--card2:#131729;--border:#1a2035;--border2:#232a42;--teal:#0ccfca;--teal-dim:#0a9994;--amber:#e8a030;--amber-dim:#b07820;--green:#22c55e;--green-dim:#15803d;--blue:#3b82f6;--red:#ef4444;--purple:#a855f7;--mag:#d946ef;--text:#dde4f0;--text2:#7a879e;--text3:#3d4a62;}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--bg);color:var(--text);font-family:'IBM Plex Sans',sans-serif;font-size:13px;display:flex;min-height:100vh;}
+.sidebar{width:200px;min-width:200px;background:var(--sidebar);border-right:1px solid var(--border);display:flex;flex-direction:column;}
+.logo{padding:18px 16px;border-bottom:1px solid var(--border);}
+.logo-text{font-family:'IBM Plex Mono',monospace;font-size:18px;font-weight:600;letter-spacing:.08em;color:var(--teal);}
+.logo-sub{font-size:9px;color:var(--text3);letter-spacing:.15em;text-transform:uppercase;margin-top:2px;}
+.nav{padding:12px 0;flex:1;overflow-y:auto;}
+.ns{padding:8px 16px 4px;font-size:9px;color:var(--text3);letter-spacing:.18em;text-transform:uppercase;font-family:'IBM Plex Mono',monospace;}
+.ni{display:flex;align-items:center;gap:10px;padding:7px 16px;color:var(--text2);cursor:pointer;font-size:12px;border-left:2px solid transparent;}
+.ni.on{color:var(--teal);background:rgba(12,207,202,.07);border-left-color:var(--teal);}
+.ni-ic{width:14px;text-align:center;font-size:12px;}
+.pb{padding:12px 16px;border-top:1px solid var(--border);}
+.pm{display:flex;align-items:center;gap:8px;}
+.avsm{width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,#0ccfca,#3b82f6);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:#fff;}
+.main{flex:1;overflow-y:auto;}
+.topbar{height:48px;border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 20px;gap:12px;background:var(--sidebar);position:sticky;top:0;z-index:10;}
+.tbpath{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text3);}
+.tbpath span{color:var(--text2);}
+.tbpath span.cur{color:var(--text);}
+.sp{flex:1;}
+.btn{padding:5px 12px;border-radius:4px;font-size:11px;font-family:'IBM Plex Mono',monospace;cursor:pointer;border:1px solid;}
+.bt{background:rgba(12,207,202,.12);border-color:var(--teal-dim);color:var(--teal);}
+.bg{background:transparent;border-color:var(--border2);color:var(--text2);}
+.ba{background:rgba(232,160,48,.1);border-color:var(--amber-dim);color:var(--amber);}
+
+.stats-row{display:grid;grid-template-columns:repeat(5,1fr);gap:1px;background:var(--border);border-bottom:1px solid var(--border);}
+.sb{background:var(--card);padding:12px 16px;}
+.sv{font-family:'IBM Plex Mono',monospace;font-size:18px;font-weight:600;}
+.sl{font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.1em;margin-top:1px;}
+
+.body{display:grid;grid-template-columns:240px 1fr;min-height:calc(100vh - 96px);}
+
+/* Filter sidebar */
+.filters{background:var(--sidebar);border-right:1px solid var(--border);padding:16px;overflow-y:auto;}
+.f-title{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.14em;margin-bottom:10px;}
+.search-inp{width:100%;background:var(--card);border:1px solid var(--border2);border-radius:4px;padding:7px 10px;color:var(--text);font-size:12px;outline:none;margin-bottom:16px;font-family:'IBM Plex Sans',sans-serif;}
+.search-inp:focus{border-color:var(--teal-dim);}
+.search-inp::placeholder{color:var(--text3);}
+.f-sec{font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.14em;margin-bottom:8px;margin-top:14px;}
+.f-chips{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:2px;}
+.fc{padding:4px 9px;border-radius:4px;font-size:10px;cursor:pointer;border:1px solid var(--border2);color:var(--text3);font-family:'IBM Plex Mono',monospace;transition:all .12s;}
+.fc.on{background:rgba(12,207,202,.1);border-color:var(--teal-dim);color:var(--teal);}
+.fc:hover:not(.on){border-color:var(--text3);color:var(--text2);}
+.price-row{display:flex;gap:6px;align-items:center;}
+.price-inp{flex:1;background:var(--card2);border:1px solid var(--border2);border-radius:4px;padding:5px 8px;color:var(--text2);font-size:11px;outline:none;font-family:'IBM Plex Mono',monospace;}
+.price-inp:focus{border-color:var(--teal-dim);}
+.price-sep{font-size:11px;color:var(--text3);}
+.sort-sel{width:100%;background:var(--card2);border:1px solid var(--border2);color:var(--text2);font-size:11px;padding:6px 8px;border-radius:4px;font-family:'IBM Plex Mono',monospace;margin-top:6px;}
+.rating-row{display:flex;gap:4px;}
+.rstar{font-size:14px;cursor:pointer;color:var(--amber);}
+.skill-tags{display:flex;flex-wrap:wrap;gap:4px;}
+.skill-t{padding:3px 7px;border-radius:3px;font-size:9px;font-family:'IBM Plex Mono',monospace;background:var(--card2);border:1px solid var(--border2);color:var(--text3);cursor:pointer;}
+.skill-t.on{background:rgba(59,130,246,.08);border-color:#1d4ed8;color:var(--blue);}
+
+/* Listings grid */
+.listings-area{padding:20px;}
+.category-tabs{display:flex;gap:0;border-bottom:1px solid var(--border);margin-bottom:20px;overflow-x:auto;}
+.cat-tab{padding:10px 16px;font-size:11px;font-family:'IBM Plex Mono',monospace;color:var(--text3);cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap;}
+.cat-tab.on{color:var(--teal);border-bottom-color:var(--teal);}
+.cat-count{background:var(--border2);border-radius:9px;font-size:9px;padding:1px 5px;margin-left:4px;}
+.cat-count.has{background:rgba(12,207,202,.12);color:var(--teal);}
+.result-meta{display:flex;align-items:center;gap:10px;margin-bottom:14px;}
+.result-count{font-size:12px;color:var(--text3);}
+.result-count strong{color:var(--text);}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;}
+
+/* Listing card */
+.lc{background:var(--card);border:1px solid var(--border);border-radius:8px;overflow:hidden;cursor:pointer;transition:all .15s;}
+.lc:hover{border-color:var(--border2);transform:translateY(-1px);}
+.lc-banner{height:44px;position:relative;}
+.lc-type-pill{position:absolute;top:8px;left:10px;font-size:9px;font-family:'IBM Plex Mono',monospace;padding:2px 7px;border-radius:3px;border:1px solid;z-index:1;}
+.lc-ai-score{position:absolute;top:8px;right:10px;font-size:9px;font-family:'IBM Plex Mono',monospace;color:var(--teal);background:rgba(12,207,202,.1);padding:2px 7px;border-radius:3px;border:1px solid var(--teal-dim);}
+.lc-av{position:absolute;bottom:-14px;left:14px;width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:#fff;border:2px solid var(--card);z-index:2;}
+.lc-body{padding:22px 14px 14px;}
+.lc-name{font-size:13px;font-weight:600;color:var(--text);line-height:1.3;}
+.lc-seller{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--text3);margin-top:2px;}
+.lc-desc{font-size:11px;color:var(--text3);margin-top:6px;line-height:1.4;min-height:28px;}
+.lc-tags{display:flex;flex-wrap:wrap;gap:4px;margin:8px 0;}
+.lc-tag{font-size:9px;font-family:'IBM Plex Mono',monospace;padding:2px 5px;border-radius:2px;background:var(--card2);border:1px solid var(--border2);color:var(--text3);}
+.lc-rating{display:flex;align-items:center;gap:4px;font-size:11px;color:var(--amber);}
+.lc-rating span{color:var(--text3);}
+.lc-price-row{display:flex;align-items:center;justify-content:space-between;margin-top:8px;padding-top:8px;border-top:1px solid var(--border);}
+.lc-price{font-family:'IBM Plex Mono',monospace;font-size:14px;font-weight:600;}
+.lc-price-model{font-size:10px;color:var(--text3);font-family:'IBM Plex Mono',monospace;}
+.lc-cta{padding:5px 10px;border-radius:4px;font-size:10px;font-family:'IBM Plex Mono',monospace;cursor:pointer;border:1px solid;transition:all .12s;}
+/* Banner colors */
+.bn-work{background:linear-gradient(135deg,#0a1a28,#060f18);}
+.bn-asset{background:linear-gradient(135deg,#1a082e,#0d0420);}
+.bn-camp{background:linear-gradient(135deg,#1a0a00,#0d0500);}
+.bn-temp{background:linear-gradient(135deg,#0a2010,#061208);}
+.bn-serv{background:linear-gradient(135deg,#0a1a10,#060d08);}
+.bn-res{background:linear-gradient(135deg,#0a1020,#060a14);}
+/* Oba match banner */
+.oba-match{background:rgba(12,207,202,.04);border:1px solid var(--teal-dim);border-radius:6px;padding:10px 14px;margin-bottom:16px;display:flex;align-items:flex-start;gap:10px;}
+.om-ic{font-size:16px;}
+.om-text{font-size:11px;color:var(--text2);line-height:1.5;}
+.om-link{font-size:10px;color:var(--teal);cursor:pointer;font-family:'IBM Plex Mono',monospace;margin-top:4px;}
+</style>
+</head>
+<body>
+<div class="sidebar">
+  <div class="logo"><div class="logo-text">KOGI</div><div class="logo-sub">Independent Worker OS</div></div>
+  <nav class="nav">
+    <div class="ns">Core</div>
+    <div class="ni"><span class="ni-ic">⌂</span>Dashboard</div>
+    <div class="ni"><span class="ni-ic">◫</span>Office</div>
+    <div class="ni"><span class="ni-ic">◈</span>Portfolio</div>
+    <div class="ns">Economic Layer</div>
+    <div class="ni on"><span class="ni-ic">⊗</span>Marketplace</div>
+    <div class="ni"><span class="ni-ic">⬡</span>Exchange</div>
+    <div class="ni"><span class="ni-ic">📣</span>Campaigns</div>
+    <div class="ni"><span class="ni-ic">♦</span>Bank</div>
+    <div class="ni"><span class="ni-ic">💎</span>Investments</div>
+    <div class="ns">My Listings</div>
+    <div class="ni"><span class="ni-ic">📋</span>My Listings</div>
+    <div class="ni"><span class="ni-ic">📦</span>My Orders</div>
+    <div class="ni"><span class="ni-ic">💳</span>Wallet</div>
+    <div class="ns">Network</div>
+    <div class="ni"><span class="ni-ic">⊛</span>Spaces</div>
+    <div class="ni"><span class="ni-ic">◉</span>Profile</div>
+  </nav>
+  <div class="pb"><div class="pm"><div class="avsm">JC</div><div><div style="font-size:12px;">Jordan Chen</div><div style="font-size:10px;color:var(--text3);">@jordan.dev</div></div></div></div>
+</div>
+
+<div class="main">
+  <div class="topbar">
+    <div class="tbpath">KMKT / <span class="cur">Marketplace</span></div>
+    <div class="sp"></div>
+    <button class="btn bg">My Orders</button>
+    <button class="btn bg">Saved</button>
+    <button class="btn ba">+ Create Listing</button>
+  </div>
+
+  <div class="stats-row">
+    <div class="sb"><div class="sv" style="color:var(--teal);">8,420</div><div class="sl">Active Listings</div></div>
+    <div class="sb"><div class="sv">284</div><div class="sl">New Today</div></div>
+    <div class="sb"><div class="sv" style="color:var(--amber);">142</div><div class="sl">MatchEngine Hits</div></div>
+    <div class="sb"><div class="sv" style="color:var(--green);">7</div><div class="sl">My Active Listings</div></div>
+    <div class="sb"><div class="sv" style="color:var(--blue);">28</div><div class="sl">My Open Orders</div></div>
+  </div>
+
+  <div class="body">
+    <div class="filters">
+      <div class="f-title">Filter Listings</div>
+      <input class="search-inp" placeholder="Search — skills, tools, keywords…"/>
+
+      <div class="f-sec">Category</div>
+      <div class="f-chips">
+        <div class="fc on">All</div>
+        <div class="fc">Work</div>
+        <div class="fc">Assets</div>
+        <div class="fc">Services</div>
+        <div class="fc">Templates</div>
+        <div class="fc">Campaigns</div>
+        <div class="fc">Resources</div>
+      </div>
+
+      <div class="f-sec">Pricing Model</div>
+      <div class="f-chips">
+        <div class="fc on">Any</div>
+        <div class="fc">Fixed</div>
+        <div class="fc">Hourly</div>
+        <div class="fc">Subscription</div>
+        <div class="fc">Negotiable</div>
+        <div class="fc">Free</div>
+        <div class="fc">Barter</div>
+      </div>
+
+      <div class="f-sec">Price Range</div>
+      <div class="price-row">
+        <input class="price-inp" placeholder="Min"/>
+        <div class="price-sep">—</div>
+        <input class="price-inp" placeholder="Max"/>
+      </div>
+
+      <div class="f-sec">Min Rating</div>
+      <div class="rating-row"><div class="rstar">★</div><div class="rstar">★</div><div class="rstar">★</div><div style="font-size:12px;color:var(--text3);">★ ★</div></div>
+
+      <div class="f-sec">Skills</div>
+      <div class="skill-tags">
+        <div class="skill-t on">Rust</div><div class="skill-t on">TypeScript</div><div class="skill-t">React</div><div class="skill-t">Design Systems</div><div class="skill-t">DevOps</div><div class="skill-t">GraphQL</div><div class="skill-t">PostgreSQL</div><div class="skill-t">Figma</div>
+      </div>
+
+      <div class="f-sec">Availability</div>
+      <div class="f-chips">
+        <div class="fc on">Available</div>
+        <div class="fc">Any</div>
+      </div>
+
+      <div class="f-sec">Sort By</div>
+      <select class="sort-sel"><option>Best Match (AI)</option><option>Newest</option><option>Highest Rated</option><option>Price: Low–High</option><option>Price: High–Low</option><option>Most Orders</option></select>
+
+      <div style="margin-top:16px;">
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.14em;margin-bottom:6px;">Verification</div>
+        <div style="display:flex;gap:5px;">
+          <div class="fc on">Verified Only</div>
+          <div class="fc">Any</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="listings-area">
+      <!-- Category Tabs -->
+      <div class="category-tabs">
+        <div class="cat-tab on">All <span class="cat-count has">284</span></div>
+        <div class="cat-tab">Work <span class="cat-count has">142</span></div>
+        <div class="cat-tab">Assets & Artifacts <span class="cat-count has">48</span></div>
+        <div class="cat-tab">Services <span class="cat-count has">38</span></div>
+        <div class="cat-tab">Templates <span class="cat-count has">24</span></div>
+        <div class="cat-tab">Campaigns <span class="cat-count has">18</span></div>
+        <div class="cat-tab">Resources <span class="cat-count">12</span></div>
+      </div>
+
+      <!-- Oba match suggestion -->
+      <div class="oba-match">
+        <div class="om-ic">◉</div>
+        <div>
+          <div class="om-text"><strong style="color:var(--teal);">Oba matched 8 listings</strong> to your Developer + Systems Architect personas and current project portfolio. Showing top results ranked by MatchEngine compatibility.</div>
+          <div class="om-link">View all 8 matches → · Adjust persona weights →</div>
+        </div>
+      </div>
+
+      <div class="result-meta">
+        <div class="result-count"><strong>284</strong> listings matching your filters</div>
+        <div class="sp"></div>
+        <div style="font-size:11px;color:var(--text3);">Sorted by: Best Match</div>
+      </div>
+
+      <div class="grid">
+        <!-- Senior Rust Engineer -->
+        <div class="lc">
+          <div class="lc-banner bn-work">
+            <div class="lc-type-pill" style="background:rgba(59,130,246,.1);border-color:#1d4ed8;color:var(--blue);">GIG · WORK</div>
+            <div class="lc-ai-score">◉ 94% match</div>
+            <div class="lc-av" style="background:linear-gradient(135deg,#0ccfca,#3b82f6);">CT</div>
+          </div>
+          <div class="lc-body">
+            <div class="lc-name">Senior Rust Engineer — Cooperative Tech Platform</div>
+            <div class="lc-seller">@coop.tech · Verified Org · 4.9★</div>
+            <div class="lc-desc">6-month contract. Building distributed consensus layer for cooperative OS. Remote-first. Cooperative values.</div>
+            <div class="lc-tags"><span class="lc-tag">Rust</span><span class="lc-tag">Distributed Systems</span><span class="lc-tag">CRDT</span><span class="lc-tag">Remote</span></div>
+            <div class="lc-rating">★★★★★ <span>(28 reviews)</span></div>
+            <div class="lc-price-row">
+              <div><div class="lc-price" style="color:var(--amber);">$180/hr</div><div class="lc-price-model">HOURLY · 6 months</div></div>
+              <div class="lc-cta" style="background:rgba(12,207,202,.1);border-color:var(--teal-dim);color:var(--teal);">Apply →</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- CRDT Design System Kit -->
+        <div class="lc">
+          <div class="lc-banner bn-asset">
+            <div class="lc-type-pill" style="background:rgba(168,85,247,.1);border-color:#7c3aed;color:var(--purple);">ARTIFACT</div>
+            <div class="lc-ai-score">◉ 88% match</div>
+            <div class="lc-av" style="background:linear-gradient(135deg,#a855f7,#ec4899);">AK</div>
+          </div>
+          <div class="lc-body">
+            <div class="lc-name">Cooperative Design System Kit v3.0</div>
+            <div class="lc-seller">@amara.dev · Verified · 5.0★</div>
+            <div class="lc-desc">Complete design token system, component library (React + Figma), accessibility-first. Cooperative branding guidelines included.</div>
+            <div class="lc-tags"><span class="lc-tag">Figma</span><span class="lc-tag">React</span><span class="lc-tag">Design Tokens</span><span class="lc-tag">A11y</span></div>
+            <div class="lc-rating">★★★★★ <span>(41 reviews)</span></div>
+            <div class="lc-price-row">
+              <div><div class="lc-price" style="color:var(--purple);">$240</div><div class="lc-price-model">FIXED · One-time</div></div>
+              <div class="lc-cta" style="background:rgba(168,85,247,.08);border-color:#7c3aed;color:var(--purple);">Buy Now</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Architecture Consulting -->
+        <div class="lc">
+          <div class="lc-banner bn-serv">
+            <div class="lc-type-pill" style="background:rgba(34,197,94,.1);border-color:#15803d;color:var(--green);">SERVICE</div>
+            <div class="lc-ai-score">◉ 91% match</div>
+            <div class="lc-av" style="background:linear-gradient(135deg,#0ccfca,#3b82f6);">JC</div>
+          </div>
+          <div class="lc-body">
+            <div class="lc-name">Systems Architecture Review & Consulting</div>
+            <div class="lc-seller">@jordan.dev · You · 4.8★</div>
+            <div class="lc-desc">Deep-dive architecture review for distributed systems, microservices, or CRDT-based data models. Written report + 2hr call.</div>
+            <div class="lc-tags"><span class="lc-tag">Systems Design</span><span class="lc-tag">Rust</span><span class="lc-tag">Consulting</span></div>
+            <div class="lc-rating">★★★★☆ <span>(17 reviews)</span></div>
+            <div class="lc-price-row">
+              <div><div class="lc-price" style="color:var(--green);">$1,200</div><div class="lc-price-model">FIXED · Per engagement</div></div>
+              <div class="lc-cta" style="background:rgba(34,197,94,.08);border-color:#15803d;color:var(--green);">Your Listing</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Rust Playbook -->
+        <div class="lc">
+          <div class="lc-banner bn-temp">
+            <div class="lc-type-pill" style="background:rgba(6,182,212,.1);border-color:#0e7490;color:#06b6d4;">TEMPLATE</div>
+            <div class="lc-ai-score">◉ 84% match</div>
+            <div class="lc-av" style="background:linear-gradient(135deg,#06b6d4,#0891b2);">MP</div>
+          </div>
+          <div class="lc-body">
+            <div class="lc-name">High-Performance Rust Service Playbook</div>
+            <div class="lc-seller">@marcus.systems · Verified · 4.7★</div>
+            <div class="lc-desc">Production-tested patterns for building 100K+ req/s Rust services. Tokio, Redis, PostgreSQL, Docker. Full project scaffold.</div>
+            <div class="lc-tags"><span class="lc-tag">Rust</span><span class="lc-tag">Tokio</span><span class="lc-tag">Templates</span></div>
+            <div class="lc-rating">★★★★☆ <span>(22 reviews)</span></div>
+            <div class="lc-price-row">
+              <div><div class="lc-price" style="color:#06b6d4;">$89</div><div class="lc-price-model">FIXED · Download</div></div>
+              <div class="lc-cta" style="background:rgba(6,182,212,.08);border-color:#0e7490;color:#06b6d4;">Buy Now</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Campaign: crdt-rs v3 -->
+        <div class="lc">
+          <div class="lc-banner bn-camp">
+            <div class="lc-type-pill" style="background:rgba(232,160,48,.1);border-color:var(--amber-dim);color:var(--amber);">CAMPAIGN</div>
+            <div class="lc-ai-score">◉ 78% match</div>
+            <div class="lc-av" style="background:linear-gradient(135deg,#0ccfca,#3b82f6);">JC</div>
+          </div>
+          <div class="lc-body">
+            <div class="lc-name">crdt-rs v3.0 — Community Funding Round</div>
+            <div class="lc-seller">@jordan.dev · Open Source · Crowdfunding</div>
+            <div class="lc-desc">Raising $24,000 to fund 6 months of full-time development on crdt-rs v3.0 — async runtime overhaul + network layer.</div>
+            <div class="lc-tags"><span class="lc-tag">Open Source</span><span class="lc-tag">Rust</span><span class="lc-tag">Crowdfunding</span></div>
+            <div style="margin:6px 0;">
+              <div style="height:5px;background:var(--border2);border-radius:3px;overflow:hidden;margin-bottom:4px;"><div style="height:100%;border-radius:3px;background:linear-gradient(90deg,var(--amber),var(--teal));width:68%;"></div></div>
+              <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text3);font-family:'IBM Plex Mono',monospace;"><span>$16,320 raised</span><span>68% · 12d left</span></div>
+            </div>
+            <div class="lc-price-row">
+              <div><div class="lc-price" style="color:var(--amber);">$24,000</div><div class="lc-price-model">GOAL · Crowdfunding</div></div>
+              <div class="lc-cta" style="background:rgba(232,160,48,.1);border-color:var(--amber-dim);color:var(--amber);">Back →</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Resource: GPU Compute -->
+        <div class="lc">
+          <div class="lc-banner bn-res">
+            <div class="lc-type-pill" style="background:rgba(59,130,246,.1);border-color:#1d4ed8;color:var(--blue);">RESOURCE</div>
+            <div class="lc-ai-score">◉ 71% match</div>
+            <div class="lc-av" style="background:linear-gradient(135deg,#3b82f6,#1d4ed8);">TN</div>
+          </div>
+          <div class="lc-body">
+            <div class="lc-name">GPU Compute Credits — H100 Cluster</div>
+            <div class="lc-seller">@tariq.infra · Verified · 4.9★</div>
+            <div class="lc-desc">Selling excess GPU compute time on H100 cluster. 100 GPU-hours minimum. Ideal for ML training, distributed rendering.</div>
+            <div class="lc-tags"><span class="lc-tag">GPU</span><span class="lc-tag">ML</span><span class="lc-tag">Compute</span><span class="lc-tag">H100</span></div>
+            <div class="lc-rating">★★★★★ <span>(8 reviews)</span></div>
+            <div class="lc-price-row">
+              <div><div class="lc-price" style="color:var(--blue);">$2.40/hr</div><div class="lc-price-model">HOURLY · GPU compute</div></div>
+              <div class="lc-cta" style="background:rgba(59,130,246,.08);border-color:#1d4ed8;color:var(--blue);">Reserve →</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

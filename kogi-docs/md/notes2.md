@@ -459,18 +459,25 @@ User Portfolio + Toolboxes — user-facing view showing portfolio items with the
 
 ---
 
-kogi - portfolio domain
-ume - orgnanization domain
-qala - solution domain
+kogi - portfolio domain, distributed portfolio spreadsheet
+ume - organization domain, distributed organization spreadsheet
+qala - solution domain, distributed solution spreadsheet
+
 sambara - intelligence domain
 oru - simulation domain
+
 nandi - mobility domain
 imewe - manufacturing domain
 osyse - environment domain
 
 ---
 
-The solutionSystem is the primary domain of the platform and the solution is the central/root element of the platform: 
+
+qala - solution domain, distributed solution spreadsheet
+
+the solution spreadsheet is the underlying baseline (data)structure of the entire platform. Qala is a massive distributed spreadsheet for managing+maintaining+administering solutions, where applications run on top of this structure to manipulate+update the structure. the workspace is the operational space where a user can directly manipulate the structure, the solution spreadsheet, solution environments are categorized/typed/classed spaces with specific environment specific spreadhsheet structure manipulation methods/functions/functionality.
+
+The solution+solutionSystem is the primary domain of the platform and the solution is the central/root element of the platform:
 
 solution
     - solution component
@@ -481,6 +488,23 @@ solution
         - part name
         - part material
         - part design|blueprint|
+    - solution types
+        - product
+        - service
+        - good
+        - platform
+        - application
+        - factory
+        - environment
+        - system
+solution configuration management
+    - solution release management
+        - solution release train
+        - solutionr rollout
+    - solution version control system
+        - solution components+parts version control
+        - solution model version control
+        - solution environment version control
 solution model
     - blueprint
     - design
@@ -503,7 +527,14 @@ solution data
             - brief
             - feature
 solution tooling
-
+solution artifacts
+    - solution outputs
+    - solution warehouse
+    - solution inventory management system
+    - solution binaries
+    - solution physical+digital artifacts
+    - solution supply chain
+solution value chain
 solution chain, solution set, solution kit, tool solution
 
 solution book
@@ -539,6 +570,7 @@ solution factory SF
         - solution sandbox environment
         - solution build environment ~ solution assembly environnment
             - solution build
+                - solution build out, build design, build model
                 - solution build version
                 - solution build maturity
                 - solution build number
@@ -563,6 +595,9 @@ reusability, sustainability, renewability, recyclability, closed loop systems, e
 platform energy/power consumption+management system
 platform network traffic management
 
+
+energy+power budget+resource management system
+link+network budget+resource management system
 
 ---
 
@@ -867,6 +902,10 @@ a user may have a work profile A and work profile B, where work profile A is for
 
 profiles are personalizable, can have multiple personas attached to them (investor, developer, creative, etc...), have user preferences and configurations+options+parameters+settings, have tiered privilages+persmissions+visbility+access control, are shareable (can generate a linktree and form linkforests). Profiles also contain contact information and configurable/enable+disable communication channels of/for a user.
 
+users can also have different types of personas:
+personas can help users find other users, based on their personas and the skills associated with that persona
+
+
 
 the kogi linknetwork system: kogi-net:
 - linknetwork connects a series of linktrees, forming a linkforest, a link structure siting on top of a linknetwork substrate
@@ -885,6 +924,8 @@ the kogi linknetwork system: kogi-net:
 
 using the uploaded image as a reference generate a set of html user screen pages associated with the profile management system and linknet/tree/forest/contact/communication-channels
 
+
+a linkforest is a connected collection, a forest, of linktrees, where a linktree is a connected chain (linked list) of linked accounts, all forest+trees+accounts connected by a root datastructure substrate called a "linknetwork"
 
 ---
 
@@ -930,5 +971,3 @@ kogi-root
 - center
 - work
 - portfolio
-
-

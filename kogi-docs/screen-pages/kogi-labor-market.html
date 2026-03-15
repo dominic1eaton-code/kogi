@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>KOGI · Exchange · Labor Market</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap');
+:root{
+  --bg:#070910;--sidebar:#0b0d16;--card:#0f1221;--card2:#131729;
+  --border:#1a2035;--border2:#232a42;
+  --teal:#0ccfca;--teal-dim:#0a9994;
+  --amber:#e8a030;--amber-dim:#b07820;
+  --green:#22c55e;--green-dim:#15803d;
+  --blue:#3b82f6;--red:#ef4444;--purple:#a855f7;--mag:#d946ef;
+  --text:#dde4f0;--text2:#7a879e;--text3:#3d4a62;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--bg);color:var(--text);font-family:'IBM Plex Sans',sans-serif;font-size:13px;display:flex;height:100vh;overflow:hidden;}
+.sidebar{width:200px;min-width:200px;background:var(--sidebar);border-right:1px solid var(--border);display:flex;flex-direction:column;}
+.logo{padding:18px 16px;border-bottom:1px solid var(--border);}
+.logo-text{font-family:'IBM Plex Mono',monospace;font-size:18px;font-weight:600;letter-spacing:.08em;color:var(--teal);}
+.logo-sub{font-size:9px;color:var(--text3);letter-spacing:.15em;text-transform:uppercase;margin-top:2px;}
+.nav{padding:12px 0;flex:1;overflow-y:auto;}
+.ns{padding:8px 16px 4px;font-size:9px;color:var(--text3);letter-spacing:.18em;text-transform:uppercase;font-family:'IBM Plex Mono',monospace;}
+.ni{display:flex;align-items:center;gap:10px;padding:7px 16px;color:var(--text2);cursor:pointer;font-size:12px;border-left:2px solid transparent;}
+.ni.on{color:var(--teal);background:rgba(12,207,202,.07);border-left-color:var(--teal);}
+.ni-ic{width:14px;text-align:center;font-size:12px;}
+.nbadge{background:var(--red);color:#fff;border-radius:9px;font-size:9px;padding:1px 5px;font-family:'IBM Plex Mono',monospace;margin-left:auto;}
+.pb{padding:12px 16px;border-top:1px solid var(--border);}
+.pm{display:flex;align-items:center;gap:8px;}
+.avsm{width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,#0ccfca,#3b82f6);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:#fff;}
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden;}
+.topbar{height:48px;border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 20px;gap:12px;background:var(--sidebar);flex-shrink:0;}
+.tp{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text3);}
+.tp span{color:var(--text2);}
+.tp .cur{color:var(--text);}
+.sp{flex:1;}
+.btn{padding:5px 12px;border-radius:4px;font-size:11px;font-family:'IBM Plex Mono',monospace;cursor:pointer;border:1px solid;}
+.bt{background:rgba(12,207,202,.12);border-color:var(--teal-dim);color:var(--teal);}
+.bg{background:transparent;border-color:var(--border2);color:var(--text2);}
+.ba{background:rgba(232,160,48,.1);border-color:var(--amber-dim);color:var(--amber);}
+.bv{background:rgba(168,85,247,.1);border-color:#7c3aed;color:var(--purple);}
+/* Sub-market tabs */
+.mkt-tabs{display:flex;gap:0;background:var(--sidebar);border-bottom:1px solid var(--border);flex-shrink:0;}
+.mt{padding:10px 18px;font-size:11px;font-family:'IBM Plex Mono',monospace;color:var(--text3);cursor:pointer;border-bottom:2px solid transparent;display:flex;align-items:center;gap:6px;}
+.mt.on{color:var(--teal);border-bottom-color:var(--teal);}
+.mt-badge{background:var(--border2);border-radius:3px;padding:0 5px;font-size:9px;}
+.mt.on .mt-badge{background:rgba(12,207,202,.12);color:var(--teal);}
+/* Stats */
+.stats{display:grid;grid-template-columns:repeat(7,1fr);gap:1px;background:var(--border);border-bottom:1px solid var(--border);flex-shrink:0;}
+.sb{background:var(--card);padding:10px 12px;}
+.sv{font-family:'IBM Plex Mono',monospace;font-size:15px;font-weight:600;}
+.sl{font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.1em;margin-top:1px;}
+/* Main 3-col layout */
+.layout{flex:1;display:grid;grid-template-columns:1fr 280px 300px;overflow:hidden;}
+/* Order book / listing area */
+.orders{overflow-y:auto;background:var(--bg);}
+.orders-toolbar{padding:10px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;background:var(--card);flex-shrink:0;}
+.ot-tabs{display:flex;gap:0;}
+.ot-tab{padding:5px 12px;font-size:10px;font-family:'IBM Plex Mono',monospace;color:var(--text3);cursor:pointer;border:1px solid var(--border2);}
+.ot-tab:first-child{border-radius:4px 0 0 4px;}
+.ot-tab:last-child{border-radius:0 4px 4px 0;border-left:none;}
+.ot-tab.on{background:rgba(12,207,202,.08);border-color:var(--teal-dim);color:var(--teal);}
+.ot-search{flex:1;max-width:240px;background:var(--card2);border:1px solid var(--border2);border-radius:4px;padding:6px 10px;color:var(--text2);font-size:11px;outline:none;font-family:'IBM Plex Sans',sans-serif;}
+.ot-search::placeholder{color:var(--text3);}
+.ot-filter{background:var(--card2);border:1px solid var(--border2);color:var(--text2);font-size:11px;padding:5px 8px;border-radius:4px;font-family:'IBM Plex Mono',monospace;}
+/* Order cards */
+.orders-list{padding:12px 14px;}
+.order-card{background:var(--card);border:1px solid var(--border);border-radius:8px;margin-bottom:10px;overflow:hidden;cursor:pointer;transition:all .12s;}
+.order-card:hover{border-color:var(--border2);}
+.order-card.featured{border-color:var(--teal-dim);}
+.order-card.rfp{border-color:var(--amber-dim);}
+.order-card.match{border-color:var(--green-dim);}
+.oc-header{padding:12px 14px;border-bottom:1px solid var(--border);display:flex;align-items:flex-start;gap:10px;}
+.oc-type{font-size:9px;font-family:'IBM Plex Mono',monospace;padding:2px 7px;border-radius:3px;border:1px solid;flex-shrink:0;margin-top:2px;}
+.oc-title{font-size:13px;font-weight:600;color:var(--text);flex:1;}
+.oc-match-score{font-family:'IBM Plex Mono',monospace;font-size:11px;padding:3px 8px;border-radius:4px;flex-shrink:0;}
+.oc-body{padding:10px 14px;}
+.oc-desc{font-size:11px;color:var(--text3);line-height:1.5;margin-bottom:8px;}
+.oc-skills{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:8px;}
+.skill{font-size:9px;font-family:'IBM Plex Mono',monospace;padding:2px 6px;border-radius:3px;background:var(--card2);border:1px solid var(--border2);color:var(--text3);}
+.oc-footer{display:flex;align-items:center;gap:12px;padding:0 14px 12px;}
+.oc-org{font-size:11px;color:var(--text2);}
+.oc-org-type{font-size:9px;font-family:'IBM Plex Mono',monospace;padding:1px 5px;border-radius:3px;margin-left:4px;}
+.oc-meta{font-size:10px;color:var(--text3);display:flex;gap:10px;}
+.oc-price{font-family:'IBM Plex Mono',monospace;font-size:14px;font-weight:600;margin-left:auto;}
+.oc-actions{display:flex;gap:5px;margin-left:8px;}
+.oca{padding:5px 10px;border-radius:4px;font-size:10px;font-family:'IBM Plex Mono',monospace;cursor:pointer;border:1px solid;}
+/* Order book table */
+.ob-panel{overflow-y:auto;background:var(--sidebar);border-left:1px solid var(--border);border-right:1px solid var(--border);display:flex;flex-direction:column;}
+.ob-hdr{padding:12px 14px;border-bottom:1px solid var(--border);background:var(--card);flex-shrink:0;}
+.ob-title{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text2);text-transform:uppercase;letter-spacing:.1em;margin-bottom:6px;}
+.ob-filter{display:flex;gap:4px;}
+.ob-ft{padding:3px 8px;border-radius:3px;font-size:9px;font-family:'IBM Plex Mono',monospace;cursor:pointer;border:1px solid var(--border2);color:var(--text3);}
+.ob-ft.on{border-color:var(--teal-dim);color:var(--teal);background:rgba(12,207,202,.06);}
+.ob-cols{display:grid;grid-template-columns:1fr 65px 65px;gap:6px;padding:6px 14px;background:var(--card2);border-bottom:1px solid var(--border);}
+.ob-col{font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.1em;font-family:'IBM Plex Mono',monospace;}
+.ob-row{display:grid;grid-template-columns:1fr 65px 65px;gap:6px;padding:8px 14px;border-bottom:1px solid var(--border);cursor:pointer;transition:background .1s;align-items:center;}
+.ob-row:hover{background:rgba(255,255,255,.015);}
+.ob-skill{font-size:11px;color:var(--text2);}
+.ob-count{font-family:'IBM Plex Mono',monospace;font-size:11px;text-align:right;}
+.ob-rate{font-family:'IBM Plex Mono',monospace;font-size:12px;font-weight:600;text-align:right;}
+.ob-sep{padding:4px 14px;font-size:9px;font-family:'IBM Plex Mono',monospace;text-transform:uppercase;letter-spacing:.1em;background:var(--card2);border-bottom:1px solid var(--border);}
+/* My positions panel */
+.positions{overflow-y:auto;background:var(--sidebar);border-left:1px solid var(--border);display:flex;flex-direction:column;}
+.pos-hdr{padding:12px 14px;border-bottom:1px solid var(--border);flex-shrink:0;}
+.pos-title{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--text2);text-transform:uppercase;letter-spacing:.1em;margin-bottom:2px;}
+.pos-sub{font-size:10px;color:var(--text3);}
+.pos-sec{padding:7px 14px 4px;font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.14em;font-family:'IBM Plex Mono',monospace;border-bottom:1px solid var(--border);background:var(--card2);}
+.pos-card{padding:11px 14px;border-bottom:1px solid var(--border);cursor:pointer;}
+.pos-card:hover{background:rgba(255,255,255,.015);}
+.pc-top{display:flex;justify-content:space-between;margin-bottom:4px;}
+.pc-name{font-size:12px;color:var(--text);font-weight:500;}
+.pc-type{font-size:9px;font-family:'IBM Plex Mono',monospace;padding:1px 5px;border-radius:3px;border:1px solid;}
+.pc-org{font-size:10px;color:var(--text3);margin-bottom:4px;}
+.pc-rate{font-family:'IBM Plex Mono',monospace;font-size:13px;font-weight:600;color:var(--teal);}
+.pc-detail{font-size:10px;color:var(--text3);font-family:'IBM Plex Mono',monospace;margin-top:1px;}
+.pc-actions{display:flex;gap:5px;margin-top:7px;}
+.pca{padding:4px 8px;border-radius:3px;font-size:10px;font-family:'IBM Plex Mono',monospace;cursor:pointer;border:1px solid;}
+/* Oba panel */
+.oba-panel{padding:12px 14px;border-top:1px solid var(--border);background:rgba(12,207,202,.03);}
+.oba-title{font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--teal);text-transform:uppercase;margin-bottom:7px;}
+.oba-match{background:var(--card2);border:1px solid var(--border);border-radius:5px;padding:9px;margin-bottom:7px;cursor:pointer;}
+.om-score{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--teal);margin-bottom:3px;}
+.om-title{font-size:11px;color:var(--text);font-weight:500;}
+.om-org{font-size:10px;color:var(--text3);}
+.om-rate{font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--green);margin-top:3px;}
+</style>
+</head>
+<body>
+<div class="sidebar">
+  <div class="logo"><div class="logo-text">KOGI</div><div class="logo-sub">Independent Worker OS</div></div>
+  <nav class="nav">
+    <div class="ns">Core</div>
+    <div class="ni"><span class="ni-ic">⌂</span>Dashboard</div>
+    <div class="ni"><span class="ni-ic">◫</span>Office</div>
+    <div class="ns">Platform</div>
+    <div class="ni on"><span class="ni-ic">⬡</span>Exchange · KLM</div>
+    <div class="ni"><span class="ni-ic">⊗</span>Marketplace</div>
+    <div class="ni"><span class="ni-ic">↔</span>Barter / Swap</div>
+    <div class="ni"><span class="ni-ic">💼</span>Deal Rooms</div>
+    <div class="ni"><span class="ni-ic">🔒</span>Escrow</div>
+    <div class="ns">Finance</div>
+    <div class="ni"><span class="ni-ic">♦</span>Bank</div>
+    <div class="ni"><span class="ni-ic">💳</span>Wallet</div>
+    <div class="ns">Identity</div>
+    <div class="ni"><span class="ni-ic">◈</span>Portfolio</div>
+    <div class="ni"><span class="ni-ic">◉</span>Profile</div>
+  </nav>
+  <div class="pb"><div class="pm"><div class="avsm">JC</div><div><div style="font-size:12px;">Jordan Chen</div><div style="font-size:10px;color:var(--text3);">@jordan.dev</div></div></div></div>
+</div>
+
+<div class="main">
+  <div class="topbar">
+    <div class="tp">KEXC / <span>Exchange</span> / <span class="cur">Labor Market · KLM</span></div>
+    <div class="sp"></div>
+    <select style="background:var(--card);border:1px solid var(--border2);color:var(--text2);font-size:11px;padding:4px 8px;border-radius:4px;font-family:'IBM Plex Mono',monospace;"><option>Persona: Developer</option><option>All Personas</option></select>
+    <button class="btn bv">Post Offer (Sell)</button>
+    <button class="btn ba">Post RFP (Buy)</button>
+    <button class="btn bt">Browse All</button>
+  </div>
+
+  <!-- Sub-market tabs -->
+  <div class="mkt-tabs">
+    <div class="mt on">Labor Market <span class="mt-badge">KLM</span></div>
+    <div class="mt">Commodities <span class="mt-badge">KPCM</span></div>
+    <div class="mt">Financial Instruments <span class="mt-badge">KFIM</span></div>
+    <div class="mt">Resource Market <span class="mt-badge">KRM</span></div>
+  </div>
+
+  <div class="stats">
+    <div class="sb"><div class="sv" style="color:var(--teal);">2,420</div><div class="sl">Open Offers</div></div>
+    <div class="sb"><div class="sv" style="color:var(--amber);">284</div><div class="sl">Open RFPs</div></div>
+    <div class="sb"><div class="sv" style="color:var(--purple);">48</div><div class="sl">Live Bids</div></div>
+    <div class="sb"><div class="sv" style="color:var(--blue);">$180/hr</div><div class="sl">Rust Avg Rate</div></div>
+    <div class="sb"><div class="sv" style="color:var(--green);">18</div><div class="sl">My Active Orders</div></div>
+    <div class="sb"><div class="sv">94%</div><div class="sl">Your Match Score</div></div>
+    <div class="sb"><div class="sv" style="color:var(--text3);">$2.4M</div><div class="sl">Volume (30d)</div></div>
+  </div>
+
+  <div class="layout">
+    <!-- Orders / listings -->
+    <div class="orders">
+      <div class="orders-toolbar">
+        <div class="ot-tabs">
+          <div class="ot-tab on">All</div>
+          <div class="ot-tab">Offers</div>
+          <div class="ot-tab">RFPs</div>
+          <div class="ot-tab">Bids</div>
+          <div class="ot-tab">Auctions</div>
+        </div>
+        <input class="ot-search" placeholder="Search by skill, role, keyword…"/>
+        <select class="ot-filter"><option>Sort: AI Match Score</option><option>Rate: High→Low</option><option>Posted: Newest</option></select>
+        <select class="ot-filter"><option>All Types</option><option>Gig</option><option>Contract</option><option>Job</option></select>
+      </div>
+      <div class="orders-list">
+
+        <!-- AI Match label -->
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--teal);text-transform:uppercase;letter-spacing:.14em;margin-bottom:8px;display:flex;align-items:center;gap:6px;">
+          <span>◉ Oba Top Matches for Your Developer Persona</span>
+        </div>
+
+        <!-- RFP #1: Cooperative Tech -->
+        <div class="order-card match">
+          <div class="oc-header">
+            <div class="oc-type" style="background:rgba(232,160,48,.08);border-color:var(--amber-dim);color:var(--amber);">RFP · CONTRACT</div>
+            <div class="oc-title">Senior Rust / Distributed Systems Engineer — 6-month contract</div>
+            <div class="oc-match-score" style="background:rgba(12,207,202,.1);border:1px solid var(--teal-dim);color:var(--teal);">94% match</div>
+          </div>
+          <div class="oc-body">
+            <div class="oc-desc">Seeking an experienced Rust engineer to build CRDT-based sync infrastructure for our cooperative platform. Must have Tokio async, PostgreSQL, gRPC. Full ownership of messaging layer. Remote, async-friendly.</div>
+            <div class="oc-skills"><span class="skill">Rust</span><span class="skill">Tokio</span><span class="skill">CRDT</span><span class="skill">gRPC</span><span class="skill">PostgreSQL</span><span class="skill">Distributed Systems</span></div>
+          </div>
+          <div class="oc-footer">
+            <div>
+              <span class="oc-org">Cooperative Tech Inc</span>
+              <span class="oc-org-type" style="background:rgba(12,207,202,.06);border:1px solid var(--teal-dim);color:var(--teal);">Cooperative</span>
+            </div>
+            <div class="oc-meta"><span>Remote</span><span>6 months</span><span>8 proposals</span><span>2h ago</span></div>
+            <div class="oc-price" style="color:var(--blue);">$180/hr</div>
+            <div class="oc-actions">
+              <div class="oca" style="background:rgba(12,207,202,.1);border-color:var(--teal-dim);color:var(--teal);">Propose →</div>
+              <div class="oca" style="background:transparent;border-color:var(--border2);color:var(--text3);">Save</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Offer #2: DeFi architect -->
+        <div class="order-card featured">
+          <div class="oc-header">
+            <div class="oc-type" style="background:rgba(59,130,246,.08);border-color:#1d4ed8;color:var(--blue);">OFFER · GIG</div>
+            <div class="oc-title">DeFi Protocol Architecture Review & Design — Fixed price</div>
+            <div class="oc-match-score" style="background:rgba(59,130,246,.08);border:1px solid #1d4ed8;color:var(--blue);">88% match</div>
+          </div>
+          <div class="oc-body">
+            <div class="oc-desc">Protocol Inc needs a systems architect to review and redesign our DeFi protocol's smart contract + off-chain stack. Deliverable: architecture document + implementation roadmap.</div>
+            <div class="oc-skills"><span class="skill">Systems Architecture</span><span class="skill">Smart Contracts</span><span class="skill">Rust</span><span class="skill">DeFi</span></div>
+          </div>
+          <div class="oc-footer">
+            <div>
+              <span class="oc-org">Protocol Inc</span>
+              <span class="oc-org-type" style="background:rgba(59,130,246,.06);border:1px solid #1d4ed8;color:var(--blue);">DAO</span>
+            </div>
+            <div class="oc-meta"><span>Remote</span><span>Fixed price</span><span>3 proposals</span><span>5h ago</span></div>
+            <div class="oc-price" style="color:var(--amber);">$45,000</div>
+            <div class="oc-actions">
+              <div class="oca" style="background:rgba(12,207,202,.1);border-color:var(--teal-dim);color:var(--teal);">Propose →</div>
+              <div class="oca" style="background:transparent;border-color:var(--border2);color:var(--text3);">Save</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- RFP #3: Reverse auction -->
+        <div class="order-card rfp">
+          <div class="oc-header">
+            <div class="oc-type" style="background:rgba(168,85,247,.08);border-color:#7c3aed;color:var(--purple);">REVERSE AUCTION · JOB</div>
+            <div class="oc-title">Full-Stack TypeScript / Next.js Developer — Startup equity role</div>
+            <div class="oc-match-score" style="background:rgba(168,85,247,.08);border:1px solid #7c3aed;color:var(--purple);">82% match</div>
+          </div>
+          <div class="oc-body">
+            <div class="oc-desc">Series A cooperative startup seeking senior full-stack dev to build core product. 6-month engagement with equity option. Budget ceiling $12,000/mo. Submit lowest competitive rate — reverse auction closes Mar 20.</div>
+            <div class="oc-skills"><span class="skill">TypeScript</span><span class="skill">Next.js</span><span class="skill">PostgreSQL</span><span class="skill">React</span><span class="skill">tRPC</span></div>
+          </div>
+          <div class="oc-footer">
+            <div>
+              <span class="oc-org">Open Cooperative Studio</span>
+              <span class="oc-org-type" style="background:rgba(12,207,202,.06);border:1px solid var(--teal-dim);color:var(--teal);">Cooperative</span>
+            </div>
+            <div class="oc-meta"><span>Remote</span><span>Reverse auction · 5d left</span><span>12 bids</span></div>
+            <div class="oc-price" style="color:var(--purple);">≤ $12K/mo</div>
+            <div class="oc-actions">
+              <div class="oca" style="background:rgba(168,85,247,.1);border-color:#7c3aed;color:var(--purple);">Place Bid →</div>
+              <div class="oca" style="background:transparent;border-color:var(--border2);color:var(--text3);">Save</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Direct hire / collaboration -->
+        <div class="order-card">
+          <div class="oc-header">
+            <div class="oc-type" style="background:rgba(34,197,94,.08);border-color:var(--green-dim);color:var(--green);">COLLABORATION · REVENUE SHARE</div>
+            <div class="oc-title">Co-founder / Technical Lead — AI cooperative tooling startup</div>
+            <div class="oc-match-score" style="background:rgba(34,197,94,.08);border:1px solid var(--green-dim);color:var(--green);">79% match</div>
+          </div>
+          <div class="oc-body">
+            <div class="oc-desc">Looking for a technical co-founder to build cooperative infrastructure tooling. Revenue share + equity model. We have the domain expertise, you bring the tech. Stage: ideation to MVP.</div>
+            <div class="oc-skills"><span class="skill">Rust</span><span class="skill">Architecture</span><span class="skill">Product</span><span class="skill">Leadership</span></div>
+          </div>
+          <div class="oc-footer">
+            <div>
+              <span class="oc-org">Nadia Wolff</span>
+              <span class="oc-org-type" style="background:rgba(122,135,158,.06);border:1px solid var(--text3);color:var(--text3);">Independent</span>
+            </div>
+            <div class="oc-meta"><span>Remote</span><span>Long-term</span><span>2 applications</span><span>1d ago</span></div>
+            <div class="oc-price" style="color:var(--green);">Rev Share + Equity</div>
+            <div class="oc-actions">
+              <div class="oca" style="background:rgba(34,197,94,.08);border-color:var(--green-dim);color:var(--green);">Express Interest</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Collective staffing RFP -->
+        <div class="order-card">
+          <div class="oc-header">
+            <div class="oc-type" style="background:rgba(12,207,202,.08);border-color:var(--teal-dim);color:var(--teal);">COLLECTIVE STAFFING · OPEN ROLES</div>
+            <div class="oc-title">Pamoja Federation — Q2 Technical Contributor Pool</div>
+            <div class="oc-match-score" style="background:rgba(12,207,202,.06);border:1px solid var(--teal-dim);color:var(--teal);">74% match</div>
+          </div>
+          <div class="oc-body">
+            <div class="oc-desc">Pamoja Federation is hiring contributors across Rust, Go, and TypeScript for Q2 cooperative infrastructure projects. Multiple roles, flexible time commitments. Paid in revenue share or hourly.</div>
+            <div class="oc-skills"><span class="skill">Rust</span><span class="skill">Go</span><span class="skill">TypeScript</span><span class="skill">Open Source</span></div>
+          </div>
+          <div class="oc-footer">
+            <div>
+              <span class="oc-org">Pamoja Federation</span>
+              <span class="oc-org-type" style="background:rgba(12,207,202,.06);border:1px solid var(--teal-dim);color:var(--teal);">Federation</span>
+            </div>
+            <div class="oc-meta"><span>Async remote</span><span>Multiple roles</span><span>18 applications</span></div>
+            <div class="oc-price" style="color:var(--teal);">$80–$160/hr</div>
+            <div class="oc-actions">
+              <div class="oca" style="background:rgba(12,207,202,.1);border-color:var(--teal-dim);color:var(--teal);">Apply →</div>
+              <div class="oca" style="background:transparent;border-color:var(--border2);color:var(--text3);">Save</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Order book (skill rate table) -->
+    <div class="ob-panel">
+      <div class="ob-hdr">
+        <div class="ob-title">Order Book · Rate Index</div>
+        <div class="ob-filter">
+          <div class="ob-ft on">Bids</div>
+          <div class="ob-ft">Asks</div>
+          <div class="ob-ft">All</div>
+        </div>
+      </div>
+      <!-- Asks (sellers) -->
+      <div class="ob-sep" style="color:var(--purple);">ASK · Workers Offering (↑ rate)</div>
+      <div class="ob-cols"><div class="ob-col">Skill</div><div class="ob-col" style="text-align:right;">Workers</div><div class="ob-col" style="text-align:right;">Rate</div></div>
+      <div class="ob-row">
+        <div class="ob-skill" style="color:var(--purple);">Rust · Systems</div>
+        <div class="ob-count" style="color:var(--text3);">3</div>
+        <div class="ob-rate" style="color:var(--purple);">$220/hr</div>
+      </div>
+      <div class="ob-row">
+        <div class="ob-skill" style="color:var(--purple);">Rust · Async</div>
+        <div class="ob-count" style="color:var(--text3);">7</div>
+        <div class="ob-rate" style="color:var(--purple);">$200/hr</div>
+      </div>
+      <div class="ob-row" style="background:rgba(12,207,202,.04);">
+        <div class="ob-skill" style="color:var(--teal);">★ Rust · CRDT <span style="font-size:9px;color:var(--teal);">(You)</span></div>
+        <div class="ob-count" style="color:var(--teal);">1</div>
+        <div class="ob-rate" style="color:var(--teal);">$180/hr</div>
+      </div>
+      <div class="ob-row">
+        <div class="ob-skill" style="color:var(--purple);">TypeScript · FE</div>
+        <div class="ob-count" style="color:var(--text3);">18</div>
+        <div class="ob-rate" style="color:var(--purple);">$140/hr</div>
+      </div>
+      <div class="ob-row">
+        <div class="ob-skill" style="color:var(--purple);">Architecture</div>
+        <div class="ob-count" style="color:var(--text3);">4</div>
+        <div class="ob-rate" style="color:var(--purple);">$200/hr</div>
+      </div>
+      <div class="ob-row">
+        <div class="ob-skill" style="color:var(--purple);">Go · Backend</div>
+        <div class="ob-count" style="color:var(--text3);">12</div>
+        <div class="ob-rate" style="color:var(--purple);">$130/hr</div>
+      </div>
+      <!-- Bids (buyers) -->
+      <div class="ob-sep" style="color:var(--blue);margin-top:2px;">BID · Buyers Offering (↓ rate)</div>
+      <div class="ob-cols"><div class="ob-col">Skill Needed</div><div class="ob-col" style="text-align:right;">Buyers</div><div class="ob-col" style="text-align:right;">Rate</div></div>
+      <div class="ob-row">
+        <div class="ob-skill" style="color:var(--blue);">Rust · Distributed</div>
+        <div class="ob-count" style="color:var(--text3);">8</div>
+        <div class="ob-rate" style="color:var(--blue);">$180/hr</div>
+      </div>
+      <div class="ob-row">
+        <div class="ob-skill" style="color:var(--blue);">Systems Design</div>
+        <div class="ob-count" style="color:var(--text3);">5</div>
+        <div class="ob-rate" style="color:var(--blue);">$160/hr</div>
+      </div>
+      <div class="ob-row">
+        <div class="ob-skill" style="color:var(--blue);">TypeScript · Senior</div>
+        <div class="ob-count" style="color:var(--text3);">24</div>
+        <div class="ob-rate" style="color:var(--blue);">$120/hr</div>
+      </div>
+      <div class="ob-row">
+        <div class="ob-skill" style="color:var(--blue);">DeFi / Solidity</div>
+        <div class="ob-count" style="color:var(--text3);">6</div>
+        <div class="ob-rate" style="color:var(--blue);">$250/hr</div>
+      </div>
+      <div class="ob-row">
+        <div class="ob-skill" style="color:var(--blue);">Design Systems</div>
+        <div class="ob-count" style="color:var(--text3);">9</div>
+        <div class="ob-rate" style="color:var(--blue);">$100/hr</div>
+      </div>
+      <!-- Your position -->
+      <div style="padding:12px 14px;border-top:1px solid var(--border);background:rgba(12,207,202,.03);">
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--teal);text-transform:uppercase;letter-spacing:.12em;margin-bottom:6px;">Your Position in Book</div>
+        <div style="font-size:11px;color:var(--text2);margin-bottom:4px;">Rust · CRDT · <strong style="color:var(--teal);">$180/hr ASK</strong></div>
+        <div style="font-size:10px;color:var(--text3);">1 of 3 Rust workers offering at this rate · 8 active buyer bids at $180/hr</div>
+        <div style="font-size:10px;color:var(--green);margin-top:4px;">✓ At-market — your rate matches current top bid price</div>
+        <button class="btn bt" style="width:100%;padding:6px;font-size:10px;margin-top:8px;">Update My Offer Rate</button>
+      </div>
+    </div>
+
+    <!-- My positions + Oba matches -->
+    <div class="positions">
+      <div class="pos-hdr">
+        <div class="pos-title">My Active Orders & Positions</div>
+        <div class="pos-sub">18 total · 3 in negotiation</div>
+      </div>
+
+      <div class="pos-sec">Active Offers (Selling)</div>
+      <div class="pos-card">
+        <div class="pc-top">
+          <div class="pc-name">Systems Architecture Consulting</div>
+          <div class="pc-type" style="background:rgba(168,85,247,.06);border-color:#7c3aed;color:var(--purple);">Offer · Retainer</div>
+        </div>
+        <div class="pc-org">Open to all · Retainer · Async-friendly</div>
+        <div class="pc-rate">$3,200/mo</div>
+        <div class="pc-detail">5 views · 2 inquiries · 2 slots left</div>
+        <div class="pc-actions">
+          <div class="pca" style="background:rgba(12,207,202,.08);border-color:var(--teal-dim);color:var(--teal);">View Inquiries</div>
+          <div class="pca" style="background:transparent;border-color:var(--border2);color:var(--text3);">Edit</div>
+        </div>
+      </div>
+      <div class="pos-card">
+        <div class="pc-top">
+          <div class="pc-name">Rust CRDT Code Review · 4hrs</div>
+          <div class="pc-type" style="background:rgba(12,207,202,.06);border-color:var(--teal-dim);color:var(--teal);">Offer · Gig</div>
+        </div>
+        <div class="pc-org">Open to all · Fixed · Async delivery</div>
+        <div class="pc-rate">$720 fixed</div>
+        <div class="pc-detail">12 views · 4 proposals received</div>
+        <div class="pc-actions">
+          <div class="pca" style="background:rgba(12,207,202,.08);border-color:var(--teal-dim);color:var(--teal);">4 Proposals →</div>
+          <div class="pca" style="background:transparent;border-color:var(--border2);color:var(--text3);">Edit</div>
+        </div>
+      </div>
+
+      <div class="pos-sec">Open Bids (Buying)</div>
+      <div class="pos-card">
+        <div class="pc-top">
+          <div class="pc-name">Video Editing / Motion Designer</div>
+          <div class="pc-type" style="background:rgba(59,130,246,.06);border-color:#1d4ed8;color:var(--blue);">Bid · Gig</div>
+        </div>
+        <div class="pc-org">Mesh Studio · 2–3 product videos</div>
+        <div class="pc-rate" style="color:var(--blue);">Budget $2,400</div>
+        <div class="pc-detail">Posted 2d ago · 6 proposals received</div>
+        <div class="pc-actions">
+          <div class="pca" style="background:rgba(59,130,246,.08);border-color:#1d4ed8;color:var(--blue);">Review Proposals</div>
+        </div>
+      </div>
+
+      <div class="pos-sec">Matched Contracts Active</div>
+      <div class="pos-card">
+        <div class="pc-top">
+          <div class="pc-name">Rust Systems · Coop Tech Inc</div>
+          <div class="pc-type" style="background:rgba(34,197,94,.06);border-color:var(--green-dim);color:var(--green);">Contract · Active</div>
+        </div>
+        <div class="pc-org">Month 3 of 6 · Ongoing</div>
+        <div class="pc-rate" style="color:var(--green);">$180/hr</div>
+        <div class="pc-detail">$43,200 in escrow · M3 in progress</div>
+        <div class="pc-actions">
+          <div class="pca" style="background:rgba(34,197,94,.08);border-color:var(--green-dim);color:var(--green);">Deal Room</div>
+          <div class="pca" style="background:transparent;border-color:var(--border2);color:var(--text3);">Escrow</div>
+        </div>
+      </div>
+
+      <!-- Oba AI matches -->
+      <div class="oba-panel">
+        <div class="oba-title">◉ Oba · New Matches for You</div>
+        <div class="oba-match">
+          <div class="om-score">⭐ 94% match — top pick</div>
+          <div class="om-title">Cooperative Tech Inc — Rust Contract</div>
+          <div class="om-org">6 months · Remote · Async-ok</div>
+          <div class="om-rate">$180/hr · $7,200/mo</div>
+        </div>
+        <div class="oba-match">
+          <div class="om-score">88% match</div>
+          <div class="om-title">Protocol Inc — DeFi Architecture</div>
+          <div class="om-org">Fixed price · 4 weeks</div>
+          <div class="om-rate">$45,000 fixed</div>
+        </div>
+        <button class="btn bt" style="width:100%;padding:6px;font-size:10px;margin-top:4px;">View All 8 Matches →</button>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>
