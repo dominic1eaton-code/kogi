@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kogi — Welcome Onboarding</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap');
+  :root {
+    --bg: #0a1628; --bg-card: #111d30; --bg-el: #16253e;
+    --border: rgba(255,255,255,0.07); --border-active: rgba(59,130,246,0.5);
+    --text: #e8edf5; --text-2: #7a8fa8; --text-3: #4a5e78;
+    --blue: #3b82f6; --teal: #0ea5e9; --green: #22c55e;
+    --logo-grad: linear-gradient(135deg,#38bdf8,#3b82f6,#6366f1);
+  }
+  * { margin:0;padding:0;box-sizing:border-box; }
+  body { font-family:'Space Grotesk',sans-serif; background:var(--bg); color:var(--text); min-height:100vh;
+    display:flex; flex-direction:column; align-items:center; justify-content:flex-start; padding:32px 20px 60px;
+    background-image: radial-gradient(ellipse 600px 400px at 50% 10%, rgba(59,130,246,0.06),transparent 70%); }
+
+  .logo { display:flex;align-items:center;gap:10px;margin-bottom:28px; }
+  .logo-box { width:36px;height:36px;background:var(--logo-grad);border-radius:9px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:16px;color:white; }
+  .logo span { font-size:18px;font-weight:700; }
+
+  .hero { text-align:center;margin-bottom:28px; }
+  .hero h1 { font-size:32px;font-weight:800;letter-spacing:-0.5px;margin-bottom:8px; }
+  .hero p { font-size:14px;color:var(--text-2); }
+
+  .roles-list { width:100%;max-width:560px;display:flex;flex-direction:column;gap:10px;margin-bottom:20px; }
+
+  .role-card {
+    background:var(--bg-card); border:1.5px solid var(--border); border-radius:12px;
+    padding:18px 20px; cursor:pointer; transition:all 0.15s;
+    display:grid; grid-template-columns:44px 1fr auto; align-items:center; gap:14px;
+  }
+  .role-card:hover { border-color:rgba(59,130,246,0.3); background:rgba(59,130,246,0.04); }
+  .role-card.selected { border-color:var(--blue); background:rgba(59,130,246,0.08); box-shadow:0 0 0 1px rgba(59,130,246,0.2); }
+
+  .role-icon { width:44px;height:44px;background:var(--bg-el);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0; }
+  .role-body .title { font-size:15px;font-weight:700;margin-bottom:2px; }
+  .role-body .desc { font-size:12px;color:var(--text-2); }
+  .role-badge { font-size:10px;font-weight:600;padding:3px 8px;border-radius:10px;background:rgba(59,130,246,0.15);color:var(--blue);white-space:nowrap; }
+
+  /* Step progress — kogi-v3 style horizontal numbered steps */
+  .stepper {
+    width:100%;max-width:560px;
+    display:grid;grid-template-columns:repeat(4,1fr);gap:0;
+    border:1px solid var(--border);border-radius:10px;overflow:hidden;
+    margin-bottom:12px;
+  }
+  .step {
+    padding:10px 12px;text-align:center;font-size:11px;font-weight:600;
+    border-right:1px solid var(--border);
+    display:flex;flex-direction:column;align-items:center;gap:3px;
+  }
+  .step:last-child { border-right:none; }
+  .step .num { width:20px;height:20px;border-radius:50%;background:var(--bg-el);color:var(--text-3);font-size:10px;display:flex;align-items:center;justify-content:center;font-weight:700; }
+  .step.active .num { background:var(--blue);color:white; }
+  .step .lbl { color:var(--text-3);font-size:10px; }
+  .step.active .lbl { color:var(--text); }
+
+  .step-info { font-size:12px;color:var(--text-2);text-align:center;margin-bottom:24px; }
+  .step-info span { color:var(--text-3); }
+</style>
+</head>
+<body>
+<div class="logo">
+  <div class="logo-box">K</div>
+  <span>kogi</span>
+</div>
+
+<div class="hero">
+  <h1>Welcome, Jordan! 👋</h1>
+  <p>Let's personalize your workspace. What describes you best?</p>
+</div>
+
+<div class="roles-list">
+  <div class="role-card selected">
+    <div class="role-icon">⚒</div>
+    <div class="role-body">
+      <div class="title">Freelancer</div>
+      <div class="desc">Designer, developer, writer, consultant</div>
+    </div>
+    <span class="role-badge">Most popular</span>
+  </div>
+
+  <div class="role-card">
+    <div class="role-icon">👥</div>
+    <div class="role-body">
+      <div class="title">Micro-Agency</div>
+      <div class="desc">Small team of 2–15 collaborators</div>
+    </div>
+    <div></div>
+  </div>
+
+  <div class="role-card">
+    <div class="role-icon">🏛</div>
+    <div class="role-body">
+      <div class="title">Cooperative</div>
+      <div class="desc">Worker co-op or collective with shared ownership</div>
+    </div>
+    <div></div>
+  </div>
+
+  <div class="role-card">
+    <div class="role-icon">💡</div>
+    <div class="role-body">
+      <div class="title">Explorer</div>
+      <div class="desc">Just checking out the platform</div>
+    </div>
+    <div></div>
+  </div>
+</div>
+
+<div class="stepper">
+  <div class="step active">
+    <div class="num">1</div>
+    <div class="lbl">Role</div>
+  </div>
+  <div class="step">
+    <div class="num">2</div>
+    <div class="lbl">Services</div>
+  </div>
+  <div class="step">
+    <div class="num">3</div>
+    <div class="lbl">Goals</div>
+  </div>
+  <div class="step">
+    <div class="num">4</div>
+    <div class="lbl">Workspace</div>
+  </div>
+</div>
+
+<div class="step-info">Step 1 of 4 — <span>About 2 minutes</span></div>
+</body>
+</html>

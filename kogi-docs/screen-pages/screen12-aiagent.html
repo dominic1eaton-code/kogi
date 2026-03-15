@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kogi — AI Agent</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap');
+  :root{--bg:#0a1628;--bg-sb:#0c1a2e;--bg-card:#111d30;--bg-el:#16253e;--border:rgba(255,255,255,0.07);--text:#e8edf5;--text-2:#7a8fa8;--text-3:#4a5e78;--blue:#3b82f6;--teal:#0ea5e9;--green:#22c55e;--red:#ef4444;--yellow:#fbbf24;--purple:#a78bfa;--grad:linear-gradient(135deg,#38bdf8,#3b82f6,#6366f1);}
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{font-family:'Space Grotesk',sans-serif;background:var(--bg);color:var(--text);height:100vh;display:flex;overflow:hidden;}
+  .sidebar{width:200px;min-height:100vh;background:var(--bg-sb);border-right:1px solid var(--border);display:flex;flex-direction:column;padding:16px 0;flex-shrink:0;}
+  .sl{display:flex;align-items:center;gap:8px;padding:4px 16px 14px;border-bottom:1px solid var(--border);margin-bottom:8px;}
+  .lb{width:28px;height:28px;background:var(--grad);border-radius:7px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:12px;color:white;}
+  .ni{display:flex;align-items:center;justify-content:space-between;padding:7px 16px;font-size:12px;color:var(--text-2);cursor:pointer;border-left:2px solid transparent;}
+  .ni.active{color:var(--text);background:rgba(59,130,246,0.1);border-left-color:var(--blue);}
+  .bge{background:var(--blue);color:white;font-size:10px;font-weight:600;padding:1px 5px;border-radius:10px;}
+  .sb-bot{margin-top:auto;padding:12px 16px 8px;border-top:1px solid var(--border);}
+  .ua{display:flex;align-items:center;gap:8px;}
+  .av{width:28px;height:28px;background:linear-gradient(135deg,#6366f1,#8b5cf6);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;}
+
+  .main{flex:1;display:flex;flex-direction:column;overflow:hidden;}
+  .topbar{display:flex;align-items:center;justify-content:space-between;padding:0 20px;height:48px;border-bottom:1px solid var(--border);flex-shrink:0;}
+  .topbar-title{font-size:16px;font-weight:700;}
+  .tb-right{display:flex;align-items:center;gap:8px;}
+  .sb-box{display:flex;align-items:center;gap:8px;background:var(--bg-card);border:1px solid var(--border);border-radius:7px;padding:6px 12px;font-size:12px;color:var(--text-3);width:200px;}
+  .kbd{font-family:'JetBrains Mono',monospace;font-size:10px;background:var(--bg-el);padding:1px 4px;border-radius:3px;}
+  .ib{width:30px;height:30px;background:var(--bg-card);border:1px solid var(--border);border-radius:7px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:12px;}
+
+  /* 3-column layout */
+  .agent-body{flex:1;display:grid;grid-template-columns:240px 1fr;overflow:hidden;}
+
+  /* Context panel */
+  .context-panel{border-right:1px solid var(--border);padding:14px;overflow-y:auto;display:flex;flex-direction:column;gap:14px;}
+  .ctx-section-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-3);margin-bottom:8px;}
+
+  .ctx-project{background:var(--bg-el);border-radius:8px;padding:10px 12px;margin-bottom:6px;}
+  .ctx-proj-name{font-size:12px;font-weight:700;margin-bottom:2px;}
+  .ctx-proj-meta{font-size:11px;color:var(--text-3);}
+  .ctx-badge{display:inline-flex;padding:2px 6px;border-radius:4px;font-size:10px;font-weight:600;margin-top:4px;}
+  .at-risk{background:rgba(239,68,68,0.12);color:var(--red);}
+  .on-track{background:rgba(34,197,94,0.1);color:var(--green);}
+
+  /* Wallet widget */
+  .wallet-widget{background:var(--bg-el);border:1px solid var(--border);border-radius:8px;padding:12px;}
+  .ww-label{font-size:10px;color:var(--text-3);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;}
+  .ww-amount{font-size:20px;font-weight:800;font-family:'JetBrains Mono',monospace;color:var(--green);margin-bottom:4px;}
+  .ww-note{font-size:11px;color:var(--red);}
+
+  /* OKR status */
+  .okr-row{display:flex;flex-direction:column;gap:6px;}
+  .okr-item{display:grid;grid-template-columns:1fr auto;align-items:center;gap:8px;}
+  .okr-name{font-size:11px;color:var(--text-2);}
+  .okr-pct{font-size:12px;font-weight:700;}
+  .okr-bar{height:3px;background:var(--bg-card);border-radius:2px;overflow:hidden;margin-top:2px;grid-column:1/-1;}
+  .okr-fill{height:100%;border-radius:2px;}
+
+  /* Suggested actions */
+  .action-item{padding:8px 10px;background:var(--bg-el);border-radius:7px;font-size:11px;color:var(--text-2);cursor:pointer;display:flex;align-items:center;gap:6px;margin-bottom:5px;border:1px solid var(--border);transition:all .15s;}
+  .action-item:hover{border-color:rgba(59,130,246,0.3);color:var(--text);}
+  .action-item:nth-child(1){border-left:2px solid var(--red);}
+  .action-item:nth-child(2){border-left:2px solid var(--yellow);}
+  .action-item:nth-child(3){border-left:2px solid var(--teal);}
+
+  /* Chat area */
+  .chat-area{display:flex;flex-direction:column;overflow:hidden;}
+  .messages{flex:1;padding:16px;overflow-y:auto;display:flex;flex-direction:column;gap:14px;}
+
+  /* AI message */
+  .ai-msg{display:grid;grid-template-columns:32px 1fr;gap:10px;align-items:flex-start;}
+  .ai-avatar{width:32px;height:32px;background:var(--grad);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;}
+  .ai-bubble{background:var(--bg-card);border:1px solid var(--border);border-radius:10px;padding:14px;}
+  .ai-intro{font-size:13px;font-weight:600;margin-bottom:10px;}
+
+  .insight-item{padding:10px 12px;border-radius:8px;margin-bottom:6px;font-size:12px;line-height:1.5;border-left:3px solid;}
+  .ins-blocked{background:rgba(239,68,68,0.06);border-left-color:var(--red);}
+  .ins-overdue{background:rgba(251,191,36,0.06);border-left-color:var(--yellow);}
+  .ins-okr{background:rgba(14,165,233,0.06);border-left-color:var(--teal);}
+  .ins-label{font-weight:700;}
+
+  .action-btns{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;}
+  .abtn{padding:6px 12px;border-radius:7px;font-family:'Space Grotesk',sans-serif;font-size:11px;font-weight:600;cursor:pointer;border:1px solid;}
+  .abtn.primary{background:var(--blue);border-color:var(--blue);color:white;}
+  .abtn.secondary{background:var(--bg-el);border-color:var(--border);color:var(--text-2);}
+
+  .msg-meta{font-size:10px;color:var(--text-3);margin-top:6px;display:flex;align-items:center;gap:6px;}
+
+  /* User message */
+  .user-msg{display:flex;justify-content:flex-end;}
+  .user-bubble{background:rgba(59,130,246,0.12);border:1px solid rgba(59,130,246,0.2);border-radius:10px;padding:12px 14px;max-width:80%;font-size:13px;line-height:1.5;}
+  .user-msg-meta{font-size:10px;color:var(--text-3);text-align:right;margin-top:4px;}
+
+  /* Tool use indicator */
+  .tool-indicator{background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:7px;padding:6px 10px;font-size:11px;color:var(--text-3);display:flex;align-items:center;gap:6px;margin-bottom:6px;}
+
+  /* AI response in progress */
+  .ai-progress{background:var(--bg-card);border:1px solid var(--border);border-radius:10px;padding:14px;}
+  .progress-item{font-size:12px;color:var(--text-2);display:flex;align-items:center;gap:6px;margin-bottom:6px;}
+  .dot-loader{display:flex;gap:3px;}
+  .dot-loader span{width:5px;height:5px;background:var(--blue);border-radius:50%;animation:pulse 1.2s infinite;}
+  .dot-loader span:nth-child(2){animation-delay:.2s;}
+  .dot-loader span:nth-child(3){animation-delay:.4s;}
+  @keyframes pulse{0%,100%{opacity:.3;}50%{opacity:1;}}
+
+  /* Input area */
+  .input-area{padding:12px 16px;border-top:1px solid var(--border);display:flex;flex-direction:column;gap:8px;}
+  .quick-actions{display:flex;align-items:center;gap:6px;}
+  .qa-label{font-size:11px;color:var(--text-3);}
+  .qa-btn{padding:4px 10px;background:var(--bg-el);border:1px solid var(--border);border-radius:6px;font-size:11px;color:var(--text-2);cursor:pointer;font-family:'Space Grotesk',sans-serif;}
+  .input-row{display:flex;gap:8px;align-items:center;}
+  .chat-input{flex:1;padding:10px 14px;background:var(--bg-card);border:1px solid var(--border);border-radius:10px;color:var(--text);font-family:'Space Grotesk',sans-serif;font-size:13px;outline:none;}
+  .chat-input:focus{border-color:rgba(59,130,246,0.4);}
+  .at-btn{width:32px;height:32px;background:var(--bg-el);border:1px solid var(--border);border-radius:8px;color:var(--text-2);font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-family:'Space Grotesk',sans-serif;}
+  .send-btn{width:36px;height:36px;background:var(--blue);border:none;border-radius:9px;color:white;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+</style>
+</head>
+<body>
+<div class="sidebar">
+  <div class="sl"><div class="lb">K</div><span style="font-size:15px;font-weight:600;">kogi</span></div>
+  <div class="ni"><span>◇ Dashboard</span></div>
+  <div class="ni"><span>▤ Portfolio</span></div>
+  <div class="ni"><span>▦ Work Board</span><span class="bge">3</span></div>
+  <div class="ni"><span>◆ Marketplace</span></div>
+  <div class="ni"><span>⊕ Exchange</span><span class="bge">2</span></div>
+  <div class="ni"><span>◎ Idea Studio</span></div>
+  <div class="ni"><span>✦ Community</span><span class="bge">7</span></div>
+  <div class="ni"><span>◆ Work &amp; OKRs</span></div>
+  <div class="ni"><span>● Funding</span></div>
+  <div class="ni"><span>⬡ Governance</span><span class="bge">1</span></div>
+  <div class="ni active"><span>✦ AI Agent</span></div>
+  <div class="ni"><span>◆ Analytics</span></div>
+  <div class="ni"><span>⊙ Search</span></div>
+  <div class="ni"><span>⊙ Settings</span></div>
+  <div class="sb-bot"><div class="ua"><div class="av">JD</div><div><div style="font-size:12px;font-weight:600;">Jordan Davis</div><div style="font-size:10px;color:var(--text-3);">Pro Plan</div></div></div></div>
+</div>
+
+<div class="main">
+  <div class="topbar">
+    <div class="topbar-title">AI Agent</div>
+    <div class="tb-right">
+      <div class="sb-box">⊙ Search everything… <span class="kbd">⌘K</span></div>
+      <div class="ib">◑</div><div class="ib">♡</div><div class="ib">?</div>
+      <div class="ib" style="font-size:11px;width:auto;padding:0 10px;font-weight:600;color:var(--text-2);">📋 History</div>
+    </div>
+  </div>
+
+  <div class="agent-body">
+    <!-- Context panel -->
+    <div class="context-panel">
+      <div>
+        <div class="ctx-section-title">Active Projects</div>
+        <div class="ctx-project">
+          <div class="ctx-proj-name">E-commerce Build</div>
+          <div class="ctx-proj-meta">Sprint 4 · 2 blocked</div>
+          <span class="ctx-badge at-risk">At risk</span>
+        </div>
+        <div class="ctx-project">
+          <div class="ctx-proj-name">Brand Identity</div>
+          <div class="ctx-proj-meta">4 in progress</div>
+          <span class="ctx-badge on-track">On track</span>
+        </div>
+      </div>
+
+      <div>
+        <div class="ctx-section-title">Wallet</div>
+        <div class="wallet-widget">
+          <div class="ww-label">Available</div>
+          <div class="ww-amount">$4,820</div>
+          <div class="ww-note">2 invoices overdue</div>
+        </div>
+      </div>
+
+      <div>
+        <div class="ctx-section-title">OKR Status</div>
+        <div class="okr-row">
+          <div>
+            <div class="okr-item"><span class="okr-name">Revenue goal</span><span class="okr-pct" style="color:var(--teal);">62%</span></div>
+            <div class="okr-bar"><div class="okr-fill" style="width:62%;background:var(--teal);"></div></div>
+          </div>
+          <div>
+            <div class="okr-item"><span class="okr-name">New services</span><span class="okr-pct" style="color:var(--green);">67%</span></div>
+            <div class="okr-bar"><div class="okr-fill" style="width:67%;background:var(--green);"></div></div>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <div class="ctx-section-title">Suggested Actions</div>
+        <div class="action-item">⚡ Unblock 2 blocked stories</div>
+        <div class="action-item">📄 Chase 2 overdue invoices</div>
+        <div class="action-item">📊 OKR: revenue at risk</div>
+      </div>
+    </div>
+
+    <!-- Chat -->
+    <div class="chat-area">
+      <div class="messages">
+        <!-- AI message -->
+        <div class="ai-msg">
+          <div class="ai-avatar">✦</div>
+          <div>
+            <div class="ai-bubble">
+              <div class="ai-intro">Good morning, Jordan. I've reviewed your portfolio and have 3 actionable insights:</div>
+              <div class="insight-item ins-blocked">
+                <span class="ins-label" style="color:var(--red);">⚠ Blocked:</span> "Set up Stripe payment gateway" has been blocked for 3 days. I found 2 Stripe-certified developers on the Marketplace. Want me to send inquiry requests?
+              </div>
+              <div class="insight-item ins-overdue">
+                <span class="ins-label" style="color:var(--yellow);">📄 Overdue:</span> Invoice INV-2024-108 for $2,000 is 14 days overdue from DesignCo. I can draft a polite payment reminder email.
+              </div>
+              <div class="insight-item ins-okr">
+                <span class="ins-label" style="color:var(--teal);">📊 OKR:</span> Your Q3 revenue goal is at 62% with 28 days left. At current velocity you'll reach $12.4K vs $15K target. I suggest increasing your marketplace listing visibility.
+              </div>
+              <div class="action-btns">
+                <button class="abtn primary">Send marketplace inquiries</button>
+                <button class="abtn secondary">Draft invoice reminder</button>
+                <button class="abtn secondary">Show OKR analysis</button>
+              </div>
+            </div>
+            <div class="msg-meta">Kogi AI · 9:02 AM · <span>3 tools used</span></div>
+          </div>
+        </div>
+
+        <!-- User message -->
+        <div class="user-msg">
+          <div>
+            <div class="user-bubble">Yes, send inquiries to both developers. Also, create a sprint planning summary for the E-commerce project — I need to share it with the client this afternoon.</div>
+            <div class="user-msg-meta">Jordan · 9:05 AM</div>
+          </div>
+        </div>
+
+        <!-- AI in progress -->
+        <div class="ai-msg">
+          <div class="ai-avatar">✦</div>
+          <div>
+            <div class="tool-indicator">Using: search_marketplace, read_wbs, create_document</div>
+            <div class="ai-progress">
+              <div class="progress-item">✓ Inquiries sent to Alex Kim and Marcus Chen on Marketplace (Order requests created)</div>
+              <div class="progress-item">📄 Sprint Summary generating... <div class="dot-loader"><span></span><span></span><span></span></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="input-area">
+        <div class="quick-actions">
+          <span class="qa-label">Quick actions:</span>
+          <button class="qa-btn">Plan sprint</button>
+          <button class="qa-btn">Check OKRs</button>
+          <button class="qa-btn">Create invoice</button>
+          <button class="qa-btn">Search market</button>
+        </div>
+        <div class="input-row">
+          <input class="chat-input" placeholder="Ask anything about your portfolio, projects, finances...">
+          <button class="at-btn">@</button>
+          <button class="send-btn">→</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

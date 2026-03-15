@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kogi — Work Board</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+  :root {
+    --bg:#0a1628;--bg-sb:#0c1a2e;--bg-card:#111d30;--bg-el:#16253e;
+    --border:rgba(255,255,255,0.07);--border-a:rgba(59,130,246,0.5);
+    --text:#e8edf5;--text-2:#7a8fa8;--text-3:#4a5e78;
+    --blue:#3b82f6;--teal:#0ea5e9;--green:#22c55e;--red:#ef4444;--yellow:#fbbf24;--purple:#a78bfa;
+    --grad:linear-gradient(135deg,#38bdf8,#3b82f6,#6366f1);
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{font-family:'Space Grotesk',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;}
+
+  .sidebar{width:200px;min-height:100vh;background:var(--bg-sb);border-right:1px solid var(--border);display:flex;flex-direction:column;padding:16px 0;flex-shrink:0;}
+  .sl{display:flex;align-items:center;gap:8px;padding:4px 16px 14px;border-bottom:1px solid var(--border);margin-bottom:8px;}
+  .lb{width:28px;height:28px;background:var(--grad);border-radius:7px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:12px;color:white;}
+  .ni{display:flex;align-items:center;justify-content:space-between;padding:7px 16px;font-size:12px;color:var(--text-2);cursor:pointer;border-left:2px solid transparent;transition:all .15s;}
+  .ni:hover{color:var(--text);background:rgba(255,255,255,0.03);}
+  .ni.active{color:var(--text);background:rgba(59,130,246,0.1);border-left-color:var(--blue);}
+  .bge{background:var(--blue);color:white;font-size:10px;font-weight:600;padding:1px 5px;border-radius:10px;}
+  .sb-bot{margin-top:auto;padding:12px 16px 8px;border-top:1px solid var(--border);}
+  .ua{display:flex;align-items:center;gap:8px;}
+  .av{width:28px;height:28px;background:linear-gradient(135deg,#6366f1,#8b5cf6);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;}
+
+  .main{flex:1;display:flex;flex-direction:column;overflow:hidden;}
+  .topbar{display:flex;align-items:center;justify-content:space-between;padding:0 20px;height:48px;border-bottom:1px solid var(--border);flex-shrink:0;}
+  .tb-left{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text-2);}
+  .tb-left .curr{font-size:16px;font-weight:700;color:var(--text);}
+  .tb-right{display:flex;align-items:center;gap:8px;}
+  .sb-box{display:flex;align-items:center;gap:8px;background:var(--bg-card);border:1px solid var(--border);border-radius:7px;padding:6px 12px;font-size:12px;color:var(--text-3);width:200px;}
+  .kbd{font-family:'JetBrains Mono',monospace;font-size:10px;background:var(--bg-el);padding:1px 4px;border-radius:3px;}
+  .ib{width:30px;height:30px;background:var(--bg-card);border:1px solid var(--border);border-radius:7px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:13px;}
+  .btn-story{padding:6px 12px;background:var(--blue);border:none;border-radius:7px;color:white;font-family:'Space Grotesk',sans-serif;font-size:12px;font-weight:600;cursor:pointer;}
+
+  /* Sub-topbar with tabs + sprint info */
+  .subtopbar{display:flex;align-items:center;justify-content:space-between;padding:0 20px;height:40px;border-bottom:1px solid var(--border);background:var(--bg-sb);flex-shrink:0;}
+  .tabs{display:flex;gap:2px;}
+  .tab{padding:6px 12px;font-size:12px;font-weight:500;color:var(--text-2);cursor:pointer;border-bottom:2px solid transparent;border-radius:0;}
+  .tab.active{color:var(--text);border-bottom-color:var(--blue);}
+  .sprint-info{display:flex;align-items:center;gap:8px;font-size:11px;color:var(--text-2);}
+  .at-risk-badge{padding:3px 8px;background:rgba(239,68,68,0.15);color:var(--red);border-radius:4px;font-size:10px;font-weight:700;}
+  .filter-btn{padding:4px 10px;background:var(--bg-el);border:1px solid var(--border);border-radius:6px;font-size:11px;color:var(--text-2);cursor:pointer;font-family:'Space Grotesk',sans-serif;}
+
+  /* Kanban board */
+  .board{flex:1;overflow-x:auto;padding:16px;display:flex;gap:12px;align-items:flex-start;}
+
+  .col{flex-shrink:0;width:240px;display:flex;flex-direction:column;gap:8px;}
+  .col-header{display:flex;align-items:center;justify-content:space-between;padding:8px 12px;background:var(--bg-card);border:1px solid var(--border);border-radius:8px;}
+  .col-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;}
+  .col-count{font-size:11px;font-weight:700;padding:2px 6px;border-radius:4px;}
+  .col-backlog .col-title{color:var(--text-2);}
+  .col-backlog .col-count{background:rgba(255,255,255,0.08);color:var(--text-2);}
+  .col-inprog .col-title{color:var(--blue);}
+  .col-inprog .col-count{background:rgba(59,130,246,0.15);color:var(--blue);}
+  .col-review .col-title{color:var(--yellow);}
+  .col-review .col-count{background:rgba(251,191,36,0.12);color:var(--yellow);}
+  .col-done .col-title{color:var(--green);}
+  .col-done .col-count{background:rgba(34,197,94,0.12);color:var(--green);}
+  .col-blocked .col-title{color:var(--red);}
+  .col-blocked .col-count{background:rgba(239,68,68,0.12);color:var(--red);}
+
+  .story-card{background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:12px;display:flex;flex-direction:column;gap:8px;cursor:pointer;transition:all .15s;}
+  .story-card:hover{border-color:rgba(255,255,255,0.12);transform:translateY(-1px);}
+  .story-card.blocked-card{border-left:3px solid var(--red);}
+  .story-title{font-size:12px;font-weight:600;line-height:1.4;}
+  .story-alert{font-size:10px;color:var(--red);display:flex;align-items:flex-start;gap:4px;line-height:1.4;}
+  .story-ai{font-size:10px;color:var(--teal);margin-top:2px;}
+  .tag{display:inline-flex;align-items:center;padding:2px 6px;border-radius:3px;font-size:10px;font-weight:500;}
+  .tag-feature{background:rgba(59,130,246,0.12);color:var(--blue);}
+  .tag-docs{background:rgba(14,165,233,0.12);color:var(--teal);}
+  .tag-blocked{background:rgba(239,68,68,0.12);color:var(--red);}
+  .tag-review{background:rgba(251,191,36,0.12);color:var(--yellow);}
+  .tag-done{background:rgba(34,197,94,0.1);color:var(--green);}
+  .tag-blocker{background:rgba(239,68,68,0.1);color:var(--red);}
+
+  .story-meta{display:flex;align-items:center;justify-content:space-between;font-size:10px;color:var(--text-3);}
+  .prog-bar{height:3px;background:var(--bg-el);border-radius:2px;overflow:hidden;margin:2px 0;}
+  .prog-fill{height:100%;border-radius:2px;}
+  .more-stories{padding:8px 12px;text-align:center;font-size:11px;color:var(--text-3);background:var(--bg-card);border:1px dashed var(--border);border-radius:8px;cursor:pointer;}
+</style>
+</head>
+<body>
+<div class="sidebar">
+  <div class="sl"><div class="lb">K</div><span style="font-size:15px;font-weight:600;">kogi</span></div>
+  <div class="ni"><span style="font-size:12px;">◇ Dashboard</span></div>
+  <div class="ni"><span style="font-size:12px;">▤ Portfolio</span></div>
+  <div class="ni active"><span style="font-size:12px;">▦ Work Board</span><span class="bge">3</span></div>
+  <div class="ni"><span style="font-size:12px;">◆ Marketplace</span></div>
+  <div class="ni"><span style="font-size:12px;">⊕ Exchange</span><span class="bge">2</span></div>
+  <div class="ni"><span style="font-size:12px;">◎ Idea Studio</span></div>
+  <div class="ni"><span style="font-size:12px;">✦ Community</span><span class="bge">7</span></div>
+  <div class="ni"><span style="font-size:12px;">◆ Work &amp; OKRs</span></div>
+  <div class="ni"><span style="font-size:12px;">● Funding</span></div>
+  <div class="ni"><span style="font-size:12px;">⬡ Governance</span><span class="bge">1</span></div>
+  <div class="ni"><span style="font-size:12px;">✦ AI Agent</span></div>
+  <div class="ni"><span style="font-size:12px;">◆ Analytics</span></div>
+  <div class="ni"><span style="font-size:12px;">⊙ Search</span></div>
+  <div class="ni"><span style="font-size:12px;">⊙ Settings</span></div>
+  <div class="sb-bot"><div class="ua"><div class="av">JD</div><div><div style="font-size:12px;font-weight:600;">Jordan Davis</div><div style="font-size:10px;color:var(--text-3);">Pro Plan</div></div></div></div>
+</div>
+
+<div class="main">
+  <div class="topbar">
+    <div class="tb-left">
+      <span>Portfolio / Design Studio 2025 / E-commerce Build</span>
+      <span class="curr">E-commerce Platform Build</span>
+    </div>
+    <div class="tb-right">
+      <div class="sb-box">⊙ Search everything… <span class="kbd">⌘K</span></div>
+      <div class="ib">◑</div><div class="ib">?</div>
+      <button class="btn-story">+ Story</button>
+    </div>
+  </div>
+
+  <div class="subtopbar">
+    <div class="tabs">
+      <div class="tab active">Board</div>
+      <div class="tab">List</div>
+      <div class="tab">Sprint</div>
+      <div class="tab">Timeline</div>
+      <div class="tab">Backlog</div>
+    </div>
+    <div class="sprint-info">
+      Sprint 4 of 6 · Mar 10–24 <span class="at-risk-badge">At risk</span>
+      <button class="filter-btn">Filter</button>
+      <button class="filter-btn">Group by</button>
+    </div>
+  </div>
+
+  <div class="board">
+    <!-- BACKLOG -->
+    <div class="col col-backlog">
+      <div class="col-header"><span class="col-title">Backlog</span><span class="col-count">8</span></div>
+      <div class="story-card">
+        <div class="story-title">Set up email notifications system</div>
+        <div style="display:flex;gap:5px;align-items:center;"><span class="tag tag-feature">feature</span><span style="font-size:10px;color:var(--text-3);">3 pts</span></div>
+      </div>
+      <div class="story-card">
+        <div class="story-title">Write API documentation</div>
+        <div style="display:flex;gap:5px;align-items:center;"><span class="tag tag-docs">docs</span><span style="font-size:10px;color:var(--text-3);">2 pts</span></div>
+      </div>
+      <div class="story-card">
+        <div class="story-title">Integrate analytics dashboard</div>
+        <div style="display:flex;gap:5px;align-items:center;"><span class="tag tag-feature">feature</span></div>
+      </div>
+      <div class="more-stories">+ 5 more stories</div>
+    </div>
+
+    <!-- IN PROGRESS -->
+    <div class="col col-inprog">
+      <div class="col-header"><span class="col-title">In Progress</span><span class="col-count">4</span></div>
+      <div class="story-card blocked-card">
+        <div class="story-title">Set up Stripe payment gateway</div>
+        <div class="story-alert">⚠ Blocked — needs API key from client</div>
+        <div style="display:flex;gap:5px;align-items:center;"><span class="tag tag-blocked">blocked</span><span style="font-size:10px;color:var(--text-3);">5 pts</span></div>
+      </div>
+      <div class="story-card">
+        <div class="story-title">Build product catalog page</div>
+        <div class="prog-bar"><div class="prog-fill" style="width:60%;background:var(--blue);"></div></div>
+        <div style="display:flex;gap:5px;align-items:center;justify-content:space-between;"><span class="tag tag-feature">feature</span><span style="font-size:10px;color:var(--text-3);">8 pts · 3d left</span></div>
+      </div>
+      <div class="story-card">
+        <div class="story-title">Implement cart &amp; checkout flow</div>
+        <div class="prog-bar"><div class="prog-fill" style="width:30%;background:var(--blue);"></div></div>
+        <div style="display:flex;gap:5px;align-items:center;justify-content:space-between;"><span class="tag tag-feature">feature</span><span style="font-size:10px;color:var(--text-3);">13 pts</span></div>
+      </div>
+    </div>
+
+    <!-- IN REVIEW -->
+    <div class="col col-review">
+      <div class="col-header"><span class="col-title">In Review</span><span class="col-count">2</span></div>
+      <div class="story-card">
+        <div class="story-title">User authentication flows</div>
+        <div style="font-size:10px;color:var(--text-3);">Awaiting client sign-off</div>
+        <div style="display:flex;gap:5px;"><span class="tag tag-review">review</span><span style="font-size:10px;color:var(--text-3);">8 pts</span></div>
+      </div>
+      <div class="story-card">
+        <div class="story-title">Design system component library</div>
+        <div style="display:flex;gap:5px;"><span class="tag tag-review">review</span><span style="font-size:10px;color:var(--text-3);">5 pts</span></div>
+      </div>
+    </div>
+
+    <!-- DONE -->
+    <div class="col col-done">
+      <div class="col-header"><span class="col-title">Done</span><span class="col-count">6</span></div>
+      <div class="story-card">
+        <div class="story-title">Project setup &amp; repo structure</div>
+        <div style="display:flex;gap:5px;align-items:center;"><span class="tag tag-done">✓ done</span><span style="font-size:10px;color:var(--text-3);">3 pts</span></div>
+      </div>
+      <div class="story-card">
+        <div class="story-title">Database schema design</div>
+        <div style="display:flex;gap:5px;align-items:center;"><span class="tag tag-done">✓ done</span><span style="font-size:10px;color:var(--text-3);">8 pts</span></div>
+      </div>
+      <div class="story-card">
+        <div class="story-title">UI wireframes approved</div>
+        <div style="display:flex;gap:5px;align-items:center;"><span class="tag tag-done">✓ done</span></div>
+      </div>
+      <div class="more-stories">+ 3 more</div>
+    </div>
+
+    <!-- BLOCKED -->
+    <div class="col col-blocked">
+      <div class="col-header"><span class="col-title">Blocked</span><span class="col-count">2</span></div>
+      <div class="story-card blocked-card">
+        <div class="story-title">Set up API authentication with client CRM</div>
+        <div style="font-size:10px;color:var(--red);margin:2px 0;">Blocked 3 days · No API key access</div>
+        <div style="display:flex;gap:5px;"><span class="tag tag-blocker">blocker</span></div>
+        <div class="story-ai">✦ AI: Found 2 solutions in marketplace →</div>
+      </div>
+      <div class="story-card blocked-card">
+        <div class="story-title">Mobile responsive testing</div>
+        <div style="font-size:10px;color:var(--red);margin:2px 0;">Needs real devices — request submitted</div>
+        <div style="display:flex;gap:5px;"><span class="tag tag-blocker">blocker</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

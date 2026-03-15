@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kogi — Marketplace</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap');
+  :root{--bg:#0a1628;--bg-sb:#0c1a2e;--bg-card:#111d30;--bg-el:#16253e;--border:rgba(255,255,255,0.07);--text:#e8edf5;--text-2:#7a8fa8;--text-3:#4a5e78;--blue:#3b82f6;--teal:#0ea5e9;--green:#22c55e;--red:#ef4444;--yellow:#fbbf24;--purple:#a78bfa;--grad:linear-gradient(135deg,#38bdf8,#3b82f6,#6366f1);}
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{font-family:'Space Grotesk',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;}
+  .sidebar{width:200px;min-height:100vh;background:var(--bg-sb);border-right:1px solid var(--border);display:flex;flex-direction:column;padding:16px 0;flex-shrink:0;}
+  .sl{display:flex;align-items:center;gap:8px;padding:4px 16px 14px;border-bottom:1px solid var(--border);margin-bottom:8px;}
+  .lb{width:28px;height:28px;background:var(--grad);border-radius:7px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:12px;color:white;}
+  .ni{display:flex;align-items:center;justify-content:space-between;padding:7px 16px;font-size:12px;color:var(--text-2);cursor:pointer;border-left:2px solid transparent;}
+  .ni.active{color:var(--text);background:rgba(59,130,246,0.1);border-left-color:var(--blue);}
+  .bge{background:var(--blue);color:white;font-size:10px;font-weight:600;padding:1px 5px;border-radius:10px;}
+  .sb-bot{margin-top:auto;padding:12px 16px 8px;border-top:1px solid var(--border);}
+  .ua{display:flex;align-items:center;gap:8px;}
+  .av{width:28px;height:28px;background:linear-gradient(135deg,#6366f1,#8b5cf6);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;}
+  .main{flex:1;display:flex;flex-direction:column;overflow:hidden;}
+  .topbar{display:flex;align-items:center;justify-content:space-between;padding:0 20px;height:48px;border-bottom:1px solid var(--border);flex-shrink:0;}
+  .topbar-title{font-size:16px;font-weight:700;}
+  .tb-right{display:flex;align-items:center;gap:8px;}
+  .sb-box{display:flex;align-items:center;gap:8px;background:var(--bg-card);border:1px solid var(--border);border-radius:7px;padding:6px 12px;font-size:12px;color:var(--text-3);width:200px;}
+  .kbd{font-family:'JetBrains Mono',monospace;font-size:10px;background:var(--bg-el);padding:1px 4px;border-radius:3px;}
+  .ib{width:30px;height:30px;background:var(--bg-card);border:1px solid var(--border);border-radius:7px;display:flex;align-items:center;justify-content:center;cursor:pointer;}
+  .btn-new{padding:6px 12px;background:var(--blue);border:none;border-radius:7px;color:white;font-family:'Space Grotesk',sans-serif;font-size:12px;font-weight:600;cursor:pointer;}
+
+  .body{flex:1;display:grid;grid-template-columns:220px 1fr;overflow:hidden;}
+
+  .sidebar-filters{padding:16px;border-right:1px solid var(--border);overflow-y:auto;display:flex;flex-direction:column;gap:16px;}
+  .filt-section{}
+  .filt-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-2);margin-bottom:8px;}
+  .filt-item{display:flex;align-items:center;justify-content:space-between;padding:5px 8px;border-radius:6px;cursor:pointer;font-size:12px;color:var(--text-2);transition:all .15s;}
+  .filt-item:hover,.filt-item.active{background:rgba(59,130,246,0.08);color:var(--text);}
+  .filt-item.active{color:var(--blue);}
+  .filt-count{font-size:11px;color:var(--text-3);}
+
+  .budget-range{padding:4px 0;}
+  .budget-inputs{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:6px;margin-bottom:8px;}
+  .budget-input{padding:6px 8px;background:var(--bg-el);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:'Space Grotesk',sans-serif;font-size:12px;width:100%;outline:none;}
+  .range-sep{font-size:11px;color:var(--text-3);}
+  .range-bar{height:3px;background:var(--bg-el);border-radius:2px;overflow:hidden;}
+  .range-fill{height:100%;width:60%;background:var(--blue);border-radius:2px;}
+
+  .filt-check{display:flex;align-items:center;gap:8px;padding:4px 0;font-size:12px;color:var(--text-2);}
+  .filt-check input{accent-color:var(--blue);}
+
+  .marketplace-content{padding:16px;overflow-y:auto;display:flex;flex-direction:column;gap:12px;}
+
+  /* Search hero */
+  .search-hero{background:linear-gradient(135deg,rgba(59,130,246,0.1),rgba(14,165,233,0.06));border:1px solid rgba(59,130,246,0.15);border-radius:12px;padding:20px;}
+  .search-hero h2{font-size:18px;font-weight:800;margin-bottom:4px;}
+  .search-hero p{font-size:12px;color:var(--text-2);margin-bottom:14px;}
+  .search-bar{display:flex;gap:8px;}
+  .search-input{flex:1;padding:10px 14px;background:var(--bg-card);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:'Space Grotesk',sans-serif;font-size:13px;outline:none;}
+  .search-input:focus{border-color:rgba(59,130,246,0.4);}
+  .cat-select{padding:10px 12px;background:var(--bg-el);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:'Space Grotesk',sans-serif;font-size:12px;outline:none;}
+  .search-btn{padding:10px 16px;background:var(--blue);border:none;border-radius:8px;color:white;font-family:'Space Grotesk',sans-serif;font-size:13px;font-weight:600;cursor:pointer;}
+  .popular-row{display:flex;align-items:center;gap:6px;margin-top:10px;flex-wrap:wrap;}
+  .pop-label{font-size:11px;color:var(--text-3);}
+  .pop-tag{padding:3px 9px;border-radius:12px;font-size:11px;font-weight:500;background:rgba(255,255,255,0.05);border:1px solid var(--border);color:var(--text-2);cursor:pointer;}
+  .pop-tag:nth-child(2){background:rgba(59,130,246,0.08);border-color:rgba(59,130,246,0.2);color:var(--blue);}
+  .pop-tag:nth-child(4){background:rgba(34,197,94,0.08);border-color:rgba(34,197,94,0.2);color:var(--green);}
+  .pop-tag:nth-child(6){background:rgba(239,68,68,0.08);border-color:rgba(239,68,68,0.2);color:var(--red);}
+
+  /* Results header */
+  .results-hdr{display:flex;align-items:center;justify-content:space-between;}
+  .results-count{font-size:12px;color:var(--text-2);}
+  .sort-select{padding:5px 10px;background:var(--bg-card);border:1px solid var(--border);border-radius:6px;color:var(--text-2);font-family:'Space Grotesk',sans-serif;font-size:12px;outline:none;}
+
+  /* Service cards */
+  .service-card{background:var(--bg-card);border:1px solid var(--border);border-radius:10px;overflow:hidden;cursor:pointer;transition:all .15s;}
+  .service-card:hover{border-color:rgba(255,255,255,0.12);transform:translateY(-1px);}
+  .sc-image{height:120px;display:flex;align-items:center;justify-content:center;font-size:36px;position:relative;}
+  .ai-match-badge{position:absolute;top:8px;right:8px;padding:3px 8px;background:rgba(14,165,233,0.2);border:1px solid rgba(14,165,233,0.3);border-radius:4px;font-size:10px;font-weight:700;color:var(--teal);}
+  .sc-body{padding:12px 14px;}
+  .sc-title{font-size:13px;font-weight:700;margin-bottom:6px;}
+  .sc-meta{display:flex;align-items:center;gap:6px;margin-bottom:6px;}
+  .sc-avatar{width:18px;height:18px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;}
+  .sc-name{font-size:11px;color:var(--text-2);}
+  .verified{font-size:10px;padding:1px 5px;background:rgba(34,197,94,0.1);color:var(--green);border-radius:3px;font-weight:600;}
+  .sc-footer{display:flex;align-items:center;justify-content:space-between;}
+  .stars{font-size:11px;color:var(--yellow);}
+  .sc-price{font-size:13px;font-weight:700;color:var(--text);}
+</style>
+</head>
+<body>
+<div class="sidebar">
+  <div class="sl"><div class="lb">K</div><span style="font-size:15px;font-weight:600;">kogi</span></div>
+  <div class="ni"><span>◇ Dashboard</span></div>
+  <div class="ni"><span>▤ Portfolio</span></div>
+  <div class="ni"><span>▦ Work Board</span><span class="bge">3</span></div>
+  <div class="ni active"><span>◆ Marketplace</span></div>
+  <div class="ni"><span>⊕ Exchange</span><span class="bge">2</span></div>
+  <div class="ni"><span>◎ Idea Studio</span></div>
+  <div class="ni"><span>✦ Community</span><span class="bge">7</span></div>
+  <div class="ni"><span>◆ Work &amp; OKRs</span></div>
+  <div class="ni"><span>● Funding</span></div>
+  <div class="ni"><span>⬡ Governance</span><span class="bge">1</span></div>
+  <div class="ni"><span>✦ AI Agent</span></div>
+  <div class="ni"><span>◆ Analytics</span></div>
+  <div class="ni"><span>⊙ Search</span></div>
+  <div class="ni"><span>⊙ Settings</span></div>
+  <div class="sb-bot"><div class="ua"><div class="av">JD</div><div><div style="font-size:12px;font-weight:600;">Jordan Davis</div><div style="font-size:10px;color:var(--text-3);">Pro Plan</div></div></div></div>
+</div>
+
+<div class="main">
+  <div class="topbar">
+    <div class="topbar-title">Marketplace</div>
+    <div class="tb-right">
+      <div class="sb-box">⊙ Search everything… <span class="kbd">⌘K</span></div>
+      <div class="ib">◑</div><div class="ib">♡</div><div class="ib">?</div>
+      <button class="btn-new">+ List a Service</button>
+    </div>
+  </div>
+
+  <div class="body">
+    <div class="sidebar-filters">
+      <div class="filt-section">
+        <div class="filt-title">Category</div>
+        <div class="filt-item active"><span>All Services</span><span class="filt-count">4,200</span></div>
+        <div class="filt-item"><span>Development</span><span class="filt-count">1,820</span></div>
+        <div class="filt-item"><span>Design</span><span class="filt-count">960</span></div>
+        <div class="filt-item"><span>Writing &amp; Content</span><span class="filt-count">640</span></div>
+        <div class="filt-item"><span>Marketing</span><span class="filt-count">380</span></div>
+        <div class="filt-item"><span>Data &amp; Analytics</span><span class="filt-count">240</span></div>
+      </div>
+      <div class="filt-section">
+        <div class="filt-title">Budget</div>
+        <div class="budget-inputs">
+          <input class="budget-input" value="$50">
+          <span class="range-sep">—</span>
+          <input class="budget-input" value="$500">
+        </div>
+        <div class="range-bar"><div class="range-fill"></div></div>
+      </div>
+      <div class="filt-section">
+        <div class="filt-title">Filters</div>
+        <div class="filt-check"><input type="checkbox" checked><span>Top Rated (4.8+)</span></div>
+        <div class="filt-check"><input type="checkbox"><span>Kogi Verified</span></div>
+        <div class="filt-check"><input type="checkbox"><span>Fast delivery (&lt; 48h)</span></div>
+        <div class="filt-check"><input type="checkbox" checked><span>Portfolio shown</span></div>
+      </div>
+    </div>
+
+    <div class="marketplace-content">
+      <div class="search-hero">
+        <h2>Find independent talent &amp; services</h2>
+        <p>2.5% platform fee · Escrow protected · 4,200+ active listings</p>
+        <div class="search-bar">
+          <input class="search-input" placeholder="♡ React developer for SaaS startup..." value="React developer for SaaS startup...">
+          <select class="cat-select"><option>All Categories</option></select>
+          <button class="search-btn">Search</button>
+        </div>
+        <div class="popular-row">
+          <span class="pop-label">Popular:</span>
+          <span class="pop-tag">React developer</span>
+          <span class="pop-tag">Logo design</span>
+          <span class="pop-tag">SEO writing</span>
+          <span class="pop-tag">Data analysis</span>
+          <span class="pop-tag">Video editing</span>
+        </div>
+      </div>
+
+      <div class="results-hdr">
+        <span class="results-count">Showing 1–12 of 1,820 results</span>
+        <select class="sort-select"><option>Best Match</option></select>
+      </div>
+
+      <!-- Service cards grid -->
+      <div style="display:grid;grid-template-columns:1fr;gap:10px;">
+        <div class="service-card">
+          <div class="sc-image" style="background:linear-gradient(135deg,#1e3a5f,#0f2847);">🖥</div>
+          <div class="sc-body">
+            <div class="sc-title">React / Next.js Full-Stack Development</div>
+            <div class="sc-meta">
+              <div class="sc-avatar" style="background:linear-gradient(135deg,#3b82f6,#6366f1);">AK</div>
+              <span class="sc-name">Alex Kim</span>
+              <span class="verified">Verified</span>
+            </div>
+            <div class="sc-footer">
+              <span class="stars">★ 4.9 <span style="color:var(--text-3);">(124)</span></span>
+              <span class="sc-price">from $120/hr</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="service-card">
+          <div class="sc-image" style="background:linear-gradient(135deg,#3b1d8c,#1a0d4e);">✦</div>
+          <div class="sc-body">
+            <div class="sc-title">Brand Identity Design — Logo + Guidelines</div>
+            <div class="sc-meta">
+              <div class="sc-avatar" style="background:linear-gradient(135deg,#f472b6,#ec4899);">SM</div>
+              <span class="sc-name">Sofia M.</span>
+              <span class="verified">Verified</span>
+            </div>
+            <div class="sc-footer">
+              <span class="stars">★ 5.0 <span style="color:var(--text-3);">(88)</span></span>
+              <span class="sc-price">$850 fixed</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="service-card">
+          <div class="sc-image" style="background:linear-gradient(135deg,#064e3b,#022c22);position:relative;">📊<span class="ai-match-badge">AI Match</span></div>
+          <div class="sc-body">
+            <div class="sc-title">Data Analysis &amp; Business Intelligence Reports</div>
+            <div class="sc-meta">
+              <div class="sc-avatar" style="background:linear-gradient(135deg,#22c55e,#16a34a);">RN</div>
+              <span class="sc-name">Rania N.</span>
+              <span class="verified">Verified</span>
+            </div>
+            <div class="sc-footer">
+              <span class="stars">★ 4.8 <span style="color:var(--text-3);">(62)</span></span>
+              <span class="sc-price">from $200/proj</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

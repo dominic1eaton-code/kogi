@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kogi — Portfolio</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap');
+  :root{--bg:#0a1628;--bg-sb:#0c1a2e;--bg-card:#111d30;--bg-el:#16253e;--border:rgba(255,255,255,0.07);--text:#e8edf5;--text-2:#7a8fa8;--text-3:#4a5e78;--blue:#3b82f6;--teal:#0ea5e9;--green:#22c55e;--red:#ef4444;--yellow:#fbbf24;--purple:#a78bfa;--grad:linear-gradient(135deg,#38bdf8,#3b82f6,#6366f1);}
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{font-family:'Space Grotesk',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;}
+
+  .sidebar{width:200px;min-height:100vh;background:var(--bg-sb);border-right:1px solid var(--border);display:flex;flex-direction:column;padding:16px 0;flex-shrink:0;}
+  .sl{display:flex;align-items:center;gap:8px;padding:4px 16px 14px;border-bottom:1px solid var(--border);margin-bottom:8px;}
+  .lb{width:28px;height:28px;background:var(--grad);border-radius:7px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:12px;color:white;}
+  .ni{display:flex;align-items:center;justify-content:space-between;padding:7px 16px;font-size:12px;color:var(--text-2);cursor:pointer;border-left:2px solid transparent;transition:all .15s;}
+  .ni:hover{color:var(--text);background:rgba(255,255,255,0.03);}
+  .ni.active{color:var(--text);background:rgba(59,130,246,0.1);border-left-color:var(--blue);}
+  .bge{background:var(--blue);color:white;font-size:10px;font-weight:600;padding:1px 5px;border-radius:10px;}
+  .sb-bot{margin-top:auto;padding:12px 16px 8px;border-top:1px solid var(--border);}
+  .ua{display:flex;align-items:center;gap:8px;}
+  .av{width:28px;height:28px;background:linear-gradient(135deg,#6366f1,#8b5cf6);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;}
+
+  .main{flex:1;display:flex;flex-direction:column;overflow:hidden;}
+  .topbar{display:flex;align-items:center;justify-content:space-between;padding:0 20px;height:48px;border-bottom:1px solid var(--border);flex-shrink:0;}
+  .topbar-title{font-size:16px;font-weight:700;}
+  .tb-right{display:flex;align-items:center;gap:8px;}
+  .sb-box{display:flex;align-items:center;gap:8px;background:var(--bg-card);border:1px solid var(--border);border-radius:7px;padding:6px 12px;font-size:12px;color:var(--text-3);width:200px;}
+  .kbd{font-family:'JetBrains Mono',monospace;font-size:10px;background:var(--bg-el);padding:1px 4px;border-radius:3px;}
+  .ib{width:30px;height:30px;background:var(--bg-card);border:1px solid var(--border);border-radius:7px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:13px;}
+  .btn-new{padding:6px 12px;background:var(--blue);border:none;border-radius:7px;color:white;font-family:'Space Grotesk',sans-serif;font-size:12px;font-weight:600;cursor:pointer;}
+
+  .content{flex:1;padding:20px;overflow-y:auto;display:flex;flex-direction:column;gap:12px;}
+
+  /* Portfolio header row */
+  .port-header{display:flex;align-items:center;justify-content:space-between;}
+  .port-title-area h2{font-size:22px;font-weight:800;letter-spacing:-0.3px;}
+  .port-meta{font-size:12px;color:var(--text-2);margin-top:3px;}
+  .view-btns{display:flex;gap:4px;}
+  .vb{padding:6px 12px;background:var(--bg-card);border:1px solid var(--border);border-radius:6px;font-size:12px;color:var(--text-2);cursor:pointer;font-family:'Space Grotesk',sans-serif;}
+  .vb.active{background:rgba(59,130,246,0.15);border-color:rgba(59,130,246,0.3);color:var(--blue);}
+
+  /* Program card — kogi-v3 dense layout with colored left border */
+  .program-card{background:var(--bg-card);border:1px solid var(--border);border-radius:12px;overflow:hidden;}
+  .program-accent{height:3px;}
+  .prog-body{padding:18px 20px;}
+  .prog-type{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;color:var(--text-3);margin-bottom:4px;}
+  .prog-name{font-size:17px;font-weight:800;letter-spacing:-0.2px;margin-bottom:5px;}
+  .prog-desc{font-size:12px;color:var(--text-2);margin-bottom:14px;}
+
+  /* Stats row — dense 3-col */
+  .prog-stats{display:grid;grid-template-columns:repeat(3,auto);gap:0;margin-bottom:12px;width:fit-content;}
+  .ps{display:flex;flex-direction:column;padding-right:20px;}
+  .ps .v{font-size:20px;font-weight:800;font-family:'JetBrains Mono',monospace;}
+  .ps .l{font-size:10px;color:var(--text-3);text-transform:uppercase;letter-spacing:0.5px;}
+  .ps .v.money{color:var(--green);}
+
+  /* Progress bar */
+  .prog-bar-row{display:flex;flex-direction:column;gap:4px;}
+  .pb-track{height:5px;background:var(--bg-el);border-radius:3px;overflow:hidden;}
+  .pb-fill{height:100%;border-radius:3px;}
+  .pb-label{font-size:11px;color:var(--text-2);}
+
+  .status-badge{font-size:10px;font-weight:600;padding:3px 8px;border-radius:4px;}
+  .badge-green{background:rgba(34,197,94,0.12);color:var(--green);}
+  .badge-red{background:rgba(239,68,68,0.12);color:var(--red);}
+  .prog-header-row{display:flex;align-items:flex-start;justify-content:space-between;}
+
+  /* Resources card */
+  .resource-card{background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:18px 20px;display:grid;grid-template-columns:auto 1fr auto;gap:14px;align-items:start;}
+  .res-icon{width:36px;height:36px;background:var(--bg-el);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;}
+  .res-type{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;color:var(--text-3);margin-bottom:3px;}
+  .res-name{font-size:15px;font-weight:700;margin-bottom:8px;}
+  .res-items{display:flex;flex-direction:column;gap:3px;}
+  .ri{font-size:12px;color:var(--text-2);}
+  .res-values{text-align:right;display:flex;flex-direction:column;gap:3px;}
+  .rv{font-size:12px;color:var(--text-2);}
+  .rv.money{color:var(--green);font-weight:600;}
+</style>
+</head>
+<body>
+<div class="sidebar">
+  <div class="sl"><div class="lb">K</div><span style="font-size:15px;font-weight:600;">kogi</span></div>
+  <div class="ni"><span>◇ Dashboard</span></div>
+  <div class="ni active"><span>▤ Portfolio</span></div>
+  <div class="ni"><span>▦ Work Board</span><span class="bge">3</span></div>
+  <div class="ni"><span>◆ Marketplace</span></div>
+  <div class="ni"><span>⊕ Exchange</span><span class="bge">2</span></div>
+  <div class="ni"><span>◎ Idea Studio</span></div>
+  <div class="ni"><span>✦ Community</span><span class="bge">7</span></div>
+  <div class="ni"><span>◆ Work &amp; OKRs</span></div>
+  <div class="ni"><span>● Funding</span></div>
+  <div class="ni"><span>⬡ Governance</span><span class="bge">1</span></div>
+  <div class="ni"><span>✦ AI Agent</span></div>
+  <div class="ni"><span>◆ Analytics</span></div>
+  <div class="ni"><span>⊙ Search</span></div>
+  <div class="ni"><span>⊙ Settings</span></div>
+  <div class="sb-bot"><div class="ua"><div class="av">JD</div><div><div style="font-size:12px;font-weight:600;">Jordan Davis</div><div style="font-size:10px;color:var(--text-3);">Pro Plan</div></div></div></div>
+</div>
+
+<div class="main">
+  <div class="topbar">
+    <div class="topbar-title">Portfolio</div>
+    <div class="tb-right">
+      <div class="sb-box">⊙ Search everything… <span class="kbd">⌘K</span></div>
+      <div class="ib">◑</div><div class="ib">?</div>
+      <button class="btn-new">+ New Item</button>
+    </div>
+  </div>
+
+  <div class="content">
+    <div class="port-header">
+      <div class="port-title-area">
+        <h2>My Portfolio</h2>
+        <div class="port-meta">6 programs · 12 projects · 3 resources</div>
+      </div>
+      <div class="view-btns">
+        <button class="vb">≡ List</button>
+        <button class="vb active">▦ Grid</button>
+        <button class="vb">▲ Map</button>
+      </div>
+    </div>
+
+    <!-- Design Studio 2025 -->
+    <div class="program-card">
+      <div class="program-accent" style="background:linear-gradient(90deg,var(--blue),var(--teal),var(--green));"></div>
+      <div class="prog-body">
+        <div class="prog-header-row">
+          <div>
+            <div class="prog-type">Program</div>
+            <div class="prog-name">Design Studio 2025</div>
+            <div class="prog-desc">Full-service brand design and digital product studio. 3 active client projects.</div>
+          </div>
+          <span class="status-badge badge-green">Active</span>
+        </div>
+        <div class="prog-stats">
+          <div class="ps"><div class="v">4</div><div class="l">Projects</div></div>
+          <div class="ps"><div class="v">18</div><div class="l">Stories</div></div>
+          <div class="ps"><div class="v money">$8.2K</div><div class="l">This month</div></div>
+        </div>
+        <div class="prog-bar-row">
+          <div class="pb-track"><div class="pb-fill" style="width:73%;background:linear-gradient(90deg,var(--blue),var(--teal));"></div></div>
+          <div class="pb-label">73% portfolio health</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SaaS Product Dev -->
+    <div class="program-card">
+      <div class="program-accent" style="background:linear-gradient(90deg,#f472b6,var(--red),var(--yellow));"></div>
+      <div class="prog-body">
+        <div class="prog-header-row">
+          <div>
+            <div class="prog-type">Program</div>
+            <div class="prog-name">SaaS Product Dev</div>
+            <div class="prog-desc">Building KogiTask — a niche task management app. Early MVP phase.</div>
+          </div>
+          <span class="status-badge badge-red">At risk</span>
+        </div>
+        <div class="prog-stats">
+          <div class="ps"><div class="v">1</div><div class="l">Projects</div></div>
+          <div class="ps"><div class="v">34</div><div class="l">Stories</div></div>
+          <div class="ps"><div class="v money" style="color:var(--text-3);">$0</div><div class="l">Revenue</div></div>
+        </div>
+        <div class="prog-bar-row">
+          <div class="pb-track"><div class="pb-fill" style="width:38%;background:var(--red);"></div></div>
+          <div class="pb-label">38% portfolio health</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Content & Education -->
+    <div class="program-card">
+      <div class="program-accent" style="background:linear-gradient(90deg,var(--yellow),var(--green));"></div>
+      <div class="prog-body">
+        <div class="prog-header-row">
+          <div>
+            <div class="prog-type">Sub-Portfolio</div>
+            <div class="prog-name">Content &amp; Education</div>
+            <div class="prog-desc">Newsletter, YouTube channel, and course development. Q2 goals in progress.</div>
+          </div>
+          <span class="status-badge badge-green">Active</span>
+        </div>
+        <div class="prog-stats">
+          <div class="ps"><div class="v">3</div><div class="l">Projects</div></div>
+          <div class="ps"><div class="v">11</div><div class="l">Stories</div></div>
+          <div class="ps"><div class="v money">$1.1K</div><div class="l">Monthly</div></div>
+        </div>
+        <div class="prog-bar-row">
+          <div class="pb-track"><div class="pb-fill" style="width:55%;background:var(--yellow);"></div></div>
+          <div class="pb-label">55% portfolio health</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Resources -->
+    <div class="resource-card">
+      <div class="res-icon">📦</div>
+      <div>
+        <div class="res-type">Resources</div>
+        <div class="res-name">Assets &amp; Capital</div>
+        <div class="res-items">
+          <div class="ri">Software licenses</div>
+          <div class="ri">Investment accounts</div>
+          <div class="ri">Equipment (laptop, etc)</div>
+        </div>
+      </div>
+      <div class="res-values">
+        <div class="rv">6 tools</div>
+        <div class="rv money">$12,400</div>
+        <div class="rv">3 items</div>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>
