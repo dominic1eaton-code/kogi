@@ -14,7 +14,7 @@ marketplace
         - contracts
         - jobs
         - tasks
-    - 
+        - investments
         - offers
         - deals
         - bids
@@ -487,7 +487,8 @@ solution
         - part ID
         - part name
         - part material
-        - part design|blueprint|
+        - part design|blueprint|mockup
+        - part data+data-table
     - solution types
         - product
         - service
@@ -496,7 +497,23 @@ solution
         - application
         - factory
         - environment
-        - system
+        - system|entity
+        - process
+solution charter
+    - vision, mission, goals, objectives, outcomes, milestones, assumptions, risks, 
+    - solution brief, overview
+    - solution playbooks
+        - strategies
+        - tactics
+        - operations
+    - solution guidebooks
+        - documentation
+solution content management system
+    - files
+    - documents
+    - folders
+    - briefs
+    - archives
 solution configuration management
     - solution release management
         - solution release train
@@ -902,8 +919,10 @@ a user may have a work profile A and work profile B, where work profile A is for
 
 profiles are personalizable, can have multiple personas attached to them (investor, developer, creative, etc...), have user preferences and configurations+options+parameters+settings, have tiered privilages+persmissions+visbility+access control, are shareable (can generate a linktree and form linkforests). Profiles also contain contact information and configurable/enable+disable communication channels of/for a user.
 
-users can also have different types of personas:
-personas can help users find other users, based on their personas and the skills associated with that persona
+~ connect linktree api
+
+users can also have different types of personas and roles:
+personas and roles classify+categorize users/users skill sets, and help users find other users, based on their personas and the skills associated with that persona
 
 
 
@@ -962,6 +981,79 @@ accessibility
 
 ---
 
+kogi-pages tree:
+
+home
+dashboard
+portfolio
+office
+marketplace
+exchange
+studio
+
+developer
+settings
+profile
+
+
+views:
+
+grid|tiles
+board
+dashboard
+room|chat
+options
+spaces
+content
+timeline
+feed
+
+
+work/user flows+journeys
+:
+new user
+    - create account
+    - register
+    - login
+    - onboard
+    - create profile
+    - open dashboard
+    - open portfolio
+        - add new portfolio component
+            - create|edit|view|delete portfolio item
+            - create|edit|view|delete portfolio container
+
+
+---
+
+shangoOS 
+    - idea orchestrator+factory 
+    - idea pipeline
+    - from idea to realized solution, designed with qala solutions, managed in kogi portfolios, scaled through ume organizations
+
+
+
+resources|ideas|systems|knowledge as a service
+knowledge|resources transfer system
+labor|capital|skills+knowledge|resources exchange+market system
+
+
+security+privacy+protection management system
+
+
+
+IP management system
+    - patents
+    - rights
+    - copyrights
+    - trademarks
+    - watermarks
+    - licenses
+    - branding, logos, marks
+    - contracts, agreements
+
+---
+
 - home
 - work
 - community
@@ -982,3 +1074,36 @@ kogi-root
 - center
 - work
 - portfolio
+
+
+---
+
+pbulication channels
+- marketplace
+- community
+- exchange
+- rooms
+- spaces
+- private|public|protected
+
+---
+
+equity+capitalization tables, distributions, shares
+equity+resource+capital+knowledge+skill distirbution channels
+
+---
+
+regenerate each of these html pages where posts/messages/tiles have multimedia, some have background images, some have media/file attachments, links, pictures, graphics, images, text, emojis, reactions, and any other social platfrom/netowkring/media artifacts, spriknled throughout:
+
+file:///C:/dev/ws/kogi_dev/kogi-docs/screen-pages/community-01-feed.html
+file:///C:/dev/ws/kogi_dev/kogi-docs/screen-pages/community-04-rooms-chat.html
+file:///C:/dev/ws/kogi_dev/kogi-docs/screen-pages/community-05-messages.html
+file:///C:/dev/ws/kogi_dev/kogi-docs/screen-pages/community-06-showcase.html
+file:///C:/dev/ws/kogi_dev/kogi-docs/screen-pages/community-07-events.html
+file:///C:/dev/ws/kogi_dev/kogi-docs/screen-pages/kogi-deal-room.html
+file:///C:/dev/ws/kogi_dev/kogi-docs/screen-pages/kogi-group-messages.html
+file:///C:/dev/ws/kogi_dev/kogi-docs/screen-pages/kogi-inbox-dm.html
+
+
+---
+
