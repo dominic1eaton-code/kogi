@@ -1,0 +1,653 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KOGI · LinkTree Editor</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap');
+  :root{--bg:#070910;--sidebar:#0b0d16;--card:#0f1221;--card2:#131729;--border:#1a2035;--border2:#232a42;--teal:#0ccfca;--teal-dim:#0a9994;--amber:#e8a030;--amber-dim:#b07820;--green:#22c55e;--green-dim:#15803d;--blue:#3b82f6;--red:#ef4444;--purple:#a855f7;--mag:#d946ef;--text:#dde4f0;--text2:#7a879e;--text3:#3d4a62;}
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{background:var(--bg);color:var(--text);font-family:'IBM Plex Sans',sans-serif;font-size:13px;display:flex;min-height:100vh;height:100vh;overflow:hidden;}
+  .sidebar{width:200px;min-width:200px;background:var(--sidebar);border-right:1px solid var(--border);display:flex;flex-direction:column;}
+  .logo{padding:18px 16px;border-bottom:1px solid var(--border);}
+  .logo-text{font-family:'IBM Plex Mono',monospace;font-size:18px;font-weight:600;letter-spacing:0.08em;color:var(--teal);}
+  .logo-sub{font-size:9px;color:var(--text3);letter-spacing:0.15em;text-transform:uppercase;margin-top:2px;}
+  .nav{padding:12px 0;flex:1;overflow-y:auto;}
+  .nav-section{padding:8px 16px 4px;font-size:9px;color:var(--text3);letter-spacing:0.18em;text-transform:uppercase;font-family:'IBM Plex Mono',monospace;}
+  .nav-item{display:flex;align-items:center;gap:10px;padding:7px 16px;color:var(--text2);cursor:pointer;font-size:12px;border-left:2px solid transparent;}
+  .nav-item.active{color:var(--teal);background:rgba(12,207,202,0.07);border-left-color:var(--teal);}
+  .nav-icon{width:14px;text-align:center;font-size:12px;}
+  .avatar-sm{width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,#0ccfca,#3b82f6);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:#fff;flex-shrink:0;}
+  .profile-bottom{padding:12px 16px;border-top:1px solid var(--border);}
+  .profile-mini{display:flex;align-items:center;gap:8px;}
+
+  .main{flex:1;display:flex;flex-direction:column;overflow:hidden;}
+  .topbar{height:48px;border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 20px;gap:12px;background:var(--sidebar);flex-shrink:0;}
+  .topbar-path{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text3);}
+  .topbar-path span{color:var(--text2);}
+  .topbar-path span.cur{color:var(--text);}
+  .spacer{flex:1;}
+  .btn-sm{padding:5px 12px;border-radius:4px;font-size:11px;font-family:'IBM Plex Mono',monospace;cursor:pointer;border:1px solid;transition:all 0.15s;}
+  .btn-teal{background:rgba(12,207,202,0.12);border-color:var(--teal-dim);color:var(--teal);}
+  .btn-teal:hover{background:rgba(12,207,202,0.22);}
+  .btn-ghost{background:transparent;border-color:var(--border2);color:var(--text2);}
+  .btn-ghost:hover{border-color:var(--text3);color:var(--text);}
+  .btn-amber{background:rgba(232,160,48,0.1);border-color:var(--amber-dim);color:var(--amber);}
+
+  /* Stats mini bar */
+  .stats-mini{display:flex;background:var(--card);border-bottom:1px solid var(--border);flex-shrink:0;}
+  .sm-box{flex:1;padding:10px 16px;border-right:1px solid var(--border);}
+  .sm-box:last-child{border-right:none;}
+  .sm-val{font-family:'IBM Plex Mono',monospace;font-size:16px;font-weight:600;}
+  .sm-lbl{font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:0.1em;margin-top:1px;}
+
+  /* Three-panel layout */
+  .editor-layout{flex:1;display:grid;grid-template-columns:260px 1fr 320px;overflow:hidden;}
+
+  /* Left: branch nav */
+  .branch-nav{background:var(--sidebar);border-right:1px solid var(--border);overflow-y:auto;display:flex;flex-direction:column;}
+  .bn-header{padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+  .bn-title{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:0.14em;}
+  .bn-add{font-size:18px;color:var(--teal);cursor:pointer;line-height:1;}
+  .bn-item{display:flex;align-items:center;gap:10px;padding:9px 16px;cursor:pointer;border-left:2px solid transparent;transition:all 0.12s;}
+  .bn-item:hover{background:rgba(255,255,255,0.03);}
+  .bn-item.active{background:rgba(12,207,202,0.06);border-left-color:var(--teal);}
+  .bn-icon{font-size:14px;width:18px;text-align:center;}
+  .bn-name{flex:1;font-size:12px;color:var(--text2);}
+  .bn-item.active .bn-name{color:var(--text);}
+  .bn-count{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--text3);}
+  .bn-drag{color:var(--text3);font-size:12px;cursor:grab;}
+  .bn-divider{height:1px;background:var(--border);margin:6px 0;}
+  .bn-footer{padding:12px 16px;border-top:1px solid var(--border);margin-top:auto;}
+  .url-display{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--teal);background:rgba(12,207,202,0.06);border:1px solid var(--teal-dim);border-radius:4px;padding:7px 10px;display:flex;align-items:center;justify-content:space-between;gap:8px;}
+  .url-copy{color:var(--teal-dim);cursor:pointer;font-size:12px;}
+  .url-copy:hover{color:var(--teal);}
+
+  /* Middle: leaf editor */
+  .leaf-editor{overflow-y:auto;padding:20px;background:var(--bg);}
+
+  .section-label{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:0.15em;margin-bottom:10px;display:flex;align-items:center;gap:8px;}
+  .section-label::after{content:'';flex:1;height:1px;background:var(--border);}
+
+  /* Featured row */
+  .featured-row{display:flex;gap:8px;overflow-x:auto;padding-bottom:8px;margin-bottom:16px;}
+  .feat-chip{background:var(--card);border:1px solid var(--teal-dim);border-radius:6px;padding:8px 12px;display:flex;align-items:center;gap:8px;flex-shrink:0;cursor:pointer;transition:all 0.15s;}
+  .feat-chip:hover{background:rgba(12,207,202,0.06);}
+  .feat-chip-icon{font-size:16px;}
+  .feat-chip-name{font-size:11px;color:var(--text);}
+  .feat-chip-handle{font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--teal);}
+
+  /* Leaf card */
+  .leaf-card{background:var(--card);border:1px solid var(--border);border-radius:6px;margin-bottom:8px;overflow:hidden;transition:border-color 0.15s;}
+  .leaf-card:hover{border-color:var(--border2);}
+  .leaf-card.featured-leaf{border-color:rgba(217,70,239,0.4);}
+  .lc-row{display:flex;align-items:center;gap:10px;padding:9px 12px;cursor:pointer;}
+  .lc-drag{color:var(--border2);cursor:grab;font-size:14px;flex-shrink:0;}
+  .lc-icon{width:28px;height:28px;border-radius:5px;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;}
+  .lc-info{flex:1;min-width:0;}
+  .lc-name{font-size:12px;color:var(--text);font-weight:500;}
+  .lc-handle{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--text3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .lc-tags{display:flex;gap:4px;margin-top:3px;flex-wrap:wrap;}
+  .lc-tag{font-size:9px;font-family:'IBM Plex Mono',monospace;padding:1px 5px;border-radius:2px;border:1px solid;}
+  .tag-pub{background:rgba(34,197,94,0.06);border-color:var(--green-dim);color:var(--green);}
+  .tag-conn{background:rgba(59,130,246,0.06);border-color:#1d4ed8;color:var(--blue);}
+  .tag-trust{background:rgba(232,160,48,0.06);border-color:var(--amber-dim);color:var(--amber);}
+  .tag-priv{background:rgba(122,135,158,0.06);border-color:var(--text3);color:var(--text3);}
+  .tag-feat{background:rgba(217,70,239,0.06);border-color:#86198f;color:var(--mag);}
+  .tag-verif{background:rgba(12,207,202,0.06);border-color:var(--teal-dim);color:var(--teal);}
+  .lc-clicks{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text3);flex-shrink:0;width:52px;text-align:right;}
+  .lc-toggle{width:30px;height:17px;border-radius:8px;background:var(--border2);position:relative;cursor:pointer;flex-shrink:0;}
+  .lc-toggle.on{background:var(--teal-dim);}
+  .lc-toggle::after{content:'';position:absolute;top:2px;left:2px;width:13px;height:13px;border-radius:50%;background:#fff;transition:left 0.15s;}
+  .lc-toggle.on::after{left:15px;}
+  .lc-expand{color:var(--text3);font-size:11px;flex-shrink:0;padding:2px 4px;}
+
+  /* Inline leaf edit */
+  .lc-edit{padding:12px;background:var(--card2);border-top:1px solid var(--border);}
+  .le-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;}
+  label{display:block;font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:0.12em;font-family:'IBM Plex Mono',monospace;margin-bottom:4px;}
+  input[type=text],select{width:100%;background:var(--card);border:1px solid var(--border2);border-radius:4px;padding:6px 8px;color:var(--text);font-size:11px;font-family:'IBM Plex Sans',sans-serif;outline:none;}
+  input:focus,select:focus{border-color:var(--teal-dim);}
+  input::placeholder{color:var(--text3);}
+  select option{background:var(--card);}
+  .le-actions{display:flex;gap:6px;justify-content:flex-end;margin-top:8px;}
+  .le-btn{padding:4px 10px;border-radius:3px;font-size:10px;font-family:'IBM Plex Mono',monospace;cursor:pointer;border:1px solid;}
+
+  /* Add leaf row */
+  .add-leaf-row{display:flex;gap:8px;padding:10px 12px;background:var(--card2);border:1px dashed var(--border2);border-radius:6px;cursor:pointer;align-items:center;transition:all 0.15s;margin-bottom:8px;}
+  .add-leaf-row:hover{border-color:var(--teal-dim);background:rgba(12,207,202,0.03);}
+  .add-leaf-text{font-size:12px;color:var(--text3);}
+  .add-leaf-row:hover .add-leaf-text{color:var(--teal);}
+
+  /* Right: live preview */
+  .preview-panel{background:#0a0c14;border-left:1px solid var(--border);display:flex;flex-direction:column;}
+  .pp-header{padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:var(--sidebar);}
+  .pp-title{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:0.14em;}
+  .pp-device{display:flex;gap:4px;}
+  .pp-dev-btn{padding:3px 8px;font-size:9px;border-radius:3px;cursor:pointer;border:1px solid var(--border2);color:var(--text3);font-family:'IBM Plex Mono',monospace;}
+  .pp-dev-btn.on{border-color:var(--teal-dim);color:var(--teal);background:rgba(12,207,202,0.08);}
+  .pp-scroll{flex:1;overflow-y:auto;padding:20px;display:flex;justify-content:center;}
+
+  /* Phone mockup */
+  .phone-frame{width:240px;background:#0d1020;border:2px solid var(--border2);border-radius:28px;overflow:hidden;box-shadow:0 0 40px rgba(12,207,202,0.08);}
+  .phone-notch{width:80px;height:20px;background:#070910;border-radius:0 0 14px 14px;margin:0 auto;}
+  .phone-content{padding:16px;}
+  .ph-avatar{width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,#0ccfca,#3b82f6,#a855f7);margin:0 auto 8px;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:600;color:#fff;}
+  .ph-name{text-align:center;font-size:14px;font-weight:600;color:var(--text);}
+  .ph-handle{text-align:center;font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--teal);margin-top:2px;}
+  .ph-bio{text-align:center;font-size:10px;color:var(--text3);margin:8px 0 14px;line-height:1.4;}
+  .ph-link{display:flex;align-items:center;gap:8px;background:var(--card);border:1px solid var(--border);border-radius:6px;padding:8px 10px;margin-bottom:6px;cursor:pointer;transition:background 0.15s;}
+  .ph-link:hover{background:var(--card2);}
+  .ph-link-icon{width:22px;height:22px;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0;}
+  .ph-link-text{flex:1;}
+  .ph-link-name{font-size:11px;color:var(--text);}
+  .ph-link-handle{font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--text3);}
+  .ph-link-arr{color:var(--text3);font-size:10px;}
+  .ph-section{font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:0.14em;font-family:'IBM Plex Mono',monospace;margin:10px 0 6px;padding:0 2px;}
+  .ph-featured{display:flex;gap:6px;margin-bottom:12px;overflow:hidden;}
+  .ph-feat{flex:1;background:var(--card);border:1px solid var(--border);border-radius:6px;padding:8px;text-align:center;}
+  .ph-feat-icon{font-size:16px;margin-bottom:3px;}
+  .ph-feat-name{font-size:9px;color:var(--text2);}
+  .ph-branding{text-align:center;padding:12px 0 6px;font-size:9px;color:var(--text3);font-family:'IBM Plex Mono',monospace;}
+  .ph-branding span{color:var(--teal);}
+
+  /* Share panel */
+  .share-panel{padding:14px 16px;border-top:1px solid var(--border);background:var(--sidebar);}
+  .share-title{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:0.14em;margin-bottom:10px;}
+  .share-btns{display:grid;grid-template-columns:1fr 1fr;gap:6px;}
+  .sh-btn{padding:7px;text-align:center;border-radius:4px;font-size:10px;font-family:'IBM Plex Mono',monospace;cursor:pointer;border:1px solid;transition:all 0.15s;}
+  .sh-btn-teal{background:rgba(12,207,202,0.1);border-color:var(--teal-dim);color:var(--teal);}
+  .sh-btn-ghost{background:transparent;border-color:var(--border2);color:var(--text2);}
+
+  /* Icon colors */
+  .ic-gh{background:rgba(255,255,255,0.06);}
+  .ic-li{background:rgba(10,102,194,0.15);color:#0a66c2;}
+  .ic-tw{background:rgba(29,155,240,0.12);color:#1d9bf0;}
+  .ic-fig{background:rgba(162,86,238,0.12);color:#a256ee;}
+  .ic-ss{background:rgba(255,102,0,0.15);color:#ff6600;}
+  .ic-yt{background:rgba(255,0,0,0.1);color:#ff4444;}
+  .ic-ds{background:rgba(88,101,242,0.15);color:#5865f2;}
+  .ic-bs{background:rgba(0,133,255,0.12);color:#0085ff;}
+  .ic-gh-sm{background:rgba(255,255,255,0.06);color:var(--text);}
+  .ic-nt{background:rgba(255,255,255,0.06);color:var(--text);}
+</style>
+</head>
+<body>
+<div class="sidebar">
+  <div class="logo">
+    <div class="logo-text">KOGI</div>
+    <div class="logo-sub">Independent Worker OS</div>
+  </div>
+  <nav class="nav">
+    <div class="nav-section">Core</div>
+    <div class="nav-item"><span class="nav-icon">⌂</span> Dashboard</div>
+    <div class="nav-item"><span class="nav-icon">◫</span> Office</div>
+    <div class="nav-item"><span class="nav-icon">◈</span> Portfolio</div>
+    <div class="nav-section">Identity</div>
+    <div class="nav-item"><span class="nav-icon">◉</span> Profile</div>
+    <div class="nav-item"><span class="nav-icon">⟁</span> Personas</div>
+    <div class="nav-item"><span class="nav-icon">⋈</span> Accounts</div>
+    <div class="nav-item"><span class="nav-icon">◎</span> Channels</div>
+    <div class="nav-section">Network</div>
+    <div class="nav-item active"><span class="nav-icon">⋔</span> LinkTree</div>
+    <div class="nav-item"><span class="nav-icon">⊛</span> kogi-net</div>
+    <div class="nav-item"><span class="nav-icon">⊞</span> Contacts</div>
+    <div class="nav-item"><span class="nav-icon">◻</span> Directory</div>
+    <div class="nav-section">Platform</div>
+    <div class="nav-item"><span class="nav-icon">♦</span> Bank</div>
+    <div class="nav-item"><span class="nav-icon">⊕</span> Community</div>
+  </nav>
+  <div class="profile-bottom">
+    <div class="profile-mini">
+      <div class="avatar-sm">JC</div>
+      <div>
+        <div style="font-size:12px;">Jordan Chen</div>
+        <div style="font-size:10px;color:var(--text3);">@jordan.dev</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="main">
+  <div class="topbar">
+    <div class="topbar-path">KNET / <span>@jordan.dev</span> / <span class="cur">LinkTree Editor</span></div>
+    <div class="spacer"></div>
+    <button class="btn-sm btn-ghost">Export vCard</button>
+    <button class="btn-sm btn-ghost">QR Code</button>
+    <button class="btn-sm btn-amber">Share</button>
+    <button class="btn-sm btn-teal">Save Changes</button>
+  </div>
+
+  <div class="stats-mini">
+    <div class="sm-box"><div class="sm-val" style="color:var(--teal);">28</div><div class="sm-lbl">Total Leaves</div></div>
+    <div class="sm-box"><div class="sm-val">8</div><div class="sm-lbl">Branches</div></div>
+    <div class="sm-box"><div class="sm-val" style="color:var(--amber);">1,248</div><div class="sm-lbl">Clicks (30d)</div></div>
+    <div class="sm-box"><div class="sm-val" style="color:var(--green);">22</div><div class="sm-lbl">Public Leaves</div></div>
+    <div class="sm-box"><div class="sm-val">4</div><div class="sm-lbl">Featured</div></div>
+    <div class="sm-box"><div class="sm-val" style="color:var(--purple);">100%</div><div class="sm-lbl">Indexed</div></div>
+  </div>
+
+  <div class="editor-layout">
+
+    <!-- Left: Branch Navigation -->
+    <div class="branch-nav">
+      <div class="bn-header">
+        <div class="bn-title">Branches</div>
+        <div class="bn-add">+</div>
+      </div>
+
+      <div class="bn-item active">
+        <div class="bn-drag">⋮⋮</div>
+        <div class="bn-icon">⭐</div>
+        <div class="bn-name">Featured</div>
+        <div class="bn-count">4</div>
+      </div>
+      <div class="bn-item">
+        <div class="bn-drag">⋮⋮</div>
+        <div class="bn-icon">📞</div>
+        <div class="bn-name">Contact</div>
+        <div class="bn-count">3</div>
+      </div>
+      <div class="bn-item">
+        <div class="bn-drag">⋮⋮</div>
+        <div class="bn-icon">🛠</div>
+        <div class="bn-name">Developer</div>
+        <div class="bn-count">5</div>
+      </div>
+      <div class="bn-item">
+        <div class="bn-drag">⋮⋮</div>
+        <div class="bn-icon">💼</div>
+        <div class="bn-name">Professional</div>
+        <div class="bn-count">3</div>
+      </div>
+      <div class="bn-item">
+        <div class="bn-drag">⋮⋮</div>
+        <div class="bn-icon">📣</div>
+        <div class="bn-name">Social</div>
+        <div class="bn-count">4</div>
+      </div>
+      <div class="bn-item">
+        <div class="bn-drag">⋮⋮</div>
+        <div class="bn-icon">📝</div>
+        <div class="bn-name">Publishing</div>
+        <div class="bn-count">3</div>
+      </div>
+      <div class="bn-item">
+        <div class="bn-drag">⋮⋮</div>
+        <div class="bn-icon">🎨</div>
+        <div class="bn-name">Creative</div>
+        <div class="bn-count">3</div>
+      </div>
+      <div class="bn-item">
+        <div class="bn-drag">⋮⋮</div>
+        <div class="bn-icon">👥</div>
+        <div class="bn-name">Community</div>
+        <div class="bn-count">3</div>
+      </div>
+
+      <div class="bn-divider"></div>
+
+      <div style="padding:8px 16px;">
+        <div style="font-size:10px;color:var(--text3);margin-bottom:8px;text-transform:uppercase;letter-spacing:0.12em;font-family:'IBM Plex Mono',monospace;">Tree Settings</div>
+        <div style="display:flex;flex-direction:column;gap:8px;">
+          <div>
+            <label>Tree Title</label>
+            <input type="text" value="Jordan Chen" />
+          </div>
+          <div>
+            <label>Description</label>
+            <input type="text" value="Developer · Architect · Builder" />
+          </div>
+          <div>
+            <label>Theme</label>
+            <select>
+              <option selected>Dark (Default)</option>
+              <option>Light</option>
+              <option>Teal Glass</option>
+              <option>Custom</option>
+            </select>
+          </div>
+          <div>
+            <label>Visibility</label>
+            <select>
+              <option selected>Public</option>
+              <option>Platform</option>
+              <option>Protected</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="bn-footer">
+        <div class="bn-title" style="margin-bottom:6px;">Public URL</div>
+        <div class="url-display">
+          <span>kogi.net/@jordan.dev</span>
+          <span class="url-copy">⧉</span>
+        </div>
+        <div style="margin-top:6px;">
+          <div class="url-display" style="font-size:9px;">
+            <span>kogi.net/l/jordan-dev</span>
+            <span class="url-copy">⧉</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Middle: Leaf Editor (Featured branch active) -->
+    <div class="leaf-editor">
+
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+        <div>
+          <div style="font-size:15px;font-weight:600;color:var(--text);">⭐ Featured Leaves</div>
+          <div style="font-size:11px;color:var(--text3);margin-top:2px;">Pinned at the top of your public linktree. Visible to all visitors.</div>
+        </div>
+        <button class="btn-sm btn-teal" style="font-size:10px;">+ Add Leaf</button>
+      </div>
+
+      <!-- Featured strip -->
+      <div class="section-label">Pinned · Displayed first on public page</div>
+      <div class="featured-row">
+        <div class="feat-chip">
+          <div class="feat-chip-icon">⌥</div>
+          <div>
+            <div class="feat-chip-name">GitHub</div>
+            <div class="feat-chip-handle">@jordan-dev-os</div>
+          </div>
+        </div>
+        <div class="feat-chip">
+          <div class="feat-chip-icon">S</div>
+          <div>
+            <div class="feat-chip-name">Substack</div>
+            <div class="feat-chip-handle">workeros.substack.com</div>
+          </div>
+        </div>
+        <div class="feat-chip">
+          <div class="feat-chip-icon">◈</div>
+          <div>
+            <div class="feat-chip-name">Portfolio</div>
+            <div class="feat-chip-handle">meshstudio.dev</div>
+          </div>
+        </div>
+        <div class="feat-chip">
+          <div class="feat-chip-icon">💬</div>
+          <div>
+            <div class="feat-chip-name">kogi DM</div>
+            <div class="feat-chip-handle">@jordan.dev</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- All leaves in this branch -->
+      <div class="section-label" style="margin-top:8px;">All Leaves · Featured Branch</div>
+
+      <!-- GitHub leaf (expanded) -->
+      <div class="leaf-card featured-leaf">
+        <div class="lc-row">
+          <div class="lc-drag">⋮⋮</div>
+          <div class="lc-icon ic-gh-sm">⌥</div>
+          <div class="lc-info">
+            <div class="lc-name">GitHub</div>
+            <div class="lc-handle">github.com/jordan-dev-os</div>
+            <div class="lc-tags">
+              <div class="lc-tag tag-pub">Public</div>
+              <div class="lc-tag tag-feat">Featured</div>
+              <div class="lc-tag tag-verif">Verified ✓</div>
+            </div>
+          </div>
+          <div class="lc-clicks">612 clk</div>
+          <div class="lc-toggle on"></div>
+          <div class="lc-expand">▾</div>
+        </div>
+        <div class="lc-edit">
+          <div class="le-grid">
+            <div>
+              <label>Label</label>
+              <input type="text" value="GitHub" />
+            </div>
+            <div>
+              <label>Platform</label>
+              <input type="text" value="github" />
+            </div>
+            <div>
+              <label>URL / Handle</label>
+              <input type="text" value="https://github.com/jordan-dev-os" />
+            </div>
+            <div>
+              <label>Visibility</label>
+              <select>
+                <option selected>Public</option>
+                <option>Platform</option>
+                <option>Connections</option>
+                <option>Trusted</option>
+              </select>
+            </div>
+          </div>
+          <div style="display:flex;gap:8px;align-items:center;">
+            <label style="margin:0;display:flex;align-items:center;gap:5px;cursor:pointer;">
+              <input type="checkbox" checked style="width:auto;" /> Featured
+            </label>
+            <label style="margin:0;display:flex;align-items:center;gap:5px;cursor:pointer;">
+              <input type="checkbox" checked style="width:auto;" /> Show verified badge
+            </label>
+          </div>
+          <div class="le-actions">
+            <div class="le-btn" style="background:rgba(239,68,68,0.08);border-color:#991b1b;color:var(--red);cursor:pointer;">Remove</div>
+            <div class="le-btn" style="background:rgba(12,207,202,0.1);border-color:var(--teal-dim);color:var(--teal);cursor:pointer;">Save</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Substack leaf -->
+      <div class="leaf-card featured-leaf">
+        <div class="lc-row">
+          <div class="lc-drag">⋮⋮</div>
+          <div class="lc-icon ic-ss">S</div>
+          <div class="lc-info">
+            <div class="lc-name">Substack · Worker OS</div>
+            <div class="lc-handle">workeros.substack.com</div>
+            <div class="lc-tags">
+              <div class="lc-tag tag-pub">Public</div>
+              <div class="lc-tag tag-feat">Featured</div>
+            </div>
+          </div>
+          <div class="lc-clicks">380 clk</div>
+          <div class="lc-toggle on"></div>
+          <div class="lc-expand">▸</div>
+        </div>
+      </div>
+
+      <!-- Portfolio leaf -->
+      <div class="leaf-card featured-leaf">
+        <div class="lc-row">
+          <div class="lc-drag">⋮⋮</div>
+          <div class="lc-icon" style="background:rgba(12,207,202,0.1);border:1px solid var(--teal-dim);font-size:12px;">◈</div>
+          <div class="lc-info">
+            <div class="lc-name">Mesh Studio Portfolio</div>
+            <div class="lc-handle">meshstudio.dev/portfolio</div>
+            <div class="lc-tags">
+              <div class="lc-tag tag-pub">Public</div>
+              <div class="lc-tag tag-feat">Featured</div>
+            </div>
+          </div>
+          <div class="lc-clicks">241 clk</div>
+          <div class="lc-toggle on"></div>
+          <div class="lc-expand">▸</div>
+        </div>
+      </div>
+
+      <!-- kogi DM leaf -->
+      <div class="leaf-card featured-leaf">
+        <div class="lc-row">
+          <div class="lc-drag">⋮⋮</div>
+          <div class="lc-icon" style="background:rgba(12,207,202,0.1);border:1px solid var(--teal-dim);font-size:12px;">💬</div>
+          <div class="lc-info">
+            <div class="lc-name">kogi DM · Contact Me</div>
+            <div class="lc-handle">kogi.net/dm/@jordan.dev</div>
+            <div class="lc-tags">
+              <div class="lc-tag tag-pub">Public</div>
+              <div class="lc-tag tag-feat">Featured</div>
+            </div>
+          </div>
+          <div class="lc-clicks">215 clk</div>
+          <div class="lc-toggle on"></div>
+          <div class="lc-expand">▸</div>
+        </div>
+      </div>
+
+      <div style="height:16px;"></div>
+
+      <!-- Developer branch preview -->
+      <div class="section-label">Developer Branch · 5 leaves</div>
+
+      <div class="leaf-card">
+        <div class="lc-row">
+          <div class="lc-drag">⋮⋮</div>
+          <div class="lc-icon ic-gh-sm">⌥</div>
+          <div class="lc-info"><div class="lc-name">GitHub</div><div class="lc-handle">github.com/jordan-dev-os</div><div class="lc-tags"><div class="lc-tag tag-pub">Public</div><div class="lc-tag tag-verif">✓</div></div></div>
+          <div class="lc-clicks">612 clk</div><div class="lc-toggle on"></div><div class="lc-expand">▸</div>
+        </div>
+      </div>
+      <div class="leaf-card">
+        <div class="lc-row">
+          <div class="lc-drag">⋮⋮</div>
+          <div class="lc-icon ic-fig">◈</div>
+          <div class="lc-info"><div class="lc-name">GitLab</div><div class="lc-handle">gitlab.com/jordan.chen</div><div class="lc-tags"><div class="lc-tag tag-pub">Public</div></div></div>
+          <div class="lc-clicks">98 clk</div><div class="lc-toggle on"></div><div class="lc-expand">▸</div>
+        </div>
+      </div>
+      <div class="leaf-card">
+        <div class="lc-row">
+          <div class="lc-drag">⋮⋮</div>
+          <div class="lc-icon" style="background:rgba(255,224,1,0.08);border:1px solid #92400e;font-size:12px;">🐍</div>
+          <div class="lc-info"><div class="lc-name">crates.io · crdt-rs</div><div class="lc-handle">crates.io/crates/crdt-rs</div><div class="lc-tags"><div class="lc-tag tag-pub">Public</div></div></div>
+          <div class="lc-clicks">189 clk</div><div class="lc-toggle on"></div><div class="lc-expand">▸</div>
+        </div>
+      </div>
+
+      <div class="add-leaf-row">
+        <div style="font-size:16px;color:var(--border2);">⊕</div>
+        <div class="add-leaf-text">Add leaf to Developer branch</div>
+      </div>
+
+      <!-- Oba Suggestion -->
+      <div style="background:rgba(12,207,202,0.04);border:1px solid var(--teal-dim);border-radius:6px;padding:12px;display:flex;align-items:flex-start;gap:10px;margin-top:16px;">
+        <div style="font-size:18px;">◉</div>
+        <div>
+          <div style="font-size:11px;font-weight:600;color:var(--teal);font-family:'IBM Plex Mono',monospace;margin-bottom:4px;">OBA SUGGESTION</div>
+          <div style="font-size:11px;color:var(--text2);line-height:1.5;">Your Developer branch has no Stack Overflow or npm profile link. Adding them could increase discoverability for technical gig matching by ~18%.</div>
+          <div style="display:flex;gap:6px;margin-top:8px;">
+            <button class="btn-sm btn-teal" style="font-size:10px;">Add Stack Overflow</button>
+            <button class="btn-sm btn-ghost" style="font-size:10px;">Dismiss</button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Right: Live Preview -->
+    <div class="preview-panel">
+      <div class="pp-header">
+        <div class="pp-title">Live Preview</div>
+        <div class="pp-device">
+          <div class="pp-dev-btn on">Mobile</div>
+          <div class="pp-dev-btn">Desktop</div>
+        </div>
+      </div>
+
+      <div class="pp-scroll">
+        <div class="phone-frame">
+          <div class="phone-notch"></div>
+          <div class="phone-content">
+            <div class="ph-avatar">JC</div>
+            <div class="ph-name">Jordan Chen</div>
+            <div class="ph-handle">@jordan.dev</div>
+            <div class="ph-bio">Full-stack developer & systems architect. Building cooperative tech infrastructure.</div>
+
+            <div class="ph-section">Featured</div>
+            <div class="ph-featured">
+              <div class="ph-feat">
+                <div class="ph-feat-icon">⌥</div>
+                <div class="ph-feat-name">GitHub</div>
+              </div>
+              <div class="ph-feat">
+                <div class="ph-feat-icon">S</div>
+                <div class="ph-feat-name">Substack</div>
+              </div>
+              <div class="ph-feat">
+                <div class="ph-feat-icon">◈</div>
+                <div class="ph-feat-name">Portfolio</div>
+              </div>
+              <div class="ph-feat">
+                <div class="ph-feat-icon">💬</div>
+                <div class="ph-feat-name">DM Me</div>
+              </div>
+            </div>
+
+            <div class="ph-section">Developer</div>
+            <div class="ph-link">
+              <div class="ph-link-icon ic-gh-sm" style="border-radius:4px;">⌥</div>
+              <div class="ph-link-text">
+                <div class="ph-link-name">GitHub</div>
+                <div class="ph-link-handle">@jordan-dev-os · 2,841★</div>
+              </div>
+              <div class="ph-link-arr">→</div>
+            </div>
+            <div class="ph-link">
+              <div class="ph-link-icon ic-fig" style="border-radius:4px;">◈</div>
+              <div class="ph-link-text">
+                <div class="ph-link-name">crdt-rs</div>
+                <div class="ph-link-handle">crates.io · 187K DL</div>
+              </div>
+              <div class="ph-link-arr">→</div>
+            </div>
+
+            <div class="ph-section">Social</div>
+            <div class="ph-link">
+              <div class="ph-link-icon ic-tw" style="border-radius:4px;">𝕏</div>
+              <div class="ph-link-text">
+                <div class="ph-link-name">Twitter / X</div>
+                <div class="ph-link-handle">@jordanbuilds · 12.4K</div>
+              </div>
+              <div class="ph-link-arr">→</div>
+            </div>
+            <div class="ph-link">
+              <div class="ph-link-icon ic-li" style="border-radius:4px;">in</div>
+              <div class="ph-link-text">
+                <div class="ph-link-name">LinkedIn</div>
+                <div class="ph-link-handle">jordan-chen-dev</div>
+              </div>
+              <div class="ph-link-arr">→</div>
+            </div>
+
+            <div class="ph-section">Publishing</div>
+            <div class="ph-link">
+              <div class="ph-link-icon ic-ss" style="border-radius:4px;">S</div>
+              <div class="ph-link-text">
+                <div class="ph-link-name">Worker OS — Substack</div>
+                <div class="ph-link-handle">3,200 subscribers</div>
+              </div>
+              <div class="ph-link-arr">→</div>
+            </div>
+
+            <div class="ph-branding">powered by <span>kogi-net</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="share-panel">
+        <div class="share-title">Share LinkTree</div>
+        <div class="share-btns">
+          <div class="sh-btn sh-btn-teal">Copy URL</div>
+          <div class="sh-btn sh-btn-teal">QR Code</div>
+          <div class="sh-btn sh-btn-ghost">Embed Widget</div>
+          <div class="sh-btn sh-btn-ghost">Export vCard</div>
+        </div>
+        <div style="margin-top:8px;font-size:9px;color:var(--text3);">Custom domain: <span style="color:var(--teal);">links.jordanchen.dev</span></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+</body>
+</html>

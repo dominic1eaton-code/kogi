@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KOGI · ContactBook</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap');
+  :root{--bg:#070910;--sidebar:#0b0d16;--card:#0f1221;--card2:#131729;--border:#1a2035;--border2:#232a42;--teal:#0ccfca;--teal-dim:#0a9994;--amber:#e8a030;--amber-dim:#b07820;--green:#22c55e;--green-dim:#15803d;--blue:#3b82f6;--red:#ef4444;--purple:#a855f7;--mag:#d946ef;--text:#dde4f0;--text2:#7a879e;--text3:#3d4a62;}
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{background:var(--bg);color:var(--text);font-family:'IBM Plex Sans',sans-serif;font-size:13px;display:flex;min-height:100vh;height:100vh;overflow:hidden;}
+  .sidebar{width:200px;min-width:200px;background:var(--sidebar);border-right:1px solid var(--border);display:flex;flex-direction:column;}
+  .logo{padding:18px 16px;border-bottom:1px solid var(--border);}
+  .logo-text{font-family:'IBM Plex Mono',monospace;font-size:18px;font-weight:600;letter-spacing:0.08em;color:var(--teal);}
+  .logo-sub{font-size:9px;color:var(--text3);letter-spacing:0.15em;text-transform:uppercase;margin-top:2px;}
+  .nav{padding:12px 0;flex:1;overflow-y:auto;}
+  .nav-section{padding:8px 16px 4px;font-size:9px;color:var(--text3);letter-spacing:0.18em;text-transform:uppercase;font-family:'IBM Plex Mono',monospace;}
+  .nav-item{display:flex;align-items:center;gap:10px;padding:7px 16px;color:var(--text2);cursor:pointer;font-size:12px;border-left:2px solid transparent;}
+  .nav-item.active{color:var(--teal);background:rgba(12,207,202,0.07);border-left-color:var(--teal);}
+  .nav-icon{width:14px;text-align:center;font-size:12px;}
+  .avatar-sm{width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,#0ccfca,#3b82f6);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:#fff;flex-shrink:0;}
+  .profile-bottom{padding:12px 16px;border-top:1px solid var(--border);}
+  .profile-mini{display:flex;align-items:center;gap:8px;}
+  .main{flex:1;display:flex;flex-direction:column;overflow:hidden;}
+  .topbar{height:48px;border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 20px;gap:12px;background:var(--sidebar);flex-shrink:0;}
+  .topbar-path{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text3);}
+  .topbar-path span{color:var(--text2);}
+  .topbar-path span.cur{color:var(--text);}
+  .spacer{flex:1;}
+  .btn-sm{padding:5px 12px;border-radius:4px;font-size:11px;font-family:'IBM Plex Mono',monospace;cursor:pointer;border:1px solid;transition:all 0.15s;}
+  .btn-teal{background:rgba(12,207,202,0.12);border-color:var(--teal-dim);color:var(--teal);}
+  .btn-ghost{background:transparent;border-color:var(--border2);color:var(--text2);}
+  .btn-ghost:hover{border-color:var(--text3);color:var(--text);}
+
+  .stats-mini{display:flex;background:var(--card);border-bottom:1px solid var(--border);flex-shrink:0;}
+  .sm-box{flex:1;padding:10px 16px;border-right:1px solid var(--border);}
+  .sm-box:last-child{border-right:none;}
+  .sm-val{font-family:'IBM Plex Mono',monospace;font-size:16px;font-weight:600;}
+  .sm-lbl{font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:0.1em;margin-top:1px;}
+
+  .body-layout{flex:1;display:grid;grid-template-columns:260px 1fr 320px;overflow:hidden;}
+
+  /* Group sidebar */
+  .group-sidebar{background:var(--sidebar);border-right:1px solid var(--border);overflow-y:auto;display:flex;flex-direction:column;}
+  .gs-header{padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+  .gs-title{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:0.14em;}
+  .gs-add{color:var(--teal);cursor:pointer;font-size:18px;line-height:1;}
+  .gs-item{display:flex;align-items:center;gap:10px;padding:8px 16px;cursor:pointer;border-left:2px solid transparent;transition:all 0.12s;}
+  .gs-item:hover{background:rgba(255,255,255,0.02);}
+  .gs-item.active{background:rgba(12,207,202,0.05);border-left-color:var(--teal);}
+  .gs-icon{width:28px;height:28px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;}
+  .gs-name{flex:1;font-size:12px;color:var(--text2);}
+  .gs-item.active .gs-name{color:var(--text);}
+  .gs-count{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--text3);}
+  .gs-divider{height:1px;background:var(--border);margin:8px 0;}
+  .gs-section{padding:6px 16px 4px;font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:0.14em;font-family:'IBM Plex Mono',monospace;}
+
+  /* Contact list */
+  .contact-list{overflow-y:auto;background:var(--bg);}
+  .cl-toolbar{padding:10px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;background:var(--card);flex-shrink:0;}
+  .search-wrap{position:relative;flex:1;}
+  .cl-search{width:100%;background:var(--card2);border:1px solid var(--border2);border-radius:4px;padding:6px 10px 6px 28px;color:var(--text);font-size:12px;font-family:'IBM Plex Sans',sans-serif;outline:none;}
+  .cl-search:focus{border-color:var(--teal-dim);}
+  .cl-search::placeholder{color:var(--text3);}
+  .search-ic{position:absolute;left:9px;top:50%;transform:translateY(-50%);color:var(--text3);font-size:11px;}
+  .sort-select{background:var(--card2);border:1px solid var(--border2);color:var(--text2);font-size:11px;padding:5px 8px;border-radius:4px;font-family:'IBM Plex Mono',monospace;}
+  .sort-select option{background:var(--card2);}
+
+  /* Alpha divider */
+  .alpha-div{padding:5px 16px;font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--text3);background:var(--card2);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:1;}
+
+  /* Contact row */
+  .contact-row{display:flex;align-items:center;gap:12px;padding:10px 16px;border-bottom:1px solid var(--border);cursor:pointer;transition:background 0.1s;}
+  .contact-row:hover{background:rgba(255,255,255,0.02);}
+  .contact-row.selected{background:rgba(12,207,202,0.04);border-left:2px solid var(--teal);}
+  .cr-avatar{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;color:#fff;flex-shrink:0;position:relative;}
+  .cr-online{position:absolute;bottom:0;right:0;width:9px;height:9px;border-radius:50%;background:var(--green);border:2px solid var(--bg);}
+  .cr-info{flex:1;min-width:0;}
+  .cr-name{font-size:12px;color:var(--text);font-weight:500;}
+  .cr-handle{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--text3);}
+  .cr-tags{display:flex;gap:4px;margin-top:3px;flex-wrap:wrap;}
+  .cr-tag{font-size:9px;font-family:'IBM Plex Mono',monospace;padding:1px 5px;border-radius:2px;border:1px solid;}
+  .t-client{background:rgba(232,160,48,0.06);border-color:var(--amber-dim);color:var(--amber);}
+  .t-coop{background:rgba(12,207,202,0.06);border-color:var(--teal-dim);color:var(--teal);}
+  .t-collab{background:rgba(59,130,246,0.06);border-color:#1d4ed8;color:var(--blue);}
+  .t-inv{background:rgba(168,85,247,0.06);border-color:#7c3aed;color:var(--purple);}
+  .t-friend{background:rgba(34,197,94,0.06);border-color:var(--green-dim);color:var(--green);}
+  .t-mentor{background:rgba(217,70,239,0.06);border-color:#86198f;color:var(--mag);}
+  .cr-actions{display:flex;gap:6px;opacity:0;transition:opacity 0.15s;}
+  .contact-row:hover .cr-actions{opacity:1;}
+  .cr-act-btn{width:28px;height:28px;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:12px;border:1px solid var(--border2);background:var(--card);cursor:pointer;color:var(--text3);}
+  .cr-act-btn:hover{border-color:var(--teal-dim);color:var(--teal);}
+
+  /* Contact detail panel */
+  .detail-panel{background:var(--sidebar);border-left:1px solid var(--border);overflow-y:auto;display:flex;flex-direction:column;}
+  .dp-top{padding:16px;border-bottom:1px solid var(--border);}
+  .dp-avatar-row{display:flex;align-items:flex-start;gap:12px;margin-bottom:12px;}
+  .dp-avatar{width:56px;height:56px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:600;color:#fff;flex-shrink:0;}
+  .dp-name{font-size:15px;font-weight:600;color:var(--text);}
+  .dp-handle{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--teal);margin-top:2px;}
+  .dp-company{font-size:11px;color:var(--text3);margin-top:3px;}
+  .dp-actions{display:flex;gap:6px;flex-wrap:wrap;}
+  .dp-act{flex:1;min-width:80px;padding:6px;text-align:center;border-radius:4px;font-size:10px;font-family:'IBM Plex Mono',monospace;cursor:pointer;border:1px solid;transition:all 0.15s;}
+  .dp-act-teal{background:rgba(12,207,202,0.1);border-color:var(--teal-dim);color:var(--teal);}
+  .dp-act-ghost{background:transparent;border-color:var(--border2);color:var(--text3);}
+  .dp-act-ghost:hover{border-color:var(--text2);color:var(--text2);}
+
+  .dp-section{padding:12px 16px;border-bottom:1px solid var(--border);}
+  .dp-sec-label{font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:0.14em;margin-bottom:8px;}
+
+  /* Channel quick access */
+  .ch-quick{display:flex;flex-direction:column;gap:6px;}
+  .cq-item{display:flex;align-items:center;gap:8px;padding:7px 10px;background:var(--card2);border:1px solid var(--border);border-radius:5px;cursor:pointer;transition:all 0.12s;}
+  .cq-item:hover{border-color:var(--teal-dim);background:rgba(12,207,202,0.04);}
+  .cq-icon{width:24px;height:24px;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0;}
+  .cq-ch-name{flex:1;font-size:11px;color:var(--text);}
+  .cq-policy{font-size:9px;font-family:'IBM Plex Mono',monospace;color:var(--text3);}
+  .cq-arr{color:var(--text3);font-size:11px;}
+
+  /* Linked accounts */
+  .la-row{display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--border);}
+  .la-row:last-child{border-bottom:none;}
+  .la-icon{width:20px;height:20px;border-radius:3px;display:flex;align-items:center;justify-content:center;font-size:10px;flex-shrink:0;}
+  .la-name{font-size:11px;color:var(--text2);flex:1;}
+  .la-handle{font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--text3);}
+
+  /* Notes */
+  .notes-area{width:100%;background:var(--card2);border:1px solid var(--border2);border-radius:4px;padding:8px 10px;color:var(--text2);font-size:11px;font-family:'IBM Plex Sans',sans-serif;outline:none;resize:vertical;min-height:70px;line-height:1.5;}
+  .notes-area:focus{border-color:var(--teal-dim);}
+  .notes-area::placeholder{color:var(--text3);}
+
+  /* Tag editor */
+  .tag-editor{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:8px;}
+  .te-tag{display:flex;align-items:center;gap:4px;padding:3px 8px;border-radius:4px;font-size:10px;font-family:'IBM Plex Mono',monospace;cursor:pointer;border:1px solid;}
+  .te-remove{font-size:11px;opacity:0.6;}
+  .te-add{padding:3px 8px;border-radius:4px;border:1px dashed var(--border2);font-size:10px;color:var(--text3);cursor:pointer;font-family:'IBM Plex Mono',monospace;}
+  .te-add:hover{border-color:var(--teal-dim);color:var(--teal);}
+
+  /* Oba row */
+  .oba-row{padding:10px 16px;background:rgba(12,207,202,0.03);border-top:1px solid var(--border);}
+  .oba-row-title{font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--teal);margin-bottom:5px;}
+  .oba-suggestion{font-size:11px;color:var(--text3);line-height:1.5;}
+  .oba-actions{display:flex;gap:6px;margin-top:6px;}
+</style>
+</head>
+<body>
+<div class="sidebar">
+  <div class="logo">
+    <div class="logo-text">KOGI</div>
+    <div class="logo-sub">Independent Worker OS</div>
+  </div>
+  <nav class="nav">
+    <div class="nav-section">Core</div>
+    <div class="nav-item"><span class="nav-icon">⌂</span> Dashboard</div>
+    <div class="nav-item"><span class="nav-icon">◫</span> Office</div>
+    <div class="nav-item"><span class="nav-icon">◈</span> Portfolio</div>
+    <div class="nav-section">Identity</div>
+    <div class="nav-item"><span class="nav-icon">◉</span> Profile</div>
+    <div class="nav-item"><span class="nav-icon">⟁</span> Personas</div>
+    <div class="nav-item"><span class="nav-icon">⋈</span> Accounts</div>
+    <div class="nav-item"><span class="nav-icon">◎</span> Channels</div>
+    <div class="nav-section">Network</div>
+    <div class="nav-item"><span class="nav-icon">⋔</span> LinkTree</div>
+    <div class="nav-item"><span class="nav-icon">⊛</span> kogi-net</div>
+    <div class="nav-item active"><span class="nav-icon">⊞</span> Contacts</div>
+    <div class="nav-item"><span class="nav-icon">◻</span> Directory</div>
+    <div class="nav-section">Platform</div>
+    <div class="nav-item"><span class="nav-icon">♦</span> Bank</div>
+    <div class="nav-item"><span class="nav-icon">⊕</span> Community</div>
+  </nav>
+  <div class="profile-bottom">
+    <div class="profile-mini">
+      <div class="avatar-sm">JC</div>
+      <div><div style="font-size:12px;">Jordan Chen</div><div style="font-size:10px;color:var(--text3);">@jordan.dev</div></div>
+    </div>
+  </div>
+</div>
+
+<div class="main">
+  <div class="topbar">
+    <div class="topbar-path">KCON / <span class="cur">ContactBook</span></div>
+    <div class="spacer"></div>
+    <button class="btn-sm btn-ghost">Sync Contacts</button>
+    <button class="btn-sm btn-ghost">Import</button>
+    <button class="btn-sm btn-ghost">Export</button>
+    <button class="btn-sm btn-teal">+ Add Contact</button>
+  </div>
+
+  <div class="stats-mini">
+    <div class="sm-box"><div class="sm-val" style="color:var(--teal);">1,240</div><div class="sm-lbl">Total Contacts</div></div>
+    <div class="sm-box"><div class="sm-val">284</div><div class="sm-lbl">Direct Connections</div></div>
+    <div class="sm-box"><div class="sm-val" style="color:var(--amber);">48</div><div class="sm-lbl">Clients</div></div>
+    <div class="sm-box"><div class="sm-val" style="color:var(--green);">34</div><div class="sm-lbl">Collaborators</div></div>
+    <div class="sm-box"><div class="sm-val" style="color:var(--blue);">12</div><div class="sm-lbl">New This Week</div></div>
+    <div class="sm-box"><div class="sm-val">7</div><div class="sm-lbl">Groups</div></div>
+  </div>
+
+  <div class="body-layout">
+
+    <!-- Group Sidebar -->
+    <div class="group-sidebar">
+      <div class="gs-header">
+        <div class="gs-title">Groups</div>
+        <div class="gs-add">+</div>
+      </div>
+      <div class="gs-item active">
+        <div class="gs-icon" style="background:rgba(12,207,202,0.1);border:1px solid var(--teal-dim);">⊞</div>
+        <div class="gs-name">All Contacts</div>
+        <div class="gs-count">1,240</div>
+      </div>
+      <div class="gs-item">
+        <div class="gs-icon" style="background:rgba(34,197,94,0.1);border:1px solid var(--green-dim);">⋈</div>
+        <div class="gs-name">kogi Connections</div>
+        <div class="gs-count">284</div>
+      </div>
+      <div class="gs-divider"></div>
+      <div class="gs-section">My Groups</div>
+      <div class="gs-item">
+        <div class="gs-icon" style="background:rgba(232,160,48,0.1);border:1px solid var(--amber-dim);">💼</div>
+        <div class="gs-name">Clients</div>
+        <div class="gs-count">48</div>
+      </div>
+      <div class="gs-item">
+        <div class="gs-icon" style="background:rgba(59,130,246,0.1);border:1px solid #1d4ed8;">🤝</div>
+        <div class="gs-name">Collaborators</div>
+        <div class="gs-count">34</div>
+      </div>
+      <div class="gs-item">
+        <div class="gs-icon" style="background:rgba(12,207,202,0.1);border:1px solid var(--teal-dim);">⚙</div>
+        <div class="gs-name">Cooperative Members</div>
+        <div class="gs-count">18</div>
+      </div>
+      <div class="gs-item">
+        <div class="gs-icon" style="background:rgba(168,85,247,0.1);border:1px solid #7c3aed;">💰</div>
+        <div class="gs-name">Investors</div>
+        <div class="gs-count">12</div>
+      </div>
+      <div class="gs-item">
+        <div class="gs-icon" style="background:rgba(217,70,239,0.1);border:1px solid #86198f;">🎓</div>
+        <div class="gs-name">Mentors</div>
+        <div class="gs-count">8</div>
+      </div>
+      <div class="gs-item">
+        <div class="gs-icon" style="background:rgba(34,197,94,0.1);border:1px solid var(--green-dim);">👥</div>
+        <div class="gs-name">Friends</div>
+        <div class="gs-count">76</div>
+      </div>
+      <div class="gs-divider"></div>
+      <div class="gs-section">Import Sources</div>
+      <div class="gs-item">
+        <div class="gs-icon" style="background:rgba(234,67,53,0.1);border:1px solid #991b1b;font-size:12px;">G</div>
+        <div class="gs-name">Google Contacts</div>
+        <div class="gs-count">620</div>
+      </div>
+      <div class="gs-item">
+        <div class="gs-icon" style="background:rgba(10,102,194,0.1);border:1px solid #1e3a5f;font-size:12px;">in</div>
+        <div class="gs-name">LinkedIn</div>
+        <div class="gs-count">380</div>
+      </div>
+      <div style="padding:12px 16px;margin-top:auto;border-top:1px solid var(--border);">
+        <button class="btn-sm btn-ghost" style="width:100%;font-size:10px;">+ Add Import Source</button>
+      </div>
+    </div>
+
+    <!-- Contact List -->
+    <div class="contact-list" style="display:flex;flex-direction:column;">
+      <div class="cl-toolbar">
+        <div class="search-wrap">
+          <div class="search-ic">⌕</div>
+          <input class="cl-search" placeholder="Search contacts — name, skill, company, tag…" />
+        </div>
+        <select class="sort-select">
+          <option>Sort: Recent</option>
+          <option>Sort: Name A–Z</option>
+          <option>Sort: Match Score</option>
+          <option>Sort: Last Contact</option>
+        </select>
+        <div style="display:flex;gap:4px;">
+          <div class="btn-sm btn-ghost" style="padding:4px 8px;font-size:11px;">⊟ List</div>
+          <div class="btn-sm btn-ghost" style="padding:4px 8px;font-size:11px;">⊞ Grid</div>
+        </div>
+      </div>
+
+      <div style="flex:1;overflow-y:auto;">
+        <div class="alpha-div">A</div>
+        <div class="contact-row selected">
+          <div class="cr-avatar" style="background:linear-gradient(135deg,#0ccfca,#3b82f6);">AK<div class="cr-online"></div></div>
+          <div class="cr-info">
+            <div class="cr-name">Amara Kofi</div>
+            <div class="cr-handle">@amara.dev · Mesh Studio</div>
+            <div class="cr-tags"><div class="cr-tag t-coop">Cooperative</div><div class="cr-tag t-collab">Collaborator</div></div>
+          </div>
+          <div class="cr-actions">
+            <div class="cr-act-btn">💬</div>
+            <div class="cr-act-btn">📅</div>
+            <div class="cr-act-btn">⋯</div>
+          </div>
+        </div>
+        <div class="contact-row">
+          <div class="cr-avatar" style="background:linear-gradient(135deg,#e8a030,#d97706);">AP</div>
+          <div class="cr-info">
+            <div class="cr-name">Aisha Patel</div>
+            <div class="cr-handle">@aisha.ventures · Patel Ventures</div>
+            <div class="cr-tags"><div class="cr-tag t-inv">Investor</div><div class="cr-tag t-client">Client</div></div>
+          </div>
+          <div class="cr-actions">
+            <div class="cr-act-btn">💬</div>
+            <div class="cr-act-btn">📅</div>
+            <div class="cr-act-btn">⋯</div>
+          </div>
+        </div>
+
+        <div class="alpha-div">B</div>
+        <div class="contact-row">
+          <div class="cr-avatar" style="background:linear-gradient(135deg,#3b82f6,#1d4ed8);">BC</div>
+          <div class="cr-info">
+            <div class="cr-name">Ben Carter</div>
+            <div class="cr-handle">@ben.builds · Independent</div>
+            <div class="cr-tags"><div class="cr-tag t-collab">Collaborator</div></div>
+          </div>
+          <div class="cr-actions">
+            <div class="cr-act-btn">💬</div>
+            <div class="cr-act-btn">📅</div>
+            <div class="cr-act-btn">⋯</div>
+          </div>
+        </div>
+
+        <div class="alpha-div">L</div>
+        <div class="contact-row">
+          <div class="cr-avatar" style="background:linear-gradient(135deg,#10b981,#059669);">LM</div>
+          <div class="cr-info">
+            <div class="cr-name">Lena Maier</div>
+            <div class="cr-handle">@lena.coop · Cooperative Futures</div>
+            <div class="cr-tags"><div class="cr-tag t-coop">Cooperative</div><div class="cr-tag t-mentor">Mentor</div></div>
+          </div>
+          <div class="cr-actions">
+            <div class="cr-act-btn">💬</div>
+            <div class="cr-act-btn">📅</div>
+            <div class="cr-act-btn">⋯</div>
+          </div>
+        </div>
+
+        <div class="alpha-div">M</div>
+        <div class="contact-row">
+          <div class="cr-avatar" style="background:linear-gradient(135deg,#22c55e,#16a34a);">MP</div>
+          <div class="cr-info">
+            <div class="cr-name">Marcus Park</div>
+            <div class="cr-handle">@marcus.systems · Freelance</div>
+            <div class="cr-tags"><div class="cr-tag t-collab">Collaborator</div></div>
+          </div>
+          <div class="cr-actions">
+            <div class="cr-act-btn">💬</div>
+            <div class="cr-act-btn">📅</div>
+            <div class="cr-act-btn">⋯</div>
+          </div>
+        </div>
+        <div class="contact-row">
+          <div class="cr-avatar" style="background:linear-gradient(135deg,#f59e0b,#b45309);">MR</div>
+          <div class="cr-info">
+            <div class="cr-name">Maya Roth</div>
+            <div class="cr-handle">@maya.design · Studio Roth</div>
+            <div class="cr-tags"><div class="cr-tag t-client">Client</div></div>
+          </div>
+          <div class="cr-actions">
+            <div class="cr-act-btn">💬</div>
+            <div class="cr-act-btn">📅</div>
+            <div class="cr-act-btn">⋯</div>
+          </div>
+        </div>
+
+        <div class="alpha-div">N</div>
+        <div class="contact-row">
+          <div class="cr-avatar" style="background:linear-gradient(135deg,#e8a030,#d97706);">NW</div>
+          <div class="cr-info">
+            <div class="cr-name">Nadia Wolff</div>
+            <div class="cr-handle">@nadia.builds · Freelance</div>
+            <div class="cr-tags"><div class="cr-tag t-collab">Collaborator</div></div>
+          </div>
+          <div class="cr-actions">
+            <div class="cr-act-btn">💬</div>
+            <div class="cr-act-btn">📅</div>
+            <div class="cr-act-btn">⋯</div>
+          </div>
+        </div>
+
+        <div class="alpha-div">P</div>
+        <div class="contact-row">
+          <div class="cr-avatar" style="background:linear-gradient(135deg,#d946ef,#9d174d);">PB</div>
+          <div class="cr-info">
+            <div class="cr-name">Priya Bose</div>
+            <div class="cr-handle">@priya.data · Research Lab</div>
+            <div class="cr-tags"><div class="cr-tag t-mentor">Mentor</div><div class="cr-tag t-collab">Collaborator</div></div>
+          </div>
+          <div class="cr-actions">
+            <div class="cr-act-btn">💬</div>
+            <div class="cr-act-btn">📅</div>
+            <div class="cr-act-btn">⋯</div>
+          </div>
+        </div>
+
+        <div class="alpha-div">S</div>
+        <div class="contact-row">
+          <div class="cr-avatar" style="background:linear-gradient(135deg,#a855f7,#ec4899);">SR</div>
+          <div class="cr-info">
+            <div class="cr-name">Sofia Reyes</div>
+            <div class="cr-handle">@sofia.design · Studio Reyes</div>
+            <div class="cr-tags"><div class="cr-tag t-client">Client</div><div class="cr-tag t-collab">Collaborator</div></div>
+          </div>
+          <div class="cr-actions">
+            <div class="cr-act-btn">💬</div>
+            <div class="cr-act-btn">📅</div>
+            <div class="cr-act-btn">⋯</div>
+          </div>
+        </div>
+
+        <div class="alpha-div">T</div>
+        <div class="contact-row">
+          <div class="cr-avatar" style="background:linear-gradient(135deg,#3b82f6,#1d4ed8);">TN</div>
+          <div class="cr-info">
+            <div class="cr-name">Tariq Nasir</div>
+            <div class="cr-handle">@tariq.infra · Cloud Systems Co.</div>
+            <div class="cr-tags"><div class="cr-tag t-coop">Cooperative</div></div>
+          </div>
+          <div class="cr-actions">
+            <div class="cr-act-btn">💬</div>
+            <div class="cr-act-btn">📅</div>
+            <div class="cr-act-btn">⋯</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Detail Panel: Selected Contact -->
+    <div class="detail-panel">
+      <div class="dp-top">
+        <div class="dp-avatar-row">
+          <div class="dp-avatar" style="background:linear-gradient(135deg,#0ccfca,#3b82f6);">AK</div>
+          <div>
+            <div class="dp-name">Amara Kofi</div>
+            <div class="dp-handle">@amara.dev</div>
+            <div class="dp-company">Co-founder · Mesh Studio</div>
+            <div style="display:flex;gap:4px;margin-top:5px;">
+              <div class="cr-tag t-coop">Cooperative</div>
+              <div class="cr-tag t-collab">Collaborator</div>
+            </div>
+          </div>
+        </div>
+        <div class="dp-actions">
+          <div class="dp-act dp-act-teal">💬 DM</div>
+          <div class="dp-act dp-act-teal">✉ Email</div>
+          <div class="dp-act dp-act-ghost">📅 Book</div>
+          <div class="dp-act dp-act-ghost">⋯ More</div>
+        </div>
+      </div>
+
+      <!-- Channels -->
+      <div class="dp-section">
+        <div class="dp-sec-label">Contact Channels</div>
+        <div class="ch-quick">
+          <div class="cq-item">
+            <div class="cq-icon" style="background:rgba(12,207,202,0.1);border:1px solid var(--teal-dim);">💬</div>
+            <div class="cq-ch-name">kogi DM</div>
+            <div class="cq-policy">Public</div>
+            <div class="cq-arr">→</div>
+          </div>
+          <div class="cq-item">
+            <div class="cq-icon" style="background:rgba(234,67,53,0.1);border:1px solid #991b1b40;">✉</div>
+            <div class="cq-ch-name">Email (Work)</div>
+            <div class="cq-policy">Connections</div>
+            <div class="cq-arr">→</div>
+          </div>
+          <div class="cq-item">
+            <div class="cq-icon" style="background:rgba(74,21,75,0.2);border:1px solid #6b21a840;">Sl</div>
+            <div class="cq-ch-name">Slack · Mesh Studio</div>
+            <div class="cq-policy">Workspace</div>
+            <div class="cq-arr">→</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Linked Accounts visible -->
+      <div class="dp-section">
+        <div class="dp-sec-label">Visible LinkTree Leaves</div>
+        <div class="la-row">
+          <div class="la-icon" style="background:rgba(255,255,255,0.06);">⌥</div>
+          <div class="la-name">GitHub</div>
+          <div class="la-handle">@amara-builds</div>
+        </div>
+        <div class="la-row">
+          <div class="la-icon" style="background:rgba(29,155,240,0.12);">𝕏</div>
+          <div class="la-name">Twitter</div>
+          <div class="la-handle">@amara.dev</div>
+        </div>
+        <div class="la-row">
+          <div class="la-icon" style="background:rgba(10,102,194,0.15);">in</div>
+          <div class="la-name">LinkedIn</div>
+          <div class="la-handle">amara-kofi-dev</div>
+        </div>
+        <div class="la-row">
+          <div class="la-icon" style="background:rgba(255,102,0,0.12);">S</div>
+          <div class="la-name">Substack</div>
+          <div class="la-handle">amara-writes.substack.com</div>
+        </div>
+      </div>
+
+      <!-- Private notes -->
+      <div class="dp-section">
+        <div class="dp-sec-label">Private Notes</div>
+        <textarea class="notes-area" placeholder="Add private notes about this contact…">Met at Kogi Builder Summit. Working together on the cooperative OS architecture. Great fit for the Rust engine collaboration.</textarea>
+        <div style="font-size:9px;color:var(--text3);margin-top:4px;">Notes are private to you — never shared</div>
+      </div>
+
+      <!-- Tags -->
+      <div class="dp-section">
+        <div class="dp-sec-label">Contact Tags</div>
+        <div class="tag-editor">
+          <div class="te-tag t-coop">Cooperative <span class="te-remove">×</span></div>
+          <div class="te-tag t-collab">Collaborator <span class="te-remove">×</span></div>
+          <div class="te-tag" style="background:rgba(59,130,246,0.06);border:1px solid #1d4ed8;color:var(--blue);">Rust <span class="te-remove">×</span></div>
+          <div class="te-tag" style="background:rgba(34,197,94,0.06);border:1px solid var(--green-dim);color:var(--green);">Open Source <span class="te-remove">×</span></div>
+          <div class="te-add">+ Tag</div>
+        </div>
+      </div>
+
+      <!-- Contact history -->
+      <div class="dp-section">
+        <div class="dp-sec-label">Interaction History</div>
+        <div style="display:flex;flex-direction:column;gap:6px;">
+          <div style="font-size:11px;color:var(--text3);">Last contacted: <span style="color:var(--text2);">2 days ago via kogi-dm</span></div>
+          <div style="font-size:11px;color:var(--text3);">First contact: <span style="color:var(--text2);">Jan 12, 2025</span></div>
+          <div style="font-size:11px;color:var(--text3);">Shared projects: <span style="color:var(--text2);">3 active</span></div>
+          <div style="font-size:11px;color:var(--text3);">Collaborative gigs: <span style="color:var(--text2);">2 completed</span></div>
+        </div>
+      </div>
+
+      <!-- Oba suggestion -->
+      <div class="oba-row">
+        <div class="oba-row-title">◉ OBA SUGGESTION</div>
+        <div class="oba-suggestion">Amara has been active on GitHub this week with 3 new commits to cooperative-os. Consider reaching out about the architecture review you discussed.</div>
+        <div class="oba-actions">
+          <button class="btn-sm btn-teal" style="font-size:10px;">Draft Message</button>
+          <button class="btn-sm btn-ghost" style="font-size:10px;">Dismiss</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+</body>
+</html>

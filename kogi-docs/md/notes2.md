@@ -570,6 +570,68 @@ communication channels
 email
 message - unicast (direct), multicast (group), broadcast [alerts, notifications, announcements]
 notifications, alerts, announcements
+communication channels:
+messaging
+email
+phone
+voice call
+video call
+
+rooms
+- rooms: gigs, consultations, bookings, tasks, jobs, contracts, offers, deals, requests, proposals, bids, investments, gigs, orders, listings
+- communinity+chat rooms
+- rooms: organizations, collectives, cooperatives, groups, teams, federations, one on one
+
+spaces
+communities, marketplaces, groups, teams, independent worker, exchanges
+
+
+---
+
+
+solution
+solution configure price quote CPQ
+solution offerings
+solution components+parts management system
+solution version control
+solution administration+lifecycle management system
+solution model(s)
+    - solution designs
+    - solution blueprints
+    - solution mockups
+    - solution prototypes
+solution testing environment
+    - solution testbeds
+
+solution environments SEs
+    - solution sandbox environments
+    - solution development environments
+    - solution testing environments
+    - solution deployment environents
+    - solution production environments
+
+qala builds
+
+solution build
+    - solution build version
+    - solution build number
+    - solution build id
+    - solution build name
+    - solution build metadata
+    - solution build data
+    - solution build artifacts
+    - solution build resources
+    - solution build environment (SDE solution development environment connector)
+
+product builds
+service builds
+goods builds
+capital builds
+asset builds
+
+qala artifacts
+
+qala resources
 
 
 ---
@@ -670,7 +732,7 @@ Resource Management System
 - portfolios, programs, projects, assets, artifacts, binders, journals, books, dossiers, folders, documents, files, directories, 
 - timelines, schedules, roadmaps, calendars, gantts
 - boards, stories, epics, features, stories, tasks, work packages, work breakdown structures, initiatives, strategies, tactics, operations, themes
-- gigs, consultations, bookings, tasks, jobs, contracts, offers, deals, requests, proposals, bids, investments
+- gigs, consultations, bookings, tasks, jobs, contracts, offers, deals, requests, proposals, bids, investments, gigs, orders, listings
 - capital, assets, artifacts, labor, land, estates, real estate
 - equitty, liquidity, debt, taxes, cash, credit, debit, donations, grants
 - contributions (labor, skills, financial, support, advertising, marketing, promoions, endorsements, donation, investment)
@@ -841,22 +903,10 @@ portfolio skill matching. I have a project and need help, who on the marketplace
 
 kogi independent worker+organization portfolio management platform ~ distributed portfolio system
 
+
 ---
 
-communication channels:
-
-
-messaging
-
-email
-
-phone
-
-voice call
-
-video call
-
-
+accessibility
 
 ---
 

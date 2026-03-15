@@ -1,0 +1,643 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KOGI · kogi-net · LinkForest</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap');
+  :root{--bg:#070910;--sidebar:#0b0d16;--card:#0f1221;--card2:#131729;--border:#1a2035;--border2:#232a42;--teal:#0ccfca;--teal-dim:#0a9994;--amber:#e8a030;--amber-dim:#b07820;--green:#22c55e;--green-dim:#15803d;--blue:#3b82f6;--red:#ef4444;--purple:#a855f7;--mag:#d946ef;--text:#dde4f0;--text2:#7a879e;--text3:#3d4a62;}
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{background:var(--bg);color:var(--text);font-family:'IBM Plex Sans',sans-serif;font-size:13px;display:flex;min-height:100vh;height:100vh;overflow:hidden;}
+  .sidebar{width:200px;min-width:200px;background:var(--sidebar);border-right:1px solid var(--border);display:flex;flex-direction:column;}
+  .logo{padding:18px 16px;border-bottom:1px solid var(--border);}
+  .logo-text{font-family:'IBM Plex Mono',monospace;font-size:18px;font-weight:600;letter-spacing:0.08em;color:var(--teal);}
+  .logo-sub{font-size:9px;color:var(--text3);letter-spacing:0.15em;text-transform:uppercase;margin-top:2px;}
+  .nav{padding:12px 0;flex:1;overflow-y:auto;}
+  .nav-section{padding:8px 16px 4px;font-size:9px;color:var(--text3);letter-spacing:0.18em;text-transform:uppercase;font-family:'IBM Plex Mono',monospace;}
+  .nav-item{display:flex;align-items:center;gap:10px;padding:7px 16px;color:var(--text2);cursor:pointer;font-size:12px;border-left:2px solid transparent;}
+  .nav-item.active{color:var(--teal);background:rgba(12,207,202,0.07);border-left-color:var(--teal);}
+  .nav-icon{width:14px;text-align:center;font-size:12px;}
+  .avatar-sm{width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,#0ccfca,#3b82f6);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:#fff;flex-shrink:0;}
+  .profile-bottom{padding:12px 16px;border-top:1px solid var(--border);}
+  .profile-mini{display:flex;align-items:center;gap:8px;}
+
+  .main{flex:1;display:flex;flex-direction:column;overflow:hidden;}
+  .topbar{height:48px;border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 20px;gap:12px;background:var(--sidebar);flex-shrink:0;}
+  .topbar-path{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text3);}
+  .topbar-path span{color:var(--text2);}
+  .topbar-path span.cur{color:var(--text);}
+  .spacer{flex:1;}
+  .btn-sm{padding:5px 12px;border-radius:4px;font-size:11px;font-family:'IBM Plex Mono',monospace;cursor:pointer;border:1px solid;transition:all 0.15s;}
+  .btn-teal{background:rgba(12,207,202,0.12);border-color:var(--teal-dim);color:var(--teal);}
+  .btn-ghost{background:transparent;border-color:var(--border2);color:var(--text2);}
+  .btn-ghost:hover{border-color:var(--text3);color:var(--text);}
+
+  .stats-mini{display:flex;background:var(--card);border-bottom:1px solid var(--border);flex-shrink:0;}
+  .sm-box{flex:1;padding:10px 16px;border-right:1px solid var(--border);}
+  .sm-box:last-child{border-right:none;}
+  .sm-val{font-family:'IBM Plex Mono',monospace;font-size:16px;font-weight:600;}
+  .sm-lbl{font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:0.1em;margin-top:1px;}
+
+  .content-layout{flex:1;display:grid;grid-template-columns:320px 1fr 300px;overflow:hidden;}
+
+  /* Left: Search panel */
+  .search-panel{background:var(--sidebar);border-right:1px solid var(--border);overflow-y:auto;display:flex;flex-direction:column;}
+  .sp-header{padding:12px 16px;border-bottom:1px solid var(--border);}
+  .sp-title{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:0.14em;margin-bottom:10px;}
+  .search-input-wrap{position:relative;}
+  .search-input{width:100%;background:var(--card);border:1px solid var(--border2);border-radius:4px;padding:8px 10px 8px 32px;color:var(--text);font-size:12px;font-family:'IBM Plex Sans',sans-serif;outline:none;}
+  .search-input:focus{border-color:var(--teal-dim);}
+  .search-input::placeholder{color:var(--text3);}
+  .search-icon{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--text3);font-size:12px;}
+
+  /* Filter chips */
+  .filter-section{padding:12px 16px;border-bottom:1px solid var(--border);}
+  .filter-label{font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:0.14em;font-family:'IBM Plex Mono',monospace;margin-bottom:8px;}
+  .filter-chips{display:flex;flex-wrap:wrap;gap:5px;}
+  .fchip{padding:3px 9px;border-radius:4px;font-size:10px;cursor:pointer;border:1px solid;transition:all 0.12s;font-family:'IBM Plex Mono',monospace;}
+  .fchip.on{background:rgba(12,207,202,0.1);border-color:var(--teal-dim);color:var(--teal);}
+  .fchip.off{background:transparent;border-color:var(--border2);color:var(--text3);}
+  .fchip:hover.off{border-color:var(--text3);color:var(--text2);}
+
+  /* Results list */
+  .results-list{flex:1;overflow-y:auto;}
+  .result-item{display:flex;align-items:flex-start;gap:10px;padding:12px 16px;border-bottom:1px solid var(--border);cursor:pointer;transition:background 0.1s;}
+  .result-item:hover{background:rgba(255,255,255,0.02);}
+  .result-item.selected{background:rgba(12,207,202,0.05);border-left:2px solid var(--teal);}
+  .ri-avatar{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;color:#fff;flex-shrink:0;}
+  .ri-info{flex:1;min-width:0;}
+  .ri-name{font-size:12px;color:var(--text);font-weight:500;}
+  .ri-handle{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--teal);}
+  .ri-tags{display:flex;gap:4px;margin-top:4px;flex-wrap:wrap;}
+  .ri-tag{font-size:9px;font-family:'IBM Plex Mono',monospace;padding:1px 5px;border-radius:2px;border:1px solid;}
+  .tag-dev{background:rgba(59,130,246,0.06);border-color:#1d4ed8;color:var(--blue);}
+  .tag-coop{background:rgba(12,207,202,0.06);border-color:var(--teal-dim);color:var(--teal);}
+  .tag-crea{background:rgba(217,70,239,0.06);border-color:#86198f;color:var(--mag);}
+  .tag-cons{background:rgba(168,85,247,0.06);border-color:#7c3aed;color:var(--purple);}
+  .tag-ent{background:rgba(34,197,94,0.06);border-color:var(--green-dim);color:var(--green);}
+  .ri-dist{font-size:9px;font-family:'IBM Plex Mono',monospace;color:var(--text3);}
+  .ri-score{font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:600;}
+
+  /* Main: Forest Graph Visualization */
+  .forest-viz{flex:1;position:relative;overflow:hidden;background:var(--bg);}
+  .forest-canvas{width:100%;height:100%;position:relative;}
+  
+  /* SVG network */
+  svg{width:100%;height:100%;position:absolute;top:0;left:0;}
+  .node-group{cursor:pointer;}
+  .node-circle{transition:r 0.2s;}
+  .node-circle:hover{r:14;}
+  .edge{stroke:var(--border2);stroke-width:1;fill:none;opacity:0.4;}
+  .edge-strong{stroke:var(--teal);stroke-width:1.5;opacity:0.5;}
+  .edge-mutual{stroke:var(--blue);stroke-width:1;opacity:0.4;}
+
+  /* Node labels */
+  .node-label{font-family:'IBM Plex Mono',monospace;font-size:9px;fill:var(--text2);pointer-events:none;}
+  
+  /* Forest controls */
+  .forest-controls{position:absolute;top:14px;left:14px;display:flex;flex-direction:column;gap:6px;}
+  .fc-btn{width:32px;height:32px;background:var(--card);border:1px solid var(--border2);border-radius:4px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--text2);font-size:14px;}
+  .fc-btn:hover{border-color:var(--teal-dim);color:var(--teal);}
+
+  .forest-legend{position:absolute;bottom:14px;left:14px;background:rgba(11,13,22,0.9);border:1px solid var(--border);border-radius:6px;padding:10px 14px;}
+  .fl-title{font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:0.12em;margin-bottom:8px;}
+  .fl-item{display:flex;align-items:center;gap:8px;margin-bottom:5px;}
+  .fl-dot{width:8px;height:8px;border-radius:50%;}
+  .fl-label{font-size:10px;color:var(--text3);}
+
+  .forest-context{position:absolute;top:14px;right:14px;background:rgba(11,13,22,0.92);border:1px solid var(--border);border-radius:6px;padding:12px 14px;width:200px;}
+  .fc-title{font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--teal);text-transform:uppercase;letter-spacing:0.12em;margin-bottom:8px;}
+  .fc-row{display:flex;justify-content:space-between;margin-bottom:4px;}
+  .fc-key{font-size:10px;color:var(--text3);}
+  .fc-val{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--text2);}
+
+  /* Right: Profile detail panel */
+  .detail-panel{background:var(--sidebar);border-left:1px solid var(--border);overflow-y:auto;display:flex;flex-direction:column;}
+  .dp-header{padding:14px 16px;border-bottom:1px solid var(--border);}
+  .dp-avatar{width:52px;height:52px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:600;color:#fff;margin-bottom:10px;}
+  .dp-name{font-size:14px;font-weight:600;color:var(--text);}
+  .dp-handle{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--teal);margin-top:2px;}
+  .dp-tagline{font-size:11px;color:var(--text3);margin-top:6px;line-height:1.5;}
+  .dp-badges{display:flex;flex-wrap:wrap;gap:5px;margin-top:8px;}
+  .dp-badge{font-size:9px;font-family:'IBM Plex Mono',monospace;padding:2px 6px;border-radius:3px;border:1px solid;}
+  .dp-actions{display:flex;gap:6px;margin-top:10px;}
+
+  .dp-section{padding:10px 16px;border-bottom:1px solid var(--border);}
+  .dp-sec-title{font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:0.14em;margin-bottom:8px;}
+
+  .dp-stat-row{display:flex;justify-content:space-between;margin-bottom:6px;}
+  .dp-stat-key{font-size:11px;color:var(--text3);}
+  .dp-stat-val{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text2);}
+  .dp-stat-val.teal{color:var(--teal);}
+
+  .leaf-mini{display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid var(--border);}
+  .leaf-mini:last-child{border-bottom:none;}
+  .lm-icon{width:20px;height:20px;border-radius:3px;display:flex;align-items:center;justify-content:center;font-size:10px;flex-shrink:0;}
+  .lm-name{flex:1;font-size:11px;color:var(--text2);}
+  .lm-handle{font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--text3);}
+
+  .path-step{display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--border);}
+  .path-step:last-child{border-bottom:none;}
+  .path-avatar{width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:600;color:#fff;flex-shrink:0;}
+  .path-name{flex:1;font-size:11px;color:var(--text2);}
+  .path-arrow{color:var(--text3);font-size:12px;}
+
+  .skill-tag{display:inline-block;font-size:9px;font-family:'IBM Plex Mono',monospace;padding:2px 6px;border-radius:3px;background:var(--border);border:1px solid var(--border2);color:var(--text3);margin:2px 2px 0 0;}
+</style>
+</head>
+<body>
+<div class="sidebar">
+  <div class="logo">
+    <div class="logo-text">KOGI</div>
+    <div class="logo-sub">Independent Worker OS</div>
+  </div>
+  <nav class="nav">
+    <div class="nav-section">Core</div>
+    <div class="nav-item"><span class="nav-icon">⌂</span> Dashboard</div>
+    <div class="nav-item"><span class="nav-icon">◫</span> Office</div>
+    <div class="nav-item"><span class="nav-icon">◈</span> Portfolio</div>
+    <div class="nav-section">Identity</div>
+    <div class="nav-item"><span class="nav-icon">◉</span> Profile</div>
+    <div class="nav-item"><span class="nav-icon">⟁</span> Personas</div>
+    <div class="nav-item"><span class="nav-icon">⋈</span> Accounts</div>
+    <div class="nav-item"><span class="nav-icon">◎</span> Channels</div>
+    <div class="nav-section">Network</div>
+    <div class="nav-item"><span class="nav-icon">⋔</span> LinkTree</div>
+    <div class="nav-item active"><span class="nav-icon">⊛</span> kogi-net</div>
+    <div class="nav-item"><span class="nav-icon">⊞</span> Contacts</div>
+    <div class="nav-item"><span class="nav-icon">◻</span> Directory</div>
+    <div class="nav-section">Platform</div>
+    <div class="nav-item"><span class="nav-icon">♦</span> Bank</div>
+    <div class="nav-item"><span class="nav-icon">⊕</span> Community</div>
+  </nav>
+  <div class="profile-bottom">
+    <div class="profile-mini">
+      <div class="avatar-sm">JC</div>
+      <div>
+        <div style="font-size:12px;">Jordan Chen</div>
+        <div style="font-size:10px;color:var(--text3);">@jordan.dev</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="main">
+  <div class="topbar">
+    <div class="topbar-path">KNET / <span class="cur">kogi-net LinkForest</span></div>
+    <div class="spacer"></div>
+    <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--text3);">Scope:</div>
+    <select style="background:var(--card);border:1px solid var(--border2);color:var(--text2);font-size:11px;padding:4px 8px;border-radius:4px;font-family:'IBM Plex Mono',monospace;">
+      <option>My Network (2° connections)</option>
+      <option>Mesh Studio LinkNet</option>
+      <option>Open Source Collective</option>
+      <option>Global kogi-net</option>
+    </select>
+    <button class="btn-sm btn-ghost">Find Path</button>
+    <button class="btn-sm btn-teal">Export Forest</button>
+  </div>
+
+  <div class="stats-mini">
+    <div class="sm-box"><div class="sm-val" style="color:var(--teal);">1,848</div><div class="sm-lbl">Nodes in Scope</div></div>
+    <div class="sm-box"><div class="sm-val">284</div><div class="sm-lbl">Direct Connections</div></div>
+    <div class="sm-box"><div class="sm-val" style="color:var(--amber);">142</div><div class="sm-lbl">2° Connections</div></div>
+    <div class="sm-box"><div class="sm-val">28</div><div class="sm-lbl">Mutual Contacts</div></div>
+    <div class="sm-box"><div class="sm-val" style="color:var(--green);">7</div><div class="sm-lbl">Linknets</div></div>
+    <div class="sm-box"><div class="sm-val" style="color:var(--purple);">1.9</div><div class="sm-lbl">Avg Degrees</div></div>
+  </div>
+
+  <div class="content-layout">
+
+    <!-- Search Panel -->
+    <div class="search-panel">
+      <div class="sp-header">
+        <div class="sp-title">Search LinkForest</div>
+        <div class="search-input-wrap">
+          <div class="search-icon">⌕</div>
+          <input class="search-input" placeholder="Name, skill, handle, org…" />
+        </div>
+      </div>
+
+      <div class="filter-section">
+        <div class="filter-label">Persona Type</div>
+        <div class="filter-chips">
+          <div class="fchip on">Developer</div>
+          <div class="fchip on">Technologist</div>
+          <div class="fchip off">Creative</div>
+          <div class="fchip off">Investor</div>
+          <div class="fchip off">Consultant</div>
+          <div class="fchip off">Organizer</div>
+        </div>
+      </div>
+
+      <div class="filter-section">
+        <div class="filter-label">Connection Tier</div>
+        <div class="filter-chips">
+          <div class="fchip on">Direct (1°)</div>
+          <div class="fchip on">2° Connections</div>
+          <div class="fchip off">3° Connections</div>
+          <div class="fchip off">Same Org</div>
+        </div>
+      </div>
+
+      <div class="filter-section" style="border-bottom:none;">
+        <div class="filter-label">Availability</div>
+        <div class="filter-chips">
+          <div class="fchip on">Available</div>
+          <div class="fchip off">Limited</div>
+          <div class="fchip off">Any</div>
+        </div>
+      </div>
+
+      <div class="results-list">
+        <!-- Selected node highlighted -->
+        <div class="result-item selected">
+          <div class="ri-avatar" style="background:linear-gradient(135deg,#0ccfca,#3b82f6);">AK</div>
+          <div class="ri-info">
+            <div class="ri-name">Amara Kofi</div>
+            <div class="ri-handle">@amara.dev</div>
+            <div class="ri-tags">
+              <div class="ri-tag tag-dev">Developer</div>
+              <div class="ri-tag tag-coop">Cooperative</div>
+            </div>
+          </div>
+          <div style="text-align:right;">
+            <div class="ri-score" style="color:var(--teal);">97</div>
+            <div class="ri-dist">1° · Direct</div>
+          </div>
+        </div>
+
+        <div class="result-item">
+          <div class="ri-avatar" style="background:linear-gradient(135deg,#a855f7,#ec4899);">SR</div>
+          <div class="ri-info">
+            <div class="ri-name">Sofia Reyes</div>
+            <div class="ri-handle">@sofia.design</div>
+            <div class="ri-tags">
+              <div class="ri-tag tag-crea">Creative</div>
+              <div class="ri-tag tag-ent">Entrepreneur</div>
+            </div>
+          </div>
+          <div style="text-align:right;">
+            <div class="ri-score" style="color:var(--purple);">88</div>
+            <div class="ri-dist">1° · Direct</div>
+          </div>
+        </div>
+
+        <div class="result-item">
+          <div class="ri-avatar" style="background:linear-gradient(135deg,#22c55e,#16a34a);">MP</div>
+          <div class="ri-info">
+            <div class="ri-name">Marcus Park</div>
+            <div class="ri-handle">@marcus.systems</div>
+            <div class="ri-tags">
+              <div class="ri-tag tag-dev">Technologist</div>
+              <div class="ri-tag tag-cons">Consultant</div>
+            </div>
+          </div>
+          <div style="text-align:right;">
+            <div class="ri-score" style="color:var(--green);">85</div>
+            <div class="ri-dist">1° · Direct</div>
+          </div>
+        </div>
+
+        <div class="result-item">
+          <div class="ri-avatar" style="background:linear-gradient(135deg,#e8a030,#d97706);">NW</div>
+          <div class="ri-info">
+            <div class="ri-name">Nadia Wolff</div>
+            <div class="ri-handle">@nadia.builds</div>
+            <div class="ri-tags">
+              <div class="ri-tag tag-dev">Developer</div>
+              <div class="ri-tag tag-ent">Entrepreneur</div>
+            </div>
+          </div>
+          <div style="text-align:right;">
+            <div class="ri-score" style="color:var(--amber);">82</div>
+            <div class="ri-dist">2° via AK</div>
+          </div>
+        </div>
+
+        <div class="result-item">
+          <div class="ri-avatar" style="background:linear-gradient(135deg,#3b82f6,#1d4ed8);">TN</div>
+          <div class="ri-info">
+            <div class="ri-name">Tariq Nasir</div>
+            <div class="ri-handle">@tariq.infra</div>
+            <div class="ri-tags">
+              <div class="ri-tag tag-dev">Technologist</div>
+              <div class="ri-tag tag-coop">Cooperative</div>
+            </div>
+          </div>
+          <div style="text-align:right;">
+            <div class="ri-score" style="color:var(--blue);">79</div>
+            <div class="ri-dist">2° via MP</div>
+          </div>
+        </div>
+
+        <div class="result-item">
+          <div class="ri-avatar" style="background:linear-gradient(135deg,#d946ef,#9d174d);">PB</div>
+          <div class="ri-info">
+            <div class="ri-name">Priya Bose</div>
+            <div class="ri-handle">@priya.data</div>
+            <div class="ri-tags">
+              <div class="ri-tag tag-cons">Researcher</div>
+              <div class="ri-tag tag-dev">Developer</div>
+            </div>
+          </div>
+          <div style="text-align:right;">
+            <div class="ri-score" style="color:var(--mag);">76</div>
+            <div class="ri-dist">2° via SR</div>
+          </div>
+        </div>
+
+        <div class="result-item">
+          <div class="ri-avatar" style="background:linear-gradient(135deg,#10b981,#059669);">LM</div>
+          <div class="ri-info">
+            <div class="ri-name">Lena Maier</div>
+            <div class="ri-handle">@lena.coop</div>
+            <div class="ri-tags">
+              <div class="ri-tag tag-coop">Organizer</div>
+              <div class="ri-tag tag-ent">Entrepreneur</div>
+            </div>
+          </div>
+          <div style="text-align:right;">
+            <div class="ri-score" style="color:#10b981;">74</div>
+            <div class="ri-dist">1° · Direct</div>
+          </div>
+        </div>
+
+        <div class="result-item">
+          <div class="ri-avatar" style="background:linear-gradient(135deg,#f59e0b,#b45309);">KO</div>
+          <div class="ri-info">
+            <div class="ri-name">Kenji Ota</div>
+            <div class="ri-handle">@kenji.studio</div>
+            <div class="ri-tags">
+              <div class="ri-tag tag-crea">Creative</div>
+              <div class="ri-tag tag-dev">Developer</div>
+            </div>
+          </div>
+          <div style="text-align:right;">
+            <div class="ri-score" style="color:#f59e0b;">71</div>
+            <div class="ri-dist">2° via SR</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Forest Graph -->
+    <div class="forest-viz">
+      <svg viewBox="0 0 800 600" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <radialGradient id="glow-teal" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stop-color="#0ccfca" stop-opacity="0.3"/>
+            <stop offset="100%" stop-color="#0ccfca" stop-opacity="0"/>
+          </radialGradient>
+          <radialGradient id="glow-blue" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stop-color="#3b82f6" stop-opacity="0.2"/>
+            <stop offset="100%" stop-color="#3b82f6" stop-opacity="0"/>
+          </radialGradient>
+          <filter id="blur-glow">
+            <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+            <feMerge><feMergeNode in="coloredBlur"/><feMergeNode in="SourceGraphic"/></feMerge>
+          </filter>
+        </defs>
+
+        <!-- Background subtle grid -->
+        <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+          <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#1a2035" stroke-width="0.5"/>
+        </pattern>
+        <rect width="800" height="600" fill="url(#grid)" opacity="0.4"/>
+
+        <!-- Outer dim nodes (3rd degree) -->
+        <circle cx="80" cy="120" r="4" fill="#1a2035"/>
+        <circle cx="150" cy="60" r="4" fill="#1a2035"/>
+        <circle cx="700" cy="80" r="4" fill="#1a2035"/>
+        <circle cx="740" cy="200" r="4" fill="#1a2035"/>
+        <circle cx="720" cy="520" r="4" fill="#1a2035"/>
+        <circle cx="100" cy="500" r="4" fill="#1a2035"/>
+        <circle cx="50" cy="350" r="4" fill="#1a2035"/>
+        <circle cx="760" cy="380" r="4" fill="#1a2035"/>
+
+        <!-- Edges to dim nodes -->
+        <line x1="260" y1="180" x2="80" y2="120" class="edge"/>
+        <line x1="310" y1="130" x2="150" y2="60" class="edge"/>
+        <line x1="550" y1="150" x2="700" y2="80" class="edge"/>
+        <line x1="560" y1="280" x2="740" y2="200" class="edge"/>
+        <line x1="520" y1="440" x2="720" y2="520" class="edge"/>
+        <line x1="280" y1="430" x2="100" y2="500" class="edge"/>
+        <line x1="230" y1="340" x2="50" y2="350" class="edge"/>
+        <line x1="580" y1="360" x2="760" y2="380" class="edge"/>
+
+        <!-- 2nd degree nodes -->
+        <circle cx="200" cy="120" r="7" fill="#131729" stroke="#232a42" stroke-width="1.5"/>
+        <circle cx="170" cy="280" r="7" fill="#131729" stroke="#232a42" stroke-width="1.5"/>
+        <circle cx="620" cy="130" r="7" fill="#131729" stroke="#232a42" stroke-width="1.5"/>
+        <circle cx="640" cy="460" r="7" fill="#131729" stroke="#232a42" stroke-width="1.5"/>
+        <circle cx="190" cy="450" r="7" fill="#131729" stroke="#232a42" stroke-width="1.5"/>
+        <circle cx="660" cy="310" r="7" fill="#131729" stroke="#232a42" stroke-width="1.5"/>
+
+        <!-- 2nd degree edges to 1st degree -->
+        <line x1="200" y1="120" x2="310" y2="170" stroke="#232a42" stroke-width="1" opacity="0.6"/>
+        <line x1="170" y1="280" x2="250" y2="300" stroke="#232a42" stroke-width="1" opacity="0.6"/>
+        <line x1="620" y1="130" x2="530" y2="180" stroke="#232a42" stroke-width="1" opacity="0.6"/>
+        <line x1="640" y1="460" x2="530" y2="390" stroke="#232a42" stroke-width="1" opacity="0.6"/>
+        <line x1="190" y1="450" x2="280" y2="390" stroke="#232a42" stroke-width="1" opacity="0.6"/>
+        <line x1="660" y1="310" x2="560" y2="290" stroke="#232a42" stroke-width="1" opacity="0.6"/>
+
+        <!-- 1st degree connection edges -->
+        <line x1="400" y1="300" x2="310" y2="170" class="edge-strong"/>
+        <line x1="400" y1="300" x2="480" y2="170" class="edge-strong"/>
+        <line x1="400" y1="300" x2="530" y2="290" class="edge-strong"/>
+        <line x1="400" y1="300" x2="530" y2="390" class="edge-strong"/>
+        <line x1="400" y1="300" x2="280" y2="390" class="edge-strong"/>
+        <line x1="400" y1="300" x2="250" y2="300" class="edge-mutual"/>
+        <line x1="400" y1="300" x2="430" y2="440" class="edge-mutual"/>
+
+        <!-- Cross-edges between 1st degree -->
+        <line x1="310" y1="170" x2="480" y2="170" class="edge-mutual"/>
+        <line x1="530" y1="290" x2="530" y2="390" class="edge-mutual"/>
+        <line x1="280" y1="390" x2="250" y2="300" class="edge-mutual"/>
+
+        <!-- 1st degree halos -->
+        <circle cx="310" cy="170" r="22" fill="url(#glow-blue)" opacity="0.5"/>
+        <circle cx="530" cy="290" r="22" fill="url(#glow-blue)" opacity="0.4"/>
+
+        <!-- 1st degree nodes -->
+        <g class="node-group">
+          <circle cx="310" cy="170" r="13" fill="#1a2035" stroke="#0ccfca" stroke-width="1.5" filter="url(#blur-glow)"/>
+          <text x="310" y="174" text-anchor="middle" font-family="IBM Plex Mono" font-size="9" fill="#0ccfca" font-weight="600">AK</text>
+          <text x="310" y="193" text-anchor="middle" class="node-label">Amara</text>
+        </g>
+        <g class="node-group">
+          <circle cx="480" cy="170" r="11" fill="#131729" stroke="#a855f7" stroke-width="1.5"/>
+          <text x="480" y="174" text-anchor="middle" font-family="IBM Plex Mono" font-size="9" fill="#a855f7" font-weight="600">SR</text>
+          <text x="480" y="192" text-anchor="middle" class="node-label">Sofia</text>
+        </g>
+        <g class="node-group">
+          <circle cx="530" cy="290" r="11" fill="#131729" stroke="#22c55e" stroke-width="1.5"/>
+          <text x="530" y="294" text-anchor="middle" font-family="IBM Plex Mono" font-size="9" fill="#22c55e" font-weight="600">MP</text>
+          <text x="530" y="312" text-anchor="middle" class="node-label">Marcus</text>
+        </g>
+        <g class="node-group">
+          <circle cx="530" cy="390" r="10" fill="#131729" stroke="#e8a030" stroke-width="1.5"/>
+          <text x="530" y="394" text-anchor="middle" font-family="IBM Plex Mono" font-size="8" fill="#e8a030" font-weight="600">NW</text>
+          <text x="530" y="411" text-anchor="middle" class="node-label">Nadia</text>
+        </g>
+        <g class="node-group">
+          <circle cx="280" cy="390" r="10" fill="#131729" stroke="#3b82f6" stroke-width="1.5"/>
+          <text x="280" y="394" text-anchor="middle" font-family="IBM Plex Mono" font-size="8" fill="#3b82f6" font-weight="600">TN</text>
+          <text x="280" y="411" text-anchor="middle" class="node-label">Tariq</text>
+        </g>
+        <g class="node-group">
+          <circle cx="250" cy="300" r="10" fill="#131729" stroke="#d946ef" stroke-width="1.5"/>
+          <text x="250" y="304" text-anchor="middle" font-family="IBM Plex Mono" font-size="8" fill="#d946ef" font-weight="600">PB</text>
+          <text x="250" y="322" text-anchor="middle" class="node-label">Priya</text>
+        </g>
+        <g class="node-group">
+          <circle cx="430" cy="440" r="10" fill="#131729" stroke="#10b981" stroke-width="1.5"/>
+          <text x="430" y="444" text-anchor="middle" font-family="IBM Plex Mono" font-size="8" fill="#10b981" font-weight="600">LM</text>
+          <text x="430" y="462" text-anchor="middle" class="node-label">Lena</text>
+        </g>
+
+        <!-- Root node (You) -->
+        <circle cx="400" cy="300" r="30" fill="url(#glow-teal)" opacity="0.8"/>
+        <circle cx="400" cy="300" r="20" fill="#0a1520" stroke="#0ccfca" stroke-width="2" filter="url(#blur-glow)"/>
+        <text x="400" y="304" text-anchor="middle" font-family="IBM Plex Mono" font-size="10" fill="#0ccfca" font-weight="600">YOU</text>
+        <text x="400" y="330" text-anchor="middle" class="node-label" font-size="10">@jordan.dev</text>
+      </svg>
+
+      <!-- Controls -->
+      <div class="forest-controls">
+        <div class="fc-btn">+</div>
+        <div class="fc-btn">−</div>
+        <div class="fc-btn">⌖</div>
+        <div class="fc-btn">⧉</div>
+      </div>
+
+      <!-- Legend -->
+      <div class="forest-legend">
+        <div class="fl-title">Node Types</div>
+        <div class="fl-item"><div class="fl-dot" style="background:var(--teal);"></div><div class="fl-label">You (root)</div></div>
+        <div class="fl-item"><div class="fl-dot" style="background:var(--blue);"></div><div class="fl-label">Direct connection (1°)</div></div>
+        <div class="fl-item"><div class="fl-dot" style="background:var(--border2);"></div><div class="fl-label">2nd degree</div></div>
+        <div class="fl-item"><div class="fl-dot" style="background:var(--border);"></div><div class="fl-label">3rd degree</div></div>
+        <div style="height:1px;background:var(--border);margin:6px 0;"></div>
+        <div class="fl-title">Edge Types</div>
+        <div class="fl-item"><div style="width:20px;height:1px;background:var(--teal);margin-right:8px;"></div><div class="fl-label">Mutual connection</div></div>
+        <div class="fl-item"><div style="width:20px;height:1px;background:var(--blue);opacity:0.5;margin-right:8px;"></div><div class="fl-label">Cross-connection</div></div>
+      </div>
+
+      <!-- Hovered context badge -->
+      <div class="forest-context">
+        <div class="fc-title">● Selected · Amara Kofi</div>
+        <div class="fc-row"><span class="fc-key">Handle</span><span class="fc-val teal" style="color:var(--teal);">@amara.dev</span></div>
+        <div class="fc-row"><span class="fc-key">Distance</span><span class="fc-val">1° Direct</span></div>
+        <div class="fc-row"><span class="fc-key">Match Score</span><span class="fc-val" style="color:var(--teal);">97 / 100</span></div>
+        <div class="fc-row"><span class="fc-key">Mutual</span><span class="fc-val">14 contacts</span></div>
+        <div class="fc-row"><span class="fc-key">Linknets</span><span class="fc-val">Mesh Studio</span></div>
+        <div style="margin-top:8px;display:flex;gap:5px;">
+          <button class="btn-sm btn-teal" style="font-size:9px;padding:4px 8px;flex:1;">DM</button>
+          <button class="btn-sm btn-ghost" style="font-size:9px;padding:4px 8px;flex:1;">Profile</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Detail Panel -->
+    <div class="detail-panel">
+      <div class="dp-header">
+        <div class="dp-avatar" style="background:linear-gradient(135deg,#0ccfca,#3b82f6);">AK</div>
+        <div class="dp-name">Amara Kofi</div>
+        <div class="dp-handle">@amara.dev</div>
+        <div class="dp-tagline">Full-stack developer & cooperative technologist. Building decentralized worker tools. Mesh Studio co-member.</div>
+        <div class="dp-badges">
+          <div class="dp-badge" style="background:rgba(12,207,202,0.08);border-color:var(--teal-dim);color:var(--teal);">VERIFIED</div>
+          <div class="dp-badge" style="background:rgba(59,130,246,0.08);border-color:#1d4ed8;color:var(--blue);">DEVELOPER</div>
+          <div class="dp-badge" style="background:rgba(34,197,94,0.08);border-color:var(--green-dim);color:var(--green);">COOPERATIVE</div>
+        </div>
+        <div class="dp-actions">
+          <button class="btn-sm btn-teal" style="flex:1;font-size:10px;">Message</button>
+          <button class="btn-sm btn-ghost" style="flex:1;font-size:10px;">View Profile</button>
+        </div>
+      </div>
+
+      <div class="dp-section">
+        <div class="dp-sec-title">Network Signals</div>
+        <div class="dp-stat-row"><span class="dp-stat-key">Match Score</span><span class="dp-stat-val teal">97 / 100</span></div>
+        <div class="dp-stat-row"><span class="dp-stat-key">Connection Degree</span><span class="dp-stat-val">1° Direct</span></div>
+        <div class="dp-stat-row"><span class="dp-stat-key">Mutual Contacts</span><span class="dp-stat-val">14</span></div>
+        <div class="dp-stat-row"><span class="dp-stat-key">Shared Orgs</span><span class="dp-stat-val">2</span></div>
+        <div class="dp-stat-row"><span class="dp-stat-key">Reputation Score</span><span class="dp-stat-val">93 / 100</span></div>
+        <div class="dp-stat-row"><span class="dp-stat-key">Trust Level</span><span class="dp-stat-val">Trusted</span></div>
+      </div>
+
+      <div class="dp-section">
+        <div class="dp-sec-title">Shared Skills</div>
+        <div>
+          <span class="skill-tag">Rust</span>
+          <span class="skill-tag">TypeScript</span>
+          <span class="skill-tag">Distributed Systems</span>
+          <span class="skill-tag">CRDT</span>
+          <span class="skill-tag">React</span>
+          <span class="skill-tag">GraphQL</span>
+        </div>
+      </div>
+
+      <div class="dp-section">
+        <div class="dp-sec-title">Visible LinkTree Leaves</div>
+        <div class="leaf-mini">
+          <div class="lm-icon" style="background:rgba(255,255,255,0.06);border-radius:3px;">⌥</div>
+          <div class="lm-name">GitHub</div>
+          <div class="lm-handle">@amara-builds</div>
+        </div>
+        <div class="leaf-mini">
+          <div class="lm-icon" style="background:rgba(29,155,240,0.12);border-radius:3px;">𝕏</div>
+          <div class="lm-name">Twitter</div>
+          <div class="lm-handle">@amara.dev</div>
+        </div>
+        <div class="leaf-mini">
+          <div class="lm-icon" style="background:rgba(10,102,194,0.15);border-radius:3px;">in</div>
+          <div class="lm-name">LinkedIn</div>
+          <div class="lm-handle">amara-kofi-dev</div>
+        </div>
+        <div class="leaf-mini">
+          <div class="lm-icon" style="background:rgba(12,207,202,0.1);border-radius:3px;">💬</div>
+          <div class="lm-name">kogi DM</div>
+          <div class="lm-handle">@amara.dev</div>
+        </div>
+      </div>
+
+      <div class="dp-section">
+        <div class="dp-sec-title">Introduction Path</div>
+        <div class="path-step">
+          <div class="path-avatar" style="background:linear-gradient(135deg,#0ccfca,#3b82f6);">JC</div>
+          <div class="path-name">You (@jordan.dev)</div>
+        </div>
+        <div style="padding:0 0 0 12px;color:var(--teal);font-size:12px;">↓ direct connection</div>
+        <div class="path-step">
+          <div class="path-avatar" style="background:linear-gradient(135deg,#0ccfca,#3b82f6);">AK</div>
+          <div class="path-name">Amara Kofi</div>
+        </div>
+      </div>
+
+      <div class="dp-section" style="border-bottom:none;">
+        <div class="dp-sec-title">Shared Organizations</div>
+        <div style="display:flex;flex-direction:column;gap:6px;">
+          <div style="display:flex;align-items:center;gap:8px;padding:6px;background:var(--card2);border:1px solid var(--border);border-radius:4px;">
+            <div style="font-size:14px;">⚙</div>
+            <div>
+              <div style="font-size:11px;color:var(--text);">Mesh Studio</div>
+              <div style="font-size:9px;color:var(--text3);font-family:'IBM Plex Mono',monospace;">Cooperative · Co-members</div>
+            </div>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;padding:6px;background:var(--card2);border:1px solid var(--border);border-radius:4px;">
+            <div style="font-size:14px;">◈</div>
+            <div>
+              <div style="font-size:11px;color:var(--text);">Open Source Collective</div>
+              <div style="font-size:9px;color:var(--text3);font-family:'IBM Plex Mono',monospace;">Collective · Both contributors</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+</body>
+</html>

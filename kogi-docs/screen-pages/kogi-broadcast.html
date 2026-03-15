@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>KOGI · Broadcast · Announcements</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap');
+:root{--bg:#070910;--sidebar:#0b0d16;--card:#0f1221;--card2:#131729;--border:#1a2035;--border2:#232a42;--teal:#0ccfca;--teal-dim:#0a9994;--amber:#e8a030;--amber-dim:#b07820;--green:#22c55e;--green-dim:#15803d;--blue:#3b82f6;--red:#ef4444;--purple:#a855f7;--mag:#d946ef;--text:#dde4f0;--text2:#7a879e;--text3:#3d4a62;}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--bg);color:var(--text);font-family:'IBM Plex Sans',sans-serif;font-size:13px;display:flex;height:100vh;overflow:hidden;}
+.sidebar{width:200px;min-width:200px;background:var(--sidebar);border-right:1px solid var(--border);display:flex;flex-direction:column;}
+.logo{padding:18px 16px;border-bottom:1px solid var(--border);}
+.logo-text{font-family:'IBM Plex Mono',monospace;font-size:18px;font-weight:600;letter-spacing:.08em;color:var(--teal);}
+.logo-sub{font-size:9px;color:var(--text3);letter-spacing:.15em;text-transform:uppercase;margin-top:2px;}
+.nav{padding:12px 0;flex:1;overflow-y:auto;}
+.ns{padding:8px 16px 4px;font-size:9px;color:var(--text3);letter-spacing:.18em;text-transform:uppercase;font-family:'IBM Plex Mono',monospace;}
+.ni{display:flex;align-items:center;gap:10px;padding:7px 16px;color:var(--text2);cursor:pointer;font-size:12px;border-left:2px solid transparent;}
+.ni.on{color:var(--teal);background:rgba(12,207,202,.07);border-left-color:var(--teal);}
+.ni-ic{width:14px;text-align:center;font-size:12px;}
+.nbadge{background:var(--red);color:#fff;border-radius:9px;font-size:9px;padding:1px 5px;font-family:'IBM Plex Mono',monospace;margin-left:auto;}
+.pb{padding:12px 16px;border-top:1px solid var(--border);}
+.pm{display:flex;align-items:center;gap:8px;}
+.avsm{width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,#0ccfca,#3b82f6);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:#fff;}
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden;}
+.topbar{height:48px;border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 20px;gap:12px;background:var(--sidebar);flex-shrink:0;}
+.tbpath{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text3);}
+.tbpath span{color:var(--text2);}
+.tbpath span.cur{color:var(--text);}
+.sp{flex:1;}
+.btn{padding:5px 12px;border-radius:4px;font-size:11px;font-family:'IBM Plex Mono',monospace;cursor:pointer;border:1px solid;}
+.bt{background:rgba(12,207,202,.12);border-color:var(--teal-dim);color:var(--teal);}
+.bg{background:transparent;border-color:var(--border2);color:var(--text2);}
+.ba{background:rgba(232,160,48,.1);border-color:var(--amber-dim);color:var(--amber);}
+
+.layout{flex:1;display:grid;grid-template-columns:260px 1fr 260px;overflow:hidden;}
+
+/* Channel list */
+.cl{background:var(--sidebar);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden;}
+.clh{padding:12px 14px;border-bottom:1px solid var(--border);flex-shrink:0;}
+.cl-title{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text2);margin-bottom:8px;}
+.cl-search{position:relative;}
+.cls{width:100%;background:var(--card);border:1px solid var(--border);border-radius:4px;padding:6px 10px 6px 26px;color:var(--text2);font-size:11px;outline:none;font-family:'IBM Plex Sans',sans-serif;}
+.cls::placeholder{color:var(--text3);}
+.cls-ic{position:absolute;left:8px;top:50%;transform:translateY(-50%);color:var(--text3);font-size:11px;}
+.cl-scroll{flex:1;overflow-y:auto;}
+.cl-sec{padding:6px 14px 3px;font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.14em;font-family:'IBM Plex Mono',monospace;background:var(--card2);border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;}
+.ci{display:flex;align-items:flex-start;gap:9px;padding:10px 14px;border-bottom:1px solid var(--border);cursor:pointer;}
+.ci:hover{background:rgba(255,255,255,.015);}
+.ci.on{background:rgba(12,207,202,.05);border-left:2px solid var(--teal);}
+.ci.unread::after{content:'';position:absolute;right:14px;top:13px;width:7px;height:7px;border-radius:50%;background:var(--amber);}
+.ci{position:relative;}
+.ci-ic{width:34px;height:34px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;border:1px solid;}
+.ci-info{flex:1;min-width:0;}
+.ci-name{font-size:12px;color:var(--text);font-weight:500;}
+.ci-pre{font-size:11px;color:var(--text3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:1px;}
+.ci-meta{font-size:9px;color:var(--text3);font-family:'IBM Plex Mono',monospace;flex-shrink:0;}
+.ci-subs{font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--text3);}
+
+/* Broadcast Feed */
+.feed{display:flex;flex-direction:column;overflow:hidden;}
+.feed-hdr{border-bottom:1px solid var(--border);padding:0 18px;height:52px;display:flex;align-items:center;gap:12px;background:var(--card);flex-shrink:0;}
+.feed-ic{width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:18px;border:1px solid;}
+.feed-name{font-size:14px;font-weight:600;color:var(--text);}
+.feed-meta{font-size:10px;color:var(--text2);}
+.broadcast-tag{font-size:9px;font-family:'IBM Plex Mono',monospace;color:var(--amber);background:rgba(232,160,48,.08);padding:2px 7px;border-radius:3px;border:1px solid var(--amber-dim);}
+.readonly-tag{font-size:9px;font-family:'IBM Plex Mono',monospace;color:var(--text3);background:var(--card2);padding:2px 7px;border-radius:3px;border:1px solid var(--border2);}
+.feed-acts{margin-left:auto;display:flex;gap:6px;}
+.fa-btn{width:28px;height:28px;border-radius:5px;display:flex;align-items:center;justify-content:center;font-size:12px;border:1px solid var(--border2);background:transparent;cursor:pointer;color:var(--text3);}
+.fa-btn:hover{border-color:var(--teal-dim);color:var(--teal);}
+
+.broadcast-scroll{flex:1;overflow-y:auto;padding:0;}
+
+/* Broadcast post */
+.bc-post{padding:18px 20px;border-bottom:1px solid var(--border);transition:background .12s;}
+.bc-post:hover{background:rgba(255,255,255,.01);}
+.bc-post.pinned{border-left:3px solid var(--amber);background:rgba(232,160,48,.02);}
+.bc-post.critical{border-left:3px solid var(--red);background:rgba(239,68,68,.02);}
+.bc-header{display:flex;align-items:flex-start;gap:10px;margin-bottom:10px;}
+.bc-av{width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:600;color:#fff;flex-shrink:0;}
+.bc-sender{flex:1;}
+.bc-sender-name{font-size:12px;font-weight:600;color:var(--text);}
+.bc-sender-org{font-size:10px;color:var(--text3);font-family:'IBM Plex Mono',monospace;}
+.bc-badges{display:flex;gap:5px;margin-top:4px;flex-wrap:wrap;}
+.bc-badge{font-size:9px;font-family:'IBM Plex Mono',monospace;padding:2px 6px;border-radius:3px;border:1px solid;}
+.bb-pin{background:rgba(232,160,48,.08);border-color:var(--amber-dim);color:var(--amber);}
+.bb-crit{background:rgba(239,68,68,.08);border-color:#991b1b;color:var(--red);}
+.bb-ann{background:rgba(12,207,202,.08);border-color:var(--teal-dim);color:var(--teal);}
+.bb-rel{background:rgba(59,130,246,.08);border-color:#1d4ed8;color:var(--blue);}
+.bb-gov{background:rgba(168,85,247,.08);border-color:#7c3aed;color:var(--purple);}
+.bc-time{font-size:10px;color:var(--text3);font-family:'IBM Plex Mono',monospace;white-space:nowrap;}
+.bc-body{font-size:13px;color:var(--text);line-height:1.6;margin-bottom:10px;}
+.bc-body strong{color:var(--text);font-weight:600;}
+.bc-cta{display:flex;gap:8px;margin-bottom:10px;}
+.bc-cta-btn{padding:6px 14px;border-radius:4px;font-size:11px;font-family:'IBM Plex Mono',monospace;cursor:pointer;border:1px solid;transition:all .15s;}
+/* port embed in broadcast */
+.bc-embed{background:var(--card2);border:1px solid var(--border2);border-radius:6px;padding:10px 12px;margin-bottom:10px;}
+.be-tag{font-size:9px;font-family:'IBM Plex Mono',monospace;color:var(--teal);text-transform:uppercase;margin-bottom:3px;}
+.be-title{font-size:12px;color:var(--text);font-weight:500;}
+.be-meta{font-size:10px;color:var(--text3);margin-top:2px;}
+/* metrics row */
+.bc-metrics{display:flex;gap:16px;padding-top:8px;border-top:1px solid var(--border);}
+.bm{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text3);}
+.bm-val{font-family:'IBM Plex Mono',monospace;font-size:11px;}
+/* subscriber reply bar */
+.reply-bar{background:var(--card2);border:1px solid var(--border);border-radius:4px;padding:8px 12px;font-size:11px;color:var(--text3);display:flex;align-items:center;gap:8px;cursor:pointer;margin-top:8px;}
+.rb-ic{font-size:12px;}
+
+/* Compose broadcast */
+.bc-compose{border-top:1px solid var(--border);padding:12px 18px;background:var(--card);flex-shrink:0;}
+.bc-compose-hdr{display:flex;align-items:center;gap:8px;margin-bottom:8px;}
+.bch-label{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--amber);}
+.bch-sp{flex:1;}
+.bc-type-sel{background:var(--card2);border:1px solid var(--border2);color:var(--text2);font-size:10px;padding:4px 8px;border-radius:4px;font-family:'IBM Plex Mono',monospace;}
+.bc-field{width:100%;background:var(--card2);border:1px solid var(--border2);border-radius:6px;padding:8px 12px;color:var(--text);font-size:12px;font-family:'IBM Plex Sans',sans-serif;outline:none;resize:none;min-height:60px;line-height:1.5;margin-bottom:8px;}
+.bc-field:focus{border-color:var(--amber-dim);}
+.bc-field::placeholder{color:var(--text3);}
+.bc-compose-footer{display:flex;align-items:center;gap:8px;}
+.bc-audience{font-size:10px;color:var(--text3);}
+.bc-audience strong{color:var(--amber);}
+.bc-send{padding:6px 16px;background:rgba(232,160,48,.12);border:1px solid var(--amber-dim);color:var(--amber);border-radius:4px;font-size:11px;font-family:'IBM Plex Mono',monospace;cursor:pointer;}
+
+/* Info panel */
+.info{background:var(--sidebar);border-left:1px solid var(--border);overflow-y:auto;display:flex;flex-direction:column;}
+.info-hdr{padding:14px;border-bottom:1px solid var(--border);}
+.info-ic{width:48px;height:48px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:22px;margin-bottom:8px;}
+.info-name{font-size:13px;font-weight:600;color:var(--text);}
+.info-handle{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--teal);margin-top:2px;}
+.info-desc{font-size:11px;color:var(--text3);margin-top:6px;line-height:1.5;}
+.sub-btn{width:100%;margin-top:8px;padding:6px;background:rgba(12,207,202,.1);border:1px solid var(--teal-dim);color:var(--teal);border-radius:4px;font-size:10px;font-family:'IBM Plex Mono',monospace;cursor:pointer;}
+.info-sec{padding:10px 14px;border-bottom:1px solid var(--border);}
+.is-title{font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.14em;margin-bottom:7px;}
+.stat-row{display:flex;justify-content:space-between;margin-bottom:5px;}
+.sk{font-size:11px;color:var(--text3);}
+.sv{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text2);}
+.sv.t{color:var(--teal);}
+.sv.a{color:var(--amber);}
+/* notif pref */
+.pref-row{display:flex;align-items:center;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--border);}
+.pref-row:last-child{border-bottom:none;}
+.pref-label{font-size:11px;color:var(--text);}
+.pref-sub{font-size:10px;color:var(--text3);}
+.toggle{width:32px;height:18px;border-radius:9px;background:var(--border2);position:relative;cursor:pointer;transition:background .2s;flex-shrink:0;}
+.toggle.on{background:var(--teal-dim);}
+.toggle::after{content:'';position:absolute;top:2px;left:2px;width:14px;height:14px;border-radius:50%;background:#fff;transition:left .2s;}
+.toggle.on::after{left:16px;}
+/* channel delivery */
+.del-row{display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--border);}
+.del-row:last-child{border-bottom:none;}
+.del-ic{font-size:13px;}
+.del-name{flex:1;font-size:11px;color:var(--text2);}
+.del-status{font-size:9px;font-family:'IBM Plex Mono',monospace;}
+.ds-on{color:var(--green);}
+.ds-off{color:var(--text3);}
+</style>
+</head>
+<body>
+<div class="sidebar">
+  <div class="logo"><div class="logo-text">KOGI</div><div class="logo-sub">Independent Worker OS</div></div>
+  <nav class="nav">
+    <div class="ns">Core</div>
+    <div class="ni"><span class="ni-ic">⌂</span>Dashboard</div>
+    <div class="ni"><span class="ni-ic">◫</span>Office</div>
+    <div class="ns">Communications</div>
+    <div class="ni"><span class="ni-ic">💬</span>Inbox <span class="nbadge">12</span></div>
+    <div class="ni"><span class="ni-ic">👥</span>Group Msgs</div>
+    <div class="ni on"><span class="ni-ic">📢</span>Broadcasts</div>
+    <div class="ni"><span class="ni-ic">🔔</span>Alerts <span class="nbadge">5</span></div>
+    <div class="ni"><span class="ni-ic">✉</span>Email</div>
+    <div class="ni"><span class="ni-ic">📞</span>Phone / Voice</div>
+    <div class="ns">Spaces & Rooms</div>
+    <div class="ni"><span class="ni-ic">⊕</span>Community</div>
+    <div class="ni"><span class="ni-ic">◻</span>Rooms</div>
+    <div class="ni"><span class="ni-ic">⊛</span>Spaces</div>
+    <div class="ns">Platform</div>
+    <div class="ni"><span class="ni-ic">◉</span>Profile</div>
+    <div class="ni"><span class="ni-ic">♦</span>Bank</div>
+  </nav>
+  <div class="pb"><div class="pm"><div class="avsm">JC</div><div><div style="font-size:12px;">Jordan Chen</div><div style="font-size:10px;color:var(--text3);">● Online</div></div></div></div>
+</div>
+
+<div class="main">
+  <div class="topbar">
+    <div class="tbpath">KMSG / <span>Broadcasts</span> / <span class="cur">Announcement Channels · 1:ALL</span></div>
+    <div class="sp"></div>
+    <button class="btn bg">+ Create Channel</button>
+    <button class="btn ba">📢 Publish Broadcast</button>
+  </div>
+
+  <div class="layout">
+    <!-- Channel List -->
+    <div class="cl">
+      <div class="clh">
+        <div class="cl-title">Broadcast Channels</div>
+        <div class="cl-search"><div class="cls-ic">⌕</div><input class="cls" placeholder="Search channels…"/></div>
+      </div>
+      <div class="cl-scroll">
+        <div class="cl-sec"><span>Subscribed · Publisher</span><span style="cursor:pointer;font-size:9px;color:var(--teal);">+ Create</span></div>
+
+        <div class="ci on">
+          <div class="ci-ic" style="background:rgba(12,207,202,.1);border-color:var(--teal-dim);">📡</div>
+          <div class="ci-info">
+            <div class="ci-name">Kogi Platform Updates</div>
+            <div class="ci-pre">v2.4.0 shipped — CRDT + messaging</div>
+            <div class="ci-subs">42K subscribers · You publish</div>
+          </div>
+          <div class="ci-meta">2h</div>
+        </div>
+        <div class="ci">
+          <div class="ci-ic" style="background:rgba(34,197,94,.1);border-color:var(--green-dim);">⚙</div>
+          <div class="ci-info">
+            <div class="ci-name">Mesh Studio · Announcements</div>
+            <div class="ci-pre">Q1 retrospective is scheduled…</div>
+            <div class="ci-subs">8 members · Admin</div>
+          </div>
+          <div class="ci-meta">1d</div>
+        </div>
+        <div class="ci unread">
+          <div class="ci-ic" style="background:rgba(168,85,247,.1);border-color:#7c3aed;">⚖</div>
+          <div class="ci-info">
+            <div class="ci-name">Cooperative Governance Alerts</div>
+            <div class="ci-pre">⚠ Proposal #12 expires in 48h</div>
+            <div class="ci-subs">28 members · Admin</div>
+          </div>
+          <div class="ci-meta">3h</div>
+        </div>
+
+        <div class="cl-sec"><span>Subscribed · Viewer</span></div>
+        <div class="ci">
+          <div class="ci-ic" style="background:rgba(59,130,246,.1);border-color:#1d4ed8;">🌐</div>
+          <div class="ci-info">
+            <div class="ci-name">Kogi Builder Network</div>
+            <div class="ci-pre">New gig board listings posted</div>
+            <div class="ci-subs">2.4K subscribers</div>
+          </div>
+          <div class="ci-meta">6h</div>
+        </div>
+        <div class="ci">
+          <div class="ci-ic" style="background:rgba(232,160,48,.1);border-color:var(--amber-dim);">💰</div>
+          <div class="ci-info">
+            <div class="ci-name">Exchange · Deal Alerts</div>
+            <div class="ci-pre">3 new matching opportunities</div>
+            <div class="ci-subs">Market alerts · Opt-in</div>
+          </div>
+          <div class="ci-meta">10m</div>
+        </div>
+        <div class="ci">
+          <div class="ci-ic" style="background:rgba(239,68,68,.1);border-color:#991b1b;">🚨</div>
+          <div class="ci-info">
+            <div class="ci-name">Platform System Alerts</div>
+            <div class="ci-pre">All systems operational</div>
+            <div class="ci-subs">Critical · Auto-subscribed</div>
+          </div>
+          <div class="ci-meta">24h</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Broadcast Feed -->
+    <div class="feed">
+      <div class="feed-hdr">
+        <div class="feed-ic" style="background:rgba(12,207,202,.1);border-color:var(--teal-dim);">📡</div>
+        <div>
+          <div class="feed-name">Kogi Platform Updates</div>
+          <div class="feed-meta">42,180 subscribers · You are an admin publisher</div>
+        </div>
+        <div class="broadcast-tag">📢 BROADCAST · 1:ALL</div>
+        <div class="readonly-tag">👁 Subscribers read-only</div>
+        <div class="feed-acts">
+          <div class="fa-btn">📊</div>
+          <div class="fa-btn">⚙</div>
+        </div>
+      </div>
+
+      <div class="broadcast-scroll">
+        <!-- PINNED CRITICAL -->
+        <div class="bc-post critical">
+          <div class="bc-header">
+            <div class="bc-av" style="background:linear-gradient(135deg,#ef4444,#991b1b);">⚠</div>
+            <div class="bc-sender">
+              <div class="bc-sender-name">Jordan Chen · Platform Admin</div>
+              <div class="bc-sender-org">kogi-platform · Kogi Builder Network</div>
+              <div class="bc-badges"><div class="bc-badge bb-crit">🚨 CRITICAL</div><div class="bc-badge bb-pin">📌 PINNED</div></div>
+            </div>
+            <div class="bc-time">Today · 7:00 AM</div>
+          </div>
+          <div class="bc-body"><strong>Platform maintenance window:</strong> The kogi-exchange matching engine will be offline for upgrades on <strong>March 16, 2:00–4:00 AM PST</strong>. During this window, deal room creation and new match proposals will be unavailable. All active rooms and messaging remain unaffected. We'll broadcast when maintenance completes.</div>
+          <div class="bc-cta">
+            <div class="bc-cta-btn" style="background:rgba(239,68,68,.08);border-color:#991b1b;color:var(--red);">📅 Add to Calendar</div>
+            <div class="bc-cta-btn" style="background:transparent;border-color:var(--border2);color:var(--text2);">Learn More</div>
+          </div>
+          <div class="bc-metrics">
+            <div class="bm"><span>👁</span><span class="bm-val" style="color:var(--teal);">38,200</span><span>views</span></div>
+            <div class="bm"><span>✅</span><span class="bm-val">2,841</span><span>acknowledged</span></div>
+            <div class="bm"><span>📅</span><span class="bm-val">412</span><span>calendar adds</span></div>
+          </div>
+        </div>
+
+        <!-- RELEASE ANNOUNCEMENT -->
+        <div class="bc-post">
+          <div class="bc-header">
+            <div class="bc-av" style="background:linear-gradient(135deg,#0ccfca,#3b82f6);">JC</div>
+            <div class="bc-sender">
+              <div class="bc-sender-name">Jordan Chen</div>
+              <div class="bc-sender-org">Kogi Platform · Lead Engineer</div>
+              <div class="bc-badges"><div class="bc-badge bb-rel">🚀 RELEASE</div><div class="bc-badge bb-ann">ANNOUNCEMENT</div></div>
+            </div>
+            <div class="bc-time">Today · 9:00 AM</div>
+          </div>
+          <div class="bc-body"><strong>Kogi v2.4.0 is live 🎉</strong><br/><br/>This release ships the <strong>full KMSG messaging architecture</strong> — unicast DMs, multicast group rooms, and broadcast channels are now production-ready. Also included: portfolio CRDT benchmarks (3ms p99), improved kogi-net linkforest traversal, and the new deal room experience for Exchange.<br/><br/>Full changelog linked below.</div>
+          <div class="bc-embed">
+            <div class="be-tag">◈ PORTFOLIO · RELEASE NOTES</div>
+            <div class="be-title">Kogi Platform v2.4.0 — Full Changelog</div>
+            <div class="be-meta">Rust · Go · 24 merged PRs · 3 breaking changes documented</div>
+          </div>
+          <div class="bc-cta">
+            <div class="bc-cta-btn" style="background:rgba(12,207,202,.1);border-color:var(--teal-dim);color:var(--teal);">📄 View Changelog</div>
+            <div class="bc-cta-btn" style="background:rgba(59,130,246,.08);border-color:#1d4ed8;color:var(--blue);">🔄 Upgrade Guide</div>
+          </div>
+          <div class="bc-metrics">
+            <div class="bm"><span>👁</span><span class="bm-val" style="color:var(--teal);">24,800</span><span>views</span></div>
+            <div class="bm"><span>🔗</span><span class="bm-val">1,240</span><span>link clicks</span></div>
+            <div class="bm"><span>💬</span><span class="bm-val">0</span><span>replies (read-only)</span></div>
+          </div>
+          <div class="reply-bar"><div class="rb-ic">💬</div><div>Replies disabled for broadcast channels. <span style="color:var(--teal);cursor:pointer;">React or join the discussion in #community →</span></div></div>
+        </div>
+
+        <!-- GOVERNANCE -->
+        <div class="bc-post">
+          <div class="bc-header">
+            <div class="bc-av" style="background:linear-gradient(135deg,#a855f7,#7c3aed);">KG</div>
+            <div class="bc-sender">
+              <div class="bc-sender-name">Kogi Governance · System</div>
+              <div class="bc-sender-org">Automated · KNTF · kogi-engine</div>
+              <div class="bc-badges"><div class="bc-badge bb-gov">⚖ GOVERNANCE</div></div>
+            </div>
+            <div class="bc-time">Yesterday · 4:30 PM</div>
+          </div>
+          <div class="bc-body"><strong>Voting now open: Builder Network Q2 Fee Restructure.</strong> Proposal #31 is open for community vote. The proposed change reduces platform fees for cooperative members from 4% to 2.5% and introduces a revenue-sharing pool for top contributors. Voting closes <strong>March 18, 11:59 PM PST</strong>.</div>
+          <div class="bc-cta">
+            <div class="bc-cta-btn" style="background:rgba(168,85,247,.1);border-color:#7c3aed;color:var(--purple);">⚖ Vote Now</div>
+            <div class="bc-cta-btn" style="background:transparent;border-color:var(--border2);color:var(--text2);">Read Proposal</div>
+          </div>
+          <div class="bc-metrics">
+            <div class="bm"><span>👁</span><span class="bm-val">18,400</span><span>views</span></div>
+            <div class="bm"><span>✅</span><span class="bm-val" style="color:var(--green);">3,240</span><span>votes cast</span></div>
+            <div class="bm"><span>⏱</span><span class="bm-val" style="color:var(--amber);">4d left</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Compose Broadcast (admin only) -->
+      <div class="bc-compose">
+        <div class="bc-compose-hdr">
+          <div class="bch-label">📢 PUBLISH BROADCAST</div>
+          <div class="bch-sp"></div>
+          <select class="bc-type-sel"><option>Announcement</option><option>Release</option><option>Alert · Critical</option><option>Governance</option><option>Campaign</option></select>
+        </div>
+        <textarea class="bc-field" placeholder="Write your broadcast message… Supports markdown, portfolio embeds (/portfolio), and CTA buttons (/cta)…"></textarea>
+        <div class="bc-compose-footer">
+          <div class="bc-audience">Broadcasting to <strong>42,180 subscribers</strong> · Delivery: in-app + push + email digest</div>
+          <div class="bch-sp"></div>
+          <button class="bc-send">📢 Publish Now</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Info panel -->
+    <div class="info">
+      <div class="info-hdr">
+        <div class="info-ic" style="background:rgba(12,207,202,.1);border:1px solid var(--teal-dim);">📡</div>
+        <div class="info-name">Kogi Platform Updates</div>
+        <div class="info-handle">@kogi.platform.updates</div>
+        <div class="info-desc">Official release notes, system alerts, and platform announcements from the Kogi engineering team. Subscribe for real-time updates.</div>
+        <button class="sub-btn">✓ Subscribed · Manage →</button>
+      </div>
+      <div class="info-sec">
+        <div class="is-title">Channel Stats</div>
+        <div class="stat-row"><span class="sk">Subscribers</span><span class="sv t">42,180</span></div>
+        <div class="stat-row"><span class="sk">Posts published</span><span class="sv">148</span></div>
+        <div class="stat-row"><span class="sk">Avg. reach</span><span class="sv">31,200 / post</span></div>
+        <div class="stat-row"><span class="sk">Avg. CTR</span><span class="sv">8.4%</span></div>
+        <div class="stat-row"><span class="sk">Growth (30d)</span><span class="sv" style="color:var(--green);">+2,840</span></div>
+        <div class="stat-row"><span class="sk">Your role</span><span class="sv t">Admin Publisher</span></div>
+      </div>
+      <div class="info-sec">
+        <div class="is-title">Delivery Channels</div>
+        <div class="del-row"><div class="del-ic">📱</div><div class="del-name">In-app push</div><div class="del-status ds-on">Active</div></div>
+        <div class="del-row"><div class="del-ic">🔔</div><div class="del-name">Notification feed</div><div class="del-status ds-on">Active</div></div>
+        <div class="del-row"><div class="del-ic">📧</div><div class="del-name">Email (digest)</div><div class="del-status ds-on">Active</div></div>
+        <div class="del-row"><div class="del-ic">📲</div><div class="del-name">Mobile push (FCM)</div><div class="del-status ds-on">Active</div></div>
+        <div class="del-row"><div class="del-ic">💬</div><div class="del-name">SMS (critical only)</div><div class="del-status ds-off">Opt-in</div></div>
+      </div>
+      <div class="info-sec">
+        <div class="is-title">My Notification Prefs</div>
+        <div class="pref-row"><div><div class="pref-label">All broadcasts</div><div class="pref-sub">Immediate in-app</div></div><div class="toggle on"></div></div>
+        <div class="pref-row"><div><div class="pref-label">Critical alerts only</div><div class="pref-sub">Push + email</div></div><div class="toggle on"></div></div>
+        <div class="pref-row"><div><div class="pref-label">Release notes</div><div class="pref-sub">Daily digest</div></div><div class="toggle on"></div></div>
+        <div class="pref-row"><div><div class="pref-label">Governance votes</div><div class="pref-sub">Push + email</div></div><div class="toggle on"></div></div>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

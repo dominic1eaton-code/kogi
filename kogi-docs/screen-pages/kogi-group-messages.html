@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>KOGI · Group Messages · Multicast</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap');
+:root{--bg:#070910;--sidebar:#0b0d16;--card:#0f1221;--card2:#131729;--border:#1a2035;--border2:#232a42;--teal:#0ccfca;--teal-dim:#0a9994;--amber:#e8a030;--amber-dim:#b07820;--green:#22c55e;--green-dim:#15803d;--blue:#3b82f6;--red:#ef4444;--purple:#a855f7;--mag:#d946ef;--text:#dde4f0;--text2:#7a879e;--text3:#3d4a62;}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--bg);color:var(--text);font-family:'IBM Plex Sans',sans-serif;font-size:13px;display:flex;height:100vh;overflow:hidden;}
+.sidebar{width:200px;min-width:200px;background:var(--sidebar);border-right:1px solid var(--border);display:flex;flex-direction:column;}
+.logo{padding:18px 16px;border-bottom:1px solid var(--border);}
+.logo-text{font-family:'IBM Plex Mono',monospace;font-size:18px;font-weight:600;letter-spacing:.08em;color:var(--teal);}
+.logo-sub{font-size:9px;color:var(--text3);letter-spacing:.15em;text-transform:uppercase;margin-top:2px;}
+.nav{padding:12px 0;flex:1;overflow-y:auto;}
+.ns{padding:8px 16px 4px;font-size:9px;color:var(--text3);letter-spacing:.18em;text-transform:uppercase;font-family:'IBM Plex Mono',monospace;}
+.ni{display:flex;align-items:center;gap:10px;padding:7px 16px;color:var(--text2);cursor:pointer;font-size:12px;border-left:2px solid transparent;}
+.ni.on{color:var(--teal);background:rgba(12,207,202,.07);border-left-color:var(--teal);}
+.ni-ic{width:14px;text-align:center;font-size:12px;}
+.nbadge{background:var(--red);color:#fff;border-radius:9px;font-size:9px;padding:1px 5px;font-family:'IBM Plex Mono',monospace;margin-left:auto;}
+.pb{padding:12px 16px;border-top:1px solid var(--border);}
+.pm{display:flex;align-items:center;gap:8px;}
+.avsm{width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,#0ccfca,#3b82f6);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:#fff;}
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden;}
+.topbar{height:48px;border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 20px;gap:12px;background:var(--sidebar);flex-shrink:0;}
+.tbpath{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text3);}
+.tbpath span{color:var(--text2);}
+.tbpath span.cur{color:var(--text);}
+.sp{flex:1;}
+.btn{padding:5px 12px;border-radius:4px;font-size:11px;font-family:'IBM Plex Mono',monospace;cursor:pointer;border:1px solid;}
+.bt{background:rgba(12,207,202,.12);border-color:var(--teal-dim);color:var(--teal);}
+.bg{background:transparent;border-color:var(--border2);color:var(--text2);}
+
+.layout{flex:1;display:grid;grid-template-columns:260px 1fr 240px;overflow:hidden;}
+
+/* Group list */
+.gl{background:var(--sidebar);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden;}
+.glh{padding:12px 14px;border-bottom:1px solid var(--border);flex-shrink:0;}
+.glh-row{display:flex;align-items:center;gap:8px;margin-bottom:8px;}
+.gl-title{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text2);flex:1;}
+.cb{width:26px;height:26px;border-radius:4px;background:rgba(12,207,202,.1);border:1px solid var(--teal-dim);display:flex;align-items:center;justify-content:center;color:var(--teal);cursor:pointer;font-size:14px;}
+.gl-search{position:relative;}
+.gls{width:100%;background:var(--card);border:1px solid var(--border);border-radius:4px;padding:6px 10px 6px 26px;color:var(--text2);font-size:11px;outline:none;font-family:'IBM Plex Sans',sans-serif;}
+.gls::placeholder{color:var(--text3);}
+.gls-ic{position:absolute;left:8px;top:50%;transform:translateY(-50%);color:var(--text3);font-size:11px;}
+.gl-scroll{flex:1;overflow-y:auto;}
+.gl-sec{padding:5px 14px 3px;font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.14em;font-family:'IBM Plex Mono',monospace;background:var(--card2);border-bottom:1px solid var(--border);}
+.gi{display:flex;align-items:flex-start;gap:9px;padding:10px 14px;border-bottom:1px solid var(--border);cursor:pointer;position:relative;}
+.gi:hover{background:rgba(255,255,255,.015);}
+.gi.on{background:rgba(12,207,202,.05);border-left:2px solid var(--teal);}
+.gi.unread::after{content:'';position:absolute;right:14px;top:50%;transform:translateY(-50%);width:7px;height:7px;border-radius:50%;background:var(--teal);}
+/* group avatar stack */
+.gavs{width:34px;height:34px;position:relative;flex-shrink:0;}
+.gav-main{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:600;color:#fff;position:absolute;top:0;left:0;border:1px solid var(--sidebar);}
+.gav-sub{width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:600;color:#fff;position:absolute;bottom:0;right:0;border:1px solid var(--sidebar);}
+.gi-info{flex:1;min-width:0;}
+.gi-name{font-size:12px;color:var(--text);font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.gi-pre{font-size:11px;color:var(--text3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:1px;}
+.gi-pre.u{color:var(--text2);}
+.gi-meta{font-size:9px;color:var(--text3);font-family:'IBM Plex Mono',monospace;display:flex;flex-direction:column;align-items:flex-end;gap:3px;flex-shrink:0;}
+.gbadge{background:var(--blue);color:#fff;border-radius:9px;font-size:8px;padding:1px 5px;font-weight:600;}
+
+/* Chat */
+.chat{display:flex;flex-direction:column;overflow:hidden;}
+.chat-hdr{height:52px;border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 16px;gap:10px;background:var(--card);flex-shrink:0;}
+/* group avatar in header */
+.ghav{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;}
+.chat-name{font-size:13px;font-weight:600;color:var(--text);}
+.chat-meta{font-size:10px;color:var(--text2);}
+.multi-tag{font-size:9px;font-family:'IBM Plex Mono',monospace;color:var(--blue);background:rgba(59,130,246,.08);padding:2px 7px;border-radius:3px;border:1px solid #1d4ed8;}
+.chat-acts{margin-left:auto;display:flex;gap:6px;}
+.ca-btn{width:28px;height:28px;border-radius:5px;display:flex;align-items:center;justify-content:center;font-size:12px;border:1px solid var(--border2);background:transparent;cursor:pointer;color:var(--text3);}
+.ca-btn:hover{border-color:var(--teal-dim);color:var(--teal);}
+
+.msgs{flex:1;overflow-y:auto;padding:14px 16px;display:flex;flex-direction:column;gap:2px;}
+.date-div{display:flex;align-items:center;gap:10px;margin:10px 0 6px;}
+.dl{flex:1;height:1px;background:var(--border);}
+.dt{font-size:10px;color:var(--text3);font-family:'IBM Plex Mono',monospace;}
+.sys-msg{text-align:center;font-size:10px;color:var(--text3);margin:8px 0;font-family:'IBM Plex Mono',monospace;background:var(--card2);border:1px solid var(--border);border-radius:4px;padding:4px 10px;display:inline-block;align-self:center;}
+.mgroup{margin-bottom:8px;}
+.mrow{display:flex;gap:9px;align-items:flex-end;margin-bottom:2px;}
+.mrow.me{flex-direction:row-reverse;}
+.mav-slot{width:26px;flex-shrink:0;}
+.mav{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:600;color:#fff;}
+.msender{font-size:10px;font-family:'IBM Plex Mono',monospace;margin-bottom:2px;padding-left:35px;}
+.bubble{max-width:400px;padding:8px 12px;border-radius:10px;line-height:1.55;font-size:12px;}
+.bubble.them{background:var(--card2);border:1px solid var(--border);color:var(--text);border-bottom-left-radius:3px;}
+.bubble.me{background:rgba(12,207,202,.11);border:1px solid var(--teal-dim);color:var(--text);border-bottom-right-radius:3px;}
+.bubble.system{background:rgba(59,130,246,.06);border:1px solid #1d4ed840;color:var(--text2);font-size:11px;}
+.mmeta{display:flex;align-items:center;gap:5px;margin-top:2px;}
+.mrow.me .mmeta{flex-direction:row-reverse;}
+.mt{font-size:9px;color:var(--text3);font-family:'IBM Plex Mono',monospace;}
+.ms-txt{font-size:9px;color:var(--teal);font-family:'IBM Plex Mono',monospace;}
+.read-by{font-size:9px;color:var(--text3);}
+.preacts{display:flex;gap:3px;margin-top:3px;}
+.preact{padding:2px 6px;background:var(--card2);border:1px solid var(--border2);border-radius:10px;font-size:11px;cursor:pointer;}
+/* thread reply preview */
+.thread-prev{background:rgba(59,130,246,.05);border-left:3px solid var(--blue);padding:5px 8px;border-radius:0 4px 4px 0;margin-bottom:5px;font-size:11px;color:var(--text3);cursor:pointer;}
+.tp-author{font-size:10px;font-family:'IBM Plex Mono',monospace;color:var(--blue);margin-bottom:2px;}
+/* port embed */
+.port-card{background:var(--card);border:1px solid var(--teal-dim);border-radius:6px;padding:9px 11px;margin-top:5px;max-width:280px;}
+.pc-tag{font-size:9px;font-family:'IBM Plex Mono',monospace;color:var(--teal);text-transform:uppercase;letter-spacing:.1em;margin-bottom:3px;}
+.pc-title{font-size:12px;color:var(--text);font-weight:500;}
+.pc-meta{font-size:10px;color:var(--text3);margin-top:1px;}
+.pc-link{font-size:10px;color:var(--teal);margin-top:5px;cursor:pointer;}
+/* compose */
+.compose{border-top:1px solid var(--border);padding:10px 14px;background:var(--card);flex-shrink:0;}
+.c-tools{display:flex;gap:5px;margin-bottom:7px;align-items:center;}
+.ct{width:26px;height:26px;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:12px;color:var(--text3);cursor:pointer;border:1px solid transparent;}
+.ct:hover{background:var(--card2);border-color:var(--border2);color:var(--text2);}
+.c-slow{font-size:9px;font-family:'IBM Plex Mono',monospace;color:var(--amber);background:rgba(232,160,48,.08);padding:2px 7px;border-radius:3px;border:1px solid var(--amber-dim);margin-left:auto;}
+.c-row{display:flex;gap:8px;align-items:flex-end;}
+.c-field{flex:1;background:var(--card2);border:1px solid var(--border2);border-radius:8px;padding:8px 12px;color:var(--text);font-size:12px;font-family:'IBM Plex Sans',sans-serif;outline:none;resize:none;min-height:36px;max-height:100px;line-height:1.5;}
+.c-field:focus{border-color:var(--teal-dim);}
+.c-field::placeholder{color:var(--text3);}
+.c-send{width:34px;height:34px;border-radius:6px;background:var(--teal);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--bg);font-size:14px;}
+
+/* Members panel */
+.members{background:var(--sidebar);border-left:1px solid var(--border);overflow-y:auto;display:flex;flex-direction:column;}
+.mp-hdr{padding:12px 14px;border-bottom:1px solid var(--border);}
+.mp-title{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.14em;margin-bottom:8px;}
+.mp-count{font-size:11px;color:var(--text2);display:flex;align-items:center;gap:6px;margin-bottom:8px;}
+.mp-count-num{font-family:'IBM Plex Mono',monospace;font-size:14px;font-weight:600;color:var(--teal);}
+.add-member{width:100%;padding:6px;background:rgba(12,207,202,.08);border:1px solid var(--teal-dim);color:var(--teal);border-radius:4px;font-size:10px;font-family:'IBM Plex Mono',monospace;cursor:pointer;}
+.mp-sec{padding:8px 14px 4px;font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.14em;font-family:'IBM Plex Mono',monospace;}
+.member-row{display:flex;align-items:center;gap:8px;padding:7px 14px;border-bottom:1px solid var(--border);cursor:pointer;}
+.member-row:hover{background:rgba(255,255,255,.015);}
+.mr-av{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:600;color:#fff;flex-shrink:0;position:relative;}
+.mr-on{position:absolute;bottom:0;right:0;width:7px;height:7px;border-radius:50%;background:var(--green);border:2px solid var(--sidebar);}
+.mr-away{position:absolute;bottom:0;right:0;width:7px;height:7px;border-radius:50%;background:var(--amber);border:2px solid var(--sidebar);}
+.mr-info{flex:1;min-width:0;}
+.mr-name{font-size:11px;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.mr-role{font-size:9px;font-family:'IBM Plex Mono',monospace;color:var(--text3);}
+.mr-role.admin{color:var(--teal);}
+/* pinned messages */
+.pinned-bar{background:rgba(12,207,202,.04);border-bottom:1px solid var(--teal-dim);padding:8px 14px;display:flex;align-items:center;gap:8px;flex-shrink:0;cursor:pointer;}
+.pin-ic{color:var(--teal);font-size:12px;}
+.pin-text{font-size:11px;color:var(--text2);flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.pin-count{font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--teal);}
+</style>
+</head>
+<body>
+<div class="sidebar">
+  <div class="logo"><div class="logo-text">KOGI</div><div class="logo-sub">Independent Worker OS</div></div>
+  <nav class="nav">
+    <div class="ns">Core</div>
+    <div class="ni"><span class="ni-ic">⌂</span>Dashboard</div>
+    <div class="ni"><span class="ni-ic">◫</span>Office</div>
+    <div class="ns">Communications</div>
+    <div class="ni"><span class="ni-ic">💬</span>Inbox <span class="nbadge">12</span></div>
+    <div class="ni on"><span class="ni-ic">👥</span>Group Msgs</div>
+    <div class="ni"><span class="ni-ic">📢</span>Broadcasts</div>
+    <div class="ni"><span class="ni-ic">🔔</span>Alerts <span class="nbadge">5</span></div>
+    <div class="ni"><span class="ni-ic">✉</span>Email</div>
+    <div class="ni"><span class="ni-ic">📞</span>Phone / Voice</div>
+    <div class="ns">Spaces & Rooms</div>
+    <div class="ni"><span class="ni-ic">⊕</span>Community</div>
+    <div class="ni"><span class="ni-ic">◻</span>Rooms</div>
+    <div class="ni"><span class="ni-ic">⊛</span>Spaces</div>
+    <div class="ns">Platform</div>
+    <div class="ni"><span class="ni-ic">◉</span>Profile</div>
+    <div class="ni"><span class="ni-ic">♦</span>Bank</div>
+    <div class="ni"><span class="ni-ic">⬡</span>Exchange</div>
+  </nav>
+  <div class="pb"><div class="pm"><div class="avsm">JC</div><div><div style="font-size:12px;">Jordan Chen</div><div style="font-size:10px;color:var(--text3);">● Online</div></div></div></div>
+</div>
+
+<div class="main">
+  <div class="topbar">
+    <div class="tbpath">KMSG / <span>Groups</span> / <span class="cur">Group Messaging · Multicast 1:N</span></div>
+    <div class="sp"></div>
+    <button class="btn bg">Manage Groups</button>
+    <button class="btn bt">+ New Group</button>
+  </div>
+
+  <div class="layout">
+    <!-- Group list -->
+    <div class="gl">
+      <div class="glh">
+        <div class="glh-row"><div class="gl-title">Group Messages</div><div class="cb">+</div></div>
+        <div class="gl-search"><div class="gls-ic">⌕</div><input class="gls" placeholder="Search groups…"/></div>
+      </div>
+      <div class="gl-scroll">
+        <div class="gl-sec">Active Groups</div>
+
+        <!-- Active group -->
+        <div class="gi on unread">
+          <div class="gavs">
+            <div class="gav-main" style="background:linear-gradient(135deg,#0ccfca,#3b82f6);">AK</div>
+            <div class="gav-sub" style="background:linear-gradient(135deg,#22c55e,#16a34a);">MP</div>
+          </div>
+          <div class="gi-info"><div class="gi-name">Mesh Studio · Core Team</div><div class="gi-pre u">Amara: PR reviewed and merged 🚀</div></div>
+          <div class="gi-meta"><span>5m</span><span class="gbadge">7</span></div>
+        </div>
+        <div class="gi unread">
+          <div class="gavs">
+            <div class="gav-main" style="background:linear-gradient(135deg,#a855f7,#ec4899);">SR</div>
+            <div class="gav-sub" style="background:linear-gradient(135deg,#d946ef,#9d174d);">PB</div>
+          </div>
+          <div class="gi-info"><div class="gi-name">Brand System Sprint</div><div class="gi-pre u">Sofia: Token export is live, test it out</div></div>
+          <div class="gi-meta"><span>22m</span><span class="gbadge">2</span></div>
+        </div>
+        <div class="gi">
+          <div class="gavs">
+            <div class="gav-main" style="background:linear-gradient(135deg,#e8a030,#d97706);">LM</div>
+            <div class="gav-sub" style="background:linear-gradient(135deg,#3b82f6,#1d4ed8);">TN</div>
+          </div>
+          <div class="gi-info"><div class="gi-name">Cooperative Governance</div><div class="gi-pre">Lena: Proposal #12 up for vote</div></div>
+          <div class="gi-meta"><span>1h</span></div>
+        </div>
+        <div class="gi">
+          <div class="gavs">
+            <div class="gav-main" style="background:linear-gradient(135deg,#10b981,#059669);">KO</div>
+            <div class="gav-sub" style="background:linear-gradient(135deg,#f59e0b,#b45309);">NW</div>
+          </div>
+          <div class="gi-info"><div class="gi-name">Design + Eng Sync</div><div class="gi-pre">You: Shipped component library 0.9.3</div></div>
+          <div class="gi-meta"><span>3h</span></div>
+        </div>
+        <div class="gi">
+          <div class="gavs">
+            <div class="gav-main" style="background:rgba(12,207,202,.15);border:1px solid var(--teal-dim);font-size:14px;">◉</div>
+            <div class="gav-sub" style="background:linear-gradient(135deg,#0ccfca,#3b82f6);">JC</div>
+          </div>
+          <div class="gi-info"><div class="gi-name">Oba · Project Briefing</div><div class="gi-pre">Oba: 3 tasks overdue in Office…</div></div>
+          <div class="gi-meta"><span>Morning</span></div>
+        </div>
+
+        <div class="gl-sec">Archived</div>
+        <div class="gi" style="opacity:.5;">
+          <div class="gavs"><div class="gav-main" style="background:var(--border2);">Q4</div></div>
+          <div class="gi-info"><div class="gi-name">Q4 Launch Team</div><div class="gi-pre">Archived Jan 2026</div></div>
+          <div class="gi-meta"><span>4w</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Chat: Mesh Studio Core Team -->
+    <div class="chat">
+      <!-- Pinned message bar -->
+      <div class="pinned-bar">
+        <div class="pin-ic">📌</div>
+        <div class="pin-text">Pinned: "Sprint 8 goals — ship auth module, CRDT benchmarks, design token publish" — see all pinned</div>
+        <div class="pin-count">3 pinned</div>
+      </div>
+
+      <div class="chat-hdr">
+        <div class="ghav" style="background:rgba(12,207,202,.12);border:1px solid var(--teal-dim);font-size:18px;">⚙</div>
+        <div>
+          <div class="chat-name">Mesh Studio · Core Team</div>
+          <div class="chat-meta">8 members · 5 online · Project Room · Multicast</div>
+        </div>
+        <div class="multi-tag">MULTICAST · 1:N</div>
+        <div class="chat-acts">
+          <div class="ca-btn">🎥</div>
+          <div class="ca-btn">📌</div>
+          <div class="ca-btn">🔍</div>
+          <div class="ca-btn">📂</div>
+          <div class="ca-btn">⚙</div>
+        </div>
+      </div>
+
+      <div class="msgs">
+        <div class="date-div"><div class="dl"></div><div class="dt">Today · March 14, 2026</div><div class="dl"></div></div>
+        <div class="sys-msg">🔀 Jordan merged branch crdt-rs/merge_ops into main</div>
+
+        <!-- Group conversation -->
+        <div class="mgroup">
+          <div class="msender" style="color:var(--teal);">@amara.dev</div>
+          <div class="mrow">
+            <div class="mav-slot"><div class="mav" style="background:linear-gradient(135deg,#0ccfca,#3b82f6);">AK</div></div>
+            <div>
+              <div class="bubble them">PR is merged! CRDT benchmarks look solid — 3ms p99 on 10K concurrent ops. We're on track for the v2.4 release 🚀</div>
+              <div class="mmeta"><div class="mt">9:02 AM</div><div class="read-by">Read by 6</div></div>
+              <div class="preacts"><div class="preact">🚀 4</div><div class="preact">✅ 3</div></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="mgroup">
+          <div class="msender" style="color:var(--green);">@marcus.systems</div>
+          <div class="mrow">
+            <div class="mav-slot"><div class="mav" style="background:linear-gradient(135deg,#22c55e,#16a34a);">MP</div></div>
+            <div>
+              <div class="bubble them">Spun up staging. Redis pub-sub fanout is now handling 50K msg/s in the load test. Looks good for launch.</div>
+              <div class="mmeta"><div class="mt">9:14 AM</div><div class="read-by">Read by 5</div></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Thread reply -->
+        <div class="mgroup">
+          <div class="msender" style="color:var(--purple);">@sofia.design</div>
+          <div class="mrow">
+            <div class="mav-slot"><div class="mav" style="background:linear-gradient(135deg,#a855f7,#ec4899);">SR</div></div>
+            <div>
+              <div class="thread-prev"><div class="tp-author">↩ Replying to @amara.dev</div>"PR is merged! CRDT benchmarks look solid…"</div>
+              <div class="bubble them">Amazing work team! Also just pushed the updated design tokens — they're live in Figma and the component lib. Jordan can you do a final review?</div>
+              <div class="mmeta"><div class="mt">9:28 AM</div><div class="read-by">Read by 6</div></div>
+              <div class="preacts"><div class="preact">👀 2</div></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Portfolio card shared in group -->
+        <div class="mgroup">
+          <div class="msender" style="color:var(--amber);">@lena.coop</div>
+          <div class="mrow">
+            <div class="mav-slot"><div class="mav" style="background:linear-gradient(135deg,#e8a030,#d97706);">LM</div></div>
+            <div>
+              <div class="bubble them">
+                Heads up — governance proposal to allocate Q2 sprint budget is now live. Vote before Friday 5pm.
+                <div class="port-card">
+                  <div class="pc-tag">⚖ GOVERNANCE · PROPOSAL #12</div>
+                  <div class="pc-title">Q2 Sprint Budget Allocation — $12,000</div>
+                  <div class="pc-meta">Voting closes: Mar 17 · 5/8 votes needed · 2 cast</div>
+                  <div class="pc-link">Cast Your Vote →</div>
+                </div>
+              </div>
+              <div class="mmeta"><div class="mt">9:41 AM</div><div class="read-by">Read by 7</div></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- My message -->
+        <div class="mgroup">
+          <div class="mrow me">
+            <div class="mav-slot"></div>
+            <div>
+              <div class="bubble me">@sofia on it — reviewing the token update now. @amara benchmarks look excellent, let's ship v2.4 EOD Friday. @lena will vote after the budget breakdown review</div>
+              <div class="mmeta"><div class="mt">9:54 AM</div><div class="ms-txt">✓✓ Delivered to 7</div></div>
+              <div class="preacts"><div class="preact">👍 5</div></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Latest: system join -->
+        <div class="sys-msg">👋 Kenji Ota joined the group</div>
+
+        <div class="mgroup">
+          <div class="msender" style="color:var(--mag);">@kenji.studio — new member</div>
+          <div class="mrow">
+            <div class="mav-slot"><div class="mav" style="background:linear-gradient(135deg,#d946ef,#9d174d);">KO</div></div>
+            <div>
+              <div class="bubble them">Hey everyone! Excited to be part of the core team. Ready to contribute to the frontend component work 🎨</div>
+              <div class="mmeta"><div class="mt">10:02 AM</div><div class="read-by">Read by 4</div></div>
+              <div class="preacts"><div class="preact">👋 6</div><div class="preact">🎉 4</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Compose -->
+      <div class="compose">
+        <div class="c-tools">
+          <div class="ct">📎</div><div class="ct">🖼</div><div class="ct">◈</div><div class="ct">😊</div><div class="ct">📊</div><div class="ct">📅</div>
+          <div class="c-slow">⏱ Slow mode: Off</div>
+        </div>
+        <div class="c-row">
+          <textarea class="c-field" placeholder="Message Mesh Studio Core Team… (@mention, /embed portfolio item)" rows="1"></textarea>
+          <div class="c-send">↑</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Members panel -->
+    <div class="members">
+      <div class="mp-hdr">
+        <div class="mp-title">Group Members</div>
+        <div class="mp-count"><div class="mp-count-num">8</div><div style="font-size:11px;color:var(--text3);">members · 5 online</div></div>
+        <button class="add-member">+ Add Member</button>
+      </div>
+      <div class="mp-sec">Admins</div>
+      <div class="member-row">
+        <div class="mr-av" style="background:linear-gradient(135deg,#0ccfca,#3b82f6);">JC<div class="mr-on"></div></div>
+        <div class="mr-info"><div class="mr-name">Jordan Chen</div><div class="mr-role admin">Admin · You</div></div>
+      </div>
+      <div class="member-row">
+        <div class="mr-av" style="background:linear-gradient(135deg,#0ccfca,#3b82f6);">AK<div class="mr-on"></div></div>
+        <div class="mr-info"><div class="mr-name">Amara Kofi</div><div class="mr-role admin">Admin · @amara.dev</div></div>
+      </div>
+      <div class="mp-sec">Members Online</div>
+      <div class="member-row">
+        <div class="mr-av" style="background:linear-gradient(135deg,#22c55e,#16a34a);">MP<div class="mr-on"></div></div>
+        <div class="mr-info"><div class="mr-name">Marcus Park</div><div class="mr-role">@marcus.systems</div></div>
+      </div>
+      <div class="member-row">
+        <div class="mr-av" style="background:linear-gradient(135deg,#a855f7,#ec4899);">SR<div class="mr-on"></div></div>
+        <div class="mr-info"><div class="mr-name">Sofia Reyes</div><div class="mr-role">@sofia.design</div></div>
+      </div>
+      <div class="member-row">
+        <div class="mr-av" style="background:linear-gradient(135deg,#d946ef,#9d174d);">KO<div class="mr-on"></div></div>
+        <div class="mr-info"><div class="mr-name">Kenji Ota</div><div class="mr-role">@kenji.studio · New</div></div>
+      </div>
+      <div class="mp-sec">Offline</div>
+      <div class="member-row" style="opacity:.7;">
+        <div class="mr-av" style="background:linear-gradient(135deg,#e8a030,#d97706);">LM</div>
+        <div class="mr-info"><div class="mr-name">Lena Maier</div><div class="mr-role">@lena.coop · 2h ago</div></div>
+      </div>
+      <div class="member-row" style="opacity:.7;">
+        <div class="mr-av" style="background:linear-gradient(135deg,#3b82f6,#1d4ed8);">TN</div>
+        <div class="mr-info"><div class="mr-name">Tariq Nasir</div><div class="mr-role">@tariq.infra · 4h ago</div></div>
+      </div>
+      <div class="member-row" style="opacity:.7;">
+        <div class="mr-av" style="background:linear-gradient(135deg,#10b981,#059669);">PB</div>
+        <div class="mr-info"><div class="mr-name">Priya Bose</div><div class="mr-role">@priya.data · Yesterday</div></div>
+      </div>
+
+      <!-- Shared files summary -->
+      <div style="padding:10px 14px;border-top:1px solid var(--border);margin-top:auto;">
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.14em;margin-bottom:7px;">Shared This Week</div>
+        <div style="display:flex;flex-direction:column;gap:5px;">
+          <div style="display:flex;align-items:center;gap:6px;"><span style="font-size:12px;">📄</span><span style="font-size:10px;color:var(--text2);">crdt-arch-notes-v2.md</span></div>
+          <div style="display:flex;align-items:center;gap:6px;"><span style="font-size:12px;">📊</span><span style="font-size:10px;color:var(--text2);">Sprint 8 board</span></div>
+          <div style="display:flex;align-items:center;gap:6px;"><span style="font-size:12px;">🎨</span><span style="font-size:10px;color:var(--text2);">design-tokens-v2.fig</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

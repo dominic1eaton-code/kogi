@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KOGI · Directory</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap');
+  :root{--bg:#070910;--sidebar:#0b0d16;--card:#0f1221;--card2:#131729;--border:#1a2035;--border2:#232a42;--teal:#0ccfca;--teal-dim:#0a9994;--amber:#e8a030;--amber-dim:#b07820;--green:#22c55e;--green-dim:#15803d;--blue:#3b82f6;--red:#ef4444;--purple:#a855f7;--mag:#d946ef;--text:#dde4f0;--text2:#7a879e;--text3:#3d4a62;}
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{background:var(--bg);color:var(--text);font-family:'IBM Plex Sans',sans-serif;font-size:13px;display:flex;min-height:100vh;}
+  .sidebar{width:200px;min-width:200px;background:var(--sidebar);border-right:1px solid var(--border);display:flex;flex-direction:column;}
+  .logo{padding:18px 16px;border-bottom:1px solid var(--border);}
+  .logo-text{font-family:'IBM Plex Mono',monospace;font-size:18px;font-weight:600;letter-spacing:0.08em;color:var(--teal);}
+  .logo-sub{font-size:9px;color:var(--text3);letter-spacing:0.15em;text-transform:uppercase;margin-top:2px;}
+  .nav{padding:12px 0;flex:1;}
+  .nav-section{padding:8px 16px 4px;font-size:9px;color:var(--text3);letter-spacing:0.18em;text-transform:uppercase;font-family:'IBM Plex Mono',monospace;}
+  .nav-item{display:flex;align-items:center;gap:10px;padding:7px 16px;color:var(--text2);cursor:pointer;font-size:12px;border-left:2px solid transparent;}
+  .nav-item.active{color:var(--teal);background:rgba(12,207,202,0.07);border-left-color:var(--teal);}
+  .nav-icon{width:14px;text-align:center;font-size:12px;}
+  .avatar-sm{width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,#0ccfca,#3b82f6);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:#fff;flex-shrink:0;}
+  .profile-bottom{padding:12px 16px;border-top:1px solid var(--border);}
+  .profile-mini{display:flex;align-items:center;gap:8px;}
+  .main{flex:1;overflow-y:auto;}
+  .topbar{height:48px;border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 20px;gap:12px;background:var(--sidebar);position:sticky;top:0;z-index:10;}
+  .topbar-path{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text3);}
+  .topbar-path span{color:var(--text2);}
+  .topbar-path span.cur{color:var(--text);}
+  .spacer{flex:1;}
+  .btn-sm{padding:5px 12px;border-radius:4px;font-size:11px;font-family:'IBM Plex Mono',monospace;cursor:pointer;border:1px solid;transition:all 0.15s;}
+  .btn-teal{background:rgba(12,207,202,0.12);border-color:var(--teal-dim);color:var(--teal);}
+  .btn-ghost{background:transparent;border-color:var(--border2);color:var(--text2);}
+  .btn-ghost:hover{border-color:var(--text3);color:var(--text);}
+
+  /* Org header */
+  .org-header{padding:20px 28px;background:var(--sidebar);border-bottom:1px solid var(--border);display:flex;align-items:flex-start;gap:20px;}
+  .org-logo{width:64px;height:64px;border-radius:12px;background:linear-gradient(135deg,#0ccfca22,#0ccfca44);border:1px solid var(--teal-dim);display:flex;align-items:center;justify-content:center;font-size:28px;flex-shrink:0;}
+  .org-name{font-size:20px;font-weight:600;color:var(--text);}
+  .org-type{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--teal);margin-top:3px;}
+  .org-desc{font-size:12px;color:var(--text3);margin-top:6px;line-height:1.5;max-width:600px;}
+  .org-meta{display:flex;gap:16px;margin-top:10px;flex-wrap:wrap;}
+  .org-meta-item{font-size:11px;color:var(--text3);display:flex;align-items:center;gap:5px;}
+  .om-dot{color:var(--teal);}
+  .org-actions{margin-left:auto;display:flex;flex-direction:column;gap:6px;align-items:flex-end;}
+  .org-badges{display:flex;gap:5px;flex-wrap:wrap;margin-top:8px;}
+  .ob{padding:2px 8px;border-radius:3px;font-size:9px;font-family:'IBM Plex Mono',monospace;border:1px solid;}
+
+  /* Stats row */
+  .stats-row{display:grid;grid-template-columns:repeat(6,1fr);gap:1px;background:var(--border);border-bottom:1px solid var(--border);}
+  .stat-box{background:var(--card);padding:12px 16px;}
+  .stat-val{font-family:'IBM Plex Mono',monospace;font-size:18px;font-weight:600;color:var(--text);}
+  .stat-lbl{font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:0.1em;margin-top:2px;}
+
+  /* Toolbar */
+  .dir-toolbar{padding:12px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;background:var(--card);position:sticky;top:48px;z-index:9;}
+  .search-wrap{position:relative;flex:1;max-width:340px;}
+  .dir-search{width:100%;background:var(--card2);border:1px solid var(--border2);border-radius:4px;padding:7px 10px 7px 28px;color:var(--text);font-size:12px;font-family:'IBM Plex Sans',sans-serif;outline:none;}
+  .dir-search:focus{border-color:var(--teal-dim);}
+  .dir-search::placeholder{color:var(--text3);}
+  .search-ic{position:absolute;left:9px;top:50%;transform:translateY(-50%);color:var(--text3);font-size:12px;}
+  .filter-select{background:var(--card2);border:1px solid var(--border2);color:var(--text2);font-size:11px;padding:6px 8px;border-radius:4px;font-family:'IBM Plex Mono',monospace;}
+  .filter-select option{background:var(--card2);}
+  .view-btns{display:flex;gap:0;}
+  .view-btn{padding:6px 10px;font-size:11px;cursor:pointer;border:1px solid var(--border2);color:var(--text3);font-family:'IBM Plex Mono',monospace;background:transparent;transition:all 0.12s;}
+  .view-btn:first-child{border-radius:4px 0 0 4px;}
+  .view-btn:last-child{border-radius:0 4px 4px 0;border-left:none;}
+  .view-btn.on{background:rgba(12,207,202,0.08);border-color:var(--teal-dim);color:var(--teal);}
+
+  /* Role filter chips */
+  .role-chips{display:flex;gap:6px;flex-wrap:wrap;margin-left:8px;}
+  .role-chip{padding:3px 9px;border-radius:4px;font-size:10px;cursor:pointer;border:1px solid;font-family:'IBM Plex Mono',monospace;transition:all 0.12s;}
+  .role-chip.on{background:rgba(12,207,202,0.1);border-color:var(--teal-dim);color:var(--teal);}
+  .role-chip.off{background:transparent;border-color:var(--border2);color:var(--text3);}
+
+  /* Member grid */
+  .member-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;padding:20px;}
+  
+  /* Member card */
+  .mc{background:var(--card);border:1px solid var(--border);border-radius:8px;overflow:hidden;transition:all 0.15s;cursor:pointer;}
+  .mc:hover{border-color:var(--border2);transform:translateY(-1px);}
+  .mc-banner{height:40px;position:relative;}
+  .mc-role-pill{position:absolute;top:8px;right:10px;font-size:9px;font-family:'IBM Plex Mono',monospace;padding:2px 7px;border-radius:3px;border:1px solid;}
+  .mc-body{padding:16px 14px 14px;}
+  .mc-avatar-row{display:flex;align-items:flex-end;justify-content:space-between;margin-top:-28px;margin-bottom:8px;}
+  .mc-avatar{width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:600;color:#fff;border:2px solid var(--card);}
+  .mc-avail{font-size:9px;font-family:'IBM Plex Mono',monospace;padding:2px 7px;border-radius:3px;border:1px solid;}
+  .avail-yes{background:rgba(34,197,94,0.08);border-color:var(--green-dim);color:var(--green);}
+  .avail-ltd{background:rgba(232,160,48,0.08);border-color:var(--amber-dim);color:var(--amber);}
+  .avail-no{background:rgba(122,135,158,0.08);border-color:var(--text3);color:var(--text3);}
+  .mc-name{font-size:13px;font-weight:600;color:var(--text);}
+  .mc-handle{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--text3);}
+  .mc-tagline{font-size:11px;color:var(--text3);margin-top:5px;line-height:1.4;min-height:30px;}
+  .mc-skills{display:flex;flex-wrap:wrap;gap:4px;margin:8px 0;}
+  .ms{font-size:9px;font-family:'IBM Plex Mono',monospace;padding:2px 6px;border-radius:2px;background:var(--card2);border:1px solid var(--border2);color:var(--text3);}
+  .mc-stats{display:grid;grid-template-columns:1fr 1fr 1fr;gap:0;border-top:1px solid var(--border);border-bottom:1px solid var(--border);margin:8px 0;}
+  .mc-stat{padding:6px 0;text-align:center;border-right:1px solid var(--border);}
+  .mc-stat:last-child{border-right:none;}
+  .mc-sv{font-family:'IBM Plex Mono',monospace;font-size:12px;font-weight:600;color:var(--text);}
+  .mc-sl{font-size:8px;color:var(--text3);}
+  .mc-actions{display:flex;gap:6px;}
+  .mc-btn{flex:1;padding:5px;text-align:center;border-radius:4px;font-size:10px;font-family:'IBM Plex Mono',monospace;cursor:pointer;border:1px solid;transition:all 0.15s;}
+  .mc-btn-msg{background:rgba(12,207,202,0.08);border-color:var(--teal-dim);color:var(--teal);}
+  .mc-btn-profile{background:transparent;border-color:var(--border2);color:var(--text3);}
+  .mc-btn-profile:hover{border-color:var(--text2);color:var(--text2);}
+
+  /* You card special style */
+  .mc-you{border-color:var(--teal-dim);}
+  .mc-you::before{content:'YOU';position:absolute;top:8px;left:10px;font-size:8px;font-family:'IBM Plex Mono',monospace;color:var(--teal);background:rgba(12,207,202,0.1);padding:2px 6px;border-radius:3px;border:1px solid var(--teal-dim);}
+
+  /* Banner colors */
+  .bn-a{background:linear-gradient(135deg,#0a2040,#061530);}
+  .bn-b{background:linear-gradient(135deg,#1a082e,#0d0420);}
+  .bn-c{background:linear-gradient(135deg,#0a2010,#061208);}
+  .bn-d{background:linear-gradient(135deg,#2a1800,#180e00);}
+  .bn-e{background:linear-gradient(135deg,#1a0a2e,#0d0520);}
+  .bn-f{background:linear-gradient(135deg,#0a1a28,#060f18);}
+
+  /* Embed / export section */
+  .dir-footer{padding:16px 20px;border-top:1px solid var(--border);background:var(--card);display:flex;align-items:center;gap:16px;}
+  .df-text{font-size:11px;color:var(--text3);}
+  .embed-snippet{background:var(--card2);border:1px solid var(--border2);border-radius:4px;padding:6px 10px;font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--teal);flex:1;}
+</style>
+</head>
+<body>
+<div class="sidebar">
+  <div class="logo">
+    <div class="logo-text">KOGI</div>
+    <div class="logo-sub">Independent Worker OS</div>
+  </div>
+  <nav class="nav">
+    <div class="nav-section">Core</div>
+    <div class="nav-item"><span class="nav-icon">⌂</span> Dashboard</div>
+    <div class="nav-item"><span class="nav-icon">◫</span> Office</div>
+    <div class="nav-item"><span class="nav-icon">◈</span> Portfolio</div>
+    <div class="nav-section">Identity</div>
+    <div class="nav-item"><span class="nav-icon">◉</span> Profile</div>
+    <div class="nav-item"><span class="nav-icon">⟁</span> Personas</div>
+    <div class="nav-item"><span class="nav-icon">⋈</span> Accounts</div>
+    <div class="nav-item"><span class="nav-icon">◎</span> Channels</div>
+    <div class="nav-section">Network</div>
+    <div class="nav-item"><span class="nav-icon">⋔</span> LinkTree</div>
+    <div class="nav-item"><span class="nav-icon">⊛</span> kogi-net</div>
+    <div class="nav-item"><span class="nav-icon">⊞</span> Contacts</div>
+    <div class="nav-item active"><span class="nav-icon">◻</span> Directory</div>
+    <div class="nav-section">Platform</div>
+    <div class="nav-item"><span class="nav-icon">♦</span> Bank</div>
+    <div class="nav-item"><span class="nav-icon">⊕</span> Community</div>
+  </nav>
+  <div class="profile-bottom">
+    <div class="profile-mini">
+      <div class="avatar-sm">JC</div>
+      <div><div style="font-size:12px;">Jordan Chen</div><div style="font-size:10px;color:var(--text3);">@jordan.dev</div></div>
+    </div>
+  </div>
+</div>
+
+<div class="main">
+  <div class="topbar">
+    <div class="topbar-path">KDIR / <span>Mesh Studio</span> / <span class="cur">Member Directory</span></div>
+    <div class="spacer"></div>
+    <select class="filter-select">
+      <option>Mesh Studio</option>
+      <option>Open Source Collective</option>
+      <option>Bay Area Freelancers Guild</option>
+      <option>Kogi Builder Network</option>
+    </select>
+    <button class="btn-sm btn-ghost">Export CSV</button>
+    <button class="btn-sm btn-ghost">Embed</button>
+    <button class="btn-sm btn-teal">Manage Directory</button>
+  </div>
+
+  <!-- Org Header -->
+  <div class="org-header">
+    <div class="org-logo">⚙</div>
+    <div style="flex:1;">
+      <div class="org-name">Mesh Studio</div>
+      <div class="org-type">Worker-Owned Cooperative · Design Systems Infrastructure</div>
+      <div class="org-desc">A cooperative of engineers and designers building open-source design infrastructure for independent workers and small teams. Democratically governed — every member is an owner.</div>
+      <div class="org-meta">
+        <div class="org-meta-item"><span class="om-dot">◉</span> San Francisco, CA (distributed)</div>
+        <div class="org-meta-item"><span class="om-dot">◉</span> Founded Jan 2025</div>
+        <div class="org-meta-item"><span class="om-dot">◉</span> 8 members</div>
+        <div class="org-meta-item"><span class="om-dot">◉</span> meshstudio.dev</div>
+      </div>
+      <div class="org-badges">
+        <div class="ob" style="background:rgba(12,207,202,0.08);border-color:var(--teal-dim);color:var(--teal);">COOPERATIVE</div>
+        <div class="ob" style="background:rgba(34,197,94,0.08);border-color:var(--green-dim);color:var(--green);">VERIFIED ORG</div>
+        <div class="ob" style="background:rgba(59,130,246,0.08);border-color:#1d4ed8;color:var(--blue);">OPEN SOURCE</div>
+        <div class="ob" style="background:rgba(168,85,247,0.08);border-color:#7c3aed;color:var(--purple);">KOGI BUILDER</div>
+      </div>
+    </div>
+    <div class="org-actions">
+      <button class="btn-sm btn-teal">+ Introduce</button>
+      <button class="btn-sm btn-ghost">View Public Page</button>
+      <button class="btn-sm btn-ghost">kogi-net · Linknet →</button>
+    </div>
+  </div>
+
+  <!-- Stats -->
+  <div class="stats-row">
+    <div class="stat-box"><div class="stat-val" style="color:var(--teal);">8</div><div class="stat-lbl">Members</div></div>
+    <div class="stat-box"><div class="stat-val" style="color:var(--green);">6</div><div class="stat-lbl">Available</div></div>
+    <div class="stat-box"><div class="stat-val" style="color:var(--amber);">2</div><div class="stat-lbl">Limited</div></div>
+    <div class="stat-box"><div class="stat-val">24</div><div class="stat-lbl">Active Projects</div></div>
+    <div class="stat-box"><div class="stat-val" style="color:var(--blue);">$84K</div><div class="stat-lbl">Active Pipeline</div></div>
+    <div class="stat-box"><div class="stat-val" style="color:var(--purple);">6</div><div class="stat-lbl">Skill Domains</div></div>
+  </div>
+
+  <!-- Toolbar -->
+  <div class="dir-toolbar">
+    <div class="search-wrap">
+      <div class="search-ic">⌕</div>
+      <input class="dir-search" placeholder="Search members — name, skill, role…" />
+    </div>
+    <select class="filter-select">
+      <option>All Roles</option>
+      <option>Lead Engineer</option>
+      <option>Designer</option>
+      <option>Researcher</option>
+      <option>Governance</option>
+    </select>
+    <select class="filter-select">
+      <option>All Availability</option>
+      <option>Available</option>
+      <option>Limited</option>
+    </select>
+    <div class="role-chips">
+      <div class="role-chip on">All</div>
+      <div class="role-chip off">Engineers</div>
+      <div class="role-chip off">Designers</div>
+      <div class="role-chip off">Strategists</div>
+    </div>
+    <div class="spacer"></div>
+    <div class="view-btns">
+      <div class="view-btn on">⊞ Grid</div>
+      <div class="view-btn">⊟ List</div>
+      <div class="view-btn">⊡ Table</div>
+    </div>
+  </div>
+
+  <!-- Member Grid -->
+  <div class="member-grid">
+
+    <!-- You -->
+    <div class="mc mc-you" style="position:relative;">
+      <div class="mc-banner bn-a"></div>
+      <div class="mc-body">
+        <div class="mc-avatar-row">
+          <div class="mc-avatar" style="background:linear-gradient(135deg,#0ccfca,#3b82f6);">JC</div>
+          <div class="mc-avail avail-yes">● Available</div>
+        </div>
+        <div class="mc-name">Jordan Chen</div>
+        <div class="mc-handle">@jordan.dev · Co-Founder</div>
+        <div class="mc-tagline">Lead engineer & systems architect. Core engine, cooperative infrastructure, DevOps.</div>
+        <div class="mc-skills">
+          <span class="ms">Rust</span><span class="ms">TypeScript</span><span class="ms">Systems Design</span><span class="ms">DevOps</span>
+        </div>
+        <div class="mc-stats">
+          <div class="mc-stat"><div class="mc-sv" style="color:var(--teal);">94</div><div class="mc-sl">Rep Score</div></div>
+          <div class="mc-stat"><div class="mc-sv">8 yrs</div><div class="mc-sl">Experience</div></div>
+          <div class="mc-stat"><div class="mc-sv" style="color:var(--green);">20h/w</div><div class="mc-sl">Avail</div></div>
+        </div>
+        <div class="mc-actions">
+          <div class="mc-btn mc-btn-msg">💬 DM</div>
+          <div class="mc-btn mc-btn-profile">Profile</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Amara -->
+    <div class="mc">
+      <div class="mc-banner bn-b">
+        <div class="mc-role-pill" style="background:rgba(168,85,247,0.1);border-color:#7c3aed;color:var(--purple);">Co-Founder</div>
+      </div>
+      <div class="mc-body">
+        <div class="mc-avatar-row">
+          <div class="mc-avatar" style="background:linear-gradient(135deg,#a855f7,#ec4899);">AK</div>
+          <div class="mc-avail avail-yes">● Available</div>
+        </div>
+        <div class="mc-name">Amara Kofi</div>
+        <div class="mc-handle">@amara.dev · Co-Founder</div>
+        <div class="mc-tagline">Design systems architect & cooperative technologist. UI infrastructure, token systems.</div>
+        <div class="mc-skills">
+          <span class="ms">Design Systems</span><span class="ms">Figma</span><span class="ms">React</span><span class="ms">Tokens</span>
+        </div>
+        <div class="mc-stats">
+          <div class="mc-stat"><div class="mc-sv" style="color:var(--teal);">93</div><div class="mc-sl">Rep Score</div></div>
+          <div class="mc-stat"><div class="mc-sv">6 yrs</div><div class="mc-sl">Experience</div></div>
+          <div class="mc-stat"><div class="mc-sv" style="color:var(--green);">24h/w</div><div class="mc-sl">Avail</div></div>
+        </div>
+        <div class="mc-actions">
+          <div class="mc-btn mc-btn-msg">💬 DM</div>
+          <div class="mc-btn mc-btn-profile">Profile</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sofia -->
+    <div class="mc">
+      <div class="mc-banner bn-c">
+        <div class="mc-role-pill" style="background:rgba(34,197,94,0.08);border-color:var(--green-dim);color:var(--green);">Designer</div>
+      </div>
+      <div class="mc-body">
+        <div class="mc-avatar-row">
+          <div class="mc-avatar" style="background:linear-gradient(135deg,#22c55e,#16a34a);">SR</div>
+          <div class="mc-avail avail-yes">● Available</div>
+        </div>
+        <div class="mc-name">Sofia Reyes</div>
+        <div class="mc-handle">@sofia.design · Designer</div>
+        <div class="mc-tagline">Visual systems and brand design. Specializes in cooperative identity and ethical aesthetics.</div>
+        <div class="mc-skills">
+          <span class="ms">Brand Identity</span><span class="ms">Figma</span><span class="ms">Motion</span><span class="ms">Illustration</span>
+        </div>
+        <div class="mc-stats">
+          <div class="mc-stat"><div class="mc-sv" style="color:var(--teal);">88</div><div class="mc-sl">Rep Score</div></div>
+          <div class="mc-stat"><div class="mc-sv">5 yrs</div><div class="mc-sl">Experience</div></div>
+          <div class="mc-stat"><div class="mc-sv" style="color:var(--green);">20h/w</div><div class="mc-sl">Avail</div></div>
+        </div>
+        <div class="mc-actions">
+          <div class="mc-btn mc-btn-msg">💬 DM</div>
+          <div class="mc-btn mc-btn-profile">Profile</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Marcus -->
+    <div class="mc">
+      <div class="mc-banner bn-d">
+        <div class="mc-role-pill" style="background:rgba(232,160,48,0.08);border-color:var(--amber-dim);color:var(--amber);">Engineer</div>
+      </div>
+      <div class="mc-body">
+        <div class="mc-avatar-row">
+          <div class="mc-avatar" style="background:linear-gradient(135deg,#e8a030,#d97706);">MP</div>
+          <div class="mc-avail avail-ltd">◌ Limited</div>
+        </div>
+        <div class="mc-name">Marcus Park</div>
+        <div class="mc-handle">@marcus.systems · Engineer</div>
+        <div class="mc-tagline">Infrastructure and platform engineering. Database systems, performance optimization.</div>
+        <div class="mc-skills">
+          <span class="ms">PostgreSQL</span><span class="ms">K8s</span><span class="ms">Go</span><span class="ms">Redis</span>
+        </div>
+        <div class="mc-stats">
+          <div class="mc-stat"><div class="mc-sv" style="color:var(--teal);">85</div><div class="mc-sl">Rep Score</div></div>
+          <div class="mc-stat"><div class="mc-sv">7 yrs</div><div class="mc-sl">Experience</div></div>
+          <div class="mc-stat"><div class="mc-sv" style="color:var(--amber);">10h/w</div><div class="mc-sl">Avail</div></div>
+        </div>
+        <div class="mc-actions">
+          <div class="mc-btn mc-btn-msg">💬 DM</div>
+          <div class="mc-btn mc-btn-profile">Profile</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Lena -->
+    <div class="mc">
+      <div class="mc-banner bn-e">
+        <div class="mc-role-pill" style="background:rgba(59,130,246,0.08);border-color:#1d4ed8;color:var(--blue);">Strategist</div>
+      </div>
+      <div class="mc-body">
+        <div class="mc-avatar-row">
+          <div class="mc-avatar" style="background:linear-gradient(135deg,#3b82f6,#1d4ed8);">LM</div>
+          <div class="mc-avail avail-yes">● Available</div>
+        </div>
+        <div class="mc-name">Lena Maier</div>
+        <div class="mc-handle">@lena.coop · Strategist</div>
+        <div class="mc-tagline">Cooperative governance and organizational strategy. Facilitation, product roadmapping.</div>
+        <div class="mc-skills">
+          <span class="ms">Governance</span><span class="ms">Strategy</span><span class="ms">Facilitation</span><span class="ms">Product</span>
+        </div>
+        <div class="mc-stats">
+          <div class="mc-stat"><div class="mc-sv" style="color:var(--teal);">82</div><div class="mc-sl">Rep Score</div></div>
+          <div class="mc-stat"><div class="mc-sv">9 yrs</div><div class="mc-sl">Experience</div></div>
+          <div class="mc-stat"><div class="mc-sv" style="color:var(--green);">20h/w</div><div class="mc-sl">Avail</div></div>
+        </div>
+        <div class="mc-actions">
+          <div class="mc-btn mc-btn-msg">💬 DM</div>
+          <div class="mc-btn mc-btn-profile">Profile</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Kenji -->
+    <div class="mc">
+      <div class="mc-banner bn-f">
+        <div class="mc-role-pill" style="background:rgba(217,70,239,0.08);border-color:#86198f;color:var(--mag);">Designer</div>
+      </div>
+      <div class="mc-body">
+        <div class="mc-avatar-row">
+          <div class="mc-avatar" style="background:linear-gradient(135deg,#d946ef,#9d174d);">KO</div>
+          <div class="mc-avail avail-yes">● Available</div>
+        </div>
+        <div class="mc-name">Kenji Ota</div>
+        <div class="mc-handle">@kenji.studio · Designer</div>
+        <div class="mc-tagline">Frontend engineering and interactive design. React component systems, animation.</div>
+        <div class="mc-skills">
+          <span class="ms">React</span><span class="ms">CSS</span><span class="ms">Motion</span><span class="ms">TypeScript</span>
+        </div>
+        <div class="mc-stats">
+          <div class="mc-stat"><div class="mc-sv" style="color:var(--teal);">80</div><div class="mc-sl">Rep Score</div></div>
+          <div class="mc-stat"><div class="mc-sv">4 yrs</div><div class="mc-sl">Experience</div></div>
+          <div class="mc-stat"><div class="mc-sv" style="color:var(--green);">16h/w</div><div class="mc-sl">Avail</div></div>
+        </div>
+        <div class="mc-actions">
+          <div class="mc-btn mc-btn-msg">💬 DM</div>
+          <div class="mc-btn mc-btn-profile">Profile</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Priya -->
+    <div class="mc">
+      <div class="mc-banner" style="background:linear-gradient(135deg,#0f2020,#061210);">
+        <div class="mc-role-pill" style="background:rgba(6,182,212,0.08);border-color:#0e7490;color:#06b6d4;">Researcher</div>
+      </div>
+      <div class="mc-body">
+        <div class="mc-avatar-row">
+          <div class="mc-avatar" style="background:linear-gradient(135deg,#06b6d4,#0891b2);">PB</div>
+          <div class="mc-avail avail-ltd">◌ Limited</div>
+        </div>
+        <div class="mc-name">Priya Bose</div>
+        <div class="mc-handle">@priya.data · Researcher</div>
+        <div class="mc-tagline">User research and data analysis. Drives evidence-based product decisions and accessibility standards.</div>
+        <div class="mc-skills">
+          <span class="ms">UX Research</span><span class="ms">Data Analysis</span><span class="ms">A11y</span>
+        </div>
+        <div class="mc-stats">
+          <div class="mc-stat"><div class="mc-sv" style="color:var(--teal);">79</div><div class="mc-sl">Rep Score</div></div>
+          <div class="mc-stat"><div class="mc-sv">6 yrs</div><div class="mc-sl">Experience</div></div>
+          <div class="mc-stat"><div class="mc-sv" style="color:var(--amber);">8h/w</div><div class="mc-sl">Avail</div></div>
+        </div>
+        <div class="mc-actions">
+          <div class="mc-btn mc-btn-msg">💬 DM</div>
+          <div class="mc-btn mc-btn-profile">Profile</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tariq -->
+    <div class="mc">
+      <div class="mc-banner" style="background:linear-gradient(135deg,#0a1020,#060a14);">
+        <div class="mc-role-pill" style="background:rgba(34,197,94,0.08);border-color:var(--green-dim);color:var(--green);">Engineer</div>
+      </div>
+      <div class="mc-body">
+        <div class="mc-avatar-row">
+          <div class="mc-avatar" style="background:linear-gradient(135deg,#10b981,#059669);">TN</div>
+          <div class="mc-avail avail-yes">● Available</div>
+        </div>
+        <div class="mc-name">Tariq Nasir</div>
+        <div class="mc-handle">@tariq.infra · Engineer</div>
+        <div class="mc-tagline">Cloud infrastructure and security. DevSecOps, compliance, deployment pipelines.</div>
+        <div class="mc-skills">
+          <span class="ms">AWS</span><span class="ms">Security</span><span class="ms">Terraform</span><span class="ms">CI/CD</span>
+        </div>
+        <div class="mc-stats">
+          <div class="mc-stat"><div class="mc-sv" style="color:var(--teal);">81</div><div class="mc-sl">Rep Score</div></div>
+          <div class="mc-stat"><div class="mc-sv">5 yrs</div><div class="mc-sl">Experience</div></div>
+          <div class="mc-stat"><div class="mc-sv" style="color:var(--green);">20h/w</div><div class="mc-sl">Avail</div></div>
+        </div>
+        <div class="mc-actions">
+          <div class="mc-btn mc-btn-msg">💬 DM</div>
+          <div class="mc-btn mc-btn-profile">Profile</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Invite placeholder -->
+    <div class="mc" style="border-style:dashed;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;min-height:220px;cursor:pointer;opacity:0.6;">
+      <div style="font-size:28px;color:var(--border2);">⊕</div>
+      <div style="font-size:12px;color:var(--text3);">Invite New Member</div>
+      <div style="font-size:10px;color:var(--text3);">Generate invite link or send directly</div>
+    </div>
+
+  </div>
+
+  <!-- Footer embed row -->
+  <div class="dir-footer">
+    <div class="df-text">Embeddable on meshstudio.dev:</div>
+    <div class="embed-snippet">&lt;iframe src="kogi.net/dir/mesh-studio" /&gt;</div>
+    <button class="btn-sm btn-ghost">Copy Snippet</button>
+    <button class="btn-sm btn-ghost">Export CSV</button>
+    <button class="btn-sm btn-ghost">Export PDF Roster</button>
+    <button class="btn-sm btn-ghost">Export vCard Bundle</button>
+  </div>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>KOGI · Notifications & Alerts</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap');
+:root{--bg:#070910;--sidebar:#0b0d16;--card:#0f1221;--card2:#131729;--border:#1a2035;--border2:#232a42;--teal:#0ccfca;--teal-dim:#0a9994;--amber:#e8a030;--amber-dim:#b07820;--green:#22c55e;--green-dim:#15803d;--blue:#3b82f6;--red:#ef4444;--purple:#a855f7;--mag:#d946ef;--text:#dde4f0;--text2:#7a879e;--text3:#3d4a62;}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--bg);color:var(--text);font-family:'IBM Plex Sans',sans-serif;font-size:13px;display:flex;height:100vh;overflow:hidden;}
+.sidebar{width:200px;min-width:200px;background:var(--sidebar);border-right:1px solid var(--border);display:flex;flex-direction:column;}
+.logo{padding:18px 16px;border-bottom:1px solid var(--border);}
+.logo-text{font-family:'IBM Plex Mono',monospace;font-size:18px;font-weight:600;letter-spacing:.08em;color:var(--teal);}
+.logo-sub{font-size:9px;color:var(--text3);letter-spacing:.15em;text-transform:uppercase;margin-top:2px;}
+.nav{padding:12px 0;flex:1;overflow-y:auto;}
+.ns{padding:8px 16px 4px;font-size:9px;color:var(--text3);letter-spacing:.18em;text-transform:uppercase;font-family:'IBM Plex Mono',monospace;}
+.ni{display:flex;align-items:center;gap:10px;padding:7px 16px;color:var(--text2);cursor:pointer;font-size:12px;border-left:2px solid transparent;}
+.ni.on{color:var(--teal);background:rgba(12,207,202,.07);border-left-color:var(--teal);}
+.ni-ic{width:14px;text-align:center;font-size:12px;}
+.nbadge{background:var(--red);color:#fff;border-radius:9px;font-size:9px;padding:1px 5px;font-family:'IBM Plex Mono',monospace;margin-left:auto;}
+.pb{padding:12px 16px;border-top:1px solid var(--border);}
+.pm{display:flex;align-items:center;gap:8px;}
+.avsm{width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,#0ccfca,#3b82f6);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:#fff;}
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden;}
+.topbar{height:48px;border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 20px;gap:12px;background:var(--sidebar);flex-shrink:0;}
+.tbpath{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text3);}
+.tbpath span{color:var(--text2);}
+.tbpath span.cur{color:var(--text);}
+.sp{flex:1;}
+.btn{padding:5px 12px;border-radius:4px;font-size:11px;font-family:'IBM Plex Mono',monospace;cursor:pointer;border:1px solid;}
+.bt{background:rgba(12,207,202,.12);border-color:var(--teal-dim);color:var(--teal);}
+.bg{background:transparent;border-color:var(--border2);color:var(--text2);}
+
+/* Stats */
+.stats-row{display:grid;grid-template-columns:repeat(6,1fr);gap:1px;background:var(--border);border-bottom:1px solid var(--border);flex-shrink:0;}
+.sb{background:var(--card);padding:10px 14px;}
+.sv{font-family:'IBM Plex Mono',monospace;font-size:16px;font-weight:600;}
+.sl{font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.1em;margin-top:1px;}
+
+.body{flex:1;display:grid;grid-template-columns:240px 1fr 280px;overflow:hidden;}
+
+/* Filter sidebar */
+.filt{background:var(--sidebar);border-right:1px solid var(--border);overflow-y:auto;display:flex;flex-direction:column;}
+.fh{padding:12px 14px;border-bottom:1px solid var(--border);}
+.fh-title{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text2);margin-bottom:8px;}
+.mode-btns{display:flex;gap:0;border:1px solid var(--border2);border-radius:4px;overflow:hidden;}
+.mb{flex:1;padding:5px;text-align:center;font-size:10px;font-family:'IBM Plex Mono',monospace;cursor:pointer;color:var(--text3);}
+.mb.on{background:var(--card2);color:var(--text2);}
+.f-sec{padding:8px 14px 4px;font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.14em;font-family:'IBM Plex Mono',monospace;}
+.f-item{display:flex;align-items:center;gap:9px;padding:8px 14px;cursor:pointer;border-left:2px solid transparent;}
+.f-item:hover{background:rgba(255,255,255,.015);}
+.f-item.on{background:rgba(12,207,202,.05);border-left-color:var(--teal);}
+.fi-ic{font-size:14px;width:20px;text-align:center;}
+.fi-name{flex:1;font-size:12px;color:var(--text2);}
+.f-item.on .fi-name{color:var(--text);}
+.fi-count{font-family:'IBM Plex Mono',monospace;font-size:10px;}
+.focus-mode{padding:12px 14px;margin-top:auto;border-top:1px solid var(--border);}
+.fm-title{font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.14em;margin-bottom:8px;}
+.fm-btns{display:grid;grid-template-columns:1fr 1fr;gap:5px;}
+.fm-btn{padding:5px;text-align:center;border-radius:4px;font-size:10px;font-family:'IBM Plex Mono',monospace;cursor:pointer;border:1px solid var(--border2);color:var(--text3);}
+.fm-btn.on{background:rgba(239,68,68,.1);border-color:#991b1b;color:var(--red);}
+
+/* Notification list */
+.notif-list{overflow-y:auto;display:flex;flex-direction:column;}
+.nl-toolbar{padding:10px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;background:var(--card);flex-shrink:0;}
+.nl-count{font-size:11px;color:var(--text3);}
+.nl-count strong{color:var(--text);}
+.nl-scroll{flex:1;overflow-y:auto;}
+
+/* Alert Banner (Critical) */
+.alert-banner{background:rgba(239,68,68,.06);border-bottom:2px solid var(--red);padding:10px 14px;}
+.ab-title{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--red);text-transform:uppercase;letter-spacing:.12em;margin-bottom:6px;display:flex;align-items:center;gap:6px;}
+.ab-dot{width:7px;height:7px;border-radius:50%;background:var(--red);animation:pulse 1.5s infinite;}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+
+/* Notification item */
+.ni-item{display:flex;align-items:flex-start;gap:10px;padding:12px 14px;border-bottom:1px solid var(--border);cursor:pointer;transition:background .1s;position:relative;}
+.ni-item:hover{background:rgba(255,255,255,.015);}
+.ni-item.unread{background:rgba(12,207,202,.025);}
+.ni-item.unread::before{content:'';position:absolute;left:0;top:0;bottom:0;width:2px;background:var(--teal);}
+.ni-item.critical{background:rgba(239,68,68,.025);}
+.ni-item.critical.unread::before{background:var(--red);}
+.ni-item.high{background:rgba(232,160,48,.02);}
+.ni-item.high.unread::before{background:var(--amber);}
+/* icon badge */
+.ni-icon-wrap{position:relative;flex-shrink:0;}
+.ni-av{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:#fff;}
+.ni-badge-ic{position:absolute;bottom:-2px;right:-2px;width:16px;height:16px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;border:2px solid var(--bg);}
+.ni-body{flex:1;min-width:0;}
+.ni-title{font-size:12px;color:var(--text);line-height:1.4;font-weight:500;}
+.ni-sub{font-size:11px;color:var(--text3);margin-top:2px;line-height:1.4;}
+.ni-time{font-size:10px;color:var(--text3);font-family:'IBM Plex Mono',monospace;white-space:nowrap;flex-shrink:0;}
+.ni-actions{display:flex;gap:5px;margin-top:6px;}
+.na-btn{padding:3px 8px;border-radius:3px;font-size:10px;font-family:'IBM Plex Mono',monospace;cursor:pointer;border:1px solid;}
+.na-primary{background:rgba(12,207,202,.1);border-color:var(--teal-dim);color:var(--teal);}
+.na-ghost{background:transparent;border-color:var(--border2);color:var(--text3);}
+.na-danger{background:rgba(239,68,68,.08);border-color:#991b1b;color:var(--red);}
+.na-amber{background:rgba(232,160,48,.08);border-color:var(--amber-dim);color:var(--amber);}
+/* grouped notifs */
+.ni-group{background:rgba(59,130,246,.03);border-left:2px solid #1d4ed8;}
+.ni-group-count{font-size:10px;color:var(--blue);font-family:'IBM Plex Mono',monospace;background:rgba(59,130,246,.08);padding:1px 6px;border-radius:3px;margin-left:6px;}
+
+/* Priority section header */
+.ni-sec{padding:6px 14px 4px;font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.14em;font-family:'IBM Plex Mono',monospace;background:var(--card2);border-bottom:1px solid var(--border);display:flex;justify-content:space-between;}
+
+/* Preferences panel */
+.prefs{background:var(--sidebar);border-left:1px solid var(--border);overflow-y:auto;display:flex;flex-direction:column;}
+.prefs-hdr{padding:12px 14px;border-bottom:1px solid var(--border);}
+.prefs-title{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.14em;margin-bottom:2px;}
+.prefs-sub{font-size:10px;color:var(--text3);}
+.prefs-sec{padding:10px 14px;border-bottom:1px solid var(--border);}
+.ps-title{font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.14em;margin-bottom:8px;}
+.pref-row{display:flex;align-items:center;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border);}
+.pref-row:last-child{border-bottom:none;}
+.pr-label{font-size:11px;color:var(--text);}
+.pr-sub{font-size:9px;color:var(--text3);}
+.toggle{width:30px;height:17px;border-radius:9px;background:var(--border2);position:relative;cursor:pointer;transition:background .2s;}
+.toggle.on{background:var(--teal-dim);}
+.toggle::after{content:'';position:absolute;top:2px;left:2px;width:13px;height:13px;border-radius:50%;background:#fff;transition:left .2s;}
+.toggle.on::after{left:15px;}
+.ch-sel{width:100%;background:var(--card2);border:1px solid var(--border2);color:var(--text2);font-size:10px;padding:4px 7px;border-radius:3px;font-family:'IBM Plex Mono',monospace;margin-top:4px;}
+/* escalation timeline */
+.esc-step{display:flex;align-items:flex-start;gap:8px;padding:6px 0;border-bottom:1px solid var(--border);}
+.esc-step:last-child{border-bottom:none;}
+.esc-t{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--amber);width:40px;flex-shrink:0;}
+.esc-desc{font-size:10px;color:var(--text3);}
+</style>
+</head>
+<body>
+<div class="sidebar">
+  <div class="logo"><div class="logo-text">KOGI</div><div class="logo-sub">Independent Worker OS</div></div>
+  <nav class="nav">
+    <div class="ns">Core</div>
+    <div class="ni"><span class="ni-ic">⌂</span>Dashboard</div>
+    <div class="ni"><span class="ni-ic">◫</span>Office</div>
+    <div class="ns">Communications</div>
+    <div class="ni"><span class="ni-ic">💬</span>Inbox <span class="nbadge">12</span></div>
+    <div class="ni"><span class="ni-ic">👥</span>Group Msgs</div>
+    <div class="ni"><span class="ni-ic">📢</span>Broadcasts</div>
+    <div class="ni on"><span class="ni-ic">🔔</span>Alerts <span class="nbadge">5</span></div>
+    <div class="ni"><span class="ni-ic">✉</span>Email</div>
+    <div class="ni"><span class="ni-ic">📞</span>Phone / Voice</div>
+    <div class="ns">Spaces & Rooms</div>
+    <div class="ni"><span class="ni-ic">⊕</span>Community</div>
+    <div class="ni"><span class="ni-ic">◻</span>Rooms</div>
+    <div class="ni"><span class="ni-ic">⊛</span>Spaces</div>
+    <div class="ns">Platform</div>
+    <div class="ni"><span class="ni-ic">◉</span>Profile</div>
+    <div class="ni"><span class="ni-ic">♦</span>Bank</div>
+  </nav>
+  <div class="pb"><div class="pm"><div class="avsm">JC</div><div><div style="font-size:12px;">Jordan Chen</div><div style="font-size:10px;color:var(--text3);">● Online</div></div></div></div>
+</div>
+
+<div class="main">
+  <div class="topbar">
+    <div class="tbpath">KNTF / <span class="cur">Notifications & Alerts</span></div>
+    <div class="sp"></div>
+    <button class="btn bg">Mark All Read</button>
+    <button class="btn bg">Preferences</button>
+    <button class="btn bt">Focus Mode: Off</button>
+  </div>
+
+  <div class="stats-row">
+    <div class="sb"><div class="sv" style="color:var(--red);">5</div><div class="sl">Critical</div></div>
+    <div class="sb"><div class="sv" style="color:var(--amber);">12</div><div class="sl">High Priority</div></div>
+    <div class="sb"><div class="sv">28</div><div class="sl">Unread</div></div>
+    <div class="sb"><div class="sv" style="color:var(--text3);">142</div><div class="sl">Total Today</div></div>
+    <div class="sb"><div class="sv" style="color:var(--green);">✓</div><div class="sl">Delivery: All</div></div>
+    <div class="sb"><div class="sv" style="color:var(--blue);">Off</div><div class="sl">Quiet Hours</div></div>
+  </div>
+
+  <div class="body">
+    <!-- Filter sidebar -->
+    <div class="filt">
+      <div class="fh">
+        <div class="fh-title">Filter by Category</div>
+        <div class="mode-btns"><div class="mb">All</div><div class="mb on">Unread</div><div class="mb">Priority</div></div>
+      </div>
+      <div class="f-sec">Priority</div>
+      <div class="f-item on"><div class="fi-ic">🚨</div><div class="fi-name">Critical Alerts</div><div class="fi-count" style="color:var(--red);">5</div></div>
+      <div class="f-item"><div class="fi-ic">⚠</div><div class="fi-name">High Priority</div><div class="fi-count" style="color:var(--amber);">12</div></div>
+      <div class="f-item"><div class="fi-ic">📋</div><div class="fi-name">Normal</div><div class="fi-count" style="color:var(--text3);">98</div></div>
+      <div class="f-item"><div class="fi-ic">ℹ</div><div class="fi-name">Informational</div><div class="fi-count" style="color:var(--text3);">27</div></div>
+
+      <div class="f-sec">By Category</div>
+      <div class="f-item"><div class="fi-ic">💬</div><div class="fi-name">Messaging</div><div class="fi-count">14</div></div>
+      <div class="f-item"><div class="fi-ic">⚖</div><div class="fi-name">Governance</div><div class="fi-count" style="color:var(--amber);">4</div></div>
+      <div class="f-item"><div class="fi-ic">◈</div><div class="fi-name">Portfolio</div><div class="fi-count">8</div></div>
+      <div class="f-item"><div class="fi-ic">💰</div><div class="fi-name">Economic</div><div class="fi-count">6</div></div>
+      <div class="f-item"><div class="fi-ic">⊕</div><div class="fi-name">Community</div><div class="fi-count">18</div></div>
+      <div class="f-item"><div class="fi-ic">📅</div><div class="fi-name">Events</div><div class="fi-count">5</div></div>
+      <div class="f-item"><div class="fi-ic">◉</div><div class="fi-name">AI · Oba</div><div class="fi-count" style="color:var(--teal);">3</div></div>
+      <div class="f-item"><div class="fi-ic">🔧</div><div class="fi-name">System</div><div class="fi-count" style="color:var(--red);">2</div></div>
+
+      <div class="focus-mode">
+        <div class="fm-title">Focus Mode</div>
+        <div class="fm-btns">
+          <div class="fm-btn">Off</div>
+          <div class="fm-btn">DND</div>
+          <div class="fm-btn">Focus</div>
+          <div class="fm-btn fm-on" style="background:rgba(239,68,68,.08);border-color:#991b1b;color:var(--red);">Sleep</div>
+        </div>
+        <div style="font-size:9px;color:var(--text3);margin-top:6px;">In Sleep mode, only Critical alerts are delivered.</div>
+      </div>
+    </div>
+
+    <!-- Notification Feed -->
+    <div class="notif-list">
+      <div class="nl-toolbar">
+        <div class="nl-count">Showing <strong>28 unread</strong> of 142 today</div>
+        <div class="sp"></div>
+        <button class="btn bg" style="font-size:10px;padding:4px 8px;">Mark All Read</button>
+        <button class="btn bg" style="font-size:10px;padding:4px 8px;">Clear All</button>
+      </div>
+      <div class="nl-scroll">
+
+        <!-- Critical alert banner -->
+        <div class="alert-banner">
+          <div class="ab-title"><div class="ab-dot"></div>5 CRITICAL ALERTS REQUIRE YOUR ATTENTION</div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap;">
+            <div style="font-size:11px;color:var(--text3);">2 governance votes expiring soon · 1 platform alert · 1 budget threshold · 1 security notice</div>
+          </div>
+        </div>
+
+        <!-- CRITICAL SECTION -->
+        <div class="ni-sec"><span>🚨 Critical · Action Required</span><span style="cursor:pointer;color:var(--teal);font-size:9px;">Acknowledge All</span></div>
+
+        <!-- Governance vote expiring -->
+        <div class="ni-item critical unread">
+          <div class="ni-icon-wrap">
+            <div class="ni-av" style="background:linear-gradient(135deg,#a855f7,#7c3aed);">⚖</div>
+            <div class="ni-badge-ic" style="background:var(--red);">!</div>
+          </div>
+          <div class="ni-body">
+            <div class="ni-title">⚖ Governance vote closes in 4 hours</div>
+            <div class="ni-sub">Proposal #12 — Q2 Sprint Budget Allocation ($12,000) · Mesh Studio · 5/8 votes needed · 3 cast so far</div>
+            <div class="ni-actions">
+              <div class="na-btn na-primary">Cast Vote →</div>
+              <div class="na-btn na-ghost">View Proposal</div>
+              <div class="na-btn na-ghost">Summary</div>
+            </div>
+          </div>
+          <div class="ni-time">⏱ 4h left</div>
+        </div>
+
+        <!-- Budget threshold -->
+        <div class="ni-item critical unread">
+          <div class="ni-icon-wrap">
+            <div class="ni-av" style="background:linear-gradient(135deg,#ef4444,#991b1b);">💰</div>
+            <div class="ni-badge-ic" style="background:var(--red);">!</div>
+          </div>
+          <div class="ni-body">
+            <div class="ni-title">💰 Budget threshold exceeded — Brand Launch program</div>
+            <div class="ni-sub">Spending at 94% ($18,800 / $20,000). kogi-engine risk score elevated. Review budget allocation.</div>
+            <div class="ni-actions">
+              <div class="na-btn na-danger">Review Budget →</div>
+              <div class="na-btn na-ghost">Reallocate</div>
+            </div>
+          </div>
+          <div class="ni-time">28m ago</div>
+        </div>
+
+        <!-- Security -->
+        <div class="ni-item critical unread">
+          <div class="ni-icon-wrap">
+            <div class="ni-av" style="background:linear-gradient(135deg,#ef4444,#b91c1c);">🔒</div>
+            <div class="ni-badge-ic" style="background:var(--red);">!</div>
+          </div>
+          <div class="ni-body">
+            <div class="ni-title">🔒 New device login detected — verification required</div>
+            <div class="ni-sub">Login from Chrome / Windows · San Jose, CA · IP 104.21.xx.xx · 35 minutes ago. Was this you?</div>
+            <div class="ni-actions">
+              <div class="na-btn na-primary">Yes, That Was Me</div>
+              <div class="na-btn na-danger">Not Me — Secure Account</div>
+            </div>
+          </div>
+          <div class="ni-time">35m ago</div>
+        </div>
+
+        <!-- HIGH PRIORITY SECTION -->
+        <div class="ni-sec" style="margin-top:4px;"><span>⚠ High Priority</span></div>
+
+        <!-- Governance reminder -->
+        <div class="ni-item high unread">
+          <div class="ni-icon-wrap">
+            <div class="ni-av" style="background:linear-gradient(135deg,#a855f7,#7c3aed);">⚖</div>
+            <div class="ni-badge-ic" style="background:var(--purple);">⚖</div>
+          </div>
+          <div class="ni-body">
+            <div class="ni-title">⚖ Governance Proposal #31 — 4 days left to vote</div>
+            <div class="ni-sub">Builder Network Q2 Fee Restructure · 3,240 / 8,400 votes cast · Quorum: 60% needed</div>
+            <div class="ni-actions"><div class="na-btn na-primary">Vote →</div><div class="na-btn na-ghost">Read Proposal</div></div>
+          </div>
+          <div class="ni-time">4d left</div>
+        </div>
+
+        <!-- DM request -->
+        <div class="ni-item high unread">
+          <div class="ni-icon-wrap">
+            <div class="ni-av" style="background:linear-gradient(135deg,#3b82f6,#1d4ed8);">NW</div>
+            <div class="ni-badge-ic" style="background:var(--blue);">💬</div>
+          </div>
+          <div class="ni-body">
+            <div class="ni-title">💬 Message request from Nadia Wolff</div>
+            <div class="ni-sub">@nadia.builds — "Hi Jordan, I came across your CRDT work and would love to discuss a potential collab on…" · 2° connection via Amara</div>
+            <div class="ni-actions"><div class="na-btn na-primary">Accept & Reply →</div><div class="na-btn na-ghost">View Profile</div><div class="na-btn na-ghost">Decline</div></div>
+          </div>
+          <div class="ni-time">1h ago</div>
+        </div>
+
+        <!-- Payment received -->
+        <div class="ni-item high unread">
+          <div class="ni-icon-wrap">
+            <div class="ni-av" style="background:linear-gradient(135deg,#22c55e,#16a34a);">💳</div>
+            <div class="ni-badge-ic" style="background:var(--green);">$</div>
+          </div>
+          <div class="ni-body">
+            <div class="ni-title">💳 Payment received — $4,200</div>
+            <div class="ni-sub">From Aisha Patel (Patel Ventures) · Invoice #INV-2026-031 · Brand Identity System contract · kogi-bank</div>
+            <div class="ni-actions"><div class="na-btn na-primary">View Transaction →</div><div class="na-btn na-ghost">Download Receipt</div></div>
+          </div>
+          <div class="ni-time">2h ago</div>
+        </div>
+
+        <!-- NORMAL SECTION -->
+        <div class="ni-sec" style="margin-top:4px;"><span>📋 Normal</span></div>
+
+        <!-- Grouped social: 5 new followers -->
+        <div class="ni-item ni-group unread">
+          <div class="ni-icon-wrap">
+            <div class="ni-av" style="background:linear-gradient(135deg,#0ccfca,#3b82f6);">+5</div>
+            <div class="ni-badge-ic" style="background:var(--blue);">👤</div>
+          </div>
+          <div class="ni-body">
+            <div class="ni-title">5 new followers on your Public profile <span class="ni-group-count">×5</span></div>
+            <div class="ni-sub">Including @dev.collective, @tariq.infra, @maya.design, and 2 more</div>
+            <div class="ni-actions"><div class="na-btn na-ghost">View Followers</div></div>
+          </div>
+          <div class="ni-time">3h ago</div>
+        </div>
+
+        <!-- Oba recommendation -->
+        <div class="ni-item unread">
+          <div class="ni-icon-wrap">
+            <div class="ni-av" style="background:rgba(12,207,202,.15);border:1px solid var(--teal-dim);font-size:14px;">◉</div>
+            <div class="ni-badge-ic" style="background:var(--teal);">✨</div>
+          </div>
+          <div class="ni-body">
+            <div class="ni-title">◉ Oba: 3 new gig opportunities match your Developer persona</div>
+            <div class="ni-sub">Top match: "Senior Rust Engineer — Cooperative Tech" · Match score 94 · Via Kogi Exchange · $180/hr</div>
+            <div class="ni-actions"><div class="na-btn na-primary">View Matches →</div><div class="na-btn na-ghost">Adjust Persona</div></div>
+          </div>
+          <div class="ni-time">4h ago</div>
+        </div>
+
+        <!-- Event reminder -->
+        <div class="ni-item">
+          <div class="ni-icon-wrap">
+            <div class="ni-av" style="background:linear-gradient(135deg,#f59e0b,#b45309);">📅</div>
+            <div class="ni-badge-ic" style="background:var(--amber);">!</div>
+          </div>
+          <div class="ni-body">
+            <div class="ni-title">📅 Reminder: Mesh Studio Tagup in 1 hour</div>
+            <div class="ni-sub">Weekly sync · March 14 · 3:00 PM PST · Video call · 8 attendees confirmed</div>
+            <div class="ni-actions"><div class="na-btn na-amber">Join Room →</div><div class="na-btn na-ghost">View Agenda</div></div>
+          </div>
+          <div class="ni-time">55m</div>
+        </div>
+
+        <!-- Portfolio mention -->
+        <div class="ni-item">
+          <div class="ni-icon-wrap">
+            <div class="ni-av" style="background:linear-gradient(135deg,#0ccfca,#3b82f6);">AK</div>
+            <div class="ni-badge-ic" style="background:var(--teal);">@</div>
+          </div>
+          <div class="ni-body">
+            <div class="ni-title">@ Amara Kofi mentioned your portfolio in a post</div>
+            <div class="ni-sub">"Check out @jordan.dev's crdt-rs library — this is exactly the kind of open-source infra the cooperative ecosystem needs…"</div>
+            <div class="ni-actions"><div class="na-btn na-ghost">View Post</div><div class="na-btn na-ghost">Reply</div></div>
+          </div>
+          <div class="ni-time">5h ago</div>
+        </div>
+
+        <!-- Space join -->
+        <div class="ni-item" style="opacity:.7;">
+          <div class="ni-icon-wrap">
+            <div class="ni-av" style="background:linear-gradient(135deg,#22c55e,#16a34a);">⊕</div>
+            <div class="ni-badge-ic" style="background:var(--green);">+</div>
+          </div>
+          <div class="ni-body">
+            <div class="ni-title">Kenji Ota joined Mesh Studio Cooperative Space</div>
+            <div class="ni-sub">via member invite from Jordan Chen · Kogi Builder Network</div>
+          </div>
+          <div class="ni-time">6h ago</div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Preferences Panel -->
+    <div class="prefs">
+      <div class="prefs-hdr">
+        <div class="prefs-title">Notification Preferences</div>
+        <div class="prefs-sub">KNTF · Per-type delivery config</div>
+      </div>
+      <div class="prefs-sec">
+        <div class="ps-title">Global Delivery</div>
+        <div class="pref-row"><div><div class="pr-label">In-app (WebSocket)</div><div class="pr-sub">All priorities</div></div><div class="toggle on"></div></div>
+        <div class="pref-row"><div><div class="pr-label">Mobile push (FCM/APNs)</div><div class="pr-sub">High + Critical</div></div><div class="toggle on"></div></div>
+        <div class="pref-row"><div><div class="pr-label">Email</div><div class="pr-sub">Critical immediate, Normal digest</div></div><div class="toggle on"></div></div>
+        <div class="pref-row"><div><div class="pr-label">SMS (Twilio)</div><div class="pr-sub">Critical only · Opt-in</div></div><div class="toggle"></div></div>
+        <div class="pref-row"><div><div class="pr-label">Slack bridge</div><div class="pr-sub">Via linked account</div></div><div class="toggle on"></div></div>
+      </div>
+      <div class="prefs-sec">
+        <div class="ps-title">Digest Frequency</div>
+        <select class="ch-sel"><option>Normal: Daily digest</option><option>Normal: Hourly</option><option>Normal: Immediate</option><option>Normal: Weekly</option></select>
+      </div>
+      <div class="prefs-sec">
+        <div class="ps-title">Category Overrides</div>
+        <div class="pref-row"><div><div class="pr-label">Governance votes</div></div><div class="toggle on"></div></div>
+        <div class="pref-row"><div><div class="pr-label">DM requests</div></div><div class="toggle on"></div></div>
+        <div class="pref-row"><div><div class="pr-label">Social (likes, follows)</div></div><div class="toggle on"></div></div>
+        <div class="pref-row"><div><div class="pr-label">Economic events</div></div><div class="toggle on"></div></div>
+        <div class="pref-row"><div><div class="pr-label">Oba recommendations</div></div><div class="toggle on"></div></div>
+        <div class="pref-row"><div><div class="pr-label">Space announcements</div></div><div class="toggle on"></div></div>
+      </div>
+      <div class="prefs-sec">
+        <div class="ps-title">Critical Alert Escalation</div>
+        <div class="esc-step"><div class="esc-t">T+0</div><div class="esc-desc">In-app push + notification feed</div></div>
+        <div class="esc-step"><div class="esc-t">T+5m</div><div class="esc-desc">Mobile push notification (if unread)</div></div>
+        <div class="esc-step"><div class="esc-t">T+15m</div><div class="esc-desc">Email dispatch</div></div>
+        <div class="esc-step"><div class="esc-t">T+30m</div><div class="esc-desc">SMS (if enabled, unacknowledged)</div></div>
+        <div class="esc-step"><div class="esc-t">T+1h</div><div class="esc-desc">Escalate to secondary contacts</div></div>
+      </div>
+      <div class="prefs-sec" style="border-bottom:none;">
+        <div class="ps-title">Quiet Hours</div>
+        <div class="pref-row"><div><div class="pr-label">Enable quiet hours</div><div class="pr-sub">22:00 – 08:00 PST</div></div><div class="toggle"></div></div>
+        <div style="font-size:10px;color:var(--text3);margin-top:4px;">Critical alerts always bypass quiet hours.</div>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

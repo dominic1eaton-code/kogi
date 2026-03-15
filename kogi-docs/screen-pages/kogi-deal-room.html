@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>KOGI · Deal Room · Business Rooms</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap');
+:root{--bg:#070910;--sidebar:#0b0d16;--card:#0f1221;--card2:#131729;--border:#1a2035;--border2:#232a42;--teal:#0ccfca;--teal-dim:#0a9994;--amber:#e8a030;--amber-dim:#b07820;--green:#22c55e;--green-dim:#15803d;--blue:#3b82f6;--red:#ef4444;--purple:#a855f7;--mag:#d946ef;--text:#dde4f0;--text2:#7a879e;--text3:#3d4a62;}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--bg);color:var(--text);font-family:'IBM Plex Sans',sans-serif;font-size:13px;display:flex;height:100vh;overflow:hidden;}
+.sidebar{width:200px;min-width:200px;background:var(--sidebar);border-right:1px solid var(--border);display:flex;flex-direction:column;}
+.logo{padding:18px 16px;border-bottom:1px solid var(--border);}
+.logo-text{font-family:'IBM Plex Mono',monospace;font-size:18px;font-weight:600;letter-spacing:.08em;color:var(--teal);}
+.logo-sub{font-size:9px;color:var(--text3);letter-spacing:.15em;text-transform:uppercase;margin-top:2px;}
+.nav{padding:12px 0;flex:1;overflow-y:auto;}
+.ns{padding:8px 16px 4px;font-size:9px;color:var(--text3);letter-spacing:.18em;text-transform:uppercase;font-family:'IBM Plex Mono',monospace;}
+.ni{display:flex;align-items:center;gap:10px;padding:7px 16px;color:var(--text2);cursor:pointer;font-size:12px;border-left:2px solid transparent;}
+.ni.on{color:var(--teal);background:rgba(12,207,202,.07);border-left-color:var(--teal);}
+.ni-ic{width:14px;text-align:center;font-size:12px;}
+.nbadge{background:var(--red);color:#fff;border-radius:9px;font-size:9px;padding:1px 5px;font-family:'IBM Plex Mono',monospace;margin-left:auto;}
+.pb{padding:12px 16px;border-top:1px solid var(--border);}
+.pm{display:flex;align-items:center;gap:8px;}
+.avsm{width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,#0ccfca,#3b82f6);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:#fff;}
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden;}
+.topbar{height:48px;border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 20px;gap:12px;background:var(--sidebar);flex-shrink:0;}
+.tbpath{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text3);}
+.tbpath span{color:var(--text2);}
+.tbpath span.cur{color:var(--text);}
+.sp{flex:1;}
+.btn{padding:5px 12px;border-radius:4px;font-size:11px;font-family:'IBM Plex Mono',monospace;cursor:pointer;border:1px solid;}
+.bt{background:rgba(12,207,202,.12);border-color:var(--teal-dim);color:var(--teal);}
+.bg{background:transparent;border-color:var(--border2);color:var(--text2);}
+.ba{background:rgba(232,160,48,.1);border-color:var(--amber-dim);color:var(--amber);}
+
+.layout{flex:1;display:grid;grid-template-columns:280px 1fr 280px;overflow:hidden;}
+
+/* Room list */
+.rl{background:var(--sidebar);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden;}
+.rlh{padding:12px 14px;border-bottom:1px solid var(--border);flex-shrink:0;}
+.rl-tabs{display:flex;margin-bottom:8px;}
+.rl-tab{flex:1;padding:4px;text-align:center;font-size:10px;font-family:'IBM Plex Mono',monospace;color:var(--text3);cursor:pointer;border-bottom:2px solid transparent;}
+.rl-tab.on{color:var(--teal);border-bottom-color:var(--teal);}
+.rl-search{position:relative;}
+.rls{width:100%;background:var(--card);border:1px solid var(--border);border-radius:4px;padding:6px 10px 6px 26px;color:var(--text2);font-size:11px;outline:none;font-family:'IBM Plex Sans',sans-serif;}
+.rls::placeholder{color:var(--text3);}
+.rls-ic{position:absolute;left:8px;top:50%;transform:translateY(-50%);color:var(--text3);font-size:11px;}
+.rl-scroll{flex:1;overflow-y:auto;}
+.rl-sec{padding:5px 14px 3px;font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.14em;font-family:'IBM Plex Mono',monospace;background:var(--card2);border-bottom:1px solid var(--border);}
+.ri{display:flex;align-items:flex-start;gap:9px;padding:10px 14px;border-bottom:1px solid var(--border);cursor:pointer;position:relative;}
+.ri:hover{background:rgba(255,255,255,.015);}
+.ri.on{background:rgba(12,207,202,.05);border-left:2px solid var(--teal);}
+.ri.unread::after{content:'';position:absolute;right:14px;top:14px;width:6px;height:6px;border-radius:50%;background:var(--amber);}
+.ri-ic{width:32px;height:32px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;border:1px solid;}
+.ri-info{flex:1;min-width:0;}
+.ri-name{font-size:12px;color:var(--text);font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.ri-type{font-size:9px;font-family:'IBM Plex Mono',monospace;color:var(--text3);margin-top:1px;}
+.ri-pre{font-size:11px;color:var(--text3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:1px;}
+.ri-meta{font-size:9px;color:var(--text3);font-family:'IBM Plex Mono',monospace;flex-shrink:0;text-align:right;}
+.ri-val{font-family:'IBM Plex Mono',monospace;font-size:10px;}
+
+/* Main deal room */
+.deal{display:flex;flex-direction:column;overflow:hidden;}
+.deal-hdr{border-bottom:1px solid var(--border);padding:12px 18px;background:var(--card);flex-shrink:0;}
+.dh-top{display:flex;align-items:flex-start;gap:12px;margin-bottom:10px;}
+.dh-ic{width:40px;height:40px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;border:1px solid;}
+.dh-name{font-size:15px;font-weight:600;color:var(--text);}
+.dh-type{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--amber);margin-top:2px;}
+.dh-parties{font-size:11px;color:var(--text3);margin-top:3px;}
+.dh-actions{margin-left:auto;display:flex;gap:6px;align-items:flex-start;}
+/* status pill */
+.status-pill{font-size:10px;font-family:'IBM Plex Mono',monospace;padding:4px 10px;border-radius:4px;border:1px solid;}
+.sp-negotiation{background:rgba(232,160,48,.1);border-color:var(--amber-dim);color:var(--amber);}
+.sp-signed{background:rgba(34,197,94,.1);border-color:var(--green-dim);color:var(--green);}
+.sp-pending{background:rgba(59,130,246,.1);border-color:#1d4ed8;color:var(--blue);}
+.sp-closed{background:rgba(122,135,158,.1);border-color:var(--text3);color:var(--text3);}
+/* deal meta row */
+.deal-meta{display:grid;grid-template-columns:repeat(5,1fr);gap:1px;background:var(--border);}
+.dm-box{background:var(--card2);padding:8px 12px;}
+.dm-lbl{font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.1em;}
+.dm-val{font-family:'IBM Plex Mono',monospace;font-size:13px;font-weight:600;margin-top:2px;}
+
+/* Chat area */
+.deal-chat{flex:1;overflow-y:auto;padding:14px 18px;}
+/* stage markers */
+.stage-div{display:flex;align-items:center;gap:10px;margin:14px 0 8px;}
+.st-line{flex:1;height:1px;background:var(--border);}
+.st-pill{font-size:10px;font-family:'IBM Plex Mono',monospace;color:var(--amber);background:rgba(232,160,48,.08);padding:3px 10px;border-radius:12px;border:1px solid var(--amber-dim);}
+
+.mgroup{margin-bottom:8px;}
+.mrow{display:flex;gap:9px;align-items:flex-end;margin-bottom:1px;}
+.mrow.me{flex-direction:row-reverse;}
+.mav-slot{width:28px;flex-shrink:0;}
+.mav{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:600;color:#fff;}
+.msender{font-size:10px;font-family:'IBM Plex Mono',monospace;margin-bottom:2px;padding-left:37px;}
+.msender.me{padding-right:37px;padding-left:0;text-align:right;}
+.bubble{max-width:400px;padding:9px 13px;border-radius:10px;line-height:1.55;font-size:12px;}
+.bubble.them{background:var(--card2);border:1px solid var(--border);color:var(--text);border-bottom-left-radius:3px;}
+.bubble.me{background:rgba(12,207,202,.11);border:1px solid var(--teal-dim);color:var(--text);border-bottom-right-radius:3px;}
+.bubble.system{background:rgba(232,160,48,.05);border:1px solid var(--amber-dim)40;color:var(--text2);font-size:11px;}
+.mmeta{display:flex;align-items:center;gap:5px;margin-top:2px;}
+.mrow.me .mmeta{flex-direction:row-reverse;}
+.mt{font-size:9px;color:var(--text3);font-family:'IBM Plex Mono',monospace;}
+/* document card */
+.doc-card{background:var(--card);border:1px solid var(--amber-dim);border-radius:6px;padding:10px 12px;margin-top:5px;max-width:300px;}
+.dc-tag{font-size:9px;font-family:'IBM Plex Mono',monospace;color:var(--amber);text-transform:uppercase;margin-bottom:3px;}
+.dc-title{font-size:12px;color:var(--text);font-weight:500;}
+.dc-meta{font-size:10px;color:var(--text3);margin-top:2px;}
+.dc-btns{display:flex;gap:6px;margin-top:7px;}
+.dc-btn{padding:4px 10px;border-radius:3px;font-size:10px;font-family:'IBM Plex Mono',monospace;cursor:pointer;border:1px solid;}
+/* system event */
+.sys-ev{display:flex;align-items:center;gap:8px;background:rgba(232,160,48,.04);border:1px solid var(--border);border-left:3px solid var(--amber);padding:8px 12px;border-radius:4px;margin:8px 0;font-size:11px;color:var(--text3);}
+.se-ic{font-size:14px;}
+.se-text{flex:1;}
+.se-action{font-size:10px;color:var(--teal);cursor:pointer;font-family:'IBM Plex Mono',monospace;}
+
+/* compose */
+.compose{border-top:1px solid var(--border);padding:10px 14px;background:var(--card);flex-shrink:0;}
+.c-tools{display:flex;gap:5px;margin-bottom:7px;align-items:center;}
+.ct{width:26px;height:26px;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:12px;color:var(--text3);cursor:pointer;border:1px solid transparent;}
+.ct:hover{background:var(--card2);border-color:var(--border2);}
+.c-row{display:flex;gap:8px;align-items:flex-end;}
+.c-field{flex:1;background:var(--card2);border:1px solid var(--border2);border-radius:8px;padding:8px 12px;color:var(--text);font-size:12px;font-family:'IBM Plex Sans',sans-serif;outline:none;resize:none;min-height:36px;max-height:80px;line-height:1.5;}
+.c-field:focus{border-color:var(--teal-dim);}
+.c-field::placeholder{color:var(--text3);}
+.c-send{width:34px;height:34px;border-radius:6px;background:var(--teal);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--bg);font-size:14px;}
+
+/* Deal info panel */
+.info{background:var(--sidebar);border-left:1px solid var(--border);overflow-y:auto;display:flex;flex-direction:column;}
+.info-sec{padding:12px 14px;border-bottom:1px solid var(--border);}
+.is-title{font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.14em;margin-bottom:8px;}
+.isr{display:flex;justify-content:space-between;margin-bottom:5px;align-items:center;}
+.isk{font-size:11px;color:var(--text3);}
+.isv{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text2);}
+.isv.t{color:var(--teal);}
+.isv.a{color:var(--amber);}
+.isv.g{color:var(--green);}
+/* timeline */
+.tl-step{display:flex;align-items:flex-start;gap:8px;padding:6px 0;}
+.tl-dot{width:8px;height:8px;border-radius:50%;margin-top:3px;flex-shrink:0;}
+.tl-line{width:1px;height:20px;background:var(--border);margin-left:3px;margin-top:2px;}
+.tl-desc{font-size:10px;color:var(--text3);}
+.tl-time{font-size:9px;color:var(--text3);font-family:'IBM Plex Mono',monospace;}
+/* participant row */
+.party-row{display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid var(--border);}
+.party-row:last-child{border-bottom:none;}
+.pav{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:600;color:#fff;flex-shrink:0;}
+.p-name{flex:1;font-size:11px;color:var(--text);}
+.p-role{font-size:9px;font-family:'IBM Plex Mono',monospace;color:var(--text3);}
+.p-access{font-size:9px;font-family:'IBM Plex Mono',monospace;padding:1px 5px;border-radius:3px;border:1px solid;}
+/* docs -->
+.doc-item{display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--border);cursor:pointer;}
+.doc-item:last-child{border-bottom:none;}
+.di-ic{font-size:14px;}
+.di-name{flex:1;font-size:11px;color:var(--text2);}
+.di-status{font-size:9px;font-family:'IBM Plex Mono',monospace;}
+</style>
+</head>
+<body>
+<div class="sidebar">
+  <div class="logo"><div class="logo-text">KOGI</div><div class="logo-sub">Independent Worker OS</div></div>
+  <nav class="nav">
+    <div class="ns">Core</div>
+    <div class="ni"><span class="ni-ic">⌂</span>Dashboard</div>
+    <div class="ni"><span class="ni-ic">⬡</span>Exchange</div>
+    <div class="ni"><span class="ni-ic">⊗</span>Marketplace</div>
+    <div class="ns">Communications</div>
+    <div class="ni"><span class="ni-ic">💬</span>Inbox <span class="nbadge">12</span></div>
+    <div class="ni"><span class="ni-ic">🔔</span>Alerts <span class="nbadge">5</span></div>
+    <div class="ns">Spaces & Rooms</div>
+    <div class="ni on"><span class="ni-ic">💼</span>Deal Rooms</div>
+    <div class="ni"><span class="ni-ic">⊕</span>Community</div>
+    <div class="ni"><span class="ni-ic">◻</span>All Rooms</div>
+    <div class="ni"><span class="ni-ic">⊛</span>Spaces</div>
+    <div class="ns">Platform</div>
+    <div class="ni"><span class="ni-ic">◉</span>Profile</div>
+    <div class="ni"><span class="ni-ic">♦</span>Bank</div>
+  </nav>
+  <div class="pb"><div class="pm"><div class="avsm">JC</div><div><div style="font-size:12px;">Jordan Chen</div><div style="font-size:10px;color:var(--text3);">● Online</div></div></div></div>
+</div>
+
+<div class="main">
+  <div class="topbar">
+    <div class="tbpath">KRMS / <span>Rooms</span> / <span class="cur">Deal & Business Rooms</span></div>
+    <div class="sp"></div>
+    <button class="btn bg">All Rooms</button>
+    <button class="btn ba">+ New Deal Room</button>
+  </div>
+
+  <div class="layout">
+    <!-- Room list -->
+    <div class="rl">
+      <div class="rlh">
+        <div class="rl-tabs">
+          <div class="rl-tab on">Active</div>
+          <div class="rl-tab">Proposals</div>
+          <div class="rl-tab">Closed</div>
+        </div>
+        <div class="rl-search"><div class="rls-ic">⌕</div><input class="rls" placeholder="Search deal rooms…"/></div>
+      </div>
+      <div class="rl-scroll">
+        <div class="rl-sec">In Negotiation</div>
+
+        <div class="ri on">
+          <div class="ri-ic" style="background:rgba(232,160,48,.1);border-color:var(--amber-dim);">💼</div>
+          <div class="ri-info">
+            <div class="ri-name">Brand Identity System v2.0</div>
+            <div class="ri-type">CONTRACT · DEAL ROOM</div>
+            <div class="ri-pre">Aisha: Counter-proposal sent…</div>
+          </div>
+          <div class="ri-meta"><div>2m</div><div class="ri-val" style="color:var(--amber);">$28K</div></div>
+        </div>
+
+        <div class="ri unread">
+          <div class="ri-ic" style="background:rgba(59,130,246,.1);border-color:#1d4ed8;">🎯</div>
+          <div class="ri-info">
+            <div class="ri-name">Senior Rust Engineer — 6mo</div>
+            <div class="ri-type">GIG · PROPOSAL RECEIVED</div>
+            <div class="ri-pre">New bid: $180/hr · Coop Tech Inc</div>
+          </div>
+          <div class="ri-meta"><div>15m</div><div class="ri-val" style="color:var(--blue);">$180/h</div></div>
+        </div>
+
+        <div class="ri">
+          <div class="ri-ic" style="background:rgba(34,197,94,.1);border-color:var(--green-dim);">📄</div>
+          <div class="ri-info">
+            <div class="ri-name">Mesh Studio Q2 Consulting</div>
+            <div class="ri-type">CONSULTING · SIGNED</div>
+            <div class="ri-pre">Contract active · Monthly retainer</div>
+          </div>
+          <div class="ri-meta"><div>1h</div><div class="ri-val" style="color:var(--green);">$8K/mo</div></div>
+        </div>
+
+        <div class="rl-sec">Proposals / Bids</div>
+
+        <div class="ri">
+          <div class="ri-ic" style="background:rgba(168,85,247,.1);border-color:#7c3aed;">💡</div>
+          <div class="ri-info">
+            <div class="ri-name">DeFi Protocol Architecture</div>
+            <div class="ri-type">PROPOSAL · PENDING REVIEW</div>
+            <div class="ri-pre">You submitted proposal 2d ago</div>
+          </div>
+          <div class="ri-meta"><div>2d</div><div class="ri-val" style="color:var(--purple);">$45K</div></div>
+        </div>
+
+        <div class="ri">
+          <div class="ri-ic" style="background:rgba(12,207,202,.1);border-color:var(--teal-dim);">🔗</div>
+          <div class="ri-info">
+            <div class="ri-name">Open Source Contributor Grant</div>
+            <div class="ri-type">GRANT · INVESTMENT ROOM</div>
+            <div class="ri-pre">Review committee notified</div>
+          </div>
+          <div class="ri-meta"><div>3d</div><div class="ri-val" style="color:var(--teal);">$10K</div></div>
+        </div>
+
+        <div class="rl-sec">Orders / Listings</div>
+        <div class="ri">
+          <div class="ri-ic" style="background:rgba(239,68,68,.1);border-color:#991b1b;">📦</div>
+          <div class="ri-info">
+            <div class="ri-name">CRDT Library License</div>
+            <div class="ri-type">LISTING · MARKETPLACE</div>
+            <div class="ri-pre">2 pending orders to fulfill</div>
+          </div>
+          <div class="ri-meta"><div>6h</div><div class="ri-val" style="color:var(--red);">×2</div></div>
+        </div>
+
+        <div class="rl-sec">Closed</div>
+        <div class="ri" style="opacity:.5;">
+          <div class="ri-ic" style="background:var(--card2);border-color:var(--border2);">✓</div>
+          <div class="ri-info">
+            <div class="ri-name">Acme Corp Auth Module</div>
+            <div class="ri-type">CONTRACT · COMPLETED</div>
+            <div class="ri-pre">Closed Jan 2026 · $24K</div>
+          </div>
+          <div class="ri-meta"><span style="font-size:9px;color:var(--green);">PAID</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Active Deal Room: Brand Identity System v2.0 -->
+    <div class="deal">
+      <div class="deal-hdr">
+        <div class="dh-top">
+          <div class="dh-ic" style="background:rgba(232,160,48,.1);border-color:var(--amber-dim);">💼</div>
+          <div style="flex:1;">
+            <div class="dh-name">Brand Identity System v2.0</div>
+            <div class="dh-type">CONTRACT DEAL ROOM · NEGOTIATION</div>
+            <div class="dh-parties">Jordan Chen ↔ Aisha Patel (Patel Ventures) · Created March 10, 2026</div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:6px;align-items:flex-end;">
+            <div class="status-pill sp-negotiation">⟳ NEGOTIATION</div>
+            <div style="display:flex;gap:5px;">
+              <button class="btn bg" style="font-size:10px;padding:4px 8px;">📄 View Contract</button>
+              <button class="btn bt" style="font-size:10px;padding:4px 8px;">✓ Sign & Close</button>
+            </div>
+          </div>
+        </div>
+        <div class="deal-meta">
+          <div class="dm-box"><div class="dm-lbl">Current Offer</div><div class="dm-val" style="color:var(--amber);">$28,000</div></div>
+          <div class="dm-box"><div class="dm-lbl">Your Ask</div><div class="dm-val" style="color:var(--teal);">$32,000</div></div>
+          <div class="dm-box"><div class="dm-lbl">Type</div><div class="dm-val" style="font-size:11px;">Fixed Price</div></div>
+          <div class="dm-box"><div class="dm-lbl">Timeline</div><div class="dm-val" style="font-size:11px;">8 weeks</div></div>
+          <div class="dm-box"><div class="dm-lbl">Status</div><div class="dm-val" style="color:var(--amber);font-size:11px;">Round 3</div></div>
+        </div>
+      </div>
+
+      <div class="deal-chat">
+        <div class="stage-div"><div class="st-line"></div><div class="st-pill">ROUND 1 · Initial Offer</div><div class="st-line"></div></div>
+
+        <div class="mgroup">
+          <div class="msender" style="color:var(--blue);">Aisha Patel · Patel Ventures</div>
+          <div class="mrow">
+            <div class="mav-slot"><div class="mav" style="background:linear-gradient(135deg,#e8a030,#d97706);">AP</div></div>
+            <div>
+              <div class="bubble them">Hi Jordan, we'd like to commission a full brand identity system for our Series A launch. Our budget is $24,000 fixed price for full deliverables including logo system, color system, typography, component library, and brand guidelines.</div>
+              <div class="mmeta"><div class="mt">Mar 10 · 2:00 PM</div></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="mgroup">
+          <div class="msender me" style="color:var(--teal);">Jordan Chen · You</div>
+          <div class="mrow me">
+            <div class="mav-slot"></div>
+            <div>
+              <div class="bubble me">Thank you for reaching out. I reviewed your brief and the scope warrants $32,000. I've attached a detailed project proposal with milestones and deliverables breakdown.</div>
+              <div class="mmeta"><div class="mt">Mar 10 · 4:30 PM</div></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="mgroup">
+          <div class="mrow me">
+            <div class="mav-slot"></div>
+            <div>
+              <div class="doc-card">
+                <div class="dc-tag">📄 PROPOSAL · V1.0</div>
+                <div class="dc-title">Brand Identity System v2.0 — Proposal</div>
+                <div class="dc-meta">Scope · Milestones · $32,000 · 8 weeks · Mesh Studio</div>
+                <div class="dc-btns">
+                  <div class="dc-btn" style="background:rgba(12,207,202,.1);border-color:var(--teal-dim);color:var(--teal);">View Proposal</div>
+                  <div class="dc-btn" style="background:transparent;border-color:var(--border2);color:var(--text3);">Download</div>
+                </div>
+              </div>
+              <div class="mmeta" style="flex-direction:row-reverse;"><div class="mt">Mar 10 · 4:31 PM</div></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="stage-div"><div class="st-line"></div><div class="st-pill">ROUND 2 · Counter-Proposal</div><div class="st-line"></div></div>
+
+        <div class="mgroup">
+          <div class="msender" style="color:var(--blue);">Aisha Patel</div>
+          <div class="mrow">
+            <div class="mav-slot"><div class="mav" style="background:linear-gradient(135deg,#e8a030,#d97706);">AP</div></div>
+            <div>
+              <div class="bubble them">We can meet at $28,000 if we drop the component library phase. That brings it within our cap while keeping the core deliverables. Would that work?</div>
+              <div class="mmeta"><div class="mt">Mar 11 · 10:00 AM</div></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="sys-ev">
+          <div class="se-ic">⚖</div>
+          <div class="se-text"><strong>Counter-offer logged:</strong> $28,000 fixed · Component library excluded · 7 weeks · Aisha Patel via kogi-exchange</div>
+          <div class="se-action">View Terms →</div>
+        </div>
+
+        <div class="stage-div"><div class="st-line"></div><div class="st-pill">ROUND 3 · Current · Awaiting Your Response</div><div class="st-line"></div></div>
+
+        <div class="mgroup">
+          <div class="msender" style="color:var(--blue);">Aisha Patel</div>
+          <div class="mrow">
+            <div class="mav-slot"><div class="mav" style="background:linear-gradient(135deg,#e8a030,#d97706);">AP</div></div>
+            <div>
+              <div class="bubble them">
+                Happy to increase to $30,000 if we can start March 18. We have a hard deadline tied to the Series A deck. New counter attached.
+                <div class="doc-card">
+                  <div class="dc-tag">📄 COUNTER-OFFER · V3</div>
+                  <div class="dc-title">Counter-Proposal #3 — $30,000</div>
+                  <div class="dc-meta">Revised scope · No component lib · Start: Mar 18 · 7 weeks</div>
+                  <div class="dc-btns">
+                    <div class="dc-btn" style="background:rgba(232,160,48,.1);border-color:var(--amber-dim);color:var(--amber);">Review Offer</div>
+                    <div class="dc-btn" style="background:rgba(34,197,94,.08);border-color:var(--green-dim);color:var(--green);">Accept $30K</div>
+                    <div class="dc-btn" style="background:transparent;border-color:var(--border2);color:var(--text3);">Counter Again</div>
+                  </div>
+                </div>
+              </div>
+              <div class="mmeta"><div class="mt">Today · 9:41 AM</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Compose -->
+      <div class="compose">
+        <div class="c-tools">
+          <div class="ct" title="Attach document">📎</div>
+          <div class="ct" title="Attach portfolio item">◈</div>
+          <div class="ct" title="Submit counter-offer">💰</div>
+          <div class="ct" title="Request e-signature">✍</div>
+          <div class="ct" title="Schedule milestone">📅</div>
+        </div>
+        <div class="c-row">
+          <textarea class="c-field" placeholder="Reply to Aisha… /counter to submit a new offer, /sign to initiate e-signature, /attach for documents" rows="1"></textarea>
+          <div class="c-send">↑</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Info Panel -->
+    <div class="info">
+      <div class="info-sec">
+        <div class="is-title">Deal Overview</div>
+        <div class="isr"><span class="isk">Room Type</span><span class="isv a">Deal Room · Contract</span></div>
+        <div class="isr"><span class="isk">Exchange Ref</span><span class="isv">EXC-2026-0841</span></div>
+        <div class="isr"><span class="isk">Current Round</span><span class="isv a">Round 3 of 5</span></div>
+        <div class="isr"><span class="isk">Created</span><span class="isv">Mar 10, 2026</span></div>
+        <div class="isr"><span class="isk">Expires</span><span class="isv" style="color:var(--red);">Mar 18, 2026</span></div>
+        <div class="isr"><span class="isk">Linked Portfolio</span><span class="isv t">Brand Identity v2.0</span></div>
+      </div>
+
+      <div class="info-sec">
+        <div class="is-title">Financials</div>
+        <div class="isr"><span class="isk">Current offer</span><span class="isv a">$30,000</span></div>
+        <div class="isr"><span class="isk">Your ask</span><span class="isv t">$32,000</span></div>
+        <div class="isr"><span class="isk">kogi fee (2.5%)</span><span class="isv">$750</span></div>
+        <div class="isr"><span class="isk">Net to you</span><span class="isv g">$29,250</span></div>
+        <div style="margin-top:8px;display:flex;gap:5px;">
+          <button class="btn" style="flex:1;padding:5px;font-size:10px;background:rgba(34,197,94,.08);border-color:var(--green-dim);color:var(--green);">Accept $30K</button>
+          <button class="btn" style="flex:1;padding:5px;font-size:10px;background:rgba(232,160,48,.08);border-color:var(--amber-dim);color:var(--amber);">Counter Offer</button>
+        </div>
+      </div>
+
+      <div class="info-sec">
+        <div class="is-title">Parties</div>
+        <div class="party-row">
+          <div class="pav" style="background:linear-gradient(135deg,#0ccfca,#3b82f6);">JC</div>
+          <div><div class="p-name">Jordan Chen</div><div class="p-role">Contractor · You</div></div>
+          <div class="p-access" style="background:rgba(12,207,202,.08);border-color:var(--teal-dim);color:var(--teal);">Owner</div>
+        </div>
+        <div class="party-row">
+          <div class="pav" style="background:linear-gradient(135deg,#e8a030,#d97706);">AP</div>
+          <div><div class="p-name">Aisha Patel</div><div class="p-role">Client · Patel Ventures</div></div>
+          <div class="p-access" style="background:rgba(59,130,246,.08);border-color:#1d4ed8;color:var(--blue);">Client</div>
+        </div>
+      </div>
+
+      <div class="info-sec">
+        <div class="is-title">Deal Documents</div>
+        <div class="doc-item"><div class="di-ic">📄</div><div class="di-name">Proposal v1.0</div><div class="di-status" style="color:var(--text3);">Draft</div></div>
+        <div class="doc-item"><div class="di-ic">📄</div><div class="di-name">Counter #2 — $28K</div><div class="di-status" style="color:var(--amber);">Rejected</div></div>
+        <div class="doc-item"><div class="di-ic">📄</div><div class="di-name">Counter #3 — $30K</div><div class="di-status" style="color:var(--blue);">Pending</div></div>
+        <div class="doc-item" style="cursor:pointer;color:var(--teal);"><div class="di-ic">+</div><div class="di-name" style="color:var(--teal);">Add document…</div></div>
+      </div>
+
+      <div class="info-sec" style="border-bottom:none;">
+        <div class="is-title">Negotiation Timeline</div>
+        <div class="tl-step"><div class="tl-dot" style="background:var(--green);"></div><div><div class="tl-desc">Room opened · Patel Ventures</div><div class="tl-time">Mar 10 · 2:00 PM</div></div></div>
+        <div class="tl-step"><div class="tl-dot" style="background:var(--teal);"></div><div><div class="tl-desc">Proposal sent · $32K</div><div class="tl-time">Mar 10 · 4:30 PM</div></div></div>
+        <div class="tl-step"><div class="tl-dot" style="background:var(--amber);"></div><div><div class="tl-desc">Counter · $28K (no comp lib)</div><div class="tl-time">Mar 11 · 10:00 AM</div></div></div>
+        <div class="tl-step"><div class="tl-dot" style="background:var(--amber);"></div><div><div class="tl-desc">Counter · $30K · Now</div><div class="tl-time">Today · 9:41 AM</div></div></div>
+        <div class="tl-step"><div class="tl-dot" style="background:var(--border2);"></div><div><div class="tl-desc" style="color:var(--text3);">Awaiting your response…</div></div></div>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>
