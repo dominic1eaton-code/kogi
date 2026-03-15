@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KOGI · Linked Accounts</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap');
+  :root{--bg:#070910;--sidebar:#0b0d16;--card:#0f1221;--card2:#131729;--border:#1a2035;--border2:#232a42;--teal:#0ccfca;--teal-dim:#0a9994;--amber:#e8a030;--amber-dim:#b07820;--green:#22c55e;--green-dim:#15803d;--mag:#d946ef;--blue:#3b82f6;--red:#ef4444;--purple:#a855f7;--text:#dde4f0;--text2:#7a879e;--text3:#3d4a62;}
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{background:var(--bg);color:var(--text);font-family:'IBM Plex Sans',sans-serif;font-size:13px;display:flex;min-height:100vh;}
+  .sidebar{width:200px;min-width:200px;background:var(--sidebar);border-right:1px solid var(--border);display:flex;flex-direction:column;}
+  .logo{padding:18px 16px;border-bottom:1px solid var(--border);}
+  .logo-text{font-family:'IBM Plex Mono',monospace;font-size:18px;font-weight:600;letter-spacing:0.08em;color:var(--teal);}
+  .logo-sub{font-size:9px;color:var(--text3);letter-spacing:0.15em;text-transform:uppercase;margin-top:2px;}
+  .nav{padding:12px 0;flex:1;}
+  .nav-section{padding:8px 16px 4px;font-size:9px;color:var(--text3);letter-spacing:0.18em;text-transform:uppercase;font-family:'IBM Plex Mono',monospace;}
+  .nav-item{display:flex;align-items:center;gap:10px;padding:7px 16px;color:var(--text2);cursor:pointer;font-size:12px;transition:all 0.15s;border-left:2px solid transparent;}
+  .nav-item.active{color:var(--teal);background:rgba(12,207,202,0.07);border-left-color:var(--teal);}
+  .nav-icon{width:14px;text-align:center;font-size:12px;}
+  .avatar-sm{width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,#0ccfca,#3b82f6);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:#fff;flex-shrink:0;}
+  .profile-bottom{padding:12px 16px;border-top:1px solid var(--border);}
+  .profile-mini{display:flex;align-items:center;gap:8px;}
+  .main{flex:1;overflow-y:auto;}
+  .topbar{height:48px;border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 20px;gap:12px;background:var(--sidebar);position:sticky;top:0;z-index:10;}
+  .topbar-path{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text3);}
+  .topbar-path span{color:var(--text2);}
+  .topbar-path span.cur{color:var(--text);}
+  .spacer{flex:1;}
+  .btn-sm{padding:5px 12px;border-radius:4px;font-size:11px;font-family:'IBM Plex Mono',monospace;cursor:pointer;border:1px solid;transition:all 0.15s;}
+  .btn-teal{background:rgba(12,207,202,0.12);border-color:var(--teal-dim);color:var(--teal);}
+  .btn-ghost{background:transparent;border-color:var(--border2);color:var(--text2);}
+  .btn-ghost:hover{border-color:var(--text3);color:var(--text);}
+  .stats-row{display:grid;grid-template-columns:repeat(5,1fr);gap:1px;background:var(--border);border-bottom:1px solid var(--border);}
+  .stat-box{background:var(--card);padding:14px 20px;}
+  .stat-val{font-family:'IBM Plex Mono',monospace;font-size:20px;font-weight:600;color:var(--text);}
+  .stat-lbl{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:0.1em;margin-top:2px;}
+  .content{padding:20px;display:grid;grid-template-columns:1fr 280px;gap:16px;}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:6px;overflow:hidden;margin-bottom:16px;}
+  .card-header{padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+  .card-title{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text2);text-transform:uppercase;letter-spacing:0.1em;}
+  .card-action{font-size:10px;color:var(--teal);cursor:pointer;font-family:'IBM Plex Mono',monospace;}
+
+  /* Category tabs */
+  .cat-tabs{display:flex;gap:0;border-bottom:1px solid var(--border);overflow-x:auto;background:var(--sidebar);}
+  .cat-tab{padding:10px 16px;font-size:11px;font-family:'IBM Plex Mono',monospace;color:var(--text3);cursor:pointer;white-space:nowrap;border-bottom:2px solid transparent;transition:all 0.15s;}
+  .cat-tab:hover{color:var(--text2);}
+  .cat-tab.active{color:var(--teal);border-bottom-color:var(--teal);}
+  .cat-count{display:inline-block;background:var(--border2);border-radius:3px;padding:0 5px;font-size:9px;margin-left:4px;}
+  .cat-count.has{background:rgba(12,207,202,0.12);color:var(--teal);}
+
+  /* Account rows */
+  .acc-category{margin-bottom:0;}
+  .cat-label{padding:10px 16px;font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:0.15em;font-family:'IBM Plex Mono',monospace;background:var(--card2);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px;}
+  .acc-row{display:grid;grid-template-columns:32px 200px 1fr 120px 90px 80px 80px;align-items:center;gap:12px;padding:10px 16px;border-bottom:1px solid var(--border);transition:background 0.1s;}
+  .acc-row:hover{background:rgba(255,255,255,0.02);}
+  .acc-row:last-child{border-bottom:none;}
+  .acc-icon{width:32px;height:32px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;}
+  .acc-platform{font-size:12px;color:var(--text);font-weight:500;}
+  .acc-handle{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--text3);}
+  .acc-type-badge{font-size:9px;font-family:'IBM Plex Mono',monospace;padding:2px 7px;border-radius:3px;border:1px solid;white-space:nowrap;}
+  .acc-status{font-size:10px;font-family:'IBM Plex Mono',monospace;}
+  .status-active{color:var(--green);}
+  .status-syncing{color:var(--amber);}
+  .status-expired{color:var(--red);}
+  .status-disconnected{color:var(--text3);}
+  .acc-synced{font-size:10px;color:var(--text3);}
+  .acc-visibility{font-size:10px;font-family:'IBM Plex Mono',monospace;color:var(--text3);}
+  .acc-actions{display:flex;gap:6px;}
+  .acc-btn{padding:3px 8px;border-radius:3px;font-size:9px;cursor:pointer;border:1px solid var(--border2);color:var(--text3);background:transparent;font-family:'IBM Plex Mono',monospace;}
+  .acc-btn:hover{border-color:var(--text2);color:var(--text2);}
+  .acc-btn-danger{border-color:#991b1b40;color:var(--red);}
+  .acc-btn-danger:hover{background:rgba(239,68,68,0.08);}
+
+  /* Platform colors */
+  .icon-gh{background:rgba(255,255,255,0.06);}
+  .icon-gl{background:rgba(252,109,38,0.12);}
+  .icon-li{background:rgba(10,102,194,0.15);}
+  .icon-tw{background:rgba(29,155,240,0.12);}
+  .icon-yt{background:rgba(255,0,0,0.1);}
+  .icon-ig{background:rgba(225,48,108,0.12);}
+  .icon-sl{background:rgba(74,21,75,0.2);}
+  .icon-ds{background:rgba(88,101,242,0.15);}
+  .icon-nt{background:rgba(255,255,255,0.06);}
+  .icon-gm{background:rgba(234,67,53,0.12);}
+  .icon-fig{background:rgba(162,86,238,0.12);}
+  .icon-ss{background:rgba(255,102,0,0.12);}
+  .icon-bs{background:rgba(20,130,78,0.15);}
+  .icon-py{background:rgba(255,224,1,0.1);}
+  .icon-up{background:rgba(20,179,76,0.12);}
+
+  /* Add platform panel */
+  .platform-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;padding:12px;}
+  .platform-tile{background:var(--card2);border:1px solid var(--border);border-radius:5px;padding:10px;cursor:pointer;transition:all 0.15s;text-align:center;}
+  .platform-tile:hover{border-color:var(--teal-dim);background:rgba(12,207,202,0.03);}
+  .pt-icon{font-size:20px;margin-bottom:4px;}
+  .pt-name{font-size:10px;color:var(--text2);}
+  .pt-type{font-size:9px;color:var(--text3);}
+
+  /* Sync status panel */
+  .sync-row{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);}
+  .sync-row:last-child{border-bottom:none;}
+  .sync-icon{width:24px;height:24px;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:11px;}
+  .sync-name{flex:1;font-size:11px;color:var(--text);}
+  .sync-time{font-size:10px;color:var(--text3);font-family:'IBM Plex Mono',monospace;}
+  .sync-status{font-size:9px;font-family:'IBM Plex Mono',monospace;padding:2px 6px;border-radius:3px;}
+  .sync-ok{background:rgba(34,197,94,0.08);color:var(--green);}
+  .sync-pending{background:rgba(232,160,48,0.08);color:var(--amber);}
+  .sync-error{background:rgba(239,68,68,0.08);color:var(--red);}
+
+  .toggle{width:32px;height:18px;border-radius:9px;background:var(--border2);position:relative;cursor:pointer;transition:background 0.2s;flex-shrink:0;}
+  .toggle.on{background:var(--teal-dim);}
+  .toggle::after{content:'';position:absolute;top:2px;left:2px;width:14px;height:14px;border-radius:50%;background:#fff;transition:left 0.2s;}
+  .toggle.on::after{left:16px;}
+</style>
+</head>
+<body>
+<div class="sidebar">
+  <div class="logo">
+    <div class="logo-text">KOGI</div>
+    <div class="logo-sub">Independent Worker OS</div>
+  </div>
+  <nav class="nav">
+    <div class="nav-section">Core</div>
+    <div class="nav-item"><span class="nav-icon">⌂</span> Dashboard</div>
+    <div class="nav-item"><span class="nav-icon">◫</span> Office</div>
+    <div class="nav-item"><span class="nav-icon">◈</span> Portfolio</div>
+    <div class="nav-section">Identity</div>
+    <div class="nav-item"><span class="nav-icon">◉</span> Profile</div>
+    <div class="nav-item"><span class="nav-icon">⟁</span> Personas</div>
+    <div class="nav-item active"><span class="nav-icon">⋈</span> Accounts</div>
+    <div class="nav-item"><span class="nav-icon">◎</span> Channels</div>
+    <div class="nav-section">Network</div>
+    <div class="nav-item"><span class="nav-icon">⋔</span> LinkTree</div>
+    <div class="nav-item"><span class="nav-icon">⊛</span> kogi-net</div>
+    <div class="nav-item"><span class="nav-icon">⊞</span> Contacts</div>
+    <div class="nav-item"><span class="nav-icon">◻</span> Directory</div>
+    <div class="nav-section">Platform</div>
+    <div class="nav-item"><span class="nav-icon">♦</span> Bank</div>
+    <div class="nav-item"><span class="nav-icon">⊕</span> Community</div>
+  </nav>
+  <div class="profile-bottom">
+    <div class="profile-mini">
+      <div class="avatar-sm">JC</div>
+      <div>
+        <div style="font-size:12px;">Jordan Chen</div>
+        <div style="font-size:10px;color:var(--text3);">@jordan.dev · Public</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="main">
+  <div class="topbar">
+    <div class="topbar-path">KPRF / <span>@jordan.dev</span> / <span class="cur">Linked Accounts (KACC)</span></div>
+    <div class="spacer"></div>
+    <button class="btn-sm btn-ghost">Sync All</button>
+    <button class="btn-sm btn-teal">+ Link Account</button>
+  </div>
+
+  <div class="stats-row">
+    <div class="stat-box"><div class="stat-val" style="color:var(--teal);">24</div><div class="stat-lbl">Linked Accounts</div></div>
+    <div class="stat-box"><div class="stat-val" style="color:var(--green);">20</div><div class="stat-lbl">Active</div></div>
+    <div class="stat-box"><div class="stat-val" style="color:var(--amber);">3</div><div class="stat-lbl">Needs Sync</div></div>
+    <div class="stat-box"><div class="stat-val" style="color:var(--red);">1</div><div class="stat-lbl">Expired</div></div>
+    <div class="stat-box"><div class="stat-val">9</div><div class="stat-lbl">Syncing Data</div></div>
+  </div>
+
+  <div class="cat-tabs">
+    <div class="cat-tab active">All <span class="cat-count has">24</span></div>
+    <div class="cat-tab">Developer <span class="cat-count has">5</span></div>
+    <div class="cat-tab">Social <span class="cat-count has">4</span></div>
+    <div class="cat-tab">Communication <span class="cat-count has">5</span></div>
+    <div class="cat-tab">Professional <span class="cat-count has">3</span></div>
+    <div class="cat-tab">Creative <span class="cat-count has">3</span></div>
+    <div class="cat-tab">Publishing <span class="cat-count has">2</span></div>
+    <div class="cat-tab">Finance <span class="cat-count">0</span></div>
+    <div class="cat-tab">Gig Platforms <span class="cat-count">0</span></div>
+  </div>
+
+  <div class="content">
+    <div>
+      <!-- Account table -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">All Linked Accounts · @jordan.dev</div>
+          <div style="display:flex;gap:8px;">
+            <select style="background:var(--card2);border:1px solid var(--border);color:var(--text2);font-size:10px;padding:3px 8px;border-radius:4px;font-family:'IBM Plex Mono',monospace;">
+              <option>All Visibility</option>
+              <option>Public</option>
+              <option>Connections</option>
+              <option>Private</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Table header -->
+        <div style="display:grid;grid-template-columns:32px 200px 1fr 120px 90px 80px 80px;gap:12px;padding:8px 16px;background:var(--card2);border-bottom:1px solid var(--border);">
+          <div></div>
+          <div style="font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:0.12em;font-family:'IBM Plex Mono',monospace;">Platform</div>
+          <div style="font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:0.12em;font-family:'IBM Plex Mono',monospace;">Category / Auth</div>
+          <div style="font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:0.12em;font-family:'IBM Plex Mono',monospace;">Status</div>
+          <div style="font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:0.12em;font-family:'IBM Plex Mono',monospace;">Last Sync</div>
+          <div style="font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:0.12em;font-family:'IBM Plex Mono',monospace;">Visibility</div>
+          <div></div>
+        </div>
+
+        <div class="acc-category">
+          <div class="cat-label">🛠 Developer Platforms</div>
+
+          <div class="acc-row">
+            <div class="acc-icon icon-gh">⌥</div>
+            <div><div class="acc-platform">GitHub</div><div class="acc-handle">@jordan-dev-os · 2,841 ★ repos</div></div>
+            <div><div class="acc-type-badge" style="background:rgba(59,130,246,0.08);border-color:#1d4ed8;color:var(--blue);">DEVELOPER · OAuth2</div></div>
+            <div class="acc-status status-active">● Active</div>
+            <div class="acc-synced">2 min ago</div>
+            <div class="acc-visibility">Public</div>
+            <div class="acc-actions"><div class="acc-btn">Settings</div><div class="acc-btn acc-btn-danger">Unlink</div></div>
+          </div>
+
+          <div class="acc-row">
+            <div class="acc-icon icon-gl">⬡</div>
+            <div><div class="acc-platform">GitLab</div><div class="acc-handle">@jordan.chen · 12 projects</div></div>
+            <div><div class="acc-type-badge" style="background:rgba(252,109,38,0.08);border-color:#9a3412;color:#fc6d26;">DEVELOPER · OAuth2</div></div>
+            <div class="acc-status status-active">● Active</div>
+            <div class="acc-synced">1h ago</div>
+            <div class="acc-visibility">Platform</div>
+            <div class="acc-actions"><div class="acc-btn">Settings</div><div class="acc-btn acc-btn-danger">Unlink</div></div>
+          </div>
+
+          <div class="acc-row">
+            <div class="acc-icon icon-fig">◈</div>
+            <div><div class="acc-platform">Figma</div><div class="acc-handle">@jordan.chen · 24 files</div></div>
+            <div><div class="acc-type-badge" style="background:rgba(162,86,238,0.08);border-color:#6d28d9;color:var(--purple);">CREATIVE · OAuth2</div></div>
+            <div class="acc-status status-active">● Active</div>
+            <div class="acc-synced">4h ago</div>
+            <div class="acc-visibility">Connections</div>
+            <div class="acc-actions"><div class="acc-btn">Settings</div><div class="acc-btn acc-btn-danger">Unlink</div></div>
+          </div>
+
+          <div class="acc-row">
+            <div class="acc-icon icon-py">🐍</div>
+            <div><div class="acc-platform">PyPI</div><div class="acc-handle">jordan-chen · 3 packages</div></div>
+            <div><div class="acc-type-badge" style="background:rgba(255,224,1,0.06);border-color:#92400e;color:#fbbf24;">DEVELOPER · APIKey</div></div>
+            <div class="acc-status status-syncing">⟳ Syncing</div>
+            <div class="acc-synced">6h ago</div>
+            <div class="acc-visibility">Public</div>
+            <div class="acc-actions"><div class="acc-btn">Settings</div><div class="acc-btn acc-btn-danger">Unlink</div></div>
+          </div>
+
+          <div class="cat-label">🌐 Social Media</div>
+
+          <div class="acc-row">
+            <div class="acc-icon icon-tw">𝕏</div>
+            <div><div class="acc-platform">Twitter / X</div><div class="acc-handle">@jordanbuilds · 12.4K followers</div></div>
+            <div><div class="acc-type-badge" style="background:rgba(29,155,240,0.08);border-color:#0369a1;color:#38bdf8;">SOCIAL · OAuth2</div></div>
+            <div class="acc-status status-active">● Active</div>
+            <div class="acc-synced">15 min ago</div>
+            <div class="acc-visibility">Public</div>
+            <div class="acc-actions"><div class="acc-btn">Settings</div><div class="acc-btn acc-btn-danger">Unlink</div></div>
+          </div>
+
+          <div class="acc-row">
+            <div class="acc-icon icon-li">in</div>
+            <div><div class="acc-platform">LinkedIn</div><div class="acc-handle">jordan-chen-dev · 3,200 conn.</div></div>
+            <div><div class="acc-type-badge" style="background:rgba(10,102,194,0.08);border-color:#1e3a5f;color:#60a5fa;">PROFESSIONAL · OAuth2</div></div>
+            <div class="acc-status status-active">● Active</div>
+            <div class="acc-synced">2h ago</div>
+            <div class="acc-visibility">Public</div>
+            <div class="acc-actions"><div class="acc-btn">Settings</div><div class="acc-btn acc-btn-danger">Unlink</div></div>
+          </div>
+
+          <div class="acc-row">
+            <div class="acc-icon icon-ig">📸</div>
+            <div><div class="acc-platform">Instagram</div><div class="acc-handle">@jordan.builds · 2.1K followers</div></div>
+            <div><div class="acc-type-badge" style="background:rgba(225,48,108,0.08);border-color:#9d174d;color:#f472b6;">SOCIAL · OAuth2</div></div>
+            <div class="acc-status status-active">● Active</div>
+            <div class="acc-synced">1h ago</div>
+            <div class="acc-visibility">Platform</div>
+            <div class="acc-actions"><div class="acc-btn">Settings</div><div class="acc-btn acc-btn-danger">Unlink</div></div>
+          </div>
+
+          <div class="cat-label">💬 Communication &amp; Messaging</div>
+
+          <div class="acc-row">
+            <div class="acc-icon icon-gm">✉</div>
+            <div><div class="acc-platform">Gmail (Work)</div><div class="acc-handle">jordan@meshstudio.dev</div></div>
+            <div><div class="acc-type-badge" style="background:rgba(234,67,53,0.08);border-color:#991b1b;color:#f87171;">EMAIL · OAuth2</div></div>
+            <div class="acc-status status-active">● Active</div>
+            <div class="acc-synced">Real-time</div>
+            <div class="acc-visibility">Connections</div>
+            <div class="acc-actions"><div class="acc-btn">Settings</div><div class="acc-btn acc-btn-danger">Unlink</div></div>
+          </div>
+
+          <div class="acc-row">
+            <div class="acc-icon icon-gm">✉</div>
+            <div><div class="acc-platform">Gmail (Personal)</div><div class="acc-handle">jordanchen.dev@gmail.com</div></div>
+            <div><div class="acc-type-badge" style="background:rgba(234,67,53,0.08);border-color:#991b1b;color:#f87171;">EMAIL · OAuth2</div></div>
+            <div class="acc-status status-active">● Active</div>
+            <div class="acc-synced">Real-time</div>
+            <div class="acc-visibility">Trusted</div>
+            <div class="acc-actions"><div class="acc-btn">Settings</div><div class="acc-btn acc-btn-danger">Unlink</div></div>
+          </div>
+
+          <div class="acc-row">
+            <div class="acc-icon icon-sl">Sl</div>
+            <div><div class="acc-platform">Slack</div><div class="acc-handle">@jordan · Mesh Studio workspace</div></div>
+            <div><div class="acc-type-badge" style="background:rgba(74,21,75,0.12);border-color:#6b21a8;color:#c084fc;">MESSAGING · OAuth2</div></div>
+            <div class="acc-status status-active">● Active</div>
+            <div class="acc-synced">Real-time</div>
+            <div class="acc-visibility">Trusted</div>
+            <div class="acc-actions"><div class="acc-btn">Settings</div><div class="acc-btn acc-btn-danger">Unlink</div></div>
+          </div>
+
+          <div class="acc-row">
+            <div class="acc-icon icon-ds">Dc</div>
+            <div><div class="acc-platform">Discord</div><div class="acc-handle">jordan#4721 · 3 servers</div></div>
+            <div><div class="acc-type-badge" style="background:rgba(88,101,242,0.1);border-color:#3730a3;color:#818cf8;">COMMUNITY · OAuth2</div></div>
+            <div class="acc-status status-active">● Active</div>
+            <div class="acc-synced">5 min ago</div>
+            <div class="acc-visibility">Platform</div>
+            <div class="acc-actions"><div class="acc-btn">Settings</div><div class="acc-btn acc-btn-danger">Unlink</div></div>
+          </div>
+
+          <div class="cat-label">📝 Publishing &amp; Content</div>
+
+          <div class="acc-row">
+            <div class="acc-icon icon-ss">S</div>
+            <div><div class="acc-platform">Substack</div><div class="acc-handle">workeros.substack.com · 3,200 subs</div></div>
+            <div><div class="acc-type-badge" style="background:rgba(255,102,0,0.08);border-color:#c2410c;color:#fb923c;">PUBLISHING · OAuth2</div></div>
+            <div class="acc-status status-active">● Active</div>
+            <div class="acc-synced">3h ago</div>
+            <div class="acc-visibility">Public</div>
+            <div class="acc-actions"><div class="acc-btn">Settings</div><div class="acc-btn acc-btn-danger">Unlink</div></div>
+          </div>
+
+          <div class="acc-row">
+            <div class="acc-icon icon-yt">▶</div>
+            <div><div class="acc-platform">YouTube</div><div class="acc-handle">@jordanbuilds · 8.4K subs</div></div>
+            <div><div class="acc-type-badge" style="background:rgba(255,0,0,0.06);border-color:#991b1b;color:#f87171;">CREATIVE · OAuth2</div></div>
+            <div class="acc-status status-expired">⚠ Token Expired</div>
+            <div class="acc-synced">3 days ago</div>
+            <div class="acc-visibility">Public</div>
+            <div class="acc-actions"><div class="acc-btn" style="color:var(--amber);border-color:var(--amber-dim);">Reconnect</div><div class="acc-btn acc-btn-danger">Unlink</div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Add Platforms -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Add Platform · Popular Platforms</div>
+          <div class="card-action">Browse all 200+ →</div>
+        </div>
+        <div class="platform-grid">
+          <div class="platform-tile"><div class="pt-icon">Bs</div><div class="pt-name">Bluesky</div><div class="pt-type">Social</div></div>
+          <div class="platform-tile"><div class="pt-icon">🎵</div><div class="pt-name">TikTok</div><div class="pt-type">Social</div></div>
+          <div class="platform-tile"><div class="pt-icon">📦</div><div class="pt-name">npm</div><div class="pt-type">Developer</div></div>
+          <div class="platform-tile"><div class="pt-icon">🤗</div><div class="pt-name">Hugging Face</div><div class="pt-type">AI/ML</div></div>
+          <div class="platform-tile"><div class="pt-icon">📗</div><div class="pt-name">Notion</div><div class="pt-type">Productivity</div></div>
+          <div class="platform-tile"><div class="pt-icon">💳</div><div class="pt-name">Stripe</div><div class="pt-type">Finance</div></div>
+          <div class="platform-tile"><div class="pt-icon">🛍</div><div class="pt-name">Gumroad</div><div class="pt-type">Commerce</div></div>
+          <div class="platform-tile"><div class="pt-icon">🎙</div><div class="pt-name">Spotify</div><div class="pt-type">Creative</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right Panel -->
+    <div>
+      <!-- Sync Status -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Sync Status</div>
+          <div class="card-action">Sync All →</div>
+        </div>
+        <div style="padding:12px 16px;">
+          <div class="sync-row">
+            <div class="sync-icon icon-gh" style="background:rgba(255,255,255,0.06);border-radius:4px;">⌥</div>
+            <div class="sync-name">GitHub</div>
+            <div class="sync-time">2m ago</div>
+            <div class="sync-status sync-ok">OK</div>
+          </div>
+          <div class="sync-row">
+            <div class="sync-icon icon-tw" style="background:rgba(29,155,240,0.12);border-radius:4px;">𝕏</div>
+            <div class="sync-name">Twitter / X</div>
+            <div class="sync-time">15m ago</div>
+            <div class="sync-status sync-ok">OK</div>
+          </div>
+          <div class="sync-row">
+            <div class="sync-icon icon-py" style="background:rgba(255,224,1,0.1);border-radius:4px;">🐍</div>
+            <div class="sync-name">PyPI</div>
+            <div class="sync-time">—</div>
+            <div class="sync-status sync-pending">Syncing</div>
+          </div>
+          <div class="sync-row">
+            <div class="sync-icon icon-yt" style="background:rgba(255,0,0,0.08);border-radius:4px;">▶</div>
+            <div class="sync-name">YouTube</div>
+            <div class="sync-time">3d ago</div>
+            <div class="sync-status sync-error">Expired</div>
+          </div>
+          <div class="sync-row">
+            <div class="sync-icon icon-li" style="background:rgba(10,102,194,0.12);border-radius:4px;">in</div>
+            <div class="sync-name">LinkedIn</div>
+            <div class="sync-time">2h ago</div>
+            <div class="sync-status sync-ok">OK</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Data Sync Settings -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Default Sync Settings</div>
+        </div>
+        <div style="padding:12px 16px;display:flex;flex-direction:column;gap:10px;">
+          <div style="display:flex;align-items:center;justify-content:space-between;">
+            <div>
+              <div style="font-size:12px;color:var(--text);">Auto-sync on connect</div>
+              <div style="font-size:10px;color:var(--text3);">Fetch profile data immediately</div>
+            </div>
+            <div class="toggle on"></div>
+          </div>
+          <div style="display:flex;align-items:center;justify-content:space-between;">
+            <div>
+              <div style="font-size:12px;color:var(--text);">Sync follower counts</div>
+              <div style="font-size:10px;color:var(--text3);">Surface in profile analytics</div>
+            </div>
+            <div class="toggle on"></div>
+          </div>
+          <div style="display:flex;align-items:center;justify-content:space-between;">
+            <div>
+              <div style="font-size:12px;color:var(--text);">Sync to kogi-engine</div>
+              <div style="font-size:10px;color:var(--text3);">Persona signal enrichment</div>
+            </div>
+            <div class="toggle on"></div>
+          </div>
+          <div style="display:flex;align-items:center;justify-content:space-between;">
+            <div>
+              <div style="font-size:12px;color:var(--text);">Auto-add to LinkTree</div>
+              <div style="font-size:10px;color:var(--text3);">Create leaf on new link</div>
+            </div>
+            <div class="toggle on"></div>
+          </div>
+          <div style="font-size:10px;color:var(--text3);padding:8px 0 0;border-top:1px solid var(--border);">Sync interval: every 30 min for active accounts</div>
+        </div>
+      </div>
+
+      <!-- Gig Platform Notice -->
+      <div class="card" style="border-color:var(--amber-dim);">
+        <div style="position:absolute;display:none;"></div>
+        <div style="padding:12px 16px;border-left:3px solid var(--amber);">
+          <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--amber);margin-bottom:6px;">GIG PLATFORM TRACKING</div>
+          <div style="font-size:11px;color:var(--text3);line-height:1.5;">Link gig platforms (DoorDash, Lyft, Upwork, etc.) to enable Portable Benefits contribution tracking in kogi-bank.</div>
+          <div style="margin-top:8px;">
+            <button class="btn-sm btn-ghost" style="font-size:10px;">Link Gig Platform</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

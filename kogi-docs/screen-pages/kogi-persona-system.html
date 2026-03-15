@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KOGI · Persona System</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap');
+  :root{--bg:#070910;--sidebar:#0b0d16;--card:#0f1221;--card2:#131729;--border:#1a2035;--border2:#232a42;--teal:#0ccfca;--teal-dim:#0a9994;--amber:#e8a030;--amber-dim:#b07820;--green:#22c55e;--green-dim:#15803d;--mag:#d946ef;--blue:#3b82f6;--red:#ef4444;--purple:#a855f7;--text:#dde4f0;--text2:#7a879e;--text3:#3d4a62;}
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{background:var(--bg);color:var(--text);font-family:'IBM Plex Sans',sans-serif;font-size:13px;display:flex;min-height:100vh;}
+  .sidebar{width:200px;min-width:200px;background:var(--sidebar);border-right:1px solid var(--border);display:flex;flex-direction:column;}
+  .logo{padding:18px 16px;border-bottom:1px solid var(--border);}
+  .logo-text{font-family:'IBM Plex Mono',monospace;font-size:18px;font-weight:600;letter-spacing:0.08em;color:var(--teal);}
+  .logo-sub{font-size:9px;color:var(--text3);letter-spacing:0.15em;text-transform:uppercase;margin-top:2px;}
+  .nav{padding:12px 0;flex:1;}
+  .nav-section{padding:8px 16px 4px;font-size:9px;color:var(--text3);letter-spacing:0.18em;text-transform:uppercase;font-family:'IBM Plex Mono',monospace;}
+  .nav-item{display:flex;align-items:center;gap:10px;padding:7px 16px;color:var(--text2);cursor:pointer;font-size:12px;transition:all 0.15s;border-left:2px solid transparent;}
+  .nav-item:hover{color:var(--text);background:rgba(255,255,255,0.03);}
+  .nav-item.active{color:var(--teal);background:rgba(12,207,202,0.07);border-left-color:var(--teal);}
+  .nav-icon{width:14px;text-align:center;font-size:12px;}
+  .avatar-sm{width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,#0ccfca,#3b82f6);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:#fff;flex-shrink:0;}
+  .profile-bottom{padding:12px 16px;border-top:1px solid var(--border);}
+  .profile-mini{display:flex;align-items:center;gap:8px;}
+  .main{flex:1;overflow-y:auto;}
+  .topbar{height:48px;border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 20px;gap:12px;background:var(--sidebar);position:sticky;top:0;z-index:10;}
+  .topbar-path{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text3);}
+  .topbar-path span{color:var(--text2);}
+  .topbar-path span.cur{color:var(--text);}
+  .spacer{flex:1;}
+  .btn-sm{padding:5px 12px;border-radius:4px;font-size:11px;font-family:'IBM Plex Mono',monospace;cursor:pointer;border:1px solid;transition:all 0.15s;}
+  .btn-teal{background:rgba(12,207,202,0.12);border-color:var(--teal-dim);color:var(--teal);}
+  .btn-ghost{background:transparent;border-color:var(--border2);color:var(--text2);}
+  .btn-ghost:hover{border-color:var(--text3);color:var(--text);}
+
+  .stats-row{display:grid;grid-template-columns:repeat(5,1fr);gap:1px;background:var(--border);border-bottom:1px solid var(--border);}
+  .stat-box{background:var(--card);padding:14px 20px;}
+  .stat-val{font-family:'IBM Plex Mono',monospace;font-size:20px;font-weight:600;color:var(--text);}
+  .stat-lbl{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:0.1em;margin-top:2px;}
+
+  .content{padding:20px;display:grid;grid-template-columns:1fr 320px;gap:16px;}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:6px;overflow:hidden;margin-bottom:16px;}
+  .card-header{padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+  .card-title{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text2);text-transform:uppercase;letter-spacing:0.1em;}
+  .card-action{font-size:10px;color:var(--teal);cursor:pointer;font-family:'IBM Plex Mono',monospace;}
+  .card-body{padding:16px;}
+
+  /* Active persona strip */
+  .active-strip{background:var(--card);border:1px solid var(--border);border-radius:6px;padding:14px 16px;margin-bottom:20px;}
+  .strip-title{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:0.14em;margin-bottom:10px;}
+  .active-personas{display:flex;gap:8px;flex-wrap:wrap;}
+  .ap-chip{display:flex;align-items:center;gap:8px;padding:7px 12px;border-radius:6px;background:rgba(12,207,202,0.08);border:1px solid var(--teal-dim);cursor:pointer;}
+  .ap-icon{font-size:16px;}
+  .ap-name{font-size:12px;color:var(--teal);}
+  .ap-priority{font-size:9px;font-family:'IBM Plex Mono',monospace;color:var(--teal-dim);}
+  .ap-remove{color:var(--teal-dim);font-size:12px;margin-left:4px;}
+  .ap-add{display:flex;align-items:center;gap:8px;padding:7px 12px;border-radius:6px;border:1px dashed var(--border2);cursor:pointer;color:var(--text3);font-size:12px;}
+  .ap-add:hover{border-color:var(--teal-dim);color:var(--teal);}
+
+  /* Blend indicator */
+  .blend-bar{background:var(--card);border:1px solid var(--border);border-radius:6px;padding:14px 16px;margin-bottom:20px;}
+  .blend-title{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:0.14em;margin-bottom:10px;}
+  .blend-meters{display:flex;flex-direction:column;gap:8px;}
+  .blend-row{display:flex;align-items:center;gap:10px;}
+  .blend-label{font-size:11px;color:var(--text2);width:130px;}
+  .blend-track{flex:1;height:5px;background:var(--border);border-radius:3px;overflow:hidden;}
+  .blend-fill{height:100%;border-radius:3px;}
+  .blend-val{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--text3);width:32px;text-align:right;}
+
+  /* Persona catalog */
+  .persona-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;}
+  .persona-card{background:var(--card2);border:1px solid var(--border);border-radius:6px;padding:14px;cursor:pointer;transition:all 0.15s;position:relative;}
+  .persona-card:hover{border-color:var(--border2);}
+  .persona-card.is-active{border-color:var(--teal-dim);background:rgba(12,207,202,0.04);}
+  .persona-card.is-active::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;border-radius:6px 6px 0 0;}
+  .persona-card.dev::before{background:var(--blue);}
+  .persona-card.creative::before{background:var(--mag);}
+  .persona-card.investor::before{background:var(--amber);}
+  .persona-card.entrepreneur::before{background:var(--green);}
+  .persona-card.consultant::before{background:var(--purple);}
+  .persona-card.organizer::before{background:var(--teal);}
+  .persona-card.researcher::before{background:#06b6d4;}
+  .persona-card.custom::before{background:var(--text3);}
+  .pc-top{display:flex;align-items:flex-start;gap:10px;margin-bottom:10px;}
+  .pc-icon-wrap{width:40px;height:40px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;border:1px solid;}
+  .pc-icon-dev{background:rgba(59,130,246,0.1);border-color:#1d4ed8;}
+  .pc-icon-creative{background:rgba(217,70,239,0.1);border-color:#86198f;}
+  .pc-icon-investor{background:rgba(232,160,48,0.1);border-color:var(--amber-dim);}
+  .pc-icon-entrepreneur{background:rgba(34,197,94,0.1);border-color:var(--green-dim);}
+  .pc-icon-consultant{background:rgba(168,85,247,0.1);border-color:#7c3aed;}
+  .pc-icon-organizer{background:rgba(12,207,202,0.1);border-color:var(--teal-dim);}
+  .pc-icon-researcher{background:rgba(6,182,212,0.1);border-color:#0e7490;}
+  .pc-icon-custom{background:var(--border);border-color:var(--border2);}
+  .pc-name-row{flex:1;}
+  .pc-persona-name{font-size:13px;font-weight:600;color:var(--text);}
+  .pc-persona-type{font-size:10px;font-family:'IBM Plex Mono',monospace;color:var(--text3);margin-top:2px;}
+  .active-badge{font-size:9px;font-family:'IBM Plex Mono',monospace;color:var(--teal);background:rgba(12,207,202,0.1);padding:2px 7px;border-radius:3px;border:1px solid var(--teal-dim);}
+  .pc-desc{font-size:11px;color:var(--text3);line-height:1.5;margin-bottom:10px;}
+  .pc-skills{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:10px;}
+  .pc-skill{font-size:9px;font-family:'IBM Plex Mono',monospace;padding:2px 7px;border-radius:3px;background:var(--border);border:1px solid var(--border2);color:var(--text3);}
+  .pc-engine{font-size:10px;color:var(--text3);display:flex;align-items:center;gap:6px;}
+  .pc-engine-dot{width:5px;height:5px;border-radius:50%;}
+  .pc-actions{display:flex;gap:6px;margin-top:10px;padding-top:10px;border-top:1px solid var(--border);}
+  .pc-btn{flex:1;padding:5px;text-align:center;border-radius:4px;font-size:10px;font-family:'IBM Plex Mono',monospace;cursor:pointer;border:1px solid;transition:all 0.15s;}
+
+  /* Engine context panel */
+  .engine-row{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);}
+  .engine-row:last-child{border-bottom:none;}
+  .engine-name{font-size:11px;color:var(--text);flex:1;}
+  .engine-status-on{font-size:10px;font-family:'IBM Plex Mono',monospace;color:var(--teal);background:rgba(12,207,202,0.08);padding:2px 7px;border-radius:3px;}
+  .engine-status-blend{font-size:10px;font-family:'IBM Plex Mono',monospace;color:var(--amber);background:rgba(232,160,48,0.08);padding:2px 7px;border-radius:3px;}
+  .engine-desc{font-size:10px;color:var(--text3);}
+
+  /* Priority drag handles */
+  .priority-item{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);cursor:grab;}
+  .priority-item:last-child{border-bottom:none;}
+  .drag-handle{color:var(--border2);font-size:14px;cursor:grab;}
+  .priority-num{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text3);width:18px;}
+  .priority-icon{font-size:14px;}
+  .priority-name{flex:1;font-size:12px;color:var(--text);}
+  .priority-weight{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--teal);}
+
+  .tone-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+  .tone-card{padding:10px;border-radius:5px;background:var(--card2);border:1px solid var(--border);cursor:pointer;transition:all 0.15s;}
+  .tone-card.selected{border-color:var(--teal-dim);background:rgba(12,207,202,0.05);}
+  .tone-name{font-size:12px;color:var(--text);}
+  .tone-desc{font-size:10px;color:var(--text3);margin-top:2px;}
+</style>
+</head>
+<body>
+<div class="sidebar">
+  <div class="logo">
+    <div class="logo-text">KOGI</div>
+    <div class="logo-sub">Independent Worker OS</div>
+  </div>
+  <nav class="nav">
+    <div class="nav-section">Core</div>
+    <div class="nav-item"><span class="nav-icon">⌂</span> Dashboard</div>
+    <div class="nav-item"><span class="nav-icon">◫</span> Office</div>
+    <div class="nav-item"><span class="nav-icon">◈</span> Portfolio</div>
+    <div class="nav-item"><span class="nav-icon">⬡</span> Exchange</div>
+    <div class="nav-section">Identity</div>
+    <div class="nav-item"><span class="nav-icon">◉</span> Profile</div>
+    <div class="nav-item active"><span class="nav-icon">⟁</span> Personas</div>
+    <div class="nav-item"><span class="nav-icon">⋈</span> Accounts</div>
+    <div class="nav-item"><span class="nav-icon">◎</span> Channels</div>
+    <div class="nav-section">Network</div>
+    <div class="nav-item"><span class="nav-icon">⋔</span> LinkTree</div>
+    <div class="nav-item"><span class="nav-icon">⊛</span> kogi-net</div>
+    <div class="nav-item"><span class="nav-icon">⊞</span> Contacts</div>
+    <div class="nav-item"><span class="nav-icon">◻</span> Directory</div>
+  </nav>
+  <div class="profile-bottom">
+    <div class="profile-mini">
+      <div class="avatar-sm">JC</div>
+      <div>
+        <div style="font-size:12px;">Jordan Chen</div>
+        <div style="font-size:10px;color:var(--text3);">@jordan.dev · Public</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="main">
+  <div class="topbar">
+    <div class="topbar-path">KPRF / <span>@jordan.dev</span> / <span class="cur">Personas (KPRS)</span></div>
+    <div class="spacer"></div>
+    <button class="btn-sm btn-ghost">Persona Templates</button>
+    <button class="btn-sm btn-teal">+ New Persona</button>
+  </div>
+
+  <div class="stats-row">
+    <div class="stat-box"><div class="stat-val" style="color:var(--teal);">4</div><div class="stat-lbl">Active Personas</div></div>
+    <div class="stat-box"><div class="stat-val">8</div><div class="stat-lbl">Total Personas</div></div>
+    <div class="stat-box"><div class="stat-val" style="color:var(--amber);">Blended</div><div class="stat-lbl">Engine Mode</div></div>
+    <div class="stat-box"><div class="stat-val" style="color:var(--blue);">4</div><div class="stat-lbl">Max Active</div></div>
+    <div class="stat-box"><div class="stat-val" style="color:var(--green);">98%</div><div class="stat-lbl">Engine Match Rate</div></div>
+  </div>
+
+  <div class="content">
+    <div>
+      <!-- Active Personas Strip -->
+      <div class="active-strip">
+        <div class="strip-title">Currently Active · @jordan.dev</div>
+        <div class="active-personas">
+          <div class="ap-chip">
+            <div class="ap-icon">💻</div>
+            <div>
+              <div class="ap-name">Developer Mode</div>
+              <div class="ap-priority">Priority 1</div>
+            </div>
+            <div class="ap-remove">×</div>
+          </div>
+          <div class="ap-chip">
+            <div class="ap-icon">🏗</div>
+            <div>
+              <div class="ap-name">Systems Architect</div>
+              <div class="ap-priority">Priority 2</div>
+            </div>
+            <div class="ap-remove">×</div>
+          </div>
+          <div class="ap-chip">
+            <div class="ap-icon">📝</div>
+            <div>
+              <div class="ap-name">Educator</div>
+              <div class="ap-priority">Priority 3</div>
+            </div>
+            <div class="ap-remove">×</div>
+          </div>
+          <div class="ap-chip">
+            <div class="ap-icon">🚀</div>
+            <div>
+              <div class="ap-name">Entrepreneur</div>
+              <div class="ap-priority">Priority 4</div>
+            </div>
+            <div class="ap-remove">×</div>
+          </div>
+          <div class="ap-add">⊕ Add Persona</div>
+        </div>
+      </div>
+
+      <!-- Engine Blend Weights -->
+      <div class="blend-bar">
+        <div class="blend-title">PersonalizationEngine · Blended Signal Weights</div>
+        <div class="blend-meters">
+          <div class="blend-row">
+            <div class="blend-label">Developer signals</div>
+            <div class="blend-track"><div class="blend-fill" style="width:62%;background:var(--blue);"></div></div>
+            <div class="blend-val" style="color:var(--blue);">62%</div>
+          </div>
+          <div class="blend-row">
+            <div class="blend-label">Systems / Infra</div>
+            <div class="blend-track"><div class="blend-fill" style="width:18%;background:var(--teal);"></div></div>
+            <div class="blend-val" style="color:var(--teal);">18%</div>
+          </div>
+          <div class="blend-row">
+            <div class="blend-label">Educator / Content</div>
+            <div class="blend-track"><div class="blend-fill" style="width:12%;background:var(--purple);"></div></div>
+            <div class="blend-val" style="color:var(--purple);">12%</div>
+          </div>
+          <div class="blend-row">
+            <div class="blend-label">Entrepreneur</div>
+            <div class="blend-track"><div class="blend-fill" style="width:8%;background:var(--green);"></div></div>
+            <div class="blend-val" style="color:var(--green);">8%</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Persona Catalog -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Persona Library · All Profiles</div>
+          <div class="card-action">+ New Persona</div>
+        </div>
+        <div style="padding:16px;">
+          <div class="persona-grid">
+            <div class="persona-card is-active dev">
+              <div class="pc-top">
+                <div class="pc-icon-wrap pc-icon-dev">💻</div>
+                <div class="pc-name-row">
+                  <div class="pc-persona-name">Developer Mode</div>
+                  <div class="pc-persona-type">DEVELOPER · Priority 1</div>
+                </div>
+                <div class="active-badge">● ACTIVE</div>
+              </div>
+              <div class="pc-desc">Software engineering, open source, technical work. Weights dev gigs, tech communities, and code repositories in feed and recommendations.</div>
+              <div class="pc-skills">
+                <div class="pc-skill">Rust</div><div class="pc-skill">TypeScript</div><div class="pc-skill">Systems Design</div><div class="pc-skill">GraphQL</div>
+              </div>
+              <div class="pc-engine"><div class="pc-engine-dot" style="background:var(--blue);"></div> RecommendationEngine: dev gigs, tech communities, repos</div>
+              <div class="pc-actions">
+                <div class="pc-btn" style="background:rgba(239,68,68,0.08);border-color:#991b1b;color:var(--red);">Deactivate</div>
+                <div class="pc-btn" style="background:transparent;border-color:var(--border2);color:var(--text3);">Configure</div>
+              </div>
+            </div>
+
+            <div class="persona-card is-active" style="border-color:var(--teal-dim);">
+              <div style="position:absolute;top:0;left:0;right:0;height:2px;background:var(--teal);border-radius:6px 6px 0 0;"></div>
+              <div class="pc-top">
+                <div class="pc-icon-wrap pc-icon-researcher">🏗</div>
+                <div class="pc-name-row">
+                  <div class="pc-persona-name">Systems Architect</div>
+                  <div class="pc-persona-type">TECHNOLOGIST · Priority 2</div>
+                </div>
+                <div class="active-badge">● ACTIVE</div>
+              </div>
+              <div class="pc-desc">Applied technology, infrastructure, and systems design. Weights technical projects, infrastructure gigs, and tooling communities.</div>
+              <div class="pc-skills">
+                <div class="pc-skill">Distributed Systems</div><div class="pc-skill">K8s</div><div class="pc-skill">Architecture</div>
+              </div>
+              <div class="pc-engine"><div class="pc-engine-dot" style="background:var(--teal);"></div> RecommendationEngine: infra gigs, system design, tooling</div>
+              <div class="pc-actions">
+                <div class="pc-btn" style="background:rgba(239,68,68,0.08);border-color:#991b1b;color:var(--red);">Deactivate</div>
+                <div class="pc-btn" style="background:transparent;border-color:var(--border2);color:var(--text3);">Configure</div>
+              </div>
+            </div>
+
+            <div class="persona-card is-active" style="border-color:#7c3aed;">
+              <div style="position:absolute;top:0;left:0;right:0;height:2px;background:var(--purple);border-radius:6px 6px 0 0;"></div>
+              <div class="pc-top">
+                <div class="pc-icon-wrap pc-icon-consultant">📝</div>
+                <div class="pc-name-row">
+                  <div class="pc-persona-name">Educator</div>
+                  <div class="pc-persona-type">EDUCATOR · Priority 3</div>
+                </div>
+                <div class="active-badge">● ACTIVE</div>
+              </div>
+              <div class="pc-desc">Teaching, training, mentorship, and content creation. Weights professional development resources, mentorship matching, and publishing opportunities.</div>
+              <div class="pc-skills">
+                <div class="pc-skill">Technical Writing</div><div class="pc-skill">Substack</div><div class="pc-skill">Mentorship</div>
+              </div>
+              <div class="pc-engine"><div class="pc-engine-dot" style="background:var(--purple);"></div> RecommendationEngine: content, mentorship, dev education</div>
+              <div class="pc-actions">
+                <div class="pc-btn" style="background:rgba(239,68,68,0.08);border-color:#991b1b;color:var(--red);">Deactivate</div>
+                <div class="pc-btn" style="background:transparent;border-color:var(--border2);color:var(--text3);">Configure</div>
+              </div>
+            </div>
+
+            <div class="persona-card is-active" style="border-color:var(--green-dim);">
+              <div style="position:absolute;top:0;left:0;right:0;height:2px;background:var(--green);border-radius:6px 6px 0 0;"></div>
+              <div class="pc-top">
+                <div class="pc-icon-wrap pc-icon-entrepreneur">🚀</div>
+                <div class="pc-name-row">
+                  <div class="pc-persona-name">Entrepreneur</div>
+                  <div class="pc-persona-type">ENTREPRENEUR · Priority 4</div>
+                </div>
+                <div class="active-badge">● ACTIVE</div>
+              </div>
+              <div class="pc-desc">Startup building, product development, and growth. Weights startup communities, funding opportunities, and growth analytics.</div>
+              <div class="pc-skills">
+                <div class="pc-skill">Product Strategy</div><div class="pc-skill">Growth</div><div class="pc-skill">Fundraising</div>
+              </div>
+              <div class="pc-engine"><div class="pc-engine-dot" style="background:var(--green);"></div> RecommendationEngine: startup ops, funding, product gigs</div>
+              <div class="pc-actions">
+                <div class="pc-btn" style="background:rgba(239,68,68,0.08);border-color:#991b1b;color:var(--red);">Deactivate</div>
+                <div class="pc-btn" style="background:transparent;border-color:var(--border2);color:var(--text3);">Configure</div>
+              </div>
+            </div>
+
+            <!-- Inactive personas -->
+            <div class="persona-card">
+              <div class="pc-top">
+                <div class="pc-icon-wrap pc-icon-investor">💰</div>
+                <div class="pc-name-row">
+                  <div class="pc-persona-name">Investor Lens</div>
+                  <div class="pc-persona-type">INVESTOR · Inactive</div>
+                </div>
+              </div>
+              <div class="pc-desc">Capital allocation and portfolio investment. Weights equity crowdfunding, investment opportunities, and portfolio performance signals.</div>
+              <div class="pc-skills"><div class="pc-skill">Equity</div><div class="pc-skill">Due Diligence</div><div class="pc-skill">Cap Tables</div></div>
+              <div class="pc-actions">
+                <div class="pc-btn" style="background:rgba(232,160,48,0.1);border-color:var(--amber-dim);color:var(--amber);">Activate</div>
+                <div class="pc-btn" style="background:transparent;border-color:var(--border2);color:var(--text3);">Configure</div>
+              </div>
+            </div>
+
+            <div class="persona-card">
+              <div class="pc-top">
+                <div class="pc-icon-wrap pc-icon-creative">🎨</div>
+                <div class="pc-name-row">
+                  <div class="pc-persona-name">Creative</div>
+                  <div class="pc-persona-type">CREATIVE · Inactive</div>
+                </div>
+              </div>
+              <div class="pc-desc">Design, art, and visual creation. Weights creative communities, design assets, and studio tool recommendations.</div>
+              <div class="pc-skills"><div class="pc-skill">Figma</div><div class="pc-skill">Design Systems</div><div class="pc-skill">UI/UX</div></div>
+              <div class="pc-actions">
+                <div class="pc-btn" style="background:rgba(217,70,239,0.1);border-color:#86198f;color:var(--mag);">Activate</div>
+                <div class="pc-btn" style="background:transparent;border-color:var(--border2);color:var(--text3);">Configure</div>
+              </div>
+            </div>
+
+            <div class="persona-card">
+              <div class="pc-top">
+                <div class="pc-icon-wrap pc-icon-organizer">⊕</div>
+                <div class="pc-name-row">
+                  <div class="pc-persona-name">Organizer</div>
+                  <div class="pc-persona-type">ORGANIZER · Inactive</div>
+                </div>
+              </div>
+              <div class="pc-desc">Community building, cooperative governance, and collective action. Weights governance proposals and community initiatives.</div>
+              <div class="pc-skills"><div class="pc-skill">Governance</div><div class="pc-skill">Cooperatives</div></div>
+              <div class="pc-actions">
+                <div class="pc-btn" style="background:rgba(12,207,202,0.08);border-color:var(--teal-dim);color:var(--teal);">Activate</div>
+                <div class="pc-btn" style="background:transparent;border-color:var(--border2);color:var(--text3);">Configure</div>
+              </div>
+            </div>
+
+            <div class="persona-card" style="border-style:dashed;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;min-height:120px;cursor:pointer;">
+              <div style="font-size:24px;color:var(--border2);">⊕</div>
+              <div style="font-size:12px;color:var(--text3);">Create Custom Persona</div>
+              <div style="font-size:10px;color:var(--text3);">Configure engine context manually</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right Panel -->
+    <div>
+      <!-- Engine Context -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Engine Integrations</div>
+        </div>
+        <div class="card-body">
+          <div class="engine-row">
+            <div>
+              <div class="engine-name">PersonalizationEngine</div>
+              <div class="engine-desc">Blended persona model · 4 active signals</div>
+            </div>
+            <div class="engine-status-blend">Blended</div>
+          </div>
+          <div class="engine-row">
+            <div>
+              <div class="engine-name">RecommendationEngine</div>
+              <div class="engine-desc">Gig, collab, community scoring</div>
+            </div>
+            <div class="engine-status-on">Active</div>
+          </div>
+          <div class="engine-row">
+            <div>
+              <div class="engine-name">OptimizationEngine</div>
+              <div class="engine-desc">Workload tuning per persona context</div>
+            </div>
+            <div class="engine-status-on">Active</div>
+          </div>
+          <div class="engine-row">
+            <div>
+              <div class="engine-name">Oba AI Assistant</div>
+              <div class="engine-desc">Communication style adapted to personas</div>
+            </div>
+            <div class="engine-status-blend">Blended</div>
+          </div>
+          <div class="engine-row">
+            <div>
+              <div class="engine-name">NotificationRouter</div>
+              <div class="engine-desc">Priority-routing per persona weights</div>
+            </div>
+            <div class="engine-status-on">Active</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Priority Order -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Active Priority Order</div>
+          <div class="card-action">Drag to reorder</div>
+        </div>
+        <div class="card-body">
+          <div class="priority-item"><div class="drag-handle">⋮⋮</div><div class="priority-num">1</div><div class="priority-icon">💻</div><div class="priority-name">Developer Mode</div><div class="priority-weight" style="color:var(--blue);">62%</div></div>
+          <div class="priority-item"><div class="drag-handle">⋮⋮</div><div class="priority-num">2</div><div class="priority-icon">🏗</div><div class="priority-name">Systems Architect</div><div class="priority-weight" style="color:var(--teal);">18%</div></div>
+          <div class="priority-item"><div class="drag-handle">⋮⋮</div><div class="priority-num">3</div><div class="priority-icon">📝</div><div class="priority-name">Educator</div><div class="priority-weight" style="color:var(--purple);">12%</div></div>
+          <div class="priority-item"><div class="drag-handle">⋮⋮</div><div class="priority-num">4</div><div class="priority-icon">🚀</div><div class="priority-name">Entrepreneur</div><div class="priority-weight" style="color:var(--green);">8%</div></div>
+        </div>
+      </div>
+
+      <!-- Communication Tone -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Communication Tone (Blended)</div>
+        </div>
+        <div class="card-body">
+          <div class="tone-grid">
+            <div class="tone-card selected"><div class="tone-name">Technical</div><div class="tone-desc">Precise, code-forward</div></div>
+            <div class="tone-card"><div class="tone-name">Professional</div><div class="tone-desc">Formal, structured</div></div>
+            <div class="tone-card"><div class="tone-name">Casual</div><div class="tone-desc">Relaxed, conversational</div></div>
+            <div class="tone-card"><div class="tone-name">Creative</div><div class="tone-desc">Expressive, visual</div></div>
+          </div>
+          <div style="margin-top:12px;font-size:10px;color:var(--text3);line-height:1.5;">Oba adapts communication style to blended active persona set. Override per-conversation in any message thread.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

@@ -560,6 +560,10 @@ solution resource management system
 
 reusability, sustainability, renewability, recyclability, closed loop systems, eco-aware solution design
 
+platform energy/power consumption+management system
+platform network traffic management
+
+
 ---
 
 communication channels
@@ -817,11 +821,42 @@ the kogi linknetwork system: kogi-net:
 - contactbooks/directories are built from linktrees and linkforests, linking together and creating directories of user profiles, containing their contact information and configurable channels for communication (email, DMs, notification, broadcasting, group message, social platform message (facebook message, whatsapp message, slack message, discod message, etc...), etc...)
 
 
+using the uploaded image as a reference generate a set of html user screen pages associated with the profile management system and linknet/tree/forest/contact/communication-channels
 
 
 ---
 
+read the uploaded documents and all previously uploaded documents and generate the a refined design document, that is as long as possible, for the kogi:
+
 portfolio management system - the master spreadsheet
+
+portfolio spreadsheet system,, underlying root/baseline data structure/substrate, where a portfolio is a large+scalable+configurable spreadsheet 
+of all portfolio components+items+containers+resources and derivative parts
+
+
+---
+
+
+portfolio skill matching. I have a project and need help, who on the marketplace has the skills to help with this project? AI search+filter+index+rank+send out requests for proposals+bids on the marketplace+exchange, perform awareness compaigns in community
+
+kogi independent worker+organization portfolio management platform ~ distributed portfolio system
+
+---
+
+communication channels:
+
+
+messaging
+
+email
+
+phone
+
+voice call
+
+video call
+
+
 
 ---
 

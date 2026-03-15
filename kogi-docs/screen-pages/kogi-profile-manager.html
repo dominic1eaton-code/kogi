@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KOGI · Profile Manager</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap');
+  :root{--bg:#070910;--sidebar:#0b0d16;--card:#0f1221;--card2:#131729;--border:#1a2035;--border2:#232a42;--teal:#0ccfca;--teal-dim:#0a9994;--amber:#e8a030;--amber-dim:#b07820;--green:#22c55e;--green-dim:#15803d;--mag:#d946ef;--blue:#3b82f6;--red:#ef4444;--purple:#a855f7;--text:#dde4f0;--text2:#7a879e;--text3:#3d4a62;}
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{background:var(--bg);color:var(--text);font-family:'IBM Plex Sans',sans-serif;font-size:13px;display:flex;min-height:100vh;}
+  .sidebar{width:200px;min-width:200px;background:var(--sidebar);border-right:1px solid var(--border);display:flex;flex-direction:column;}
+  .logo{padding:18px 16px;border-bottom:1px solid var(--border);}
+  .logo-text{font-family:'IBM Plex Mono',monospace;font-size:18px;font-weight:600;letter-spacing:0.08em;color:var(--teal);}
+  .logo-sub{font-size:9px;color:var(--text3);letter-spacing:0.15em;text-transform:uppercase;margin-top:2px;}
+  .nav{padding:12px 0;flex:1;}
+  .nav-section{padding:8px 16px 4px;font-size:9px;color:var(--text3);letter-spacing:0.18em;text-transform:uppercase;font-family:'IBM Plex Mono',monospace;}
+  .nav-item{display:flex;align-items:center;gap:10px;padding:7px 16px;color:var(--text2);cursor:pointer;font-size:12px;transition:all 0.15s;border-left:2px solid transparent;}
+  .nav-item:hover{color:var(--text);background:rgba(255,255,255,0.03);}
+  .nav-item.active{color:var(--teal);background:rgba(12,207,202,0.07);border-left-color:var(--teal);}
+  .nav-icon{width:14px;text-align:center;font-size:12px;}
+  .avatar-sm{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:#fff;flex-shrink:0;}
+  .profile-bottom{padding:12px 16px;border-top:1px solid var(--border);}
+  .profile-mini{display:flex;align-items:center;gap:8px;}
+  .main{flex:1;overflow-y:auto;}
+  .topbar{height:48px;border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 20px;gap:12px;background:var(--sidebar);position:sticky;top:0;z-index:10;}
+  .topbar-path{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text3);}
+  .topbar-path span{color:var(--text2);}
+  .topbar-path span.cur{color:var(--text);}
+  .spacer{flex:1;}
+  .btn-sm{padding:5px 12px;border-radius:4px;font-size:11px;font-family:'IBM Plex Mono',monospace;cursor:pointer;border:1px solid;transition:all 0.15s;}
+  .btn-teal{background:rgba(12,207,202,0.12);border-color:var(--teal-dim);color:var(--teal);}
+  .btn-teal:hover{background:rgba(12,207,202,0.22);}
+  .btn-ghost{background:transparent;border-color:var(--border2);color:var(--text2);}
+  .btn-ghost:hover{border-color:var(--text3);color:var(--text);}
+
+  /* Stats */
+  .stats-row{display:grid;grid-template-columns:repeat(5,1fr);gap:1px;background:var(--border);border-bottom:1px solid var(--border);}
+  .stat-box{background:var(--card);padding:14px 20px;}
+  .stat-val{font-family:'IBM Plex Mono',monospace;font-size:20px;font-weight:600;color:var(--text);}
+  .stat-lbl{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:0.1em;margin-top:2px;}
+  .stat-val.teal{color:var(--teal);}
+  .stat-val.amber{color:var(--amber);}
+  .stat-val.green{color:var(--green);}
+
+  .content{padding:20px;}
+  
+  /* Active profile banner */
+  .active-profile-banner{background:var(--card);border:1px solid var(--teal-dim);border-radius:8px;padding:16px 20px;display:flex;align-items:center;gap:16px;margin-bottom:20px;position:relative;overflow:hidden;}
+  .active-profile-banner::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--teal),transparent);}
+  .active-tag{font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--teal);background:rgba(12,207,202,0.12);padding:2px 8px;border-radius:3px;border:1px solid var(--teal-dim);}
+  .active-avatar{width:56px;height:56px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:600;color:#fff;flex-shrink:0;}
+  .active-name{font-size:16px;font-weight:600;color:var(--text);}
+  .active-handle{font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--teal);margin-top:2px;}
+  .active-meta{font-size:11px;color:var(--text3);margin-top:4px;}
+  .active-actions{margin-left:auto;display:flex;gap:8px;}
+
+  /* Section header */
+  .section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
+  .section-title{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text2);text-transform:uppercase;letter-spacing:0.12em;}
+  
+  /* Profile Group label */
+  .group-header{display:flex;align-items:center;gap:8px;margin-bottom:8px;margin-top:16px;}
+  .group-label{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:0.14em;font-family:'IBM Plex Mono',monospace;}
+  .group-line{flex:1;height:1px;background:var(--border);}
+  .group-count{font-size:10px;color:var(--text3);font-family:'IBM Plex Mono',monospace;}
+
+  /* Profile cards grid */
+  .profile-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px;}
+  .profile-card{background:var(--card);border:1px solid var(--border);border-radius:6px;overflow:hidden;cursor:pointer;transition:all 0.15s;position:relative;}
+  .profile-card:hover{border-color:var(--border2);transform:translateY(-1px);}
+  .profile-card.is-active{border-color:var(--teal-dim);}
+  .profile-card.is-active::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--teal),transparent);}
+  .pc-banner{height:52px;position:relative;}
+  .pc-banner-a{background:linear-gradient(135deg,#0d2235,#061828);}
+  .pc-banner-b{background:linear-gradient(135deg,#1a0d2e,#0d0620);}
+  .pc-banner-c{background:linear-gradient(135deg,#0d2010,#061208);}
+  .pc-banner-d{background:linear-gradient(135deg,#2e1a00,#1a0d00);}
+  .pc-banner-e{background:linear-gradient(135deg,#1a0d0d,#0d0606);}
+  .pc-banner-f{background:linear-gradient(135deg,#0d1a2e,#060d18);}
+  .pc-status-pill{position:absolute;top:8px;right:8px;font-family:'IBM Plex Mono',monospace;font-size:9px;padding:2px 7px;border-radius:3px;border:1px solid;}
+  .pill-active{background:rgba(34,197,94,0.12);border-color:var(--green-dim);color:var(--green);}
+  .pill-inactive{background:rgba(122,135,158,0.1);border-color:var(--text3);color:var(--text3);}
+  .pill-draft{background:rgba(232,160,48,0.1);border-color:var(--amber-dim);color:var(--amber);}
+  .pc-avatar{position:absolute;bottom:-20px;left:14px;width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:600;color:#fff;border:2px solid var(--card);}
+  .pc-body{padding:28px 14px 14px;}
+  .pc-name{font-size:13px;font-weight:600;color:var(--text);}
+  .pc-handle{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--text3);margin-top:1px;}
+  .pc-type-badge{display:inline-block;font-size:9px;font-family:'IBM Plex Mono',monospace;padding:2px 7px;border-radius:3px;margin-top:6px;border:1px solid;}
+  .pc-tagline{font-size:11px;color:var(--text3);margin-top:6px;line-height:1.4;min-height:32px;}
+  .pc-stats{display:grid;grid-template-columns:1fr 1fr 1fr;gap:0;margin-top:10px;border-top:1px solid var(--border);border-bottom:1px solid var(--border);}
+  .pc-stat{padding:7px 0;text-align:center;border-right:1px solid var(--border);}
+  .pc-stat:last-child{border-right:none;}
+  .pc-stat-val{font-family:'IBM Plex Mono',monospace;font-size:13px;font-weight:600;color:var(--text);}
+  .pc-stat-lbl{font-size:9px;color:var(--text3);}
+  .pc-actions{display:flex;gap:6px;padding:10px 14px 0;}
+  .pc-btn{flex:1;padding:5px;text-align:center;border-radius:4px;font-size:10px;font-family:'IBM Plex Mono',monospace;cursor:pointer;border:1px solid;transition:all 0.15s;}
+  .pc-btn-activate{background:rgba(12,207,202,0.1);border-color:var(--teal-dim);color:var(--teal);}
+  .pc-btn-edit{background:transparent;border-color:var(--border2);color:var(--text3);}
+  .pc-btn-edit:hover{border-color:var(--text2);color:var(--text2);}
+  .pc-new{border:2px dashed var(--border2);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;min-height:200px;cursor:pointer;transition:all 0.15s;border-radius:6px;}
+  .pc-new:hover{border-color:var(--teal-dim);background:rgba(12,207,202,0.03);}
+  .pc-new-icon{font-size:28px;color:var(--border2);}
+  .pc-new:hover .pc-new-icon{color:var(--teal-dim);}
+  .pc-new-text{font-size:12px;color:var(--text3);}
+  .pc-new:hover .pc-new-text{color:var(--text2);}
+
+  /* Aggregate Analytics */
+  .analytics-section{background:var(--card);border:1px solid var(--border);border-radius:6px;overflow:hidden;margin-bottom:20px;}
+  .analytics-header{padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+  .analytics-title{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text2);text-transform:uppercase;letter-spacing:0.1em;}
+  .analytics-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:1px;background:var(--border);}
+  .ag-box{background:var(--card);padding:14px 12px;}
+  .ag-val{font-family:'IBM Plex Mono',monospace;font-size:18px;font-weight:600;}
+  .ag-lbl{font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:0.1em;margin-top:2px;}
+  .ag-delta{font-size:10px;color:var(--green);font-family:'IBM Plex Mono',monospace;margin-top:1px;}
+
+  /* Switcher modal hint */
+  .switcher-hint{background:var(--card);border:1px solid var(--border);border-radius:6px;padding:14px 16px;display:flex;align-items:center;gap:12px;margin-bottom:20px;}
+  .hint-key{background:var(--card2);border:1px solid var(--border2);border-radius:4px;padding:3px 8px;font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text2);}
+  .hint-text{font-size:12px;color:var(--text3);}
+
+</style>
+</head>
+<body>
+<div class="sidebar">
+  <div class="logo">
+    <div class="logo-text">KOGI</div>
+    <div class="logo-sub">Independent Worker OS</div>
+  </div>
+  <nav class="nav">
+    <div class="nav-section">Core</div>
+    <div class="nav-item"><span class="nav-icon">⌂</span> Dashboard</div>
+    <div class="nav-item"><span class="nav-icon">◫</span> Office</div>
+    <div class="nav-item"><span class="nav-icon">◈</span> Portfolio</div>
+    <div class="nav-item"><span class="nav-icon">⬡</span> Exchange</div>
+    <div class="nav-section">Identity</div>
+    <div class="nav-item active"><span class="nav-icon">◉</span> Profile</div>
+    <div class="nav-item"><span class="nav-icon">⟁</span> Personas</div>
+    <div class="nav-item"><span class="nav-icon">⋈</span> Accounts</div>
+    <div class="nav-item"><span class="nav-icon">◎</span> Channels</div>
+    <div class="nav-section">Network</div>
+    <div class="nav-item"><span class="nav-icon">⋔</span> LinkTree</div>
+    <div class="nav-item"><span class="nav-icon">⊛</span> kogi-net</div>
+    <div class="nav-item"><span class="nav-icon">⊞</span> Contacts</div>
+    <div class="nav-item"><span class="nav-icon">◻</span> Directory</div>
+    <div class="nav-section">Platform</div>
+    <div class="nav-item"><span class="nav-icon">♦</span> Bank</div>
+    <div class="nav-item"><span class="nav-icon">⊕</span> Community</div>
+    <div class="nav-item"><span class="nav-icon">⊗</span> Marketplace</div>
+  </nav>
+  <div class="profile-bottom">
+    <div class="profile-mini">
+      <div class="avatar-sm" style="background:linear-gradient(135deg,#0ccfca,#3b82f6);">JC</div>
+      <div>
+        <div style="font-size:12px;">Jordan Chen</div>
+        <div style="font-size:10px;color:var(--text3);">@jordan.dev · Public</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="main">
+  <div class="topbar">
+    <div class="topbar-path">KPRF / <span class="cur">All Profiles</span></div>
+    <div class="spacer"></div>
+    <button class="btn-sm btn-ghost">Group Profiles</button>
+    <button class="btn-sm btn-ghost">Bulk Settings</button>
+    <button class="btn-sm btn-teal">+ New Profile</button>
+  </div>
+
+  <div class="stats-row">
+    <div class="stat-box"><div class="stat-val teal">12</div><div class="stat-lbl">Total Profiles</div></div>
+    <div class="stat-box"><div class="stat-val green">9</div><div class="stat-lbl">Active</div></div>
+    <div class="stat-box"><div class="stat-val amber">2</div><div class="stat-lbl">Inactive</div></div>
+    <div class="stat-box"><div class="stat-val">1</div><div class="stat-lbl">Draft</div></div>
+    <div class="stat-box"><div class="stat-val">5</div><div class="stat-lbl">Linked Accounts</div></div>
+  </div>
+
+  <div class="content">
+
+    <!-- Quick switch hint -->
+    <div class="switcher-hint">
+      <span class="hint-key">⌘ K</span>
+      <div class="hint-text">Quick-switch profiles from anywhere with the command palette. Persona and channel context switches automatically.</div>
+      <div class="spacer"></div>
+      <div style="font-size:11px;color:var(--teal);cursor:pointer;font-family:'IBM Plex Mono',monospace;">Open palette →</div>
+    </div>
+
+    <!-- Active Profile Banner -->
+    <div class="active-profile-banner">
+      <div>
+        <div class="active-tag">● ACTIVE CONTEXT</div>
+      </div>
+      <div class="active-avatar" style="background:linear-gradient(135deg,#0ccfca,#3b82f6);">JC</div>
+      <div>
+        <div class="active-name">Jordan Chen · Public</div>
+        <div class="active-handle">@jordan.dev</div>
+        <div class="active-meta">Developer · Technologist · 9 linked accounts · 4 personas active</div>
+      </div>
+      <div class="active-actions">
+        <button class="btn-sm btn-ghost">Analytics</button>
+        <button class="btn-sm btn-ghost">View</button>
+        <button class="btn-sm btn-teal">Edit</button>
+      </div>
+    </div>
+
+    <!-- Aggregate Analytics -->
+    <div class="analytics-section">
+      <div class="analytics-header">
+        <div class="analytics-title">Aggregate Analytics · All Profiles · 30 days</div>
+        <div style="font-size:10px;color:var(--teal);cursor:pointer;font-family:'IBM Plex Mono',monospace;">Full breakdown →</div>
+      </div>
+      <div class="analytics-grid">
+        <div class="ag-box"><div class="ag-val" style="color:var(--teal);">1,840</div><div class="ag-lbl">Profile Views</div><div class="ag-delta">+12%</div></div>
+        <div class="ag-box"><div class="ag-val" style="color:var(--amber);">284</div><div class="ag-lbl">Contact Reqs</div><div class="ag-delta">+8%</div></div>
+        <div class="ag-box"><div class="ag-val" style="color:var(--blue);">726</div><div class="ag-lbl">Link Clicks</div><div class="ag-delta">+22%</div></div>
+        <div class="ag-box"><div class="ag-val" style="color:var(--green);">142</div><div class="ag-lbl">New Follows</div><div class="ag-delta">+5%</div></div>
+        <div class="ag-box"><div class="ag-val">3,200</div><div class="ag-lbl">Connections</div><div class="ag-delta">+37 new</div></div>
+        <div class="ag-box"><div class="ag-val" style="color:var(--purple);">12</div><div class="ag-lbl">Active Profiles</div><div class="ag-delta ag-delta">All healthy</div></div>
+      </div>
+    </div>
+
+    <!-- Public Profiles group -->
+    <div class="group-header">
+      <div class="group-label">Public &amp; Professional</div>
+      <div class="group-line"></div>
+      <div class="group-count">3 profiles</div>
+    </div>
+    <div class="profile-grid">
+      <div class="profile-card is-active">
+        <div class="pc-banner pc-banner-a">
+          <div class="pc-status-pill pill-active">● ACTIVE</div>
+          <div class="pc-avatar" style="background:linear-gradient(135deg,#0ccfca,#3b82f6);">JC</div>
+        </div>
+        <div class="pc-body">
+          <div class="pc-name">Jordan Chen</div>
+          <div class="pc-handle">@jordan.dev</div>
+          <div class="pc-type-badge" style="background:rgba(12,207,202,0.08);border-color:var(--teal-dim);color:var(--teal);">PUBLIC</div>
+          <div class="pc-tagline">Full-stack developer & systems architect. Building cooperative tech infrastructure.</div>
+          <div class="pc-stats">
+            <div class="pc-stat"><div class="pc-stat-val teal" style="color:var(--teal);">94</div><div class="pc-stat-lbl">Rep Score</div></div>
+            <div class="pc-stat"><div class="pc-stat-val">1,240</div><div class="pc-stat-lbl">Connections</div></div>
+            <div class="pc-stat"><div class="pc-stat-val">284</div><div class="pc-stat-lbl">Views/mo</div></div>
+          </div>
+          <div class="pc-actions">
+            <div class="pc-btn pc-btn-activate">✓ Active</div>
+            <div class="pc-btn pc-btn-edit">Edit</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="profile-card">
+        <div class="pc-banner pc-banner-b">
+          <div class="pc-status-pill pill-active">● ACTIVE</div>
+          <div class="pc-avatar" style="background:linear-gradient(135deg,#a855f7,#ec4899);">JC</div>
+        </div>
+        <div class="pc-body">
+          <div class="pc-name">Jordan Chen, Consultant</div>
+          <div class="pc-handle">@jordan.consultant</div>
+          <div class="pc-type-badge" style="background:rgba(168,85,247,0.08);border-color:#7c3aed;color:var(--purple);">PROFESSIONAL</div>
+          <div class="pc-tagline">Strategic technology consultant. Architecture reviews, team coaching, org design.</div>
+          <div class="pc-stats">
+            <div class="pc-stat"><div class="pc-stat-val">91</div><div class="pc-stat-lbl">Rep Score</div></div>
+            <div class="pc-stat"><div class="pc-stat-val">420</div><div class="pc-stat-lbl">Connections</div></div>
+            <div class="pc-stat"><div class="pc-stat-val">88</div><div class="pc-stat-lbl">Views/mo</div></div>
+          </div>
+          <div class="pc-actions">
+            <div class="pc-btn pc-btn-activate">Activate</div>
+            <div class="pc-btn pc-btn-edit">Edit</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="profile-card">
+        <div class="pc-banner pc-banner-c">
+          <div class="pc-status-pill pill-active">● ACTIVE</div>
+          <div class="pc-avatar" style="background:linear-gradient(135deg,#22c55e,#16a34a);">JC</div>
+        </div>
+        <div class="pc-body">
+          <div class="pc-name">Mesh Studio</div>
+          <div class="pc-handle">@mesh.studio</div>
+          <div class="pc-type-badge" style="background:rgba(34,197,94,0.08);border-color:var(--green-dim);color:var(--green);">BUSINESS</div>
+          <div class="pc-tagline">Worker-owned design systems cooperative. Open-source design infrastructure.</div>
+          <div class="pc-stats">
+            <div class="pc-stat"><div class="pc-stat-val" style="color:var(--green);">88</div><div class="pc-stat-lbl">Rep Score</div></div>
+            <div class="pc-stat"><div class="pc-stat-val">312</div><div class="pc-stat-lbl">Followers</div></div>
+            <div class="pc-stat"><div class="pc-stat-val">156</div><div class="pc-stat-lbl">Views/mo</div></div>
+          </div>
+          <div class="pc-actions">
+            <div class="pc-btn pc-btn-activate">Activate</div>
+            <div class="pc-btn pc-btn-edit">Edit</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Work Profiles group -->
+    <div class="group-header">
+      <div class="group-label">Work Profiles</div>
+      <div class="group-line"></div>
+      <div class="group-count">4 profiles</div>
+    </div>
+    <div class="profile-grid">
+      <div class="profile-card">
+        <div class="pc-banner pc-banner-d">
+          <div class="pc-status-pill pill-active">● ACTIVE</div>
+          <div class="pc-avatar" style="background:linear-gradient(135deg,#e8a030,#d97706);">JC</div>
+        </div>
+        <div class="pc-body">
+          <div class="pc-name">Jordan · Mesh Studio</div>
+          <div class="pc-handle">@jordan.mesh</div>
+          <div class="pc-type-badge" style="background:rgba(232,160,48,0.08);border-color:var(--amber-dim);color:var(--amber);">WORK · COOPERATIVE</div>
+          <div class="pc-tagline">Co-Founder · Lead Engineer. Cooperative work identity for studio engagements.</div>
+          <div class="pc-stats">
+            <div class="pc-stat"><div class="pc-stat-val">87</div><div class="pc-stat-lbl">Rep Score</div></div>
+            <div class="pc-stat"><div class="pc-stat-val">18</div><div class="pc-stat-lbl">Contacts</div></div>
+            <div class="pc-stat"><div class="pc-stat-val">44</div><div class="pc-stat-lbl">Views/mo</div></div>
+          </div>
+          <div class="pc-actions">
+            <div class="pc-btn pc-btn-activate">Activate</div>
+            <div class="pc-btn pc-btn-edit">Edit</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="profile-card">
+        <div class="pc-banner pc-banner-f">
+          <div class="pc-status-pill pill-active">● ACTIVE</div>
+          <div class="pc-avatar" style="background:linear-gradient(135deg,#3b82f6,#1d4ed8);">JC</div>
+        </div>
+        <div class="pc-body">
+          <div class="pc-name">Jordan · Kogi Platform</div>
+          <div class="pc-handle">@jordan.kogi</div>
+          <div class="pc-type-badge" style="background:rgba(59,130,246,0.08);border-color:#1d4ed8;color:var(--blue);">WORK · CONTRIB</div>
+          <div class="pc-tagline">Core contributor & open-source builder. Platform architecture and engine systems.</div>
+          <div class="pc-stats">
+            <div class="pc-stat"><div class="pc-stat-val">90</div><div class="pc-stat-lbl">Rep Score</div></div>
+            <div class="pc-stat"><div class="pc-stat-val">84</div><div class="pc-stat-lbl">Contacts</div></div>
+            <div class="pc-stat"><div class="pc-stat-val">67</div><div class="pc-stat-lbl">Views/mo</div></div>
+          </div>
+          <div class="pc-actions">
+            <div class="pc-btn pc-btn-activate">Activate</div>
+            <div class="pc-btn pc-btn-edit">Edit</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="profile-card">
+        <div class="pc-banner pc-banner-e">
+          <div class="pc-status-pill pill-inactive">○ INACTIVE</div>
+          <div class="pc-avatar" style="background:linear-gradient(135deg,#7a879e,#4a5568);">JC</div>
+        </div>
+        <div class="pc-body">
+          <div class="pc-name">Jordan · Archived Client</div>
+          <div class="pc-handle">@jordan.acme-2024</div>
+          <div class="pc-type-badge" style="background:rgba(122,135,158,0.08);border-color:var(--text3);color:var(--text3);">WORK · ARCHIVED</div>
+          <div class="pc-tagline">Previous client engagement — Acme Corp 2024. Retained for historical reference.</div>
+          <div class="pc-stats">
+            <div class="pc-stat"><div class="pc-stat-val" style="color:var(--text3);">—</div><div class="pc-stat-lbl">Rep Score</div></div>
+            <div class="pc-stat"><div class="pc-stat-val" style="color:var(--text3);">—</div><div class="pc-stat-lbl">Contacts</div></div>
+            <div class="pc-stat"><div class="pc-stat-val" style="color:var(--text3);">0</div><div class="pc-stat-lbl">Views/mo</div></div>
+          </div>
+          <div class="pc-actions">
+            <div class="pc-btn pc-btn-activate" style="opacity:0.5;">Reactivate</div>
+            <div class="pc-btn pc-btn-edit">Edit</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="profile-card">
+        <div class="pc-banner" style="background:var(--card2);border-bottom:1px solid var(--border);">
+          <div class="pc-status-pill pill-draft">● DRAFT</div>
+          <div class="pc-avatar" style="background:var(--border2);">?</div>
+        </div>
+        <div class="pc-body">
+          <div class="pc-name" style="color:var(--text3);">New Work Profile</div>
+          <div class="pc-handle" style="color:var(--text3);">@—</div>
+          <div class="pc-type-badge" style="background:rgba(232,160,48,0.06);border-color:var(--amber-dim);color:var(--amber-dim);">DRAFT</div>
+          <div class="pc-tagline" style="color:var(--text3);">Profile created but not yet configured. Complete setup to activate.</div>
+          <div class="pc-stats">
+            <div class="pc-stat"><div class="pc-stat-val" style="color:var(--text3);">28%</div><div class="pc-stat-lbl">Completion</div></div>
+            <div class="pc-stat"><div class="pc-stat-val" style="color:var(--text3);">—</div><div class="pc-stat-lbl">Contacts</div></div>
+            <div class="pc-stat"><div class="pc-stat-val" style="color:var(--text3);">0</div><div class="pc-stat-lbl">Views/mo</div></div>
+          </div>
+          <div class="pc-actions">
+            <div class="pc-btn pc-btn-activate">Complete Setup</div>
+            <div class="pc-btn pc-btn-edit">Edit</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Personal Profiles group -->
+    <div class="group-header">
+      <div class="group-label">Personal &amp; Private</div>
+      <div class="group-line"></div>
+      <div class="group-count">2 profiles + create</div>
+    </div>
+    <div class="profile-grid">
+      <div class="profile-card">
+        <div class="pc-banner" style="background:linear-gradient(135deg,#10201a,#061510);">
+          <div class="pc-status-pill pill-active">● ACTIVE</div>
+          <div class="pc-avatar" style="background:linear-gradient(135deg,#10b981,#059669);">JC</div>
+        </div>
+        <div class="pc-body">
+          <div class="pc-name">Jordan · Personal</div>
+          <div class="pc-handle">@jordan</div>
+          <div class="pc-type-badge" style="background:rgba(16,185,129,0.08);border-color:#065f46;color:#10b981;">PERSONAL</div>
+          <div class="pc-tagline">Friends, community, and personal projects. Protected visibility.</div>
+          <div class="pc-stats">
+            <div class="pc-stat"><div class="pc-stat-val">82</div><div class="pc-stat-lbl">Rep Score</div></div>
+            <div class="pc-stat"><div class="pc-stat-val">240</div><div class="pc-stat-lbl">Friends</div></div>
+            <div class="pc-stat"><div class="pc-stat-val">12</div><div class="pc-stat-lbl">Views/mo</div></div>
+          </div>
+          <div class="pc-actions">
+            <div class="pc-btn pc-btn-activate">Activate</div>
+            <div class="pc-btn pc-btn-edit">Edit</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="pc-new" onclick="">
+        <div class="pc-new-icon">⊕</div>
+        <div class="pc-new-text">Create New Profile</div>
+        <div style="font-size:10px;color:var(--text3);">Templates available</div>
+      </div>
+    </div>
+
+  </div>
+</div>
+</body>
+</html>

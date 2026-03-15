@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KOGI · Edit Profile</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap');
+  :root {
+    --bg:#070910; --sidebar:#0b0d16; --card:#0f1221; --card2:#131729;
+    --border:#1a2035; --border2:#232a42;
+    --teal:#0ccfca; --teal-dim:#0a9994; --amber:#e8a030; --amber-dim:#b07820;
+    --green:#22c55e; --green-dim:#15803d; --mag:#d946ef; --mag-dim:#a21caf;
+    --blue:#3b82f6; --red:#ef4444; --purple:#a855f7;
+    --text:#dde4f0; --text2:#7a879e; --text3:#3d4a62;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{background:var(--bg);color:var(--text);font-family:'IBM Plex Sans',sans-serif;font-size:13px;display:flex;min-height:100vh;}
+  .sidebar{width:200px;min-width:200px;background:var(--sidebar);border-right:1px solid var(--border);display:flex;flex-direction:column;}
+  .logo{padding:18px 16px;border-bottom:1px solid var(--border);}
+  .logo-text{font-family:'IBM Plex Mono',monospace;font-size:18px;font-weight:600;letter-spacing:0.08em;color:var(--teal);}
+  .logo-sub{font-size:9px;color:var(--text3);letter-spacing:0.15em;text-transform:uppercase;margin-top:2px;}
+  .nav{padding:12px 0;flex:1;}
+  .nav-section{padding:8px 16px 4px;font-size:9px;color:var(--text3);letter-spacing:0.18em;text-transform:uppercase;font-family:'IBM Plex Mono',monospace;}
+  .nav-item{display:flex;align-items:center;gap:10px;padding:7px 16px;color:var(--text2);cursor:pointer;font-size:12px;transition:all 0.15s;border-left:2px solid transparent;}
+  .nav-item:hover{color:var(--text);background:rgba(255,255,255,0.03);}
+  .nav-item.active{color:var(--teal);background:rgba(12,207,202,0.07);border-left-color:var(--teal);}
+  .nav-icon{width:14px;text-align:center;font-size:12px;}
+  .avatar-sm{width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,#0ccfca,#3b82f6);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:#fff;flex-shrink:0;}
+  .profile-bottom{padding:12px 16px;border-top:1px solid var(--border);}
+  .profile-mini{display:flex;align-items:center;gap:8px;}
+  .main{flex:1;overflow-y:auto;}
+  .topbar{height:48px;border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 20px;gap:12px;background:var(--sidebar);position:sticky;top:0;z-index:10;}
+  .topbar-path{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text3);}
+  .topbar-path span{color:var(--text2);}
+  .topbar-path span.cur{color:var(--text);}
+  .spacer{flex:1;}
+  .btn-sm{padding:5px 12px;border-radius:4px;font-size:11px;font-family:'IBM Plex Mono',monospace;cursor:pointer;border:1px solid;transition:all 0.15s;}
+  .btn-teal{background:rgba(12,207,202,0.12);border-color:var(--teal-dim);color:var(--teal);}
+  .btn-teal:hover{background:rgba(12,207,202,0.22);}
+  .btn-ghost{background:transparent;border-color:var(--border2);color:var(--text2);}
+  .btn-ghost:hover{border-color:var(--text3);color:var(--text);}
+  .btn-red{background:rgba(239,68,68,0.1);border-color:#991b1b;color:var(--red);}
+
+  .edit-layout{display:grid;grid-template-columns:220px 1fr;height:calc(100vh - 48px);}
+  
+  /* Edit sidebar tabs */
+  .edit-tabs{background:var(--sidebar);border-right:1px solid var(--border);padding:16px 0;overflow-y:auto;}
+  .tab-section{padding:8px 16px 4px;font-size:9px;color:var(--text3);letter-spacing:0.18em;text-transform:uppercase;font-family:'IBM Plex Mono',monospace;}
+  .tab-item{display:flex;align-items:center;gap:8px;padding:8px 16px;color:var(--text2);cursor:pointer;font-size:12px;border-left:2px solid transparent;transition:all 0.15s;}
+  .tab-item:hover{color:var(--text);background:rgba(255,255,255,0.03);}
+  .tab-item.active{color:var(--teal);background:rgba(12,207,202,0.06);border-left-color:var(--teal);}
+  .tab-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0;}
+  .dot-complete{background:var(--green);}
+  .dot-partial{background:var(--amber);}
+  .dot-empty{background:var(--border2);}
+  .completion-bar{margin:12px 16px;background:var(--border);border-radius:3px;height:4px;overflow:hidden;}
+  .completion-fill{height:100%;background:linear-gradient(90deg,var(--teal),var(--blue));border-radius:3px;width:78%;}
+  .completion-text{font-size:10px;color:var(--text3);padding:0 16px 8px;font-family:'IBM Plex Mono',monospace;}
+
+  /* Edit form area */
+  .edit-form{overflow-y:auto;padding:24px;}
+  .form-section-title{font-family:'IBM Plex Mono',monospace;font-size:13px;font-weight:600;color:var(--text);margin-bottom:4px;}
+  .form-section-desc{font-size:11px;color:var(--text3);margin-bottom:20px;line-height:1.5;}
+  
+  /* Banner/Avatar Editor */
+  .banner-editor{height:120px;background:linear-gradient(135deg,#0d1a2e,#0b1525);border:1px solid var(--border);border-radius:6px;position:relative;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--text3);font-size:11px;margin-bottom:8px;overflow:hidden;}
+  .banner-editor::before{content:'';position:absolute;inset:0;background:url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none'%3E%3Cg fill='%230ccfca' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");}
+  .banner-overlay{background:rgba(0,0,0,0.5);padding:8px 14px;border-radius:4px;border:1px solid var(--border2);}
+  .avatar-editor-row{display:flex;align-items:center;gap:16px;margin-bottom:24px;}
+  .avatar-edit{width:72px;height:72px;border-radius:50%;background:linear-gradient(135deg,#0ccfca,#3b82f6,#a855f7);display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:600;color:#fff;cursor:pointer;position:relative;flex-shrink:0;border:2px solid var(--border2);}
+  .avatar-edit:hover::after{content:'Edit';position:absolute;inset:0;border-radius:50%;background:rgba(0,0,0,0.6);display:flex;align-items:center;justify-content:center;font-size:10px;}
+  .avatar-actions{display:flex;flex-direction:column;gap:6px;}
+
+  /* Form fields */
+  .form-row{margin-bottom:16px;}
+  .form-row-2{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;}
+  .form-row-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:16px;}
+  label{display:block;font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:0.12em;font-family:'IBM Plex Mono',monospace;margin-bottom:5px;}
+  .field-hint{font-size:10px;color:var(--text3);margin-top:4px;}
+  input[type=text],input[type=email],input[type=url],select,textarea{width:100%;background:var(--card2);border:1px solid var(--border2);border-radius:4px;padding:8px 10px;color:var(--text);font-size:12px;font-family:'IBM Plex Sans',sans-serif;outline:none;transition:border-color 0.15s;}
+  input:focus,select:focus,textarea:focus{border-color:var(--teal-dim);}
+  input::placeholder,textarea::placeholder{color:var(--text3);}
+  textarea{resize:vertical;min-height:80px;line-height:1.5;}
+  select{cursor:pointer;}
+  select option{background:var(--card2);}
+  .char-count{text-align:right;font-size:10px;color:var(--text3);margin-top:3px;font-family:'IBM Plex Mono',monospace;}
+
+  /* Profile type selector */
+  .type-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:20px;}
+  .type-card{background:var(--card2);border:1px solid var(--border2);border-radius:5px;padding:10px;cursor:pointer;transition:all 0.15s;}
+  .type-card:hover{border-color:var(--text3);}
+  .type-card.selected{border-color:var(--teal);background:rgba(12,207,202,0.06);}
+  .type-card-icon{font-size:16px;margin-bottom:4px;}
+  .type-card-name{font-size:11px;color:var(--text);font-weight:500;}
+  .type-card-desc{font-size:9px;color:var(--text3);margin-top:2px;line-height:1.4;}
+
+  /* Worker type multi-select */
+  .worker-types{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px;}
+  .worker-chip{padding:5px 10px;border-radius:4px;font-size:11px;cursor:pointer;border:1px solid;transition:all 0.15s;}
+  .worker-chip.on{background:rgba(12,207,202,0.1);border-color:var(--teal-dim);color:var(--teal);}
+  .worker-chip.off{background:var(--card2);border-color:var(--border2);color:var(--text3);}
+
+  /* Skills editor */
+  .skill-editor-row{display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid var(--border);}
+  .skill-editor-row:last-child{border-bottom:none;}
+  .skill-name{flex:1;font-size:12px;color:var(--text);}
+  .skill-proficiency{display:flex;gap:3px;}
+  .prof-dot{width:10px;height:10px;border-radius:2px;cursor:pointer;transition:all 0.1s;}
+  .prof-dot.filled{background:var(--teal);}
+  .prof-dot.empty{background:var(--border2);}
+  .skill-remove{color:var(--text3);cursor:pointer;font-size:14px;padding:0 4px;}
+  .skill-remove:hover{color:var(--red);}
+  .add-skill-row{display:flex;gap:8px;margin-top:12px;}
+
+  /* Slug preview */
+  .slug-preview{background:var(--card2);border:1px solid var(--border);border-radius:4px;padding:10px 12px;font-family:'IBM Plex Mono',monospace;font-size:12px;margin-top:8px;}
+  .slug-preview span{color:var(--text3);}
+  .slug-preview .slug-value{color:var(--teal);}
+
+  /* Divider */
+  .divider{height:1px;background:var(--border);margin:24px 0;}
+
+  /* Status row */
+  .status-row{display:flex;align-items:center;justify-content:space-between;padding:10px 16px;background:var(--card2);border:1px solid var(--border);border-radius:4px;margin-bottom:8px;}
+  .status-info{font-size:12px;color:var(--text);}
+  .status-sub{font-size:10px;color:var(--text3);margin-top:1px;}
+  .toggle{width:36px;height:20px;border-radius:10px;background:var(--border2);position:relative;cursor:pointer;transition:background 0.2s;flex-shrink:0;}
+  .toggle.on{background:var(--teal-dim);}
+  .toggle::after{content:'';position:absolute;top:2px;left:2px;width:16px;height:16px;border-radius:50%;background:#fff;transition:left 0.2s;}
+  .toggle.on::after{left:18px;}
+
+  /* Save bar */
+  .save-bar{position:sticky;bottom:0;background:var(--sidebar);border-top:1px solid var(--border);padding:12px 24px;display:flex;align-items:center;gap:10px;}
+  .unsaved-dot{width:6px;height:6px;border-radius:50%;background:var(--amber);}
+  .unsaved-text{font-size:11px;color:var(--amber);font-family:'IBM Plex Mono',monospace;}
+
+  /* Danger zone */
+  .danger-box{background:rgba(239,68,68,0.04);border:1px solid #991b1b40;border-radius:6px;padding:16px;}
+  .danger-title{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--red);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:8px;}
+  .danger-desc{font-size:11px;color:var(--text3);margin-bottom:12px;line-height:1.5;}
+</style>
+</head>
+<body>
+<div class="sidebar">
+  <div class="logo">
+    <div class="logo-text">KOGI</div>
+    <div class="logo-sub">Independent Worker OS</div>
+  </div>
+  <nav class="nav">
+    <div class="nav-section">Core</div>
+    <div class="nav-item"><span class="nav-icon">⌂</span> Dashboard</div>
+    <div class="nav-item"><span class="nav-icon">◫</span> Office</div>
+    <div class="nav-item"><span class="nav-icon">◈</span> Portfolio</div>
+    <div class="nav-item"><span class="nav-icon">⬡</span> Exchange</div>
+    <div class="nav-section">Identity</div>
+    <div class="nav-item active"><span class="nav-icon">◉</span> Profile</div>
+    <div class="nav-item"><span class="nav-icon">⟁</span> Personas</div>
+    <div class="nav-item"><span class="nav-icon">⋈</span> Accounts</div>
+    <div class="nav-item"><span class="nav-icon">◎</span> Channels</div>
+    <div class="nav-section">Network</div>
+    <div class="nav-item"><span class="nav-icon">⋔</span> LinkTree</div>
+    <div class="nav-item"><span class="nav-icon">⊛</span> kogi-net</div>
+    <div class="nav-item"><span class="nav-icon">⊞</span> Contacts</div>
+    <div class="nav-item"><span class="nav-icon">◻</span> Directory</div>
+  </nav>
+  <div class="profile-bottom">
+    <div class="profile-mini">
+      <div class="avatar-sm">JC</div>
+      <div>
+        <div style="font-size:12px;">Jordan Chen</div>
+        <div style="font-size:10px;color:var(--text3);">@jordan.dev</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="main">
+  <div class="topbar">
+    <div class="topbar-path">KPRF / <span>Profiles</span> / <span>@jordan.dev</span> / <span class="cur">Edit</span></div>
+    <div class="spacer"></div>
+    <button class="btn-sm btn-ghost">Discard Changes</button>
+    <button class="btn-sm btn-teal">Save Profile</button>
+  </div>
+
+  <div class="edit-layout">
+    <div class="edit-tabs">
+      <div style="padding:12px 16px 8px;">
+        <div style="font-size:10px;color:var(--text3);margin-bottom:6px;">Profile Completion</div>
+        <div class="completion-bar"><div class="completion-fill"></div></div>
+        <div class="completion-text">78% complete · 5 items missing</div>
+      </div>
+      <div class="tab-section">Identity</div>
+      <div class="tab-item active"><div class="tab-dot dot-complete"></div> Basic Info</div>
+      <div class="tab-item"><div class="tab-dot dot-complete"></div> Avatar & Banner</div>
+      <div class="tab-item"><div class="tab-dot dot-partial"></div> Skills</div>
+      <div class="tab-item"><div class="tab-dot dot-partial"></div> Certifications</div>
+      <div class="tab-section">Profile Config</div>
+      <div class="tab-item"><div class="tab-dot dot-complete"></div> Profile Type</div>
+      <div class="tab-item"><div class="tab-dot dot-complete"></div> Visibility</div>
+      <div class="tab-item"><div class="tab-dot dot-empty"></div> Custom Fields</div>
+      <div class="tab-section">Network</div>
+      <div class="tab-item"><div class="tab-dot dot-complete"></div> Personas</div>
+      <div class="tab-item"><div class="tab-dot dot-complete"></div> Linked Accounts</div>
+      <div class="tab-item"><div class="tab-dot dot-partial"></div> Channels</div>
+      <div class="tab-item"><div class="tab-dot dot-partial"></div> Organizations</div>
+      <div class="tab-section">Settings</div>
+      <div class="tab-item"><div class="tab-dot dot-empty"></div> Preferences</div>
+      <div class="tab-item"><div class="tab-dot dot-empty"></div> Notifications</div>
+      <div class="tab-item"><div class="tab-dot dot-empty"></div> Privacy</div>
+      <div class="tab-item"><div class="tab-dot dot-empty"></div> Danger Zone</div>
+    </div>
+
+    <div class="edit-form">
+      <!-- Basic Info -->
+      <div class="form-section-title">Basic Information</div>
+      <div class="form-section-desc">Core identity fields for this profile. Display name and slug form your public identity on kogi-net.</div>
+
+      <div class="banner-editor">
+        <div class="banner-overlay">⊕ Upload banner image · 1200×400px recommended</div>
+      </div>
+
+      <div class="avatar-editor-row">
+        <div class="avatar-edit">JC</div>
+        <div class="avatar-actions">
+          <div style="font-size:12px;color:var(--text);font-weight:500;">Profile Avatar</div>
+          <div style="font-size:10px;color:var(--text3);margin-bottom:6px;">JPG, PNG, or GIF · Max 5MB</div>
+          <div style="display:flex;gap:6px;">
+            <button class="btn-sm btn-ghost">Upload Image</button>
+            <button class="btn-sm btn-ghost">Generate AI Avatar</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-row-2">
+        <div>
+          <label>Display Name</label>
+          <input type="text" value="Jordan Chen" />
+        </div>
+        <div>
+          <label>Profile Slug</label>
+          <input type="text" value="jordan.dev" />
+          <div class="slug-preview"><span>kogi.net/@</span><span class="slug-value">jordan.dev</span></div>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <label>Tagline <span style="color:var(--text3);font-weight:400;">(max 160 chars)</span></label>
+        <input type="text" value="Full-stack developer & systems architect. Building cooperative tech infrastructure." />
+        <div class="char-count">82 / 160</div>
+      </div>
+
+      <div class="form-row">
+        <label>Bio</label>
+        <textarea placeholder="Long-form description (markdown supported)…">I build infrastructure for independent workers and cooperatives. Currently co-founding Mesh Studio — a worker-owned design systems cooperative.
+
+8+ years in systems architecture, distributed computing, and open-source development. I write about cooperative technology, worker economics, and building software that serves the people using it.
+
+Available for strategic consulting engagements, architecture reviews, and open-source collaboration.</textarea>
+        <div class="char-count">markdown supported · no limit</div>
+      </div>
+
+      <div class="form-row-3">
+        <div>
+          <label>Location</label>
+          <input type="text" value="San Francisco, CA" />
+        </div>
+        <div>
+          <label>Timezone</label>
+          <select>
+            <option selected>America/Los_Angeles (UTC-8)</option>
+            <option>America/New_York (UTC-5)</option>
+            <option>Europe/London (UTC+0)</option>
+          </select>
+        </div>
+        <div>
+          <label>Language</label>
+          <select>
+            <option selected>English (en)</option>
+            <option>Spanish (es)</option>
+            <option>French (fr)</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-row-2">
+        <div>
+          <label>Website URL</label>
+          <input type="url" value="https://jordanchen.dev" />
+        </div>
+        <div>
+          <label>Pronouns</label>
+          <input type="text" value="he/him" placeholder="Optional" />
+        </div>
+      </div>
+
+      <div class="divider"></div>
+
+      <!-- Profile Type -->
+      <div class="form-section-title">Profile Type</div>
+      <div class="form-section-desc">Select how this profile functions on the platform. Affects discoverability, default visibility, and engine behavior.</div>
+
+      <div class="type-grid">
+        <div class="type-card">
+          <div class="type-card-icon">👤</div>
+          <div class="type-card-name">Personal</div>
+          <div class="type-card-desc">General personal identity</div>
+        </div>
+        <div class="type-card selected">
+          <div class="type-card-icon">🌐</div>
+          <div class="type-card-name">Public</div>
+          <div class="type-card-desc">Maximally visible, indexed</div>
+        </div>
+        <div class="type-card">
+          <div class="type-card-icon">💼</div>
+          <div class="type-card-name">Professional</div>
+          <div class="type-card-desc">Credential-forward profile</div>
+        </div>
+        <div class="type-card">
+          <div class="type-card-icon">🏢</div>
+          <div class="type-card-name">Business</div>
+          <div class="type-card-desc">Solo business / studio</div>
+        </div>
+        <div class="type-card">
+          <div class="type-card-icon">⚙</div>
+          <div class="type-card-name">Work</div>
+          <div class="type-card-desc">Context-specific work identity</div>
+        </div>
+        <div class="type-card">
+          <div class="type-card-icon">🔒</div>
+          <div class="type-card-name">Private</div>
+          <div class="type-card-desc">Owner-only, not indexed</div>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <label>Worker Type</label>
+        <div class="worker-types">
+          <div class="worker-chip on">Freelancer</div>
+          <div class="worker-chip on">Consultant</div>
+          <div class="worker-chip off">Contractor</div>
+          <div class="worker-chip off">Gig Worker</div>
+          <div class="worker-chip on">Entrepreneur</div>
+          <div class="worker-chip off">Employee</div>
+          <div class="worker-chip off">Educator</div>
+        </div>
+      </div>
+
+      <div class="form-row-2">
+        <div>
+          <label>Years Experience</label>
+          <input type="text" value="8" />
+        </div>
+        <div>
+          <label>Availability</label>
+          <select>
+            <option selected>Available (20 hrs/wk)</option>
+            <option>Available (full-time)</option>
+            <option>Limited availability</option>
+            <option>Not available</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="divider"></div>
+
+      <!-- Skills -->
+      <div class="form-section-title">Skills</div>
+      <div class="form-section-desc">Declared skills are indexed by MatchEngine for talent discovery. Drag to reorder.</div>
+
+      <div class="card" style="background:var(--card);border:1px solid var(--border);border-radius:5px;overflow:hidden;margin-bottom:16px;">
+        <div style="padding:12px 16px;">
+          <div class="skill-editor-row">
+            <div class="skill-name">Rust</div>
+            <div class="skill-proficiency">
+              <div class="prof-dot filled"></div><div class="prof-dot filled"></div><div class="prof-dot filled"></div><div class="prof-dot filled"></div><div class="prof-dot filled"></div>
+            </div>
+            <span style="font-size:10px;color:var(--teal);font-family:'IBM Plex Mono',monospace;width:60px;">Expert</span>
+            <div class="skill-remove">×</div>
+          </div>
+          <div class="skill-editor-row">
+            <div class="skill-name">TypeScript</div>
+            <div class="skill-proficiency">
+              <div class="prof-dot filled"></div><div class="prof-dot filled"></div><div class="prof-dot filled"></div><div class="prof-dot filled"></div><div class="prof-dot filled"></div>
+            </div>
+            <span style="font-size:10px;color:var(--teal);font-family:'IBM Plex Mono',monospace;width:60px;">Expert</span>
+            <div class="skill-remove">×</div>
+          </div>
+          <div class="skill-editor-row">
+            <div class="skill-name">Distributed Systems</div>
+            <div class="skill-proficiency">
+              <div class="prof-dot filled"></div><div class="prof-dot filled"></div><div class="prof-dot filled"></div><div class="prof-dot filled"></div><div class="prof-dot empty"></div>
+            </div>
+            <span style="font-size:10px;color:var(--blue);font-family:'IBM Plex Mono',monospace;width:60px;">Advanced</span>
+            <div class="skill-remove">×</div>
+          </div>
+          <div class="skill-editor-row">
+            <div class="skill-name">Smart Contracts</div>
+            <div class="skill-proficiency">
+              <div class="prof-dot filled"></div><div class="prof-dot filled"></div><div class="prof-dot filled"></div><div class="prof-dot empty"></div><div class="prof-dot empty"></div>
+            </div>
+            <span style="font-size:10px;color:var(--amber);font-family:'IBM Plex Mono',monospace;width:60px;">Mid-level</span>
+            <div class="skill-remove">×</div>
+          </div>
+        </div>
+        <div class="add-skill-row" style="padding:10px 16px;border-top:1px solid var(--border);">
+          <input type="text" placeholder="Add skill…" style="flex:1;" />
+          <button class="btn-sm btn-teal">+ Add</button>
+        </div>
+      </div>
+
+      <div class="divider"></div>
+
+      <!-- Status & Visibility toggles -->
+      <div class="form-section-title">Profile Status</div>
+      <div class="form-section-desc">Control profile active state, search indexing, and platform discovery settings.</div>
+
+      <div class="status-row">
+        <div>
+          <div class="status-info">Profile Active</div>
+          <div class="status-sub">When off, profile is hidden from all discovery</div>
+        </div>
+        <div class="toggle on" onclick="this.classList.toggle('on')"></div>
+      </div>
+      <div class="status-row">
+        <div>
+          <div class="status-info">SearchEngine Indexing</div>
+          <div class="status-sub">Allow profile to appear in search results</div>
+        </div>
+        <div class="toggle on" onclick="this.classList.toggle('on')"></div>
+      </div>
+      <div class="status-row">
+        <div>
+          <div class="status-info">Talent Marketplace Listing</div>
+          <div class="status-sub">Show in MatchEngine talent pool for gig matching</div>
+        </div>
+        <div class="toggle on" onclick="this.classList.toggle('on')"></div>
+      </div>
+      <div class="status-row">
+        <div>
+          <div class="status-info">kogi-net LinkForest</div>
+          <div class="status-sub">Include linktree in the public linkforest</div>
+        </div>
+        <div class="toggle on" onclick="this.classList.toggle('on')"></div>
+      </div>
+
+      <div class="divider"></div>
+
+      <!-- Danger Zone -->
+      <div class="danger-box">
+        <div class="danger-title">⚠ Danger Zone</div>
+        <div class="danger-desc">Archiving a profile removes it from all indexes and hides it from discovery. All associations, portfolios, and linked accounts are preserved and can be restored. This action cannot be undone without contacting support.</div>
+        <div style="display:flex;gap:8px;">
+          <button class="btn-sm btn-red">Archive Profile</button>
+          <button class="btn-sm btn-ghost">Export Profile Data</button>
+        </div>
+      </div>
+
+      <div style="height:24px;"></div>
+      <div class="save-bar">
+        <div class="unsaved-dot"></div>
+        <div class="unsaved-text">Unsaved changes</div>
+        <div class="spacer"></div>
+        <button class="btn-sm btn-ghost">Discard</button>
+        <button class="btn-sm btn-teal">Save Profile</button>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

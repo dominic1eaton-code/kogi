@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KOGI · Communication Channels</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap');
+  :root{--bg:#070910;--sidebar:#0b0d16;--card:#0f1221;--card2:#131729;--border:#1a2035;--border2:#232a42;--teal:#0ccfca;--teal-dim:#0a9994;--amber:#e8a030;--amber-dim:#b07820;--green:#22c55e;--green-dim:#15803d;--mag:#d946ef;--blue:#3b82f6;--red:#ef4444;--purple:#a855f7;--text:#dde4f0;--text2:#7a879e;--text3:#3d4a62;}
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{background:var(--bg);color:var(--text);font-family:'IBM Plex Sans',sans-serif;font-size:13px;display:flex;min-height:100vh;}
+  .sidebar{width:200px;min-width:200px;background:var(--sidebar);border-right:1px solid var(--border);display:flex;flex-direction:column;}
+  .logo{padding:18px 16px;border-bottom:1px solid var(--border);}
+  .logo-text{font-family:'IBM Plex Mono',monospace;font-size:18px;font-weight:600;letter-spacing:0.08em;color:var(--teal);}
+  .logo-sub{font-size:9px;color:var(--text3);letter-spacing:0.15em;text-transform:uppercase;margin-top:2px;}
+  .nav{padding:12px 0;flex:1;}
+  .nav-section{padding:8px 16px 4px;font-size:9px;color:var(--text3);letter-spacing:0.18em;text-transform:uppercase;font-family:'IBM Plex Mono',monospace;}
+  .nav-item{display:flex;align-items:center;gap:10px;padding:7px 16px;color:var(--text2);cursor:pointer;font-size:12px;transition:all 0.15s;border-left:2px solid transparent;}
+  .nav-item.active{color:var(--teal);background:rgba(12,207,202,0.07);border-left-color:var(--teal);}
+  .nav-icon{width:14px;text-align:center;font-size:12px;}
+  .avatar-sm{width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,#0ccfca,#3b82f6);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:#fff;flex-shrink:0;}
+  .profile-bottom{padding:12px 16px;border-top:1px solid var(--border);}
+  .profile-mini{display:flex;align-items:center;gap:8px;}
+  .main{flex:1;overflow-y:auto;}
+  .topbar{height:48px;border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 20px;gap:12px;background:var(--sidebar);position:sticky;top:0;z-index:10;}
+  .topbar-path{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text3);}
+  .topbar-path span{color:var(--text2);}
+  .topbar-path span.cur{color:var(--text);}
+  .spacer{flex:1;}
+  .btn-sm{padding:5px 12px;border-radius:4px;font-size:11px;font-family:'IBM Plex Mono',monospace;cursor:pointer;border:1px solid;transition:all 0.15s;}
+  .btn-teal{background:rgba(12,207,202,0.12);border-color:var(--teal-dim);color:var(--teal);}
+  .btn-ghost{background:transparent;border-color:var(--border2);color:var(--text2);}
+  .btn-ghost:hover{border-color:var(--text3);color:var(--text);}
+  .stats-row{display:grid;grid-template-columns:repeat(5,1fr);gap:1px;background:var(--border);border-bottom:1px solid var(--border);}
+  .stat-box{background:var(--card);padding:14px 20px;}
+  .stat-val{font-family:'IBM Plex Mono',monospace;font-size:20px;font-weight:600;color:var(--text);}
+  .stat-lbl{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:0.1em;margin-top:2px;}
+  .content{padding:20px;display:grid;grid-template-columns:1fr 300px;gap:16px;}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:6px;overflow:hidden;margin-bottom:16px;}
+  .card-header{padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+  .card-title{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text2);text-transform:uppercase;letter-spacing:0.1em;}
+
+  /* Channel card */
+  .ch-card{background:var(--card);border:1px solid var(--border);border-radius:6px;overflow:hidden;margin-bottom:12px;transition:border-color 0.15s;}
+  .ch-card.enabled{border-left:3px solid var(--teal);}
+  .ch-card.disabled{border-left:3px solid var(--border2);opacity:0.7;}
+  .ch-card-header{padding:12px 16px;display:flex;align-items:center;gap:12px;cursor:pointer;}
+  .ch-icon{width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;}
+  .ch-kogi{background:rgba(12,207,202,0.12);border:1px solid var(--teal-dim);}
+  .ch-email{background:rgba(234,67,53,0.1);border:1px solid #991b1b40;}
+  .ch-slack{background:rgba(74,21,75,0.2);border:1px solid #6b21a840;}
+  .ch-discord{background:rgba(88,101,242,0.15);border:1px solid #3730a340;}
+  .ch-whatsapp{background:rgba(37,211,102,0.1);border:1px solid #15803d40;}
+  .ch-telegram{background:rgba(0,136,204,0.1);border:1px solid #0369a140;}
+  .ch-twitter{background:rgba(29,155,240,0.1);border:1px solid #0369a140;}
+  .ch-phone{background:rgba(34,197,94,0.08);border:1px solid #15803d40;}
+  .ch-cal{background:rgba(232,160,48,0.1);border:1px solid var(--amber-dim)40;}
+  .ch-info{flex:1;}
+  .ch-name{font-size:13px;color:var(--text);font-weight:500;}
+  .ch-address{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--text3);margin-top:1px;}
+  .ch-pills{display:flex;gap:6px;margin-top:5px;}
+  .pill{font-size:9px;font-family:'IBM Plex Mono',monospace;padding:2px 7px;border-radius:3px;border:1px solid;}
+  .pill-public{background:rgba(34,197,94,0.08);border-color:var(--green-dim);color:var(--green);}
+  .pill-connections{background:rgba(59,130,246,0.08);border-color:#1d4ed8;color:var(--blue);}
+  .pill-trusted{background:rgba(232,160,48,0.08);border-color:var(--amber-dim);color:var(--amber);}
+  .pill-private{background:rgba(122,135,158,0.08);border-color:var(--text3);color:var(--text3);}
+  .pill-bidir{background:rgba(12,207,202,0.06);border-color:var(--teal-dim);color:var(--teal);}
+  .pill-inbound{background:rgba(168,85,247,0.08);border-color:#7c3aed;color:var(--purple);}
+  .pill-outbound{background:rgba(239,68,68,0.06);border-color:#991b1b;color:var(--red);}
+  .toggle{width:36px;height:20px;border-radius:10px;background:var(--border2);position:relative;cursor:pointer;transition:background 0.2s;flex-shrink:0;}
+  .toggle.on{background:var(--teal-dim);}
+  .toggle::after{content:'';position:absolute;top:2px;left:2px;width:16px;height:16px;border-radius:50%;background:#fff;transition:left 0.2s;}
+  .toggle.on::after{left:18px;}
+  .ch-expand{color:var(--text3);font-size:12px;cursor:pointer;padding:4px;}
+  
+  /* Channel expanded config */
+  .ch-config{padding:0 16px 16px;border-top:1px solid var(--border);}
+  .config-row{display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);}
+  .config-row:last-child{border-bottom:none;}
+  .config-label{font-size:12px;color:var(--text);}
+  .config-sub{font-size:10px;color:var(--text3);}
+  select.config-select{background:var(--card2);border:1px solid var(--border2);color:var(--text2);font-size:11px;padding:4px 8px;border-radius:4px;font-family:'IBM Plex Mono',monospace;cursor:pointer;}
+  select.config-select option{background:var(--card2);}
+  input.config-input{background:var(--card2);border:1px solid var(--border2);color:var(--text);font-size:11px;padding:4px 8px;border-radius:4px;font-family:'IBM Plex Mono',monospace;width:180px;}
+  input.config-input:focus{outline:none;border-color:var(--teal-dim);}
+  
+  /* Routing rules */
+  .rule-row{display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid var(--border);}
+  .rule-row:last-child{border-bottom:none;}
+  .rule-condition{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--text2);flex:1;}
+  .rule-action{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--teal);}
+  .rule-remove{color:var(--text3);cursor:pointer;font-size:12px;}
+  .rule-remove:hover{color:var(--red);}
+
+  /* Global settings */
+  .setting-row{display:flex;align-items:center;justify-content:space-between;padding:10px 16px;border-bottom:1px solid var(--border);}
+  .setting-row:last-child{border-bottom:none;}
+  .setting-info{}
+  .setting-name{font-size:12px;color:var(--text);}
+  .setting-desc{font-size:10px;color:var(--text3);margin-top:1px;}
+
+  /* Quiet Hours */
+  .quiet-vis{display:flex;gap:0;height:32px;border-radius:4px;overflow:hidden;border:1px solid var(--border);}
+  .qh-block{flex:1;font-size:8px;display:flex;align-items:center;justify-content:center;color:var(--text3);}
+  .qh-block.quiet{background:rgba(239,68,68,0.1);}
+  .qh-block.active{background:rgba(34,197,94,0.08);}
+
+  /* Contact Routing diagram */
+  .routing-step{display:flex;align-items:flex-start;gap:10px;padding:10px 0;border-bottom:1px solid var(--border);}
+  .routing-step:last-child{border-bottom:none;}
+  .rs-num{width:22px;height:22px;border-radius:50%;background:var(--card2);border:1px solid var(--border2);display:flex;align-items:center;justify-content:center;font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--text3);flex-shrink:0;margin-top:1px;}
+  .rs-title{font-size:12px;color:var(--text);}
+  .rs-desc{font-size:10px;color:var(--text3);margin-top:2px;line-height:1.4;}
+</style>
+</head>
+<body>
+<div class="sidebar">
+  <div class="logo">
+    <div class="logo-text">KOGI</div>
+    <div class="logo-sub">Independent Worker OS</div>
+  </div>
+  <nav class="nav">
+    <div class="nav-section">Core</div>
+    <div class="nav-item"><span class="nav-icon">⌂</span> Dashboard</div>
+    <div class="nav-item"><span class="nav-icon">◫</span> Office</div>
+    <div class="nav-section">Identity</div>
+    <div class="nav-item"><span class="nav-icon">◉</span> Profile</div>
+    <div class="nav-item"><span class="nav-icon">⟁</span> Personas</div>
+    <div class="nav-item"><span class="nav-icon">⋈</span> Accounts</div>
+    <div class="nav-item active"><span class="nav-icon">◎</span> Channels</div>
+    <div class="nav-section">Network</div>
+    <div class="nav-item"><span class="nav-icon">⋔</span> LinkTree</div>
+    <div class="nav-item"><span class="nav-icon">⊛</span> kogi-net</div>
+    <div class="nav-item"><span class="nav-icon">⊞</span> Contacts</div>
+    <div class="nav-item"><span class="nav-icon">◻</span> Directory</div>
+    <div class="nav-section">Platform</div>
+    <div class="nav-item"><span class="nav-icon">♦</span> Bank</div>
+    <div class="nav-item"><span class="nav-icon">⊕</span> Community</div>
+  </nav>
+  <div class="profile-bottom">
+    <div class="profile-mini">
+      <div class="avatar-sm">JC</div>
+      <div>
+        <div style="font-size:12px;">Jordan Chen</div>
+        <div style="font-size:10px;color:var(--text3);">@jordan.dev</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="main">
+  <div class="topbar">
+    <div class="topbar-path">KPRF / <span>@jordan.dev</span> / <span class="cur">Communication Channels (KPRF·CHAN)</span></div>
+    <div class="spacer"></div>
+    <button class="btn-sm btn-ghost">Test Routing</button>
+    <button class="btn-sm btn-teal">+ Add Channel</button>
+  </div>
+
+  <div class="stats-row">
+    <div class="stat-box"><div class="stat-val" style="color:var(--teal);">9</div><div class="stat-lbl">Total Channels</div></div>
+    <div class="stat-box"><div class="stat-val" style="color:var(--green);">7</div><div class="stat-lbl">Enabled</div></div>
+    <div class="stat-box"><div class="stat-val" style="color:var(--amber);">3</div><div class="stat-lbl">Require Request</div></div>
+    <div class="stat-box"><div class="stat-val" style="color:var(--red);">1</div><div class="stat-lbl">Disabled</div></div>
+    <div class="stat-box"><div class="stat-val">22:00–08:00</div><div class="stat-lbl">Quiet Hours</div></div>
+  </div>
+
+  <div class="content">
+    <div>
+      <!-- kogi-dm -->
+      <div class="ch-card enabled">
+        <div class="ch-card-header">
+          <div class="ch-icon ch-kogi">💬</div>
+          <div class="ch-info">
+            <div class="ch-name">kogi-dm · Native Platform DM</div>
+            <div class="ch-address">kogi.net/dm/@jordan.dev</div>
+            <div class="ch-pills">
+              <div class="pill pill-public">Public</div>
+              <div class="pill pill-bidir">Bi-directional</div>
+              <div class="pill" style="background:rgba(34,197,94,0.06);border-color:var(--green-dim);color:var(--green);">No request gate</div>
+            </div>
+          </div>
+          <div style="display:flex;align-items:center;gap:10px;">
+            <div class="toggle on"></div>
+            <div class="ch-expand">▾</div>
+          </div>
+        </div>
+        <div class="ch-config">
+          <div class="config-row">
+            <div><div class="config-label">Accept from</div><div class="config-sub">Who can initiate DMs on this channel</div></div>
+            <select class="config-select"><option selected>Any (Public)</option><option>Verified Users</option><option>Connections</option><option>Trusted</option></select>
+          </div>
+          <div class="config-row">
+            <div><div class="config-label">Contact Request Gate</div><div class="config-sub">Require approval before first message</div></div>
+            <div class="toggle"></div>
+          </div>
+          <div class="config-row">
+            <div><div class="config-label">Auto-reply</div><div class="config-sub">Automated initial response</div></div>
+            <select class="config-select"><option>None</option><option>Away message</option><option selected>Custom template</option></select>
+          </div>
+          <div class="config-row">
+            <div><div class="config-label">Priority</div><div class="config-sub">Display order in contact card</div></div>
+            <input type="text" class="config-input" value="1 (Primary)" />
+          </div>
+        </div>
+      </div>
+
+      <!-- Email Work -->
+      <div class="ch-card enabled">
+        <div class="ch-card-header">
+          <div class="ch-icon ch-email">✉</div>
+          <div class="ch-info">
+            <div class="ch-name">Email · Work</div>
+            <div class="ch-address">jordan@meshstudio.dev</div>
+            <div class="ch-pills">
+              <div class="pill pill-connections">Connections</div>
+              <div class="pill pill-bidir">Bi-directional</div>
+              <div class="pill" style="background:rgba(232,160,48,0.06);border-color:var(--amber-dim);color:var(--amber);">Request gate</div>
+            </div>
+          </div>
+          <div style="display:flex;align-items:center;gap:10px;">
+            <div class="toggle on"></div>
+            <div class="ch-expand">▸</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Email Personal -->
+      <div class="ch-card enabled">
+        <div class="ch-card-header">
+          <div class="ch-icon ch-email">✉</div>
+          <div class="ch-info">
+            <div class="ch-name">Email · Personal</div>
+            <div class="ch-address">jordanchen.dev@gmail.com</div>
+            <div class="ch-pills">
+              <div class="pill pill-trusted">Trusted</div>
+              <div class="pill pill-bidir">Bi-directional</div>
+              <div class="pill" style="background:rgba(232,160,48,0.06);border-color:var(--amber-dim);color:var(--amber);">Request gate</div>
+            </div>
+          </div>
+          <div style="display:flex;align-items:center;gap:10px;">
+            <div class="toggle on"></div>
+            <div class="ch-expand">▸</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Slack -->
+      <div class="ch-card enabled">
+        <div class="ch-card-header">
+          <div class="ch-icon ch-slack">Sl</div>
+          <div class="ch-info">
+            <div class="ch-name">Slack DM · Mesh Studio Workspace</div>
+            <div class="ch-address">@jordan · mesh-studio.slack.com</div>
+            <div class="ch-pills">
+              <div class="pill pill-trusted">Trusted</div>
+              <div class="pill pill-bidir">Bi-directional</div>
+              <div class="pill" style="background:rgba(12,207,202,0.06);border-color:var(--teal-dim);color:var(--teal);">External relay</div>
+            </div>
+          </div>
+          <div style="display:flex;align-items:center;gap:10px;">
+            <div class="toggle on"></div>
+            <div class="ch-expand">▸</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Discord -->
+      <div class="ch-card enabled">
+        <div class="ch-card-header">
+          <div class="ch-icon ch-discord">Dc</div>
+          <div class="ch-info">
+            <div class="ch-name">Discord DM</div>
+            <div class="ch-address">jordan#4721</div>
+            <div class="ch-pills">
+              <div class="pill pill-connections">Connections</div>
+              <div class="pill pill-bidir">Bi-directional</div>
+            </div>
+          </div>
+          <div style="display:flex;align-items:center;gap:10px;">
+            <div class="toggle on"></div>
+            <div class="ch-expand">▸</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Twitter DM -->
+      <div class="ch-card enabled">
+        <div class="ch-card-header">
+          <div class="ch-icon ch-twitter">𝕏</div>
+          <div class="ch-info">
+            <div class="ch-name">Twitter / X DM</div>
+            <div class="ch-address">@jordanbuilds</div>
+            <div class="ch-pills">
+              <div class="pill pill-public">Public</div>
+              <div class="pill pill-bidir">Bi-directional</div>
+            </div>
+          </div>
+          <div style="display:flex;align-items:center;gap:10px;">
+            <div class="toggle on"></div>
+            <div class="ch-expand">▸</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Phone -->
+      <div class="ch-card disabled">
+        <div class="ch-card-header">
+          <div class="ch-icon ch-phone">📞</div>
+          <div class="ch-info">
+            <div class="ch-name">Phone · Personal</div>
+            <div class="ch-address">+1 (415) ···-····</div>
+            <div class="ch-pills">
+              <div class="pill pill-private">Private</div>
+              <div class="pill pill-bidir">Bi-directional</div>
+              <div class="pill" style="background:rgba(239,68,68,0.06);border-color:#991b1b;color:var(--red);">Closed</div>
+            </div>
+          </div>
+          <div style="display:flex;align-items:center;gap:10px;">
+            <div class="toggle"></div>
+            <div class="ch-expand">▸</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Calendar -->
+      <div class="ch-card enabled">
+        <div class="ch-card-header">
+          <div class="ch-icon ch-cal">📅</div>
+          <div class="ch-info">
+            <div class="ch-name">Calendar · Booking Invite</div>
+            <div class="ch-address">kogi.net/@jordan.dev/book</div>
+            <div class="ch-pills">
+              <div class="pill pill-public">Public</div>
+              <div class="pill pill-inbound">Inbound only</div>
+            </div>
+          </div>
+          <div style="display:flex;align-items:center;gap:10px;">
+            <div class="toggle on"></div>
+            <div class="ch-expand">▸</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Contact Form -->
+      <div class="ch-card enabled">
+        <div class="ch-card-header">
+          <div class="ch-icon ch-kogi" style="background:rgba(168,85,247,0.1);border-color:#7c3aed;">📋</div>
+          <div class="ch-info">
+            <div class="ch-name">Contact Form · Public</div>
+            <div class="ch-address">kogi.net/@jordan.dev/contact</div>
+            <div class="ch-pills">
+              <div class="pill pill-public">Public</div>
+              <div class="pill pill-inbound">Inbound only</div>
+              <div class="pill" style="background:rgba(168,85,247,0.08);border-color:#7c3aed;color:var(--purple);">Routes to kogi-dm</div>
+            </div>
+          </div>
+          <div style="display:flex;align-items:center;gap:10px;">
+            <div class="toggle on"></div>
+            <div class="ch-expand">▸</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right Panel -->
+    <div>
+      <!-- Global Settings -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Global Channel Settings</div>
+        </div>
+        <div class="setting-row">
+          <div><div class="setting-name">Quiet Hours</div><div class="setting-desc">No inbound notifications during window</div></div>
+          <div class="toggle on"></div>
+        </div>
+        <div style="padding:10px 16px;border-bottom:1px solid var(--border);">
+          <div style="font-size:10px;color:var(--text3);margin-bottom:6px;">22:00 → 08:00 · America/Los_Angeles</div>
+          <div class="quiet-vis">
+            <div class="qh-block quiet" style="font-size:7px;">22</div>
+            <div class="qh-block quiet" style="font-size:7px;">23</div>
+            <div class="qh-block quiet" style="font-size:7px;">00</div>
+            <div class="qh-block quiet" style="font-size:7px;">01</div>
+            <div class="qh-block quiet" style="font-size:7px;">02</div>
+            <div class="qh-block quiet" style="font-size:7px;">03</div>
+            <div class="qh-block quiet" style="font-size:7px;">04</div>
+            <div class="qh-block quiet" style="font-size:7px;">05</div>
+            <div class="qh-block quiet" style="font-size:7px;">06</div>
+            <div class="qh-block quiet" style="font-size:7px;">07</div>
+            <div class="qh-block active" style="font-size:7px;">08</div>
+            <div class="qh-block active" style="font-size:7px;">09</div>
+          </div>
+          <div style="font-size:9px;color:var(--text3);margin-top:5px;">Messages queued · not delivered during quiet window</div>
+        </div>
+        <div class="setting-row">
+          <div><div class="setting-name">Contact Request Cooldown</div><div class="setting-desc">Min. time between requests, same sender</div></div>
+          <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--teal);">24h</div>
+        </div>
+        <div class="setting-row">
+          <div><div class="setting-name">Auto-routing (kogi-engine)</div><div class="setting-desc">High-priority senders bypass gate</div></div>
+          <div class="toggle on"></div>
+        </div>
+        <div class="setting-row">
+          <div><div class="setting-name">Cross-profile isolation</div><div class="setting-desc">No bleed between profile inboxes</div></div>
+          <div class="toggle on"></div>
+        </div>
+      </div>
+
+      <!-- Routing Rules -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Routing Rules</div>
+          <div style="font-size:10px;color:var(--teal);cursor:pointer;font-family:'IBM Plex Mono',monospace;">+ Add Rule</div>
+        </div>
+        <div style="padding:12px 16px;">
+          <div class="rule-row">
+            <div class="rule-condition">after 18:00 → quiet mode</div>
+            <div class="rule-action">Delay</div>
+            <div class="rule-remove">×</div>
+          </div>
+          <div class="rule-row">
+            <div class="rule-condition">Cooperative Member → Slack first</div>
+            <div class="rule-action">Redirect</div>
+            <div class="rule-remove">×</div>
+          </div>
+          <div class="rule-row">
+            <div class="rule-condition">MatchEngine match &gt;90% → allow DM</div>
+            <div class="rule-action">Allow</div>
+            <div class="rule-remove">×</div>
+          </div>
+          <div class="rule-row">
+            <div class="rule-condition">keyword: "project inquiry" → calendar</div>
+            <div class="rule-action">Route</div>
+            <div class="rule-remove">×</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- kogi-net Routing Flow -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">kogi-net Contact Resolution</div>
+        </div>
+        <div style="padding:12px 16px;">
+          <div class="routing-step">
+            <div class="rs-num">1</div>
+            <div>
+              <div class="rs-title">Channel Resolution</div>
+              <div class="rs-desc">kogi-net queries enabled channels for the target profile context</div>
+            </div>
+          </div>
+          <div class="routing-step">
+            <div class="rs-num">2</div>
+            <div>
+              <div class="rs-title">Access Policy Check</div>
+              <div class="rs-desc">KVIS evaluates sender's tier against each channel's accept_from policy</div>
+            </div>
+          </div>
+          <div class="routing-step">
+            <div class="rs-num">3</div>
+            <div>
+              <div class="rs-title">Channel Ranking</div>
+              <div class="rs-desc">Available channels ranked by context, priority, and sender class</div>
+            </div>
+          </div>
+          <div class="routing-step">
+            <div class="rs-num">4</div>
+            <div>
+              <div class="rs-title">Contact Gate</div>
+              <div class="rs-desc">If requires_request: generates ContactRequest → notification stack</div>
+            </div>
+          </div>
+          <div class="routing-step">
+            <div class="rs-num">5</div>
+            <div>
+              <div class="rs-title">Delivery</div>
+              <div class="rs-desc">Message routed via ChannelService or external ProviderSystem relay</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>
