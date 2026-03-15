@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>KOGI · Resource Crowdfunding</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap');
+:root{--bg:#070910;--sidebar:#0b0d16;--card:#0f1221;--card2:#131729;--border:#1a2035;--border2:#232a42;--teal:#0ccfca;--teal-dim:#0a9994;--amber:#e8a030;--amber-dim:#b07820;--green:#22c55e;--green-dim:#15803d;--blue:#3b82f6;--red:#ef4444;--purple:#a855f7;--text:#dde4f0;--text2:#7a879e;--text3:#3d4a62;}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--bg);color:var(--text);font-family:'IBM Plex Sans',sans-serif;font-size:13px;display:flex;min-height:100vh;}
+.sidebar{width:200px;min-width:200px;background:var(--sidebar);border-right:1px solid var(--border);display:flex;flex-direction:column;}
+.logo{padding:18px 16px;border-bottom:1px solid var(--border);}
+.logo-text{font-family:'IBM Plex Mono',monospace;font-size:18px;font-weight:600;letter-spacing:.08em;color:var(--teal);}
+.logo-sub{font-size:9px;color:var(--text3);letter-spacing:.15em;text-transform:uppercase;margin-top:2px;}
+.nav{padding:12px 0;flex:1;overflow-y:auto;}
+.ns{padding:8px 16px 4px;font-size:9px;color:var(--text3);letter-spacing:.18em;text-transform:uppercase;font-family:'IBM Plex Mono',monospace;}
+.ni{display:flex;align-items:center;gap:10px;padding:7px 16px;color:var(--text2);cursor:pointer;font-size:12px;border-left:2px solid transparent;}
+.ni.on{color:var(--teal);background:rgba(12,207,202,.07);border-left-color:var(--teal);}
+.ni-ic{width:14px;text-align:center;font-size:12px;}
+.pb{padding:12px 16px;border-top:1px solid var(--border);}
+.pm{display:flex;align-items:center;gap:8px;}
+.avsm{width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,#0ccfca,#3b82f6);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:#fff;}
+.main{flex:1;overflow-y:auto;}
+.topbar{height:48px;border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 20px;gap:12px;background:var(--sidebar);position:sticky;top:0;z-index:10;}
+.tp{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text3);}
+.tp span{color:var(--text2);}
+.tp .cur{color:var(--text);}
+.sp{flex:1;}
+.btn{padding:5px 12px;border-radius:4px;font-size:11px;font-family:'IBM Plex Mono',monospace;cursor:pointer;border:1px solid;}
+.bt{background:rgba(12,207,202,.12);border-color:var(--teal-dim);color:var(--teal);}
+.bg{background:transparent;border-color:var(--border2);color:var(--text2);}
+.stats{display:grid;grid-template-columns:repeat(5,1fr);gap:1px;background:var(--border);border-bottom:1px solid var(--border);}
+.sb{background:var(--card);padding:11px 14px;}
+.sv{font-family:'IBM Plex Mono',monospace;font-size:16px;font-weight:600;}
+.sl{font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.1em;margin-top:1px;}
+.content{padding:20px;display:grid;grid-template-columns:1fr 320px;gap:16px;}
+.card{background:var(--card);border:1px solid var(--border);border-radius:6px;overflow:hidden;margin-bottom:14px;}
+.ch{padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+.ct{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text2);text-transform:uppercase;letter-spacing:.1em;}
+.ca{font-size:10px;color:var(--teal);cursor:pointer;font-family:'IBM Plex Mono',monospace;}
+/* Org context banner */
+.org-banner{background:rgba(12,207,202,.04);border-bottom:1px solid var(--border);padding:10px 20px;display:flex;align-items:center;gap:12px;flex-shrink:0;}
+.ob-selector{display:flex;gap:6px;}
+.ob-sel{padding:5px 12px;border-radius:4px;font-size:11px;font-family:'IBM Plex Mono',monospace;cursor:pointer;border:1px solid var(--border2);color:var(--text3);}
+.ob-sel.on{background:rgba(12,207,202,.08);border-color:var(--teal-dim);color:var(--teal);}
+/* Resource campaign cards */
+.res-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px;}
+.rc{background:var(--card);border:1px solid var(--border);border-radius:8px;overflow:hidden;cursor:pointer;transition:all .12s;}
+.rc:hover{border-color:var(--border2);}
+.rc.active{border-color:var(--teal-dim);}
+.rc-banner{height:48px;display:flex;align-items:center;padding:0 14px;gap:10px;}
+.rc-type-badge{font-size:9px;font-family:'IBM Plex Mono',monospace;padding:2px 7px;border-radius:3px;border:1px solid;}
+.rc-body{padding:12px 14px;}
+.rc-title{font-size:13px;font-weight:600;color:var(--text);margin-bottom:3px;}
+.rc-org{font-size:10px;color:var(--text3);font-family:'IBM Plex Mono',monospace;margin-bottom:8px;}
+/* Resource progress — uses units not $ -->
+.res-progress{margin-bottom:8px;}
+.rp-top{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px;}
+.rp-units{font-family:'IBM Plex Mono',monospace;font-size:14px;font-weight:600;}
+.rp-goal{font-size:10px;color:var(--text3);}
+.rp-bar{height:7px;background:var(--border);border-radius:4px;overflow:hidden;}
+.rp-fill{height:100%;border-radius:4px;}
+.rp-meta{display:flex;justify-content:space-between;font-size:10px;color:var(--text3);font-family:'IBM Plex Mono',monospace;margin-top:3px;}
+.rc-contributors{display:flex;align-items:center;gap:-4px;margin-bottom:8px;}
+.rc-contributor-av{width:22px;height:22px;border-radius:50%;border:2px solid var(--card);margin-right:-6px;display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:600;color:#fff;}
+.rc-cont-more{font-size:10px;color:var(--text3);margin-left:10px;}
+.rc-actions{display:flex;gap:6px;}
+.rca{flex:1;padding:5px;text-align:center;border-radius:4px;font-size:10px;font-family:'IBM Plex Mono',monospace;cursor:pointer;border:1px solid;}
+/* Group buy detail -->
+.gb-detail{padding:14px;border-bottom:1px solid var(--border);}
+.gb-split{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:10px;}
+.gbs{background:var(--card2);border-radius:4px;padding:10px;text-align:center;}
+.gbs-val{font-family:'IBM Plex Mono',monospace;font-size:15px;font-weight:600;}
+.gbs-lbl{font-size:9px;color:var(--text3);margin-top:2px;}
+/* Contributor rows -->
+.cont-row{display:grid;grid-template-columns:28px 1fr 80px 80px 80px;gap:10px;align-items:center;padding:9px 14px;border-bottom:1px solid var(--border);}
+.cont-row:last-child{border-bottom:none;}
+.cont-hdr-row{background:var(--card2);font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.1em;font-family:'IBM Plex Mono',monospace;}
+.cont-av{width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:600;color:#fff;}
+.cont-name{font-size:12px;color:var(--text);}
+.cont-role{font-size:9px;color:var(--text3);}
+.cont-units{font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--teal);}
+.cont-pct{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text3);}
+.cont-status{font-size:9px;font-family:'IBM Plex Mono',monospace;padding:2px 6px;border-radius:3px;border:1px solid;}
+/* Resource account widget -->
+.res-account{background:var(--card2);border:1px solid var(--border);border-radius:6px;padding:12px;}
+.ra-label{font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--text3);text-transform:uppercase;margin-bottom:8px;}
+.ra-balance-row{display:flex;align-items:baseline;gap:8px;margin-bottom:6px;}
+.ra-amount{font-family:'IBM Plex Mono',monospace;font-size:22px;font-weight:600;}
+.ra-unit{font-size:11px;color:var(--text3);}
+.ra-bar{height:8px;background:var(--border);border-radius:4px;overflow:hidden;margin-bottom:6px;}
+.ra-bar-fill{height:100%;border-radius:4px;background:var(--teal);}
+.ra-detail{display:flex;justify-content:space-between;font-size:10px;color:var(--text3);font-family:'IBM Plex Mono',monospace;}
+/* Allocation list -->
+.alloc-row{display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid var(--border);}
+.alloc-row:last-child{border-bottom:none;}
+.alloc-av{width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:600;color:#fff;flex-shrink:0;}
+.alloc-name{flex:1;font-size:11px;color:var(--text2);}
+.alloc-units{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--teal);}
+.alloc-used{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--text3);}
+</style>
+</head>
+<body>
+<div class="sidebar">
+  <div class="logo"><div class="logo-text">KOGI</div><div class="logo-sub">Independent Worker OS</div></div>
+  <nav class="nav">
+    <div class="ns">Capital & Resources</div>
+    <div class="ni on"><span class="ni-ic">☁</span>Resource Crowdfund</div>
+    <div class="ni"><span class="ni-ic">💰</span>Capital Campaigns</div>
+    <div class="ni"><span class="ni-ic">📈</span>Equity Campaigns</div>
+    <div class="ni"><span class="ni-ic">🎯</span>Campaign Builder</div>
+    <div class="ns">Platform</div>
+    <div class="ni"><span class="ni-ic">⊗</span>Marketplace</div>
+    <div class="ni"><span class="ni-ic">⬡</span>Exchange</div>
+    <div class="ni"><span class="ni-ic">⊕</span>Community</div>
+    <div class="ns">Finance</div>
+    <div class="ni"><span class="ni-ic">💳</span>Wallet</div>
+    <div class="ni"><span class="ni-ic">🏛</span>Group Econ</div>
+  </nav>
+  <div class="pb"><div class="pm"><div class="avsm">JC</div><div><div style="font-size:12px;">Jordan Chen</div><div style="font-size:10px;color:var(--text3);">@jordan.dev</div></div></div></div>
+</div>
+
+<div class="main">
+  <div class="topbar">
+    <div class="tp">KCMP / <span class="cur">Resource Crowdfunding · Collective Pools</span></div>
+    <div class="sp"></div>
+    <button class="btn bg">Resource Market</button>
+    <button class="btn bt">+ New Resource Campaign</button>
+  </div>
+
+  <!-- Org context selector -->
+  <div class="org-banner">
+    <div style="font-size:11px;color:var(--text3);font-family:'IBM Plex Mono',monospace;">Viewing as:</div>
+    <div class="ob-selector">
+      <div class="ob-sel on">👤 Jordan Chen</div>
+      <div class="ob-sel">⚙ Mesh Studio</div>
+      <div class="ob-sel">🌐 Builder Network</div>
+      <div class="ob-sel">◈ OS Collective</div>
+    </div>
+    <div style="margin-left:auto;font-size:10px;color:var(--text3);">Campaigns you run or participate in as these entities are shown below</div>
+  </div>
+
+  <div class="stats">
+    <div class="sb"><div class="sv" style="color:var(--teal);">4</div><div class="sl">Active Pools</div></div>
+    <div class="sb"><div class="sv" style="color:var(--green);">2,840</div><div class="sl">Compute Credits</div></div>
+    <div class="sb"><div class="sv" style="color:var(--blue);">12</div><div class="sl">License Seats</div></div>
+    <div class="sb"><div class="sv" style="color:var(--amber);">8</div><div class="sl">Members Pooling</div></div>
+    <div class="sb"><div class="sv">$24,200</div><div class="sl">Estimated Value</div></div>
+  </div>
+
+  <div class="content">
+    <div>
+
+      <!-- My Active Resource Campaigns -->
+      <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.14em;margin-bottom:10px;">Active Resource Campaigns · Mesh Studio Cooperative</div>
+      <div class="res-grid">
+
+        <!-- Compute Pool -->
+        <div class="rc active">
+          <div class="rc-banner" style="background:linear-gradient(135deg,#0a1a28,#060f18);">
+            <div style="font-size:18px;">☁</div>
+            <div class="rc-type-badge" style="background:rgba(59,130,246,.1);border-color:#1d4ed8;color:var(--blue);">RESOURCE · GROUP BUY</div>
+          </div>
+          <div class="rc-body">
+            <div class="rc-title">Shared GPU Compute Pool — Q2</div>
+            <div class="rc-org">⚙ Mesh Studio · 8 members · Running as Cooperative</div>
+            <div class="res-progress">
+              <div class="rp-top">
+                <div class="rp-units" style="color:var(--blue);">7,200 GPU hrs</div>
+                <div class="rp-goal">goal: 10,000 hrs</div>
+              </div>
+              <div class="rp-bar"><div class="rp-fill" style="width:72%;background:var(--blue);"></div></div>
+              <div class="rp-meta"><span>72% pooled · 7 contributors</span><span>28 days left</span></div>
+            </div>
+            <div class="rc-contributors">
+              <div class="rc-contributor-av" style="background:linear-gradient(135deg,#0ccfca,#3b82f6);">JC</div>
+              <div class="rc-contributor-av" style="background:linear-gradient(135deg,#0ccfca,#3b82f6);">AK</div>
+              <div class="rc-contributor-av" style="background:linear-gradient(135deg,#22c55e,#16a34a);">MP</div>
+              <div class="rc-contributor-av" style="background:linear-gradient(135deg,#a855f7,#ec4899);">SR</div>
+              <div class="rc-cont-more">+ 3 more</div>
+            </div>
+            <div class="rc-actions">
+              <div class="rca" style="background:rgba(59,130,246,.08);border-color:#1d4ed8;color:var(--blue);">Manage Pool →</div>
+              <div class="rca" style="background:transparent;border-color:var(--border2);color:var(--text3);">Contribute</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- License pool -->
+        <div class="rc">
+          <div class="rc-banner" style="background:linear-gradient(135deg,#1a0a2e,#0d0420);">
+            <div style="font-size:18px;">🔑</div>
+            <div class="rc-type-badge" style="background:rgba(168,85,247,.1);border-color:#7c3aed;color:var(--purple);">RESOURCE · GROUP BUY</div>
+          </div>
+          <div class="rc-body">
+            <div class="rc-title">Figma Enterprise Licenses · Group Rate</div>
+            <div class="rc-org">⚙ Mesh Studio + ◈ OS Collective · 12 members</div>
+            <div class="res-progress">
+              <div class="rp-top">
+                <div class="rp-units" style="color:var(--purple);">9 seats</div>
+                <div class="rp-goal">goal: 10 seats (bulk discount)</div>
+              </div>
+              <div class="rp-bar"><div class="rp-fill" style="width:90%;background:var(--purple);"></div></div>
+              <div class="rp-meta"><span>90% · 1 seat needed for bulk rate</span><span>Deal unlocks at 10</span></div>
+            </div>
+            <div class="rc-contributors">
+              <div class="rc-contributor-av" style="background:linear-gradient(135deg,#a855f7,#ec4899);">SR</div>
+              <div class="rc-contributor-av" style="background:linear-gradient(135deg,#0ccfca,#3b82f6);">AK</div>
+              <div class="rc-contributor-av" style="background:linear-gradient(135deg,#d946ef,#9d174d);">KO</div>
+              <div class="rc-cont-more">+ 6 more</div>
+            </div>
+            <div style="background:rgba(34,197,94,.06);border:1px solid var(--green-dim);border-radius:4px;padding:6px 8px;margin-bottom:8px;font-size:10px;color:var(--green);">💡 1 more seat → unlocks 40% bulk discount ($180 → $108/seat/yr)</div>
+            <div class="rc-actions">
+              <div class="rca" style="background:rgba(168,85,247,.08);border-color:#7c3aed;color:var(--purple);">Manage →</div>
+              <div class="rca" style="background:rgba(34,197,94,.08);border-color:var(--green-dim);color:var(--green);">Add Seat</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tool/equipment pool -->
+        <div class="rc">
+          <div class="rc-banner" style="background:linear-gradient(135deg,#0f1f0a,#060f06);">
+            <div style="font-size:18px;">🛠</div>
+            <div class="rc-type-badge" style="background:rgba(34,197,94,.1);border-color:var(--green-dim);color:var(--green);">RESOURCE · COLLECTIVE POOL</div>
+          </div>
+          <div class="rc-body">
+            <div class="rc-title">Shared Dev Tooling Budget · Q2</div>
+            <div class="rc-org">◈ OS Collective · 420 members · Collective</div>
+            <div class="res-progress">
+              <div class="rp-top">
+                <div class="rp-units" style="color:var(--green);">$4,200</div>
+                <div class="rp-goal">goal: $6,000 quarterly</div>
+              </div>
+              <div class="rp-bar"><div class="rp-fill" style="width:70%;background:var(--green);"></div></div>
+              <div class="rp-meta"><span>70% pooled · 28 contributors</span><span>42 days left</span></div>
+            </div>
+            <div class="rc-actions">
+              <div class="rca" style="background:rgba(34,197,94,.08);border-color:var(--green-dim);color:var(--green);">View Pool →</div>
+              <div class="rca" style="background:transparent;border-color:var(--border2);color:var(--text3);">Contribute</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Hardware pool -->
+        <div class="rc">
+          <div class="rc-banner" style="background:linear-gradient(135deg,#1a1000,#0d0800);">
+            <div style="font-size:18px;">🖥</div>
+            <div class="rc-type-badge" style="background:rgba(232,160,48,.1);border-color:var(--amber-dim);color:var(--amber);">RESOURCE · PRE-SALE</div>
+          </div>
+          <div class="rc-body">
+            <div class="rc-title">Cooperative Dev Server — Hardware Pre-sale</div>
+            <div class="rc-org">⚙ Mesh Studio · Pre-purchase · Shared ownership</div>
+            <div class="res-progress">
+              <div class="rp-top">
+                <div class="rp-units" style="color:var(--amber);">$3,600</div>
+                <div class="rp-goal">goal: $4,800</div>
+              </div>
+              <div class="rp-bar"><div class="rp-fill" style="width:75%;background:var(--amber);"></div></div>
+              <div class="rp-meta"><span>75% · 6 members pledged</span><span>Equipment ships on 100%</span></div>
+            </div>
+            <div class="rc-actions">
+              <div class="rca" style="background:rgba(232,160,48,.08);border-color:var(--amber-dim);color:var(--amber);">Manage →</div>
+              <div class="rca" style="background:transparent;border-color:var(--border2);color:var(--text3);">Add Pledge</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- GPU Pool contributor table -->
+      <div class="card">
+        <div class="ch"><div class="ct">GPU Compute Pool · Contributor Breakdown</div><div class="ca">Manage Allocations →</div></div>
+        <div class="cont-row cont-hdr-row">
+          <div></div><div>Member / Entity</div><div>Contributed</div><div>Share %</div><div>Status</div>
+        </div>
+        <div class="cont-row">
+          <div class="cont-av" style="background:linear-gradient(135deg,#0ccfca,#3b82f6);">JC</div>
+          <div><div class="cont-name">Jordan Chen · You</div><div class="cont-role">Individual · Developer</div></div>
+          <div class="cont-units">1,440 hrs</div>
+          <div class="cont-pct">20%</div>
+          <div><div class="cont-status" style="background:rgba(34,197,94,.06);border-color:var(--green-dim);color:var(--green);">Committed</div></div>
+        </div>
+        <div class="cont-row">
+          <div class="cont-av" style="background:linear-gradient(135deg,#0ccfca,#3b82f6);">AK</div>
+          <div><div class="cont-name">Amara Kofi</div><div class="cont-role">Mesh Studio · Co-Founder</div></div>
+          <div class="cont-units">1,440 hrs</div>
+          <div class="cont-pct">20%</div>
+          <div><div class="cont-status" style="background:rgba(34,197,94,.06);border-color:var(--green-dim);color:var(--green);">Committed</div></div>
+        </div>
+        <div class="cont-row">
+          <div class="cont-av" style="background:linear-gradient(135deg,#22c55e,#16a34a);">MP</div>
+          <div><div class="cont-name">Marcus Park</div><div class="cont-role">Mesh Studio · Infrastructure</div></div>
+          <div class="cont-units">1,080 hrs</div>
+          <div class="cont-pct">15%</div>
+          <div><div class="cont-status" style="background:rgba(34,197,94,.06);border-color:var(--green-dim);color:var(--green);">Committed</div></div>
+        </div>
+        <div class="cont-row">
+          <div class="cont-av" style="background:linear-gradient(135deg,#a855f7,#ec4899);">SR</div>
+          <div><div class="cont-name">Sofia Reyes</div><div class="cont-role">Mesh Studio · Design</div></div>
+          <div class="cont-units">720 hrs</div>
+          <div class="cont-pct">10%</div>
+          <div><div class="cont-status" style="background:rgba(34,197,94,.06);border-color:var(--green-dim);color:var(--green);">Committed</div></div>
+        </div>
+        <div class="cont-row">
+          <div class="cont-av" style="background:linear-gradient(135deg,#e8a030,#d97706);">LM</div>
+          <div><div class="cont-name">Lena Maier</div><div class="cont-role">Mesh Studio · Strategy</div></div>
+          <div class="cont-units">720 hrs</div>
+          <div class="cont-pct">10%</div>
+          <div><div class="cont-status" style="background:rgba(232,160,48,.06);border-color:var(--amber-dim);color:var(--amber);">Pending payment</div></div>
+        </div>
+        <div class="cont-row">
+          <div class="cont-av" style="background:var(--border2);">+3</div>
+          <div><div class="cont-name">3 more members</div><div class="cont-role">Various roles</div></div>
+          <div class="cont-units">1,800 hrs</div>
+          <div class="cont-pct">25%</div>
+          <div><div class="cont-status" style="background:rgba(34,197,94,.06);border-color:var(--green-dim);color:var(--green);">Committed</div></div>
+        </div>
+        <div style="padding:10px 14px;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;">
+          <span style="font-size:11px;color:var(--text3);">Total · 7 of 8 members · Pool reaches 100% when last member commits</span>
+          <span style="font-family:'IBM Plex Mono',monospace;font-size:13px;color:var(--blue);font-weight:600;">7,200 / 10,000 hrs</span>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Right: Resource account + allocation -->
+    <div>
+
+      <!-- My Resource Account -->
+      <div class="card" style="margin-bottom:14px;">
+        <div class="ch"><div class="ct">My Resource Account · Compute</div><div class="ca">Trade →</div></div>
+        <div style="padding:14px;">
+          <div class="res-account">
+            <div class="ra-label">GPU COMPUTE CREDITS · Q2 ALLOCATION</div>
+            <div class="ra-balance-row">
+              <div class="ra-amount" style="color:var(--blue);">1,440</div>
+              <div class="ra-unit">GPU hours remaining</div>
+            </div>
+            <div class="ra-bar"><div class="ra-bar-fill" style="width:58%;"></div></div>
+            <div class="ra-detail"><span>Used: 1,020 hrs</span><span>Total alloc: 2,460 hrs</span></div>
+          </div>
+          <div style="margin-top:10px;display:flex;flex-direction:column;gap:6px;">
+            <div style="display:flex;justify-content:space-between;font-size:11px;"><span style="color:var(--text3);">This week usage</span><span style="font-family:'IBM Plex Mono',monospace;color:var(--blue);">284 hrs</span></div>
+            <div style="display:flex;justify-content:space-between;font-size:11px;"><span style="color:var(--text3);">Burn rate</span><span style="font-family:'IBM Plex Mono',monospace;">40 hrs/day</span></div>
+            <div style="display:flex;justify-content:space-between;font-size:11px;"><span style="color:var(--text3);">Estimated runway</span><span style="font-family:'IBM Plex Mono',monospace;color:var(--green);">36 days</span></div>
+          </div>
+          <div style="display:flex;gap:6px;margin-top:10px;">
+            <button class="btn bt" style="flex:1;padding:6px;font-size:10px;">Add Credits</button>
+            <button class="btn bg" style="flex:1;padding:6px;font-size:10px;">Trade Credits</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Member allocations -->
+      <div class="card">
+        <div class="ch"><div class="ct">Pool Allocations · Usage</div></div>
+        <div style="padding:12px 14px;">
+          <div style="font-size:10px;color:var(--text3);margin-bottom:8px;">GPU hours used vs. allocated this quarter</div>
+          <div class="alloc-row">
+            <div class="alloc-av" style="background:linear-gradient(135deg,#0ccfca,#3b82f6);">JC</div>
+            <div class="alloc-name">Jordan Chen</div>
+            <div class="alloc-units">1,440 hrs alloc</div>
+            <div class="alloc-used">1,020 used</div>
+          </div>
+          <div class="alloc-row">
+            <div class="alloc-av" style="background:linear-gradient(135deg,#0ccfca,#3b82f6);">AK</div>
+            <div class="alloc-name">Amara Kofi</div>
+            <div class="alloc-units">1,440 hrs alloc</div>
+            <div class="alloc-used">880 used</div>
+          </div>
+          <div class="alloc-row">
+            <div class="alloc-av" style="background:linear-gradient(135deg,#22c55e,#16a34a);">MP</div>
+            <div class="alloc-name">Marcus Park</div>
+            <div class="alloc-units">1,080 hrs alloc</div>
+            <div class="alloc-used">1,080 used</div>
+          </div>
+          <div class="alloc-row">
+            <div class="alloc-av" style="background:linear-gradient(135deg,#a855f7,#ec4899);">SR</div>
+            <div class="alloc-name">Sofia Reyes</div>
+            <div class="alloc-units">720 hrs alloc</div>
+            <div class="alloc-used">240 used</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Resource campaign types reference -->
+      <div class="card" style="border-color:var(--teal-dim);">
+        <div class="ch" style="background:rgba(12,207,202,.03);">
+          <div class="ct" style="color:var(--teal);">Resource Campaign Types</div>
+          <div class="ca">Create →</div>
+        </div>
+        <div style="padding:12px 14px;display:flex;flex-direction:column;gap:8px;">
+          <div style="display:flex;gap:8px;align-items:flex-start;padding:8px;background:var(--card2);border-radius:5px;cursor:pointer;">
+            <div style="font-size:16px;">☁</div>
+            <div><div style="font-size:11px;font-weight:600;color:var(--text);">Compute Pool</div><div style="font-size:10px;color:var(--text3);">GPU, CPU, storage credits shared across members</div></div>
+          </div>
+          <div style="display:flex;gap:8px;align-items:flex-start;padding:8px;background:var(--card2);border-radius:5px;cursor:pointer;">
+            <div style="font-size:16px;">🔑</div>
+            <div><div style="font-size:11px;font-weight:600;color:var(--text);">License Group Buy</div><div style="font-size:10px;color:var(--text3);">Pool members to unlock enterprise pricing</div></div>
+          </div>
+          <div style="display:flex;gap:8px;align-items:flex-start;padding:8px;background:var(--card2);border-radius:5px;cursor:pointer;">
+            <div style="font-size:16px;">🖥</div>
+            <div><div style="font-size:11px;font-weight:600;color:var(--text);">Hardware Pre-sale</div><div style="font-size:10px;color:var(--text3);">Collective purchase of shared physical equipment</div></div>
+          </div>
+          <div style="display:flex;gap:8px;align-items:flex-start;padding:8px;background:var(--card2);border-radius:5px;cursor:pointer;">
+            <div style="font-size:16px;">⏱</div>
+            <div><div style="font-size:11px;font-weight:600;color:var(--text);">Time/Skills Pool</div><div style="font-size:10px;color:var(--text3);">Pledge hours to a collective skill bank</div></div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+</body>
+</html>

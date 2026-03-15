@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>KOGI · Campaign Builder</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap');
+:root{--bg:#070910;--sidebar:#0b0d16;--card:#0f1221;--card2:#131729;--border:#1a2035;--border2:#232a42;--teal:#0ccfca;--teal-dim:#0a9994;--amber:#e8a030;--amber-dim:#b07820;--green:#22c55e;--green-dim:#15803d;--blue:#3b82f6;--red:#ef4444;--purple:#a855f7;--mag:#d946ef;--text:#dde4f0;--text2:#7a879e;--text3:#3d4a62;}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--bg);color:var(--text);font-family:'IBM Plex Sans',sans-serif;font-size:13px;display:flex;height:100vh;overflow:hidden;}
+.sidebar{width:200px;min-width:200px;background:var(--sidebar);border-right:1px solid var(--border);display:flex;flex-direction:column;}
+.logo{padding:18px 16px;border-bottom:1px solid var(--border);}
+.logo-text{font-family:'IBM Plex Mono',monospace;font-size:18px;font-weight:600;letter-spacing:.08em;color:var(--teal);}
+.logo-sub{font-size:9px;color:var(--text3);letter-spacing:.15em;text-transform:uppercase;margin-top:2px;}
+.nav{padding:12px 0;flex:1;overflow-y:auto;}
+.ns{padding:8px 16px 4px;font-size:9px;color:var(--text3);letter-spacing:.18em;text-transform:uppercase;font-family:'IBM Plex Mono',monospace;}
+.ni{display:flex;align-items:center;gap:10px;padding:7px 16px;color:var(--text2);cursor:pointer;font-size:12px;border-left:2px solid transparent;}
+.ni.on{color:var(--teal);background:rgba(12,207,202,.07);border-left-color:var(--teal);}
+.ni-ic{width:14px;text-align:center;font-size:12px;}
+.pb{padding:12px 16px;border-top:1px solid var(--border);}
+.pm{display:flex;align-items:center;gap:8px;}
+.avsm{width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,#0ccfca,#3b82f6);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:#fff;}
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden;}
+.topbar{height:48px;border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 20px;gap:12px;background:var(--sidebar);flex-shrink:0;}
+.tp{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text3);}
+.tp span{color:var(--text2);}
+.tp .cur{color:var(--text);}
+.sp{flex:1;}
+.btn{padding:5px 12px;border-radius:4px;font-size:11px;font-family:'IBM Plex Mono',monospace;cursor:pointer;border:1px solid;}
+.bt{background:rgba(12,207,202,.12);border-color:var(--teal-dim);color:var(--teal);}
+.bg{background:transparent;border-color:var(--border2);color:var(--text2);}
+.layout{flex:1;display:grid;grid-template-columns:260px 1fr 280px;overflow:hidden;}
+
+/* Steps sidebar */
+.steps{background:var(--sidebar);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow-y:auto;}
+.steps-hdr{padding:12px 14px;border-bottom:1px solid var(--border);}
+.steps-title{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text2);margin-bottom:2px;}
+.steps-sub{font-size:10px;color:var(--text3);}
+.step-item{display:flex;align-items:flex-start;gap:10px;padding:12px 14px;border-bottom:1px solid var(--border);cursor:pointer;border-left:2px solid transparent;}
+.step-item.done{border-left-color:var(--green);}
+.step-item.active{border-left-color:var(--teal);background:rgba(12,207,202,.04);}
+.step-item.future{opacity:.5;}
+.step-num{width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;font-family:'IBM Plex Mono',monospace;font-weight:600;flex-shrink:0;}
+.step-item.done .step-num{background:var(--green);color:var(--bg);}
+.step-item.active .step-num{background:var(--teal);color:var(--bg);}
+.step-item.future .step-num{background:var(--card2);border:1px solid var(--border2);color:var(--text3);}
+.step-info{flex:1;}
+.step-label{font-size:12px;font-weight:600;color:var(--text);}
+.step-item.future .step-label{color:var(--text3);}
+.step-desc{font-size:10px;color:var(--text3);margin-top:2px;}
+.step-badge{font-size:9px;font-family:'IBM Plex Mono',monospace;padding:2px 6px;border-radius:3px;margin-top:4px;display:inline-block;}
+
+/* Wizard main area */
+.wizard{overflow-y:auto;padding:24px;}
+.wiz-section{margin-bottom:28px;}
+.ws-title{font-family:'IBM Plex Mono',monospace;font-size:13px;font-weight:600;color:var(--text);margin-bottom:4px;}
+.ws-sub{font-size:11px;color:var(--text3);margin-bottom:16px;line-height:1.5;}
+
+/* Entity type selector */
+.entity-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:20px;}
+.entity-card{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:14px;cursor:pointer;transition:all .15s;text-align:center;}
+.entity-card:hover{border-color:var(--border2);}
+.entity-card.selected{border-color:var(--teal-dim);background:rgba(12,207,202,.05);}
+.ec-ic{font-size:26px;margin-bottom:6px;}
+.ec-label{font-size:12px;font-weight:600;color:var(--text);}
+.ec-desc{font-size:10px;color:var(--text3);margin-top:3px;line-height:1.4;}
+
+/* Campaign type grid */
+.ctype-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px;}
+.ctype-card{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:14px;cursor:pointer;transition:all .15s;display:flex;gap:10px;align-items:flex-start;}
+.ctype-card:hover{border-color:var(--border2);}
+.ctype-card.selected{border-color:var(--teal-dim);background:rgba(12,207,202,.05);}
+.ctc-ic{width:36px;height:36px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:18px;border:1px solid;flex-shrink:0;}
+.ctc-info{flex:1;}
+.ctc-name{font-size:12px;font-weight:600;color:var(--text);margin-bottom:2px;}
+.ctc-desc{font-size:10px;color:var(--text3);line-height:1.4;}
+.ctc-badge{font-size:9px;font-family:'IBM Plex Mono',monospace;padding:2px 6px;border-radius:3px;border:1px solid;margin-top:5px;display:inline-block;}
+
+/* Form fields */
+.form-row{margin-bottom:14px;}
+.form-label{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--text2);text-transform:uppercase;letter-spacing:.1em;margin-bottom:6px;display:block;}
+.form-hint{font-size:10px;color:var(--text3);margin-bottom:6px;}
+.form-input{width:100%;background:var(--card2);border:1px solid var(--border2);border-radius:5px;padding:9px 12px;color:var(--text);font-size:12px;font-family:'IBM Plex Sans',sans-serif;outline:none;}
+.form-input:focus{border-color:var(--teal-dim);}
+.form-input::placeholder{color:var(--text3);}
+.form-textarea{width:100%;background:var(--card2);border:1px solid var(--border2);border-radius:5px;padding:9px 12px;color:var(--text);font-size:12px;font-family:'IBM Plex Sans',sans-serif;outline:none;resize:vertical;min-height:80px;line-height:1.5;}
+.form-textarea:focus{border-color:var(--teal-dim);}
+.form-row-2{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px;}
+.form-select{width:100%;background:var(--card2);border:1px solid var(--border2);border-radius:5px;padding:9px 12px;color:var(--text2);font-size:12px;font-family:'IBM Plex Sans',sans-serif;outline:none;}
+/* Toggle options */
+.toggle-row{display:flex;align-items:center;justify-content:space-between;padding:9px 12px;background:var(--card2);border:1px solid var(--border2);border-radius:5px;margin-bottom:8px;}
+.tr-label{font-size:12px;color:var(--text);}
+.tr-sub{font-size:10px;color:var(--text3);}
+.toggle{width:30px;height:17px;border-radius:9px;position:relative;cursor:pointer;flex-shrink:0;}
+.toggle.on{background:var(--teal-dim);}
+.toggle.off{background:var(--border2);}
+.toggle::after{content:'';position:absolute;top:2px;left:2px;width:13px;height:13px;border-radius:50%;background:#fff;transition:left .15s;}
+.toggle.on::after{left:15px;}
+/* milestone builder */
+.milestone-list{display:flex;flex-direction:column;gap:8px;margin-bottom:10px;}
+.ms-row{display:grid;grid-template-columns:1fr 100px 28px;gap:8px;align-items:center;}
+.ms-input{background:var(--card2);border:1px solid var(--border2);border-radius:4px;padding:8px 10px;color:var(--text);font-size:11px;font-family:'IBM Plex Sans',sans-serif;outline:none;}
+.ms-del{width:28px;height:28px;border-radius:4px;display:flex;align-items:center;justify-content:center;border:1px solid var(--border2);cursor:pointer;color:var(--text3);font-size:14px;}
+.ms-del:hover{border-color:var(--red);color:var(--red);}
+.add-ms{padding:7px 12px;background:transparent;border:1px dashed var(--border2);border-radius:4px;color:var(--text3);font-size:10px;font-family:'IBM Plex Mono',monospace;cursor:pointer;width:100%;text-align:left;transition:all .12s;}
+.add-ms:hover{border-color:var(--teal-dim);color:var(--teal);}
+/* deployment channels */
+.channel-checks{display:flex;flex-direction:column;gap:6px;}
+.ch-check{display:flex;align-items:center;gap:10px;padding:9px 12px;background:var(--card2);border:1px solid var(--border2);border-radius:5px;cursor:pointer;}
+.ch-check.checked{border-color:var(--teal-dim);background:rgba(12,207,202,.04);}
+.chk-ic{font-size:16px;}
+.chk-name{flex:1;font-size:12px;color:var(--text);}
+.chk-reach{font-size:10px;font-family:'IBM Plex Mono',monospace;color:var(--text3);}
+.chk-box{width:16px;height:16px;border-radius:3px;border:1px solid var(--border2);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.ch-check.checked .chk-box{background:var(--teal);border-color:var(--teal);}
+
+/* Preview panel */
+.preview{background:var(--sidebar);border-left:1px solid var(--border);overflow-y:auto;display:flex;flex-direction:column;}
+.pv-hdr{padding:12px 14px;border-bottom:1px solid var(--border);}
+.pv-title{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--text2);text-transform:uppercase;letter-spacing:.1em;margin-bottom:6px;}
+.pv-badge{font-size:10px;font-family:'IBM Plex Mono',monospace;color:var(--teal);background:rgba(12,207,202,.08);padding:4px 10px;border-radius:4px;border:1px solid var(--teal-dim);}
+/* campaign preview card */
+.cmp-preview{margin:14px;background:var(--card);border:1px solid var(--border);border-radius:8px;overflow:hidden;}
+.cp-banner{height:64px;background:linear-gradient(135deg,#180828,#0d0420);display:flex;align-items:center;padding:0 14px;gap:10px;}
+.cp-ic{font-size:24px;}
+.cp-type{font-family:'IBM Plex Mono',monospace;font-size:9px;padding:2px 7px;border-radius:3px;border:1px solid;background:rgba(168,85,247,.1);border-color:#7c3aed;color:var(--purple);}
+.cp-body{padding:14px;}
+.cp-title{font-size:13px;font-weight:600;color:var(--text);margin-bottom:3px;}
+.cp-desc{font-size:11px;color:var(--text3);line-height:1.5;margin-bottom:10px;}
+.cp-progress{height:6px;background:var(--border);border-radius:3px;overflow:hidden;margin-bottom:6px;}
+.cp-fill{height:100%;border-radius:3px;background:var(--purple);width:0%;}
+.cp-stats{display:flex;justify-content:space-between;font-size:10px;color:var(--text3);font-family:'IBM Plex Mono',monospace;margin-bottom:10px;}
+.cp-btn{width:100%;padding:8px;border-radius:5px;font-size:11px;font-family:'IBM Plex Mono',monospace;cursor:pointer;border:1px solid #7c3aed;background:rgba(168,85,247,.12);color:var(--purple);text-align:center;}
+/* validation -->
+.val-item{display:flex;align-items:center;gap:7px;padding:6px 0;border-bottom:1px solid var(--border);}
+.val-item:last-child{border-bottom:none;}
+.val-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
+.val-text{font-size:11px;color:var(--text2);}
+.val-text.warn{color:var(--amber);}
+/* publish actions -->
+.publish-section{padding:14px;border-top:1px solid var(--border);margin-top:auto;}
+.pub-note{font-size:10px;color:var(--text3);margin-bottom:8px;line-height:1.5;}
+.pub-btns{display:flex;flex-direction:column;gap:6px;}
+.pub-btn{width:100%;padding:8px;border-radius:5px;font-size:11px;font-family:'IBM Plex Mono',monospace;cursor:pointer;border:1px solid;text-align:center;}
+</style>
+</head>
+<body>
+<div class="sidebar">
+  <div class="logo"><div class="logo-text">KOGI</div><div class="logo-sub">Independent Worker OS</div></div>
+  <nav class="nav">
+    <div class="ns">Capital & Growth</div>
+    <div class="ni on"><span class="ni-ic">🎯</span>Campaign Builder</div>
+    <div class="ni"><span class="ni-ic">📣</span>My Campaigns</div>
+    <div class="ni"><span class="ni-ic">📊</span>Analytics</div>
+    <div class="ni"><span class="ni-ic">🌐</span>Discover</div>
+    <div class="ns">Platform</div>
+    <div class="ni"><span class="ni-ic">⊗</span>Marketplace</div>
+    <div class="ni"><span class="ni-ic">⬡</span>Exchange</div>
+    <div class="ni"><span class="ni-ic">⊕</span>Community</div>
+    <div class="ns">Finance</div>
+    <div class="ni"><span class="ni-ic">💳</span>Wallet</div>
+    <div class="ni"><span class="ni-ic">♦</span>Bank</div>
+  </nav>
+  <div class="pb"><div class="pm"><div class="avsm">JC</div><div><div style="font-size:12px;">Jordan Chen</div><div style="font-size:10px;color:var(--text3);">@jordan.dev</div></div></div></div>
+</div>
+
+<div class="main">
+  <div class="topbar">
+    <div class="tp">KCMP / <span class="cur">Campaign Builder · New Campaign</span></div>
+    <div class="sp"></div>
+    <button class="btn bg">Save Draft</button>
+    <button class="btn bt">Preview Live →</button>
+  </div>
+
+  <div class="layout">
+    <!-- Steps sidebar -->
+    <div class="steps">
+      <div class="steps-hdr">
+        <div class="steps-title">Build Your Campaign</div>
+        <div class="steps-sub">Step 4 of 7 · ~5 min to complete</div>
+      </div>
+
+      <div class="step-item done">
+        <div class="step-num">✓</div>
+        <div class="step-info"><div class="step-label">Entity Type</div><div class="step-desc">Who is running this?</div><div class="step-badge" style="background:rgba(34,197,94,.06);border-color:var(--green-dim);color:var(--green);">Individual Worker ✓</div></div>
+      </div>
+
+      <div class="step-item done">
+        <div class="step-num">✓</div>
+        <div class="step-info"><div class="step-label">Campaign Type</div><div class="step-desc">What are you raising?</div><div class="step-badge" style="background:rgba(168,85,247,.06);border-color:#7c3aed;color:var(--purple);">Equity Crowdfunding ✓</div></div>
+      </div>
+
+      <div class="step-item done">
+        <div class="step-num">✓</div>
+        <div class="step-info"><div class="step-label">Link Portfolio</div><div class="step-desc">Attach a portfolio component</div><div class="step-badge" style="background:rgba(34,197,94,.06);border-color:var(--green-dim);color:var(--green);">Kogi Engine Project ✓</div></div>
+      </div>
+
+      <div class="step-item active">
+        <div class="step-num">4</div>
+        <div class="step-info"><div class="step-label">Campaign Details</div><div class="step-desc">Title, goal, terms, milestones</div></div>
+      </div>
+
+      <div class="step-item future">
+        <div class="step-num">5</div>
+        <div class="step-info"><div class="step-label">Governance Setup</div><div class="step-desc">Approval rules, multi-sig (org only)</div></div>
+      </div>
+
+      <div class="step-item future">
+        <div class="step-num">6</div>
+        <div class="step-info"><div class="step-label">Distribution Channels</div><div class="step-desc">Where to publish</div></div>
+      </div>
+
+      <div class="step-item future">
+        <div class="step-num">7</div>
+        <div class="step-info"><div class="step-label">Review & Launch</div><div class="step-desc">Final check before going live</div></div>
+      </div>
+
+      <div style="padding:14px;margin-top:auto;border-top:1px solid var(--border);">
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.14em;margin-bottom:6px;">Templates</div>
+        <div style="display:flex;flex-direction:column;gap:5px;">
+          <div style="font-size:11px;color:var(--teal);cursor:pointer;">◈ Seed Round Template</div>
+          <div style="font-size:11px;color:var(--text3);cursor:pointer;">Revenue Share Template</div>
+          <div style="font-size:11px;color:var(--text3);cursor:pointer;">Resource Pool Template</div>
+          <div style="font-size:11px;color:var(--text3);cursor:pointer;">Mutual Aid Template</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Wizard: Step 4 - Campaign Details -->
+    <div class="wizard">
+
+      <!-- Step header -->
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:20px;">
+        <div style="width:32px;height:32px;border-radius:50%;background:var(--teal);display:flex;align-items:center;justify-content:center;font-family:'IBM Plex Mono',monospace;font-size:14px;font-weight:600;color:var(--bg);">4</div>
+        <div>
+          <div style="font-size:15px;font-weight:600;color:var(--text);">Campaign Details</div>
+          <div style="font-size:11px;color:var(--text3);">Equity Crowdfunding · Individual Worker · Jordan Chen</div>
+        </div>
+        <div style="margin-left:auto;font-size:10px;color:var(--text3);font-family:'IBM Plex Mono',monospace;">Step 4 of 7</div>
+      </div>
+
+      <!-- Entity recap banner -->
+      <div style="background:rgba(168,85,247,.04);border:1px solid #7c3aed40;border-radius:6px;padding:10px 14px;margin-bottom:20px;display:flex;align-items:center;gap:12px;">
+        <div style="font-size:18px;">👤</div>
+        <div>
+          <div style="font-size:11px;color:var(--purple);font-family:'IBM Plex Mono',monospace;font-weight:600;">INDIVIDUAL WORKER · EQUITY CROWDFUNDING</div>
+          <div style="font-size:10px;color:var(--text3);margin-top:2px;">Running as Jordan Chen (@jordan.dev) · Linked to Kogi Engine Portfolio Project · Capital goes to your Operating Account on goal completion</div>
+        </div>
+        <button class="btn" style="margin-left:auto;font-size:9px;padding:3px 8px;background:transparent;border-color:var(--border2);color:var(--text3);">Change</button>
+      </div>
+
+      <div class="wiz-section">
+        <div class="ws-title">Campaign Basics</div>
+        <div class="form-row">
+          <label class="form-label">Campaign Title</label>
+          <input class="form-input" value="Kogi Engine — Series Seed Round · $450,000"/>
+        </div>
+        <div class="form-row">
+          <label class="form-label">Elevator Pitch (shown on campaign card)</label>
+          <textarea class="form-textarea" rows="3">Raising $450K seed capital to scale the kogi-engine AI analytics and matching platform. Join 42 backers funding the infrastructure layer for cooperative and independent worker economics.</textarea>
+        </div>
+        <div class="form-row">
+          <label class="form-label">Full Description (rich text)</label>
+          <textarea class="form-textarea" rows="5" style="min-height:120px;">The kogi-engine powers matching, recommendations, risk scoring, and financial intelligence for the entire Kogi platform. With seed capital, we will expand from 3 to 8 engine sub-systems, build a dedicated inference cluster, and ship the cooperative economic analytics layer.
+
+Use of funds: 60% engineering (4 Rust/Scala engineers), 25% infrastructure (GPU cluster + data pipeline), 15% operations.</textarea>
+        </div>
+      </div>
+
+      <div class="wiz-section">
+        <div class="ws-title">Funding Goal & Equity Terms</div>
+        <div class="form-row-2">
+          <div>
+            <label class="form-label">Funding Goal</label>
+            <input class="form-input" value="$450,000" placeholder="e.g. $100,000"/>
+          </div>
+          <div>
+            <label class="form-label">Currency</label>
+            <select class="form-select"><option>USD</option><option>EUR</option><option>GBP</option><option>Platform Credits</option></select>
+          </div>
+        </div>
+        <div class="form-row-2">
+          <div>
+            <label class="form-label">Equity Offered (%)</label>
+            <input class="form-input" value="10%" placeholder="e.g. 10%"/>
+          </div>
+          <div>
+            <label class="form-label">Pre-Money Valuation</label>
+            <input class="form-input" value="$4,500,000"/>
+          </div>
+        </div>
+        <div class="form-row-2">
+          <div>
+            <label class="form-label">Min. Investment Per Backer</label>
+            <input class="form-input" value="$1,000"/>
+          </div>
+          <div>
+            <label class="form-label">Max. Investment Per Backer</label>
+            <input class="form-input" value="$50,000 (no cap)"/>
+          </div>
+        </div>
+        <div class="form-row-2">
+          <div>
+            <label class="form-label">Campaign Deadline</label>
+            <input class="form-input" value="April 12, 2026"/>
+          </div>
+          <div>
+            <label class="form-label">Equity Class</label>
+            <select class="form-select"><option>Common · Voting</option><option>Common · Non-voting</option><option>Preferred</option><option>Convertible Note</option></select>
+          </div>
+        </div>
+        <div class="toggle-row">
+          <div><div class="tr-label">All-or-nothing</div><div class="tr-sub">Refund all backers if goal not reached by deadline</div></div>
+          <div class="toggle on"></div>
+        </div>
+        <div class="toggle-row">
+          <div><div class="tr-label">Governance rights for backers</div><div class="tr-sub">Investors receive voting rights proportional to equity held</div></div>
+          <div class="toggle on"></div>
+        </div>
+        <div class="toggle-row">
+          <div><div class="tr-label">Cooperative governance approval required</div><div class="tr-sub">Require Mesh Studio member vote before capital release</div></div>
+          <div class="toggle on"></div>
+        </div>
+      </div>
+
+      <div class="wiz-section">
+        <div class="ws-title">Use of Funds · Milestone Schedule</div>
+        <div class="ws-sub">Define how capital will be disbursed. Backers see these milestones on the campaign page. Funds release per milestone upon community/governance approval.</div>
+        <div class="milestone-list">
+          <div class="ms-row">
+            <input class="ms-input" value="Milestone 1 — Engineering team onboarding (2 engineers)"/>
+            <input class="ms-input" value="$135,000" style="text-align:right;"/>
+            <div class="ms-del">×</div>
+          </div>
+          <div class="ms-row">
+            <input class="ms-input" value="Milestone 2 — Inference cluster deployment"/>
+            <input class="ms-input" value="$112,500" style="text-align:right;"/>
+            <div class="ms-del">×</div>
+          </div>
+          <div class="ms-row">
+            <input class="ms-input" value="Milestone 3 — Data pipeline + AnalyticsEngine v2"/>
+            <input class="ms-input" value="$112,500" style="text-align:right;"/>
+            <div class="ms-del">×</div>
+          </div>
+          <div class="ms-row">
+            <input class="ms-input" value="Milestone 4 — Public launch + cooperative analytics layer"/>
+            <input class="ms-input" value="$90,000" style="text-align:right;"/>
+            <div class="ms-del">×</div>
+          </div>
+        </div>
+        <button class="add-ms">+ Add milestone</button>
+        <div style="display:flex;justify-content:space-between;margin-top:8px;font-family:'IBM Plex Mono',monospace;font-size:11px;"><span style="color:var(--text3);">Total across milestones</span><span style="color:var(--teal);">$450,000 ✓</span></div>
+      </div>
+
+      <div class="wiz-section">
+        <div class="ws-title">Publish Channels</div>
+        <div class="ws-sub">Select where to publish this campaign. It will appear in your profile, the marketplace, and the selected spaces and exchange markets.</div>
+        <div class="channel-checks">
+          <div class="ch-check checked">
+            <div class="chk-ic">◉</div>
+            <div><div class="chk-name">Your Public Profile</div><div class="tr-sub">@jordan.dev · All visitors</div></div>
+            <div class="chk-reach">28K profile views/mo</div>
+            <div class="chk-box">✓</div>
+          </div>
+          <div class="ch-check checked">
+            <div class="chk-ic">⊗</div>
+            <div><div class="chk-name">Kogi Marketplace · Campaigns</div><div class="tr-sub">Discoverable in campaign browse</div></div>
+            <div class="chk-reach">84K monthly visitors</div>
+            <div class="chk-box">✓</div>
+          </div>
+          <div class="ch-check checked">
+            <div class="chk-ic">⬡</div>
+            <div><div class="chk-name">Exchange · Financial Instruments Market</div><div class="tr-sub">Equity round listed in KFIM</div></div>
+            <div class="chk-reach">2,420 active investors</div>
+            <div class="chk-box">✓</div>
+          </div>
+          <div class="ch-check checked">
+            <div class="chk-ic">🌐</div>
+            <div><div class="chk-name">Kogi Builder Network Space</div><div class="tr-sub">Post to community feed</div></div>
+            <div class="chk-reach">2,420 members</div>
+            <div class="chk-box">✓</div>
+          </div>
+          <div class="ch-check">
+            <div class="chk-ic">⚙</div>
+            <div><div class="chk-name">Mesh Studio Cooperative Space</div><div class="tr-sub">Internal member visibility</div></div>
+            <div class="chk-reach">8 members</div>
+            <div class="chk-box"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step navigation -->
+      <div style="display:flex;justify-content:space-between;padding-top:8px;border-top:1px solid var(--border);">
+        <button class="btn bg">← Back: Link Portfolio</button>
+        <button class="btn bt">Next: Governance Setup →</button>
+      </div>
+
+    </div>
+
+    <!-- Live preview -->
+    <div class="preview">
+      <div class="pv-hdr">
+        <div class="pv-title">Live Preview</div>
+        <div class="pv-badge">Campaign Card · Public View</div>
+      </div>
+
+      <div class="cmp-preview">
+        <div class="cp-banner">
+          <div class="cp-ic">🚀</div>
+          <div class="cp-type">EQUITY CROWDFUNDING</div>
+        </div>
+        <div class="cp-body">
+          <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px;">
+            <div style="width:20px;height:20px;border-radius:50%;background:linear-gradient(135deg,#0ccfca,#3b82f6);display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:600;color:#fff;">JC</div>
+            <div style="font-size:10px;color:var(--text3);">Jordan Chen · @jordan.dev · Individual</div>
+          </div>
+          <div class="cp-title">Kogi Engine — Series Seed Round · $450,000</div>
+          <div class="cp-desc">Raising $450K seed capital to scale the kogi-engine AI analytics and matching platform...</div>
+          <div class="cp-progress"><div class="cp-fill" style="width:73%;"></div></div>
+          <div class="cp-stats"><span style="color:var(--purple);">73% · $328,500 raised</span><span>42 backers · 28d left</span></div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:10px;">
+            <div style="background:var(--card2);border-radius:4px;padding:8px;text-align:center;"><div style="font-family:'IBM Plex Mono',monospace;font-size:13px;font-weight:600;color:var(--purple);">10%</div><div style="font-size:9px;color:var(--text3);">Equity offered</div></div>
+            <div style="background:var(--card2);border-radius:4px;padding:8px;text-align:center;"><div style="font-family:'IBM Plex Mono',monospace;font-size:13px;font-weight:600;">$4.5M</div><div style="font-size:9px;color:var(--text3);">Pre-money val.</div></div>
+          </div>
+          <div class="cp-btn">Invest · Min $1,000 →</div>
+        </div>
+      </div>
+
+      <!-- Validation checklist -->
+      <div style="padding:12px 14px;border-top:1px solid var(--border);">
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.14em;margin-bottom:8px;">Validation Checklist</div>
+        <div class="val-item"><div class="val-dot" style="background:var(--green);"></div><div class="val-text">Entity type selected ✓</div></div>
+        <div class="val-item"><div class="val-dot" style="background:var(--green);"></div><div class="val-text">Campaign type: Equity ✓</div></div>
+        <div class="val-item"><div class="val-dot" style="background:var(--green);"></div><div class="val-text">Portfolio linked ✓</div></div>
+        <div class="val-item"><div class="val-dot" style="background:var(--green);"></div><div class="val-text">Goal and terms set ✓</div></div>
+        <div class="val-item"><div class="val-dot" style="background:var(--green);"></div><div class="val-text">Milestones total = goal ✓</div></div>
+        <div class="val-item"><div class="val-dot" style="background:var(--amber);"></div><div class="val-text warn">⚠ Governance not configured yet</div></div>
+        <div class="val-item"><div class="val-dot" style="background:var(--border2);"></div><div class="val-text" style="color:var(--text3);">Media / pitch deck (optional)</div></div>
+      </div>
+
+      <div class="publish-section">
+        <div class="pub-note">Campaign will be reviewed by Oba before publishing. Equity campaigns require identity verification (KYC) before going live.</div>
+        <div class="pub-btns">
+          <div class="pub-btn" style="background:rgba(12,207,202,.1);border-color:var(--teal-dim);color:var(--teal);">Continue Setup →</div>
+          <div class="pub-btn" style="background:transparent;border-color:var(--border2);color:var(--text3);">Save as Draft</div>
+          <div class="pub-btn" style="background:transparent;border-color:var(--border2);color:var(--text3);">Share Preview Link</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

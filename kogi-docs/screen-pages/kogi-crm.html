@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>KOGI · CRM · Contacts & Pipeline</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap');
+:root{--bg:#070910;--sidebar:#0b0d16;--card:#0f1221;--card2:#131729;--border:#1a2035;--border2:#232a42;--teal:#0ccfca;--teal-dim:#0a9994;--amber:#e8a030;--amber-dim:#b07820;--green:#22c55e;--green-dim:#15803d;--blue:#3b82f6;--red:#ef4444;--purple:#a855f7;--mag:#d946ef;--text:#dde4f0;--text2:#7a879e;--text3:#3d4a62;}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--bg);color:var(--text);font-family:'IBM Plex Sans',sans-serif;font-size:13px;display:flex;height:100vh;overflow:hidden;}
+.sidebar{width:200px;min-width:200px;background:var(--sidebar);border-right:1px solid var(--border);display:flex;flex-direction:column;}
+.logo{padding:18px 16px;border-bottom:1px solid var(--border);}
+.logo-text{font-family:'IBM Plex Mono',monospace;font-size:18px;font-weight:600;letter-spacing:.08em;color:var(--teal);}
+.logo-sub{font-size:9px;color:var(--text3);letter-spacing:.15em;text-transform:uppercase;margin-top:2px;}
+.nav{padding:12px 0;flex:1;overflow-y:auto;}
+.ns{padding:8px 16px 4px;font-size:9px;color:var(--text3);letter-spacing:.18em;text-transform:uppercase;font-family:'IBM Plex Mono',monospace;}
+.ni{display:flex;align-items:center;gap:10px;padding:7px 16px;color:var(--text2);cursor:pointer;font-size:12px;border-left:2px solid transparent;}
+.ni.on{color:var(--teal);background:rgba(12,207,202,.07);border-left-color:var(--teal);}
+.ni-ic{width:14px;text-align:center;font-size:12px;}
+.pb{padding:12px 16px;border-top:1px solid var(--border);}
+.pm{display:flex;align-items:center;gap:8px;}
+.avsm{width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,#0ccfca,#3b82f6);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:#fff;}
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden;}
+.topbar{height:48px;border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 20px;gap:12px;background:var(--sidebar);flex-shrink:0;}
+.tp{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text3);}
+.tp span{color:var(--text2);}
+.tp .cur{color:var(--text);}
+.sp{flex:1;}
+.btn{padding:5px 12px;border-radius:4px;font-size:11px;font-family:'IBM Plex Mono',monospace;cursor:pointer;border:1px solid;}
+.bt{background:rgba(12,207,202,.12);border-color:var(--teal-dim);color:var(--teal);}
+.bg{background:transparent;border-color:var(--border2);color:var(--text2);}
+.ba{background:rgba(232,160,48,.1);border-color:var(--amber-dim);color:var(--amber);}
+.stats{display:grid;grid-template-columns:repeat(6,1fr);gap:1px;background:var(--border);border-bottom:1px solid var(--border);flex-shrink:0;}
+.sb{background:var(--card);padding:11px 14px;}
+.sv{font-family:'IBM Plex Mono',monospace;font-size:16px;font-weight:600;}
+.sl{font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.1em;margin-top:1px;}
+/* crm tabs */
+.crm-tabs{display:flex;background:var(--card);border-bottom:1px solid var(--border);flex-shrink:0;}
+.ct{padding:9px 16px;font-size:11px;font-family:'IBM Plex Mono',monospace;color:var(--text3);cursor:pointer;border-bottom:2px solid transparent;}
+.ct.on{color:var(--teal);border-bottom-color:var(--teal);}
+.layout{flex:1;display:grid;grid-template-columns:1fr 320px;overflow:hidden;}
+
+/* Kanban pipeline */
+.kanban{overflow-x:auto;overflow-y:hidden;padding:16px;display:flex;gap:12px;align-items:flex-start;}
+.kol{min-width:220px;width:220px;flex-shrink:0;}
+.kol-hdr{display:flex;align-items:center;gap:6px;margin-bottom:10px;}
+.kol-title{font-family:'IBM Plex Mono',monospace;font-size:10px;text-transform:uppercase;letter-spacing:.12em;font-weight:600;flex:1;}
+.kol-count{font-family:'IBM Plex Mono',monospace;font-size:10px;background:var(--card2);border:1px solid var(--border2);border-radius:10px;padding:1px 7px;}
+.kol-val{font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--text3);}
+/* deal card */
+.deal-card{background:var(--card);border:1px solid var(--border);border-radius:6px;padding:11px;margin-bottom:8px;cursor:pointer;transition:all .12s;}
+.deal-card:hover{border-color:var(--border2);transform:translateY(-1px);}
+.dc-top{display:flex;align-items:flex-start;gap:7px;margin-bottom:7px;}
+.dc-av{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:600;color:#fff;flex-shrink:0;}
+.dc-name{font-size:12px;font-weight:600;color:var(--text);flex:1;line-height:1.3;}
+.dc-org{font-size:10px;color:var(--text3);}
+.dc-amount{font-family:'IBM Plex Mono',monospace;font-size:13px;font-weight:600;margin-bottom:5px;}
+.dc-days{font-size:10px;color:var(--text3);font-family:'IBM Plex Mono',monospace;margin-bottom:6px;}
+.dc-prob{height:4px;background:var(--border);border-radius:2px;overflow:hidden;margin-bottom:4px;}
+.dc-prob-fill{height:100%;border-radius:2px;}
+.dc-prob-lbl{font-size:9px;color:var(--text3);text-align:right;font-family:'IBM Plex Mono',monospace;}
+.dc-tags{display:flex;gap:4px;flex-wrap:wrap;margin-top:6px;}
+.dc-tag{font-size:9px;font-family:'IBM Plex Mono',monospace;padding:1px 5px;border-radius:3px;background:var(--card2);border:1px solid var(--border2);color:var(--text3);}
+.dc-alert{font-size:10px;color:var(--amber);margin-top:5px;font-family:'IBM Plex Mono',monospace;}
+/* + add card -->
+.add-deal{border:1px dashed var(--border2);border-radius:6px;padding:10px;text-align:center;cursor:pointer;color:var(--text3);font-size:11px;transition:all .12s;}
+.add-deal:hover{border-color:var(--teal-dim);color:var(--teal);}
+
+/* Contact detail panel */
+.contact-detail{background:var(--sidebar);border-left:1px solid var(--border);overflow-y:auto;display:flex;flex-direction:column;}
+.cd-hdr{padding:14px;border-bottom:1px solid var(--border);}
+.cd-av{width:52px;height:52px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:600;color:#fff;margin-bottom:10px;}
+.cd-name{font-size:15px;font-weight:600;color:var(--text);}
+.cd-handle{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--teal);margin-top:2px;}
+.cd-title{font-size:11px;color:var(--text3);margin-top:3px;}
+.cd-actions{display:flex;gap:5px;margin-top:10px;}
+.cd-act{flex:1;padding:6px;text-align:center;border-radius:4px;font-size:9px;font-family:'IBM Plex Mono',monospace;cursor:pointer;border:1px solid;}
+.cd-sec{padding:11px 14px;border-bottom:1px solid var(--border);}
+.cds-title{font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.14em;margin-bottom:7px;}
+.cdr{display:flex;justify-content:space-between;margin-bottom:5px;}
+.cdk{font-size:11px;color:var(--text3);}
+.cdv{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text2);}
+.cdv.t{color:var(--teal);}
+.cdv.g{color:var(--green);}
+.cdv.a{color:var(--amber);}
+/* activity feed -->
+.act-item{display:flex;gap:8px;padding:7px 0;border-bottom:1px solid var(--border);}
+.act-item:last-child{border-bottom:none;}
+.act-dot{width:7px;height:7px;border-radius:50%;margin-top:3px;flex-shrink:0;}
+.act-desc{flex:1;font-size:11px;color:var(--text2);}
+.act-time{font-size:9px;color:var(--text3);font-family:'IBM Plex Mono',monospace;}
+/* score ring -->
+.score-ring{display:flex;align-items:center;gap:12px;padding:10px 0;}
+.sr-ring{width:56px;height:56px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'IBM Plex Mono',monospace;font-size:18px;font-weight:600;border:3px solid;}
+.sr-labels{display:flex;flex-direction:column;gap:3px;font-size:10px;color:var(--text3);}
+</style>
+</head>
+<body>
+<div class="sidebar">
+  <div class="logo"><div class="logo-text">KOGI</div><div class="logo-sub">Independent Worker OS</div></div>
+  <nav class="nav">
+    <div class="ns">Work</div>
+    <div class="ni"><span class="ni-ic">◫</span>Office</div>
+    <div class="ni"><span class="ni-ic">📅</span>Bookings</div>
+    <div class="ni on"><span class="ni-ic">👥</span>CRM</div>
+    <div class="ni"><span class="ni-ic">📣</span>Campaigns</div>
+    <div class="ns">Platform</div>
+    <div class="ni"><span class="ni-ic">⊗</span>Marketplace</div>
+    <div class="ni"><span class="ni-ic">⬡</span>Exchange</div>
+    <div class="ni"><span class="ni-ic">💼</span>Deal Rooms</div>
+    <div class="ns">Finance</div>
+    <div class="ni"><span class="ni-ic">📄</span>Invoices</div>
+    <div class="ni"><span class="ni-ic">♦</span>Bank</div>
+    <div class="ns">Identity</div>
+    <div class="ni"><span class="ni-ic">◉</span>Profile</div>
+    <div class="ni"><span class="ni-ic">⊞</span>Contacts</div>
+  </nav>
+  <div class="pb"><div class="pm"><div class="avsm">JC</div><div><div style="font-size:12px;">Jordan Chen</div><div style="font-size:10px;color:var(--text3);">@jordan.dev</div></div></div></div>
+</div>
+
+<div class="main">
+  <div class="topbar">
+    <div class="tp">KCON / <span class="cur">CRM · Contacts & Sales Pipeline</span></div>
+    <div class="sp"></div>
+    <button class="btn bg">Import Contacts</button>
+    <button class="btn bg">◉ Oba Outreach</button>
+    <button class="btn bt">+ Add Contact</button>
+  </div>
+
+  <div class="stats">
+    <div class="sb"><div class="sv" style="color:var(--teal);">284</div><div class="sl">Total Contacts</div></div>
+    <div class="sb"><div class="sv" style="color:var(--amber);">14</div><div class="sl">Active Deals</div></div>
+    <div class="sb"><div class="sv" style="color:var(--green);">$84,200</div><div class="sl">Pipeline Value</div></div>
+    <div class="sb"><div class="sv">2</div><div class="sl">Closed This Month</div></div>
+    <div class="sb"><div class="sv" style="color:var(--blue);">5</div><div class="sl">Overdue Follow-ups</div></div>
+    <div class="sb"><div class="sv">38%</div><div class="sl">Win Rate</div></div>
+  </div>
+
+  <div class="crm-tabs">
+    <div class="ct on">Pipeline · Kanban</div>
+    <div class="ct">All Contacts</div>
+    <div class="ct">Deals Table</div>
+    <div class="ct">Outreach Queue</div>
+    <div class="ct">Analytics</div>
+  </div>
+
+  <div class="layout">
+    <!-- Kanban board -->
+    <div style="overflow-x:auto;overflow-y:hidden;flex:1;">
+      <div class="kanban">
+
+        <!-- Lead -->
+        <div class="kol">
+          <div class="kol-hdr">
+            <div style="width:8px;height:8px;border-radius:50%;background:var(--text3);flex-shrink:0;"></div>
+            <div class="kol-title" style="color:var(--text3);">Lead</div>
+            <div class="kol-count">4</div>
+            <div class="kol-val">$22,400</div>
+          </div>
+
+          <div class="deal-card">
+            <div class="dc-top">
+              <div class="dc-av" style="background:linear-gradient(135deg,#0ccfca,#3b82f6);">SV</div>
+              <div><div class="dc-name">Solo Dev Collective</div><div class="dc-org">Community · 1,800 members</div></div>
+            </div>
+            <div class="dc-amount" style="color:var(--text3);">$3,200/mo</div>
+            <div class="dc-days">Added 3 days ago</div>
+            <div class="dc-tags"><span class="dc-tag">Consulting</span><span class="dc-tag">Rust</span></div>
+          </div>
+
+          <div class="deal-card">
+            <div class="dc-top">
+              <div class="dc-av" style="background:linear-gradient(135deg,#22c55e,#16a34a);">BB</div>
+              <div><div class="dc-name">Bay Area Dev Guild</div><div class="dc-org">Guild · 420 members</div></div>
+            </div>
+            <div class="dc-amount" style="color:var(--text3);">$8,000 fixed</div>
+            <div class="dc-days">From Hacker News thread</div>
+            <div class="dc-tags"><span class="dc-tag">Workshop</span><span class="dc-tag">CRDT</span></div>
+          </div>
+
+          <div class="deal-card">
+            <div class="dc-top">
+              <div class="dc-av" style="background:linear-gradient(135deg,#e8a030,#d97706);">DV</div>
+              <div><div class="dc-name">DeFi Ventures Fund</div><div class="dc-org">Investment fund · DAO</div></div>
+            </div>
+            <div class="dc-amount" style="color:var(--text3);">$45,000 project</div>
+            <div class="dc-days">Via @amara.dev referral</div>
+            <div class="dc-alert">⚠ No contact in 5 days</div>
+          </div>
+
+          <div class="add-deal">+ Add Lead</div>
+        </div>
+
+        <!-- Qualified -->
+        <div class="kol">
+          <div class="kol-hdr">
+            <div style="width:8px;height:8px;border-radius:50%;background:var(--blue);flex-shrink:0;"></div>
+            <div class="kol-title" style="color:var(--blue);">Qualified</div>
+            <div class="kol-count">3</div>
+            <div class="kol-val">$19,200</div>
+          </div>
+
+          <div class="deal-card" style="border-color:var(--teal-dim);">
+            <div class="dc-top">
+              <div class="dc-av" style="background:linear-gradient(135deg,#3b82f6,#1d4ed8);">BF</div>
+              <div><div class="dc-name">Bay Area Freelancers Guild</div><div class="dc-org">Guild · 840 members</div></div>
+            </div>
+            <div class="dc-amount" style="color:var(--blue);">$3,200/mo</div>
+            <div class="dc-days">Qualified Mar 13 · Discovery call done</div>
+            <div class="dc-prob"><div class="dc-prob-fill" style="width:40%;background:var(--blue);"></div></div>
+            <div class="dc-prob-lbl">40% win probability</div>
+            <div class="dc-tags"><span class="dc-tag">Retainer</span><span class="dc-tag">Architecture</span></div>
+          </div>
+
+          <div class="deal-card">
+            <div class="dc-top">
+              <div class="dc-av" style="background:linear-gradient(135deg,#d946ef,#9d174d);">NC</div>
+              <div><div class="dc-name">Nuria Campos</div><div class="dc-org">Independent · Coop founder</div></div>
+            </div>
+            <div class="dc-amount" style="color:var(--blue);">$12,000 fixed</div>
+            <div class="dc-days">Org strategy workshop</div>
+            <div class="dc-prob"><div class="dc-prob-fill" style="width:55%;background:var(--blue);"></div></div>
+            <div class="dc-prob-lbl">55% win probability</div>
+          </div>
+
+          <div class="add-deal">+ Add</div>
+        </div>
+
+        <!-- Proposal -->
+        <div class="kol">
+          <div class="kol-hdr">
+            <div style="width:8px;height:8px;border-radius:50%;background:var(--amber);flex-shrink:0;"></div>
+            <div class="kol-title" style="color:var(--amber);">Proposal Sent</div>
+            <div class="kol-count">3</div>
+            <div class="kol-val">$14,400</div>
+          </div>
+
+          <div class="deal-card">
+            <div class="dc-top">
+              <div class="dc-av" style="background:linear-gradient(135deg,#a855f7,#7c3aed);">PI</div>
+              <div><div class="dc-name">Protocol Inc</div><div class="dc-org">DAO · DeFi protocol</div></div>
+            </div>
+            <div class="dc-amount" style="color:var(--amber);">$3,200/mo</div>
+            <div class="dc-days">Proposal sent Mar 5 · 9 days ago</div>
+            <div class="dc-prob"><div class="dc-prob-fill" style="width:70%;background:var(--amber);"></div></div>
+            <div class="dc-prob-lbl">70% win probability</div>
+            <div class="dc-alert">⚠ 9d since proposal — follow up now</div>
+          </div>
+
+          <div class="deal-card">
+            <div class="dc-top">
+              <div class="dc-av" style="background:linear-gradient(135deg,#0ccfca,#3b82f6);">PF</div>
+              <div><div class="dc-name">Pamoja Federation</div><div class="dc-org">Federation · 14 orgs</div></div>
+            </div>
+            <div class="dc-amount" style="color:var(--amber);">$8,000/mo</div>
+            <div class="dc-days">Proposal sent Mar 5 · 9 days ago</div>
+            <div class="dc-prob"><div class="dc-prob-fill" style="width:55%;background:var(--amber);"></div></div>
+            <div class="dc-prob-lbl">55% · Governance review pending</div>
+            <div class="dc-alert">⚠ Awaiting member vote</div>
+          </div>
+
+          <div class="add-deal">+ Add</div>
+        </div>
+
+        <!-- Negotiation -->
+        <div class="kol">
+          <div class="kol-hdr">
+            <div style="width:8px;height:8px;border-radius:50%;background:var(--purple);flex-shrink:0;"></div>
+            <div class="kol-title" style="color:var(--purple);">Negotiation</div>
+            <div class="kol-count">1</div>
+            <div class="kol-val">$28,000</div>
+          </div>
+
+          <div class="deal-card" style="border-color:var(--amber-dim);">
+            <div class="dc-top">
+              <div class="dc-av" style="background:linear-gradient(135deg,#e8a030,#d97706);">AP</div>
+              <div><div class="dc-name">Aisha Patel</div><div class="dc-org">Patel Ventures · Angel</div></div>
+            </div>
+            <div class="dc-amount" style="color:var(--purple);">$28,000 fixed</div>
+            <div class="dc-days">Round 3 · Counter-offer pending</div>
+            <div class="dc-prob"><div class="dc-prob-fill" style="width:80%;background:var(--purple);"></div></div>
+            <div class="dc-prob-lbl">80% · Likely to close</div>
+            <div class="dc-tags"><span class="dc-tag">Brand Identity v2.0</span><span class="dc-tag">Dispute</span></div>
+          </div>
+
+          <div class="add-deal">+ Add</div>
+        </div>
+
+        <!-- Won / Signed -->
+        <div class="kol">
+          <div class="kol-hdr">
+            <div style="width:8px;height:8px;border-radius:50%;background:var(--green);flex-shrink:0;"></div>
+            <div class="kol-title" style="color:var(--green);">Won · Signed</div>
+            <div class="kol-count">2</div>
+            <div class="kol-val">$6,400/mo</div>
+          </div>
+
+          <div class="deal-card" style="border-color:var(--green-dim);opacity:.8;">
+            <div class="dc-top">
+              <div class="dc-av" style="background:linear-gradient(135deg,#10b981,#059669);">NW</div>
+              <div><div class="dc-name">Nadia Wolff</div><div class="dc-org">Independent · Builder</div></div>
+            </div>
+            <div class="dc-amount" style="color:var(--green);">$3,200/mo ✓</div>
+            <div class="dc-days">Signed Mar 12 · Active retainer</div>
+            <div class="dc-tags"><span class="dc-tag">Consulting</span><span class="dc-tag">Architecture</span></div>
+          </div>
+
+          <div class="deal-card" style="border-color:var(--green-dim);opacity:.8;">
+            <div class="dc-top">
+              <div class="dc-av" style="background:linear-gradient(135deg,#0ccfca,#3b82f6);">OC</div>
+              <div><div class="dc-name">Open Coop Studio</div><div class="dc-org">Cooperative · Tech</div></div>
+            </div>
+            <div class="dc-amount" style="color:var(--green);">$3,200/mo ✓</div>
+            <div class="dc-days">Signed Mar 10 · Active retainer</div>
+          </div>
+        </div>
+
+        <!-- Lost -->
+        <div class="kol">
+          <div class="kol-hdr">
+            <div style="width:8px;height:8px;border-radius:50%;background:var(--text3);flex-shrink:0;"></div>
+            <div class="kol-title" style="color:var(--text3);">Lost / Closed</div>
+            <div class="kol-count">1</div>
+          </div>
+
+          <div class="deal-card" style="opacity:.45;">
+            <div class="dc-top">
+              <div class="dc-av" style="background:var(--border2);">TK</div>
+              <div><div class="dc-name">TechCorp Inc</div><div class="dc-org">Corp · Out of budget</div></div>
+            </div>
+            <div class="dc-amount" style="color:var(--text3);">$5,000 — Lost</div>
+            <div class="dc-days">Closed Feb 28 · Budget cut</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Contact detail: Pamoja Federation -->
+    <div class="contact-detail">
+      <div class="cd-hdr">
+        <div class="cd-av" style="background:linear-gradient(135deg,#0ccfca,#3b82f6);">PF</div>
+        <div class="cd-name">Pamoja Federation</div>
+        <div class="cd-handle">pamoja.federation · 14 orgs</div>
+        <div class="cd-title">Federation · Cooperative infrastructure network · West Africa + diaspora</div>
+        <div class="cd-actions">
+          <div class="cd-act" style="background:rgba(12,207,202,.1);border-color:var(--teal-dim);color:var(--teal);">💬 DM</div>
+          <div class="cd-act" style="background:rgba(59,130,246,.08);border-color:#1d4ed8;color:var(--blue);">✉ Email</div>
+          <div class="cd-act" style="background:rgba(232,160,48,.08);border-color:var(--amber-dim);color:var(--amber);">📅 Book</div>
+          <div class="cd-act" style="background:transparent;border-color:var(--border2);color:var(--text3);">+ Task</div>
+        </div>
+      </div>
+
+      <div class="cd-sec">
+        <div class="cds-title">Deal Status</div>
+        <div class="score-ring">
+          <div class="sr-ring" style="border-color:var(--amber);color:var(--amber);">55%</div>
+          <div class="sr-labels">
+            <div style="color:var(--text);">Win probability · 55%</div>
+            <div>Deal value · <span style="font-family:'IBM Plex Mono',monospace;color:var(--amber);">$8,000/mo</span></div>
+            <div>Stage · <span style="color:var(--amber);">Proposal Sent</span></div>
+            <div>Open · <span style="color:var(--red);">9 days</span></div>
+          </div>
+        </div>
+        <div class="cdr"><span class="cdk">Proposal sent</span><span class="cdv a">Mar 5, 2026</span></div>
+        <div class="cdr"><span class="cdk">Decision maker</span><span class="cdv t">Lena Maier (Gov Lead)</span></div>
+        <div class="cdr"><span class="cdk">Blocker</span><span class="cdv a">Member governance vote</span></div>
+        <div class="cdr"><span class="cdk">Expected close</span><span class="cdv">Mar 20, 2026</span></div>
+      </div>
+
+      <div class="cd-sec">
+        <div class="cds-title">Contact Info</div>
+        <div class="cdr"><span class="cdk">Type</span><span class="cdv">Federation · Cooperative</span></div>
+        <div class="cdr"><span class="cdk">Members</span><span class="cdv">14 organizations</span></div>
+        <div class="cdr"><span class="cdk">Contact</span><span class="cdv t">lena.maier@pamoja.coop</span></div>
+        <div class="cdr"><span class="cdk">Phone</span><span class="cdv">+49 30 ···· ····</span></div>
+        <div class="cdr"><span class="cdk">Connection</span><span class="cdv t">2° via Lena Maier</span></div>
+        <div class="cdr"><span class="cdk">Source</span><span class="cdv">kogi-net referral</span></div>
+      </div>
+
+      <div class="cd-sec">
+        <div class="cds-title">History & Revenue</div>
+        <div class="cdr"><span class="cdk">Total revenue</span><span class="cdv g">$0 (not yet signed)</span></div>
+        <div class="cdr"><span class="cdk">Prior engagements</span><span class="cdv">0</span></div>
+        <div class="cdr"><span class="cdk">Potential LTV</span><span class="cdv t">$96,000 (12mo)</span></div>
+        <div class="cdr"><span class="cdk">Bookings</span><span class="cdv">0 yet</span></div>
+      </div>
+
+      <div class="cd-sec">
+        <div class="cds-title">◉ Oba Recommendation</div>
+        <div style="background:rgba(12,207,202,.04);border:1px solid var(--teal-dim);border-radius:5px;padding:9px;font-size:11px;color:var(--text2);line-height:1.55;margin-bottom:8px;">
+          Proposal open 9 days with no response. Governance votes typically take 7–14 days in federations. A gentle "checking in + sharing case study" message would be appropriate. Oba has drafted one.
+        </div>
+        <button class="btn bt" style="width:100%;padding:6px;font-size:10px;">Review & Send Follow-up →</button>
+      </div>
+
+      <div class="cd-sec" style="border-bottom:none;">
+        <div class="cds-title">Activity Log</div>
+        <div class="act-item">
+          <div class="act-dot" style="background:var(--amber);"></div>
+          <div class="act-body"><div class="act-desc">Proposal sent via email · $8,000/mo architecture retainer</div><div class="act-time">Mar 5</div></div>
+        </div>
+        <div class="act-item">
+          <div class="act-dot" style="background:var(--blue);"></div>
+          <div class="act-body"><div class="act-desc">Discovery call completed · 45 min · Lena Maier</div><div class="act-time">Mar 3</div></div>
+        </div>
+        <div class="act-item">
+          <div class="act-dot" style="background:var(--teal);"></div>
+          <div class="act-body"><div class="act-desc">Contact added from kogi-net connection</div><div class="act-time">Mar 1</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

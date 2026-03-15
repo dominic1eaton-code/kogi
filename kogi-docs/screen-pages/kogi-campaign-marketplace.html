@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>KOGI · Campaign Marketplace · Discover</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap');
+:root{--bg:#070910;--sidebar:#0b0d16;--card:#0f1221;--card2:#131729;--border:#1a2035;--border2:#232a42;--teal:#0ccfca;--teal-dim:#0a9994;--amber:#e8a030;--amber-dim:#b07820;--green:#22c55e;--green-dim:#15803d;--blue:#3b82f6;--red:#ef4444;--purple:#a855f7;--mag:#d946ef;--text:#dde4f0;--text2:#7a879e;--text3:#3d4a62;}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--bg);color:var(--text);font-family:'IBM Plex Sans',sans-serif;font-size:13px;display:flex;min-height:100vh;}
+.sidebar{width:200px;min-width:200px;background:var(--sidebar);border-right:1px solid var(--border);display:flex;flex-direction:column;}
+.logo{padding:18px 16px;border-bottom:1px solid var(--border);}
+.logo-text{font-family:'IBM Plex Mono',monospace;font-size:18px;font-weight:600;letter-spacing:.08em;color:var(--teal);}
+.logo-sub{font-size:9px;color:var(--text3);letter-spacing:.15em;text-transform:uppercase;margin-top:2px;}
+.nav{padding:12px 0;flex:1;overflow-y:auto;}
+.ns{padding:8px 16px 4px;font-size:9px;color:var(--text3);letter-spacing:.18em;text-transform:uppercase;font-family:'IBM Plex Mono',monospace;}
+.ni{display:flex;align-items:center;gap:10px;padding:7px 16px;color:var(--text2);cursor:pointer;font-size:12px;border-left:2px solid transparent;}
+.ni.on{color:var(--teal);background:rgba(12,207,202,.07);border-left-color:var(--teal);}
+.ni-ic{width:14px;text-align:center;font-size:12px;}
+.pb{padding:12px 16px;border-top:1px solid var(--border);}
+.pm{display:flex;align-items:center;gap:8px;}
+.avsm{width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,#0ccfca,#3b82f6);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:#fff;}
+.main{flex:1;overflow-y:auto;}
+.topbar{height:48px;border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 20px;gap:12px;background:var(--sidebar);position:sticky;top:0;z-index:10;}
+.tp{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text3);}
+.tp span{color:var(--text2);}
+.tp .cur{color:var(--text);}
+.sp{flex:1;}
+.btn{padding:5px 12px;border-radius:4px;font-size:11px;font-family:'IBM Plex Mono',monospace;cursor:pointer;border:1px solid;}
+.bt{background:rgba(12,207,202,.12);border-color:var(--teal-dim);color:var(--teal);}
+.bg{background:transparent;border-color:var(--border2);color:var(--text2);}
+.stats{display:grid;grid-template-columns:repeat(6,1fr);gap:1px;background:var(--border);border-bottom:1px solid var(--border);}
+.sb{background:var(--card);padding:11px 14px;}
+.sv{font-family:'IBM Plex Mono',monospace;font-size:16px;font-weight:600;}
+.sl{font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.1em;margin-top:1px;}
+.content{padding:20px;}
+/* Filter bar */
+.filter-bar{display:flex;gap:10px;align-items:center;margin-bottom:18px;flex-wrap:wrap;}
+.fi{background:var(--card);border:1px solid var(--border2);border-radius:4px;padding:6px 10px;color:var(--text2);font-size:11px;outline:none;font-family:'IBM Plex Sans',sans-serif;}
+.fi::placeholder{color:var(--text3);}
+.type-pills{display:flex;gap:6px;flex-wrap:wrap;}
+.tp-pill{padding:4px 12px;border-radius:20px;font-size:10px;cursor:pointer;border:1px solid var(--border2);color:var(--text3);font-family:'IBM Plex Mono',monospace;transition:all .12s;}
+.tp-pill.on{border-color:var(--teal-dim);color:var(--teal);background:rgba(12,207,202,.08);}
+/* Section headers */
+.sh{display:flex;align-items:center;gap:10px;margin-bottom:12px;}
+.sh-title{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--text2);text-transform:uppercase;letter-spacing:.12em;}
+.sh-line{flex:1;height:1px;background:var(--border);}
+.sh-act{font-size:10px;color:var(--teal);cursor:pointer;font-family:'IBM Plex Mono',monospace;}
+/* Entity badges */
+.entity-badge{display:inline-flex;align-items:center;gap:4px;font-size:9px;font-family:'IBM Plex Mono',monospace;padding:2px 7px;border-radius:3px;border:1px solid;}
+.eb-indie{background:rgba(12,207,202,.06);border-color:var(--teal-dim);color:var(--teal);}
+.eb-team{background:rgba(59,130,246,.06);border-color:#1d4ed8;color:var(--blue);}
+.eb-collective{background:rgba(168,85,247,.06);border-color:#7c3aed;color:var(--purple);}
+.eb-coop{background:rgba(34,197,94,.06);border-color:var(--green-dim);color:var(--green);}
+.eb-federation{background:rgba(6,182,212,.06);border-color:#0e7490;color:#06b6d4;}
+/* Campaign grid */
+.cmp-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:28px;}
+.cmp-card{background:var(--card);border:1px solid var(--border);border-radius:8px;overflow:hidden;cursor:pointer;transition:all .15s;}
+.cmp-card:hover{border-color:var(--border2);transform:translateY(-1px);}
+.cmp-banner{height:56px;display:flex;align-items:center;padding:0 14px;gap:10px;position:relative;}
+.cmp-dot{position:absolute;top:10px;right:14px;width:7px;height:7px;border-radius:50%;}
+.live-dot{background:var(--green);box-shadow:0 0 0 3px rgba(34,197,94,.2);}
+.cmp-type-badge{font-size:9px;font-family:'IBM Plex Mono',monospace;padding:2px 8px;border-radius:3px;border:1px solid;}
+.cmp-body{padding:14px;}
+.cmp-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:5px;}
+.cmp-title{font-size:13px;font-weight:600;color:var(--text);line-height:1.3;flex:1;}
+.cmp-org-row{display:flex;align-items:center;gap:6px;margin-bottom:8px;}
+.cmp-org-av{width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:600;color:#fff;flex-shrink:0;}
+.cmp-org-name{font-size:10px;color:var(--text3);}
+.cmp-desc{font-size:11px;color:var(--text3);line-height:1.5;margin-bottom:10px;min-height:32px;}
+/* Progress */
+.cmp-bar{height:6px;background:var(--border);border-radius:3px;overflow:hidden;margin-bottom:5px;}
+.cmp-fill{height:100%;border-radius:3px;}
+.cmp-nums{display:flex;justify-content:space-between;font-size:10px;color:var(--text3);font-family:'IBM Plex Mono',monospace;margin-bottom:8px;}
+/* KPI mini row */
+.cmp-kpis{display:flex;gap:8px;margin-bottom:10px;}
+.ck{background:var(--card2);flex:1;border-radius:4px;padding:6px 8px;text-align:center;}
+.ck-val{font-family:'IBM Plex Mono',monospace;font-size:12px;font-weight:600;}
+.ck-lbl{font-size:9px;color:var(--text3);margin-top:1px;}
+/* actions */
+.cmp-actions{display:flex;gap:6px;}
+.cmp-act{flex:1;padding:6px;text-align:center;border-radius:4px;font-size:10px;font-family:'IBM Plex Mono',monospace;cursor:pointer;border:1px solid;}
+</style>
+</head>
+<body>
+<div class="sidebar">
+  <div class="logo"><div class="logo-text">KOGI</div><div class="logo-sub">Independent Worker OS</div></div>
+  <nav class="nav">
+    <div class="ns">Discover</div>
+    <div class="ni on"><span class="ni-ic">🌐</span>Campaign Marketplace</div>
+    <div class="ni"><span class="ni-ic">⊗</span>Marketplace</div>
+    <div class="ni"><span class="ni-ic">⬡</span>Exchange</div>
+    <div class="ni"><span class="ni-ic">⊛</span>Spaces</div>
+    <div class="ns">My Campaigns</div>
+    <div class="ni"><span class="ni-ic">🎯</span>Campaign Builder</div>
+    <div class="ni"><span class="ni-ic">📣</span>My Campaigns</div>
+    <div class="ni"><span class="ni-ic">☁</span>Resource Pools</div>
+    <div class="ni"><span class="ni-ic">📈</span>Investments</div>
+    <div class="ns">Finance</div>
+    <div class="ni"><span class="ni-ic">💳</span>Wallet</div>
+    <div class="ni"><span class="ni-ic">♦</span>Bank</div>
+  </nav>
+  <div class="pb"><div class="pm"><div class="avsm">JC</div><div><div style="font-size:12px;">Jordan Chen</div><div style="font-size:10px;color:var(--text3);">@jordan.dev</div></div></div></div>
+</div>
+
+<div class="main">
+  <div class="topbar">
+    <div class="tp">KCMP / <span>Marketplace</span> / <span class="cur">Discover All Campaigns</span></div>
+    <div class="sp"></div>
+    <button class="btn bg">My Backed Campaigns</button>
+    <button class="btn bt">Launch Campaign →</button>
+  </div>
+
+  <div class="stats">
+    <div class="sb"><div class="sv" style="color:var(--teal);">284</div><div class="sl">Active Campaigns</div></div>
+    <div class="sb"><div class="sv" style="color:var(--green);">$4.2M</div><div class="sl">Total Raised</div></div>
+    <div class="sb"><div class="sv" style="color:var(--purple);">1,248</div><div class="sl">Backers Active</div></div>
+    <div class="sb"><div class="sv" style="color:var(--amber);">42</div><div class="sl">Equity Rounds</div></div>
+    <div class="sb"><div class="sv" style="color:var(--blue);">88</div><div class="sl">Resource Pools</div></div>
+    <div class="sb"><div class="sv">124</div><div class="sl">Fundraises</div></div>
+  </div>
+
+  <div class="content">
+    <!-- Filter bar -->
+    <div class="filter-bar">
+      <input class="fi" placeholder="Search campaigns…" style="min-width:220px;"/>
+      <div class="type-pills">
+        <div class="tp-pill on">All</div>
+        <div class="tp-pill">Equity</div>
+        <div class="tp-pill">Revenue Share</div>
+        <div class="tp-pill">Fundraise</div>
+        <div class="tp-pill">Resource</div>
+        <div class="tp-pill">Group Buy</div>
+        <div class="tp-pill">Community Bond</div>
+        <div class="tp-pill">Mutual Aid</div>
+        <div class="tp-pill">Pre-sale</div>
+      </div>
+      <select class="fi"><option>All Entities</option><option>Individual</option><option>Team</option><option>Collective</option><option>Cooperative</option><option>Federation</option></select>
+      <select class="fi"><option>Sort: AI Match</option><option>Newest</option><option>Trending</option><option>Deadline Soon</option><option>Largest</option></select>
+    </div>
+
+    <!-- ◉ Oba Recommended -->
+    <div class="sh"><div class="sh-title">◉ Oba Recommended · High Match</div><div class="sh-line"></div><div class="sh-act">See all matches →</div></div>
+    <div class="cmp-grid">
+
+      <!-- Coop Tech Infra Bond -->
+      <div class="cmp-card">
+        <div class="cmp-banner" style="background:linear-gradient(135deg,#0a1a28,#060f18);">
+          <div style="font-size:18px;">🔗</div>
+          <div class="cmp-type-badge" style="background:rgba(59,130,246,.1);border-color:#1d4ed8;color:var(--blue);">COMMUNITY BOND</div>
+          <div class="cmp-dot live-dot"></div>
+        </div>
+        <div class="cmp-body">
+          <div class="cmp-header">
+            <div class="cmp-title">Cooperative Tech Infrastructure Bond — 5% APR</div>
+          </div>
+          <div class="cmp-org-row">
+            <div class="cmp-org-av" style="background:linear-gradient(135deg,#0ccfca,#3b82f6);">PF</div>
+            <div class="cmp-org-name">Pamoja Federation</div>
+            <div class="entity-badge eb-federation">⊛ Federation</div>
+          </div>
+          <div class="cmp-desc">Fixed-rate 2yr bond funding shared cooperative infrastructure for 14 federated organizations. 5% APR paid quarterly.</div>
+          <div class="cmp-bar"><div class="cmp-fill" style="width:62%;background:var(--blue);"></div></div>
+          <div class="cmp-nums"><span style="color:var(--blue);">62% · $124,000 raised</span><span>45 days left</span></div>
+          <div class="cmp-kpis">
+            <div class="ck"><div class="ck-val" style="color:var(--blue);">5%</div><div class="ck-lbl">APR</div></div>
+            <div class="ck"><div class="ck-val">2 yr</div><div class="ck-lbl">Term</div></div>
+            <div class="ck"><div class="ck-val">88</div><div class="ck-lbl">Backers</div></div>
+          </div>
+          <div class="cmp-actions">
+            <div class="cmp-act" style="background:rgba(59,130,246,.1);border-color:#1d4ed8;color:var(--blue);">Invest →</div>
+            <div class="cmp-act" style="background:transparent;border-color:var(--border2);color:var(--text3);">Details</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- OS Collective Revenue Share -->
+      <div class="cmp-card">
+        <div class="cmp-banner" style="background:linear-gradient(135deg,#0a2010,#061208);">
+          <div style="font-size:18px;">📈</div>
+          <div class="cmp-type-badge" style="background:rgba(34,197,94,.1);border-color:var(--green-dim);color:var(--green);">REVENUE SHARE</div>
+          <div class="cmp-dot live-dot"></div>
+        </div>
+        <div class="cmp-body">
+          <div class="cmp-header">
+            <div class="cmp-title">OS Collective Tooling Fund — 8% Revenue Share</div>
+          </div>
+          <div class="cmp-org-row">
+            <div class="cmp-org-av" style="background:linear-gradient(135deg,#a855f7,#7c3aed);">OS</div>
+            <div class="cmp-org-name">Open Source Collective</div>
+            <div class="entity-badge eb-collective">◈ Collective</div>
+          </div>
+          <div class="cmp-desc">Pool capital to fund collective tooling development. Backers receive 8% of tool licensing revenue for 3 years. All-or-nothing.</div>
+          <div class="cmp-bar"><div class="cmp-fill" style="width:84%;background:var(--green);"></div></div>
+          <div class="cmp-nums"><span style="color:var(--green);">84% · $42,000 raised</span><span>18 days left</span></div>
+          <div class="cmp-kpis">
+            <div class="ck"><div class="ck-val" style="color:var(--green);">8%</div><div class="ck-lbl">Revenue share</div></div>
+            <div class="ck"><div class="ck-val">3 yr</div><div class="ck-lbl">Duration</div></div>
+            <div class="ck"><div class="ck-val">64</div><div class="ck-lbl">Backers</div></div>
+          </div>
+          <div class="cmp-actions">
+            <div class="cmp-act" style="background:rgba(34,197,94,.08);border-color:var(--green-dim);color:var(--green);">Back Campaign →</div>
+            <div class="cmp-act" style="background:transparent;border-color:var(--border2);color:var(--text3);">Details</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- GPU Pool group buy -->
+      <div class="cmp-card">
+        <div class="cmp-banner" style="background:linear-gradient(135deg,#0a1a28,#060f18);">
+          <div style="font-size:18px;">☁</div>
+          <div class="cmp-type-badge" style="background:rgba(12,207,202,.1);border-color:var(--teal-dim);color:var(--teal);">RESOURCE · GROUP BUY</div>
+          <div class="cmp-dot live-dot"></div>
+        </div>
+        <div class="cmp-body">
+          <div class="cmp-header">
+            <div class="cmp-title">Builder Network GPU Pool — Q2 2026</div>
+          </div>
+          <div class="cmp-org-row">
+            <div class="cmp-org-av" style="background:linear-gradient(135deg,#0ccfca,#3b82f6);">BN</div>
+            <div class="cmp-org-name">Kogi Builder Network</div>
+            <div class="entity-badge eb-team">🌐 Community</div>
+          </div>
+          <div class="cmp-desc">Collective GPU compute pool for AI/ML workloads. Members contribute $50–$500 for proportional compute credit allocation from AWS bulk deal.</div>
+          <div class="cmp-bar"><div class="cmp-fill" style="width:58%;background:var(--teal);"></div></div>
+          <div class="cmp-nums"><span style="color:var(--teal);">58% · $14,500 pooled</span><span>35 days left</span></div>
+          <div class="cmp-kpis">
+            <div class="ck"><div class="ck-val" style="color:var(--teal);">284</div><div class="ck-lbl">Contributors</div></div>
+            <div class="ck"><div class="ck-val">30%</div><div class="ck-lbl">Discount</div></div>
+            <div class="ck"><div class="ck-val">$50</div><div class="ck-lbl">Min pledge</div></div>
+          </div>
+          <div class="cmp-actions">
+            <div class="cmp-act" style="background:rgba(12,207,202,.1);border-color:var(--teal-dim);color:var(--teal);">Join Pool →</div>
+            <div class="cmp-act" style="background:transparent;border-color:var(--border2);color:var(--text3);">Details</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Trending by type sections -->
+    <div class="sh"><div class="sh-title">🚀 Equity Rounds · Trending</div><div class="sh-line"></div><div class="sh-act">Browse all 42 →</div></div>
+    <div class="cmp-grid">
+
+      <!-- Indie dev equity -->
+      <div class="cmp-card">
+        <div class="cmp-banner" style="background:linear-gradient(135deg,#180828,#0d0420);">
+          <div style="font-size:18px;">🚀</div>
+          <div class="cmp-type-badge" style="background:rgba(168,85,247,.1);border-color:#7c3aed;color:var(--purple);">EQUITY · SEED</div>
+          <div class="cmp-dot live-dot"></div>
+        </div>
+        <div class="cmp-body">
+          <div class="cmp-header"><div class="cmp-title">Kogi Engine — Series Seed Round · $450K</div></div>
+          <div class="cmp-org-row">
+            <div class="cmp-org-av" style="background:linear-gradient(135deg,#0ccfca,#3b82f6);">JC</div>
+            <div class="cmp-org-name">Jordan Chen</div>
+            <div class="entity-badge eb-indie">👤 Individual</div>
+          </div>
+          <div class="cmp-desc">AI analytics + matching infrastructure for the cooperative worker economy. 10% equity at $4.5M pre-money.</div>
+          <div class="cmp-bar"><div class="cmp-fill" style="width:73%;background:var(--purple);"></div></div>
+          <div class="cmp-nums"><span style="color:var(--purple);">73% · $328,500 raised</span><span>28 days left</span></div>
+          <div class="cmp-kpis">
+            <div class="ck"><div class="ck-val" style="color:var(--purple);">10%</div><div class="ck-lbl">Equity</div></div>
+            <div class="ck"><div class="ck-val">$4.5M</div><div class="ck-lbl">Valuation</div></div>
+            <div class="ck"><div class="ck-val">42</div><div class="ck-lbl">Backers</div></div>
+          </div>
+          <div class="cmp-actions">
+            <div class="cmp-act" style="background:rgba(168,85,247,.1);border-color:#7c3aed;color:var(--purple);">Invest →</div>
+            <div class="cmp-act" style="background:transparent;border-color:var(--border2);color:var(--text3);">Due Diligence</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Team equity -->
+      <div class="cmp-card">
+        <div class="cmp-banner" style="background:linear-gradient(135deg,#180828,#0d0420);">
+          <div style="font-size:18px;">⚙</div>
+          <div class="cmp-type-badge" style="background:rgba(168,85,247,.1);border-color:#7c3aed;color:var(--purple);">EQUITY · REVENUE SHARE</div>
+          <div class="cmp-dot live-dot"></div>
+        </div>
+        <div class="cmp-body">
+          <div class="cmp-header"><div class="cmp-title">Mesh Studio Design System — Revenue Share Round</div></div>
+          <div class="cmp-org-row">
+            <div class="cmp-org-av" style="background:linear-gradient(135deg,#0ccfca,#3b82f6);">MS</div>
+            <div class="cmp-org-name">Mesh Studio</div>
+            <div class="entity-badge eb-coop">⚙ Cooperative</div>
+          </div>
+          <div class="cmp-desc">Pool capital to accelerate design system development. Backers receive 12% of product revenue for 2 years. Cooperative governance rights included.</div>
+          <div class="cmp-bar"><div class="cmp-fill" style="width:45%;background:var(--purple);"></div></div>
+          <div class="cmp-nums"><span style="color:var(--purple);">45% · $27,000 raised</span><span>56 days left</span></div>
+          <div class="cmp-kpis">
+            <div class="ck"><div class="ck-val" style="color:var(--purple);">12%</div><div class="ck-lbl">Rev share</div></div>
+            <div class="ck"><div class="ck-val">$60K</div><div class="ck-lbl">Goal</div></div>
+            <div class="ck"><div class="ck-val">18</div><div class="ck-lbl">Backers</div></div>
+          </div>
+          <div class="cmp-actions">
+            <div class="cmp-act" style="background:rgba(168,85,247,.1);border-color:#7c3aed;color:var(--purple);">Back →</div>
+            <div class="cmp-act" style="background:transparent;border-color:var(--border2);color:var(--text3);">Details</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Federation equity -->
+      <div class="cmp-card">
+        <div class="cmp-banner" style="background:linear-gradient(135deg,#180828,#0d0420);">
+          <div style="font-size:18px;">⊛</div>
+          <div class="cmp-type-badge" style="background:rgba(168,85,247,.1);border-color:#7c3aed;color:var(--purple);">EQUITY · COMMUNITY BOND</div>
+          <div class="cmp-dot live-dot"></div>
+        </div>
+        <div class="cmp-body">
+          <div class="cmp-header"><div class="cmp-title">Worker OS Cooperative Platform — Series A</div></div>
+          <div class="cmp-org-row">
+            <div class="cmp-org-av" style="background:linear-gradient(135deg,#06b6d4,#0e7490);">PA</div>
+            <div class="cmp-org-name">Pamoja + OS Collective</div>
+            <div class="entity-badge eb-federation">⊛ Multi-org</div>
+          </div>
+          <div class="cmp-desc">Joint equity raise by Pamoja Federation + OS Collective to fund cooperative worker OS platform infrastructure. Multi-entity governance model.</div>
+          <div class="cmp-bar"><div class="cmp-fill" style="width:28%;background:var(--purple);"></div></div>
+          <div class="cmp-nums"><span style="color:var(--purple);">28% · $280,000 raised</span><span>90 days left</span></div>
+          <div class="cmp-kpis">
+            <div class="ck"><div class="ck-val" style="color:var(--purple);">15%</div><div class="ck-lbl">Equity</div></div>
+            <div class="ck"><div class="ck-val">$1M</div><div class="ck-lbl">Goal</div></div>
+            <div class="ck"><div class="ck-val">42</div><div class="ck-lbl">Backers</div></div>
+          </div>
+          <div class="cmp-actions">
+            <div class="cmp-act" style="background:rgba(168,85,247,.1);border-color:#7c3aed;color:var(--purple);">Invest →</div>
+            <div class="cmp-act" style="background:transparent;border-color:var(--border2);color:var(--text3);">DD Report</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Mutual Aid + Fundraise -->
+    <div class="sh"><div class="sh-title">🤝 Mutual Aid & Fundraise</div><div class="sh-line"></div><div class="sh-act">Browse all →</div></div>
+    <div class="cmp-grid">
+
+      <div class="cmp-card">
+        <div class="cmp-banner" style="background:linear-gradient(135deg,#0d1a14,#060f0a);">
+          <div style="font-size:18px;">🤝</div>
+          <div class="cmp-type-badge" style="background:rgba(34,197,94,.1);border-color:var(--green-dim);color:var(--green);">MUTUAL AID</div>
+          <div class="cmp-dot live-dot"></div>
+        </div>
+        <div class="cmp-body">
+          <div class="cmp-header"><div class="cmp-title">Freelancers Emergency Fund · Q2 2026</div></div>
+          <div class="cmp-org-row">
+            <div class="cmp-org-av" style="background:linear-gradient(135deg,#22c55e,#16a34a);">BF</div>
+            <div class="cmp-org-name">Bay Area Freelancers Guild</div>
+            <div class="entity-badge eb-collective">◈ Guild</div>
+          </div>
+          <div class="cmp-desc">Mutual aid pool for Guild members facing emergencies. Non-repayable. Governed by mutual aid policy. 100% of contributions go to members in need.</div>
+          <div class="cmp-bar"><div class="cmp-fill" style="width:95%;background:var(--green);"></div></div>
+          <div class="cmp-nums"><span style="color:var(--green);">95% · $9,500 raised</span><span>8 days left</span></div>
+          <div class="cmp-kpis">
+            <div class="ck"><div class="ck-val" style="color:var(--green);">124</div><div class="ck-lbl">Donors</div></div>
+            <div class="ck"><div class="ck-val">Non-rep</div><div class="ck-lbl">Type</div></div>
+            <div class="ck"><div class="ck-val">$10K</div><div class="ck-lbl">Goal</div></div>
+          </div>
+          <div class="cmp-actions">
+            <div class="cmp-act" style="background:rgba(34,197,94,.08);border-color:var(--green-dim);color:var(--green);">Donate →</div>
+            <div class="cmp-act" style="background:transparent;border-color:var(--border2);color:var(--text3);">Details</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="cmp-card">
+        <div class="cmp-banner" style="background:linear-gradient(135deg,#1a0800,#0d0400);">
+          <div style="font-size:18px;">📚</div>
+          <div class="cmp-type-badge" style="background:rgba(232,160,48,.1);border-color:var(--amber-dim);color:var(--amber);">FUNDRAISE</div>
+          <div class="cmp-dot live-dot"></div>
+        </div>
+        <div class="cmp-body">
+          <div class="cmp-header"><div class="cmp-title">Worker Rights Legal Defense Fund</div></div>
+          <div class="cmp-org-row">
+            <div class="cmp-org-av" style="background:linear-gradient(135deg,#e8a030,#d97706);">WR</div>
+            <div class="cmp-org-name">Worker Rights Collective</div>
+            <div class="entity-badge eb-collective">◈ Collective</div>
+          </div>
+          <div class="cmp-desc">Fund legal defense for independent workers facing misclassification claims. Non-repayable donation. Supports US-based gig and freelance workers.</div>
+          <div class="cmp-bar"><div class="cmp-fill" style="width:42%;background:var(--amber);"></div></div>
+          <div class="cmp-nums"><span style="color:var(--amber);">42% · $21,000 raised</span><span>60 days left</span></div>
+          <div class="cmp-kpis">
+            <div class="ck"><div class="ck-val" style="color:var(--amber);">284</div><div class="ck-lbl">Donors</div></div>
+            <div class="ck"><div class="ck-val">$50K</div><div class="ck-lbl">Goal</div></div>
+            <div class="ck"><div class="ck-val">Donation</div><div class="ck-lbl">Type</div></div>
+          </div>
+          <div class="cmp-actions">
+            <div class="cmp-act" style="background:rgba(232,160,48,.08);border-color:var(--amber-dim);color:var(--amber);">Donate →</div>
+            <div class="cmp-act" style="background:transparent;border-color:var(--border2);color:var(--text3);">Share</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="cmp-card">
+        <div class="cmp-banner" style="background:linear-gradient(135deg,#1a082e,#0d0420);">
+          <div style="font-size:18px;">🎓</div>
+          <div class="cmp-type-badge" style="background:rgba(168,85,247,.1);border-color:#7c3aed;color:var(--purple);">PRE-SALE</div>
+          <div class="cmp-dot live-dot"></div>
+        </div>
+        <div class="cmp-body">
+          <div class="cmp-header"><div class="cmp-title">Cooperative OS Bootcamp — Early Access</div></div>
+          <div class="cmp-org-row">
+            <div class="cmp-org-av" style="background:linear-gradient(135deg,#a855f7,#7c3aed);">TB</div>
+            <div class="cmp-org-name">Tech Builders Academy</div>
+            <div class="entity-badge eb-team">👥 Team</div>
+          </div>
+          <div class="cmp-desc">12-week bootcamp teaching cooperative platform development with Rust + Kogi SDK. Pre-sale at 35% off launch price. Ships Q3 2026.</div>
+          <div class="cmp-bar"><div class="cmp-fill" style="width:64%;background:var(--purple);"></div></div>
+          <div class="cmp-nums"><span style="color:var(--purple);">64% · 128 pre-orders</span><span>45 days left</span></div>
+          <div class="cmp-kpis">
+            <div class="ck"><div class="ck-val" style="color:var(--purple);">35%</div><div class="ck-lbl">Discount</div></div>
+            <div class="ck"><div class="ck-val">$399</div><div class="ck-lbl">Pre-sale price</div></div>
+            <div class="ck"><div class="ck-val">128</div><div class="ck-lbl">Pre-orders</div></div>
+          </div>
+          <div class="cmp-actions">
+            <div class="cmp-act" style="background:rgba(168,85,247,.08);border-color:#7c3aed;color:var(--purple);">Pre-order →</div>
+            <div class="cmp-act" style="background:transparent;border-color:var(--border2);color:var(--text3);">Details</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+</div>
+</body>
+</html>

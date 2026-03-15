@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>KOGI · Bookings & Scheduling</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap');
+:root{--bg:#070910;--sidebar:#0b0d16;--card:#0f1221;--card2:#131729;--border:#1a2035;--border2:#232a42;--teal:#0ccfca;--teal-dim:#0a9994;--amber:#e8a030;--amber-dim:#b07820;--green:#22c55e;--green-dim:#15803d;--blue:#3b82f6;--red:#ef4444;--purple:#a855f7;--text:#dde4f0;--text2:#7a879e;--text3:#3d4a62;}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--bg);color:var(--text);font-family:'IBM Plex Sans',sans-serif;font-size:13px;display:flex;height:100vh;overflow:hidden;}
+.sidebar{width:200px;min-width:200px;background:var(--sidebar);border-right:1px solid var(--border);display:flex;flex-direction:column;}
+.logo{padding:18px 16px;border-bottom:1px solid var(--border);}
+.logo-text{font-family:'IBM Plex Mono',monospace;font-size:18px;font-weight:600;letter-spacing:.08em;color:var(--teal);}
+.logo-sub{font-size:9px;color:var(--text3);letter-spacing:.15em;text-transform:uppercase;margin-top:2px;}
+.nav{padding:12px 0;flex:1;overflow-y:auto;}
+.ns{padding:8px 16px 4px;font-size:9px;color:var(--text3);letter-spacing:.18em;text-transform:uppercase;font-family:'IBM Plex Mono',monospace;}
+.ni{display:flex;align-items:center;gap:10px;padding:7px 16px;color:var(--text2);cursor:pointer;font-size:12px;border-left:2px solid transparent;}
+.ni.on{color:var(--teal);background:rgba(12,207,202,.07);border-left-color:var(--teal);}
+.ni-ic{width:14px;text-align:center;font-size:12px;}
+.nbadge{background:var(--red);color:#fff;border-radius:9px;font-size:9px;padding:1px 5px;font-family:'IBM Plex Mono',monospace;margin-left:auto;}
+.pb{padding:12px 16px;border-top:1px solid var(--border);}
+.pm{display:flex;align-items:center;gap:8px;}
+.avsm{width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,#0ccfca,#3b82f6);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:#fff;}
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden;}
+.topbar{height:48px;border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 20px;gap:12px;background:var(--sidebar);flex-shrink:0;}
+.tp{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text3);}
+.tp span{color:var(--text2);}
+.tp .cur{color:var(--text);}
+.sp{flex:1;}
+.btn{padding:5px 12px;border-radius:4px;font-size:11px;font-family:'IBM Plex Mono',monospace;cursor:pointer;border:1px solid;}
+.bt{background:rgba(12,207,202,.12);border-color:var(--teal-dim);color:var(--teal);}
+.bg{background:transparent;border-color:var(--border2);color:var(--text2);}
+.ba{background:rgba(232,160,48,.1);border-color:var(--amber-dim);color:var(--amber);}
+.stats{display:grid;grid-template-columns:repeat(6,1fr);gap:1px;background:var(--border);border-bottom:1px solid var(--border);flex-shrink:0;}
+.sb{background:var(--card);padding:11px 14px;}
+.sv{font-family:'IBM Plex Mono',monospace;font-size:16px;font-weight:600;}
+.sl{font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.1em;margin-top:1px;}
+.layout{flex:1;display:grid;grid-template-columns:280px 1fr 300px;overflow:hidden;}
+
+/* Service types panel */
+.service-nav{background:var(--sidebar);border-right:1px solid var(--border);overflow-y:auto;display:flex;flex-direction:column;}
+.sn-hdr{padding:12px 14px;border-bottom:1px solid var(--border);}
+.sn-title{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text2);margin-bottom:8px;}
+.sn-search{width:100%;background:var(--card);border:1px solid var(--border);border-radius:4px;padding:6px 10px;color:var(--text2);font-size:11px;outline:none;font-family:'IBM Plex Sans',sans-serif;}
+.sn-search::placeholder{color:var(--text3);}
+.sn-sec{padding:7px 14px 4px;font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.14em;font-family:'IBM Plex Mono',monospace;background:var(--card2);border-bottom:1px solid var(--border);}
+/* Service type card */
+.st-card{padding:10px 14px;border-bottom:1px solid var(--border);cursor:pointer;border-left:2px solid transparent;transition:all .1s;}
+.st-card:hover{background:rgba(255,255,255,.015);}
+.st-card.on{background:rgba(12,207,202,.05);border-left-color:var(--teal);}
+.stc-top{display:flex;align-items:center;gap:8px;margin-bottom:4px;}
+.stc-ic{width:28px;height:28px;border-radius:5px;display:flex;align-items:center;justify-content:center;font-size:13px;border:1px solid;flex-shrink:0;}
+.stc-name{font-size:12px;color:var(--text);font-weight:500;}
+.stc-price{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--teal);margin-left:auto;}
+.stc-meta{font-size:10px;color:var(--text3);}
+.stc-tags{display:flex;gap:4px;margin-top:5px;flex-wrap:wrap;}
+.stc-tag{font-size:9px;font-family:'IBM Plex Mono',monospace;padding:1px 5px;border-radius:3px;background:var(--card2);border:1px solid var(--border2);color:var(--text3);}
+.stc-toggle{display:flex;align-items:center;justify-content:space-between;margin-top:6px;}
+.toggle{width:28px;height:16px;border-radius:8px;position:relative;cursor:pointer;}
+.toggle.on{background:var(--teal-dim);}
+.toggle.off{background:var(--border2);}
+.toggle::after{content:'';position:absolute;top:2px;left:2px;width:12px;height:12px;border-radius:50%;background:#fff;transition:left .15s;}
+.toggle.on::after{left:14px;}
+
+/* Calendar + bookings */
+.calendar-area{overflow-y:auto;display:flex;flex-direction:column;}
+.cal-hdr{padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;background:var(--card);flex-shrink:0;}
+.cal-title{font-size:14px;font-weight:600;color:var(--text);}
+.cal-nav{display:flex;gap:4px;}
+.cal-nav-btn{width:26px;height:26px;border-radius:4px;display:flex;align-items:center;justify-content:center;border:1px solid var(--border2);background:transparent;cursor:pointer;color:var(--text3);font-size:12px;}
+.cal-views{display:flex;gap:0;margin-left:auto;}
+.cv{padding:4px 10px;font-size:10px;font-family:'IBM Plex Mono',monospace;cursor:pointer;border:1px solid var(--border2);color:var(--text3);}
+.cv:first-child{border-radius:4px 0 0 4px;}
+.cv:last-child{border-radius:0 4px 4px 0;border-left:none;}
+.cv.on{background:rgba(12,207,202,.08);border-color:var(--teal-dim);color:var(--teal);}
+/* Week grid */
+.week-grid{flex:1;overflow-y:auto;padding:14px;}
+.week-days{display:grid;grid-template-columns:60px repeat(7,1fr);gap:0;margin-bottom:2px;}
+.wd-blank{width:60px;}
+.wd-label{text-align:center;padding:6px;font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--text3);}
+.wd-date{font-size:14px;font-weight:600;color:var(--text);}
+.wd-today{color:var(--teal);}
+.time-grid{display:grid;grid-template-columns:60px repeat(7,1fr);gap:0;min-height:500px;}
+.tg-time{font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--text3);padding:4px 6px 4px 0;text-align:right;border-top:1px solid var(--border);height:52px;display:flex;align-items:flex-start;justify-content:flex-end;}
+.tg-cell{border-top:1px solid var(--border);border-left:1px solid var(--border);height:52px;position:relative;cursor:pointer;}
+.tg-cell:hover{background:rgba(12,207,202,.03);}
+.tg-cell.today{background:rgba(12,207,202,.02);}
+/* Booking blocks */
+.booking-block{position:absolute;left:2px;right:2px;border-radius:4px;padding:4px 6px;cursor:pointer;overflow:hidden;z-index:1;}
+.bb-title{font-size:10px;font-weight:600;color:#fff;}
+.bb-client{font-size:9px;color:rgba(255,255,255,.8);}
+.bb-type{font-size:8px;font-family:'IBM Plex Mono',monospace;color:rgba(255,255,255,.6);}
+/* Upcoming bookings */
+.upcoming-list{padding:14px;}
+.ub-sec{font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.14em;margin-bottom:8px;margin-top:12px;}
+.ub-sec:first-child{margin-top:0;}
+.ub-card{background:var(--card);border:1px solid var(--border);border-radius:6px;padding:12px;margin-bottom:8px;cursor:pointer;transition:all .12s;border-left:3px solid;}
+.ub-card:hover{border-color:var(--border2);}
+.uc-top{display:flex;align-items:flex-start;gap:10px;margin-bottom:8px;}
+.uc-av{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:#fff;flex-shrink:0;}
+.uc-info{flex:1;}
+.uc-name{font-size:12px;font-weight:600;color:var(--text);}
+.uc-type{font-size:10px;color:var(--text3);}
+.uc-badge{font-size:9px;font-family:'IBM Plex Mono',monospace;padding:2px 7px;border-radius:3px;border:1px solid;}
+.uc-meta{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:8px;}
+.ucm{background:var(--card2);border-radius:4px;padding:7px 9px;}
+.ucm-val{font-family:'IBM Plex Mono',monospace;font-size:12px;font-weight:600;}
+.ucm-lbl{font-size:9px;color:var(--text3);margin-top:1px;}
+.uc-actions{display:flex;gap:6px;}
+.uca{flex:1;padding:5px;text-align:center;border-radius:4px;font-size:10px;font-family:'IBM Plex Mono',monospace;cursor:pointer;border:1px solid;}
+
+/* Booking detail panel */
+.bk-detail{background:var(--sidebar);border-left:1px solid var(--border);overflow-y:auto;display:flex;flex-direction:column;}
+.bd-hdr{padding:14px;border-bottom:1px solid var(--border);}
+.bd-service{font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--teal);text-transform:uppercase;margin-bottom:4px;}
+.bd-title{font-size:14px;font-weight:600;color:var(--text);margin-bottom:4px;}
+.bd-time{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--amber);margin-bottom:10px;}
+.bd-client-row{display:flex;gap:8px;align-items:center;margin-bottom:12px;}
+.bd-av{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;color:#fff;}
+.bd-client-name{font-size:13px;font-weight:600;color:var(--text);}
+.bd-client-meta{font-size:10px;color:var(--text3);}
+.bd-actions{display:grid;grid-template-columns:1fr 1fr;gap:6px;}
+.bd-act{padding:7px;text-align:center;border-radius:4px;font-size:10px;font-family:'IBM Plex Mono',monospace;cursor:pointer;border:1px solid;}
+.bd-sec{padding:12px 14px;border-bottom:1px solid var(--border);}
+.bd-sec-title{font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.14em;margin-bottom:8px;}
+.bdr{display:flex;justify-content:space-between;margin-bottom:5px;}
+.bdk{font-size:11px;color:var(--text3);}
+.bdv{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text2);}
+.bdv.t{color:var(--teal);}
+.bdv.g{color:var(--green);}
+/* Availability hours */
+.avail-row{display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--border);}
+.avail-row:last-child{border-bottom:none;}
+.av-day{width:32px;font-size:11px;color:var(--text2);}
+.av-time{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--text3);flex:1;}
+.av-slots{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--teal);}
+</style>
+</head>
+<body>
+<div class="sidebar">
+  <div class="logo"><div class="logo-text">KOGI</div><div class="logo-sub">Independent Worker OS</div></div>
+  <nav class="nav">
+    <div class="ns">Work</div>
+    <div class="ni"><span class="ni-ic">◫</span>Office</div>
+    <div class="ni on"><span class="ni-ic">📅</span>Bookings <span class="nbadge">3</span></div>
+    <div class="ni"><span class="ni-ic">👥</span>CRM</div>
+    <div class="ns">Platform</div>
+    <div class="ni"><span class="ni-ic">⊗</span>Marketplace</div>
+    <div class="ni"><span class="ni-ic">⬡</span>Exchange</div>
+    <div class="ni"><span class="ni-ic">💼</span>Deal Rooms</div>
+    <div class="ni"><span class="ni-ic">🔒</span>Escrow</div>
+    <div class="ns">Finance</div>
+    <div class="ni"><span class="ni-ic">📄</span>Invoices</div>
+    <div class="ni"><span class="ni-ic">♦</span>Bank</div>
+    <div class="ns">Identity</div>
+    <div class="ni"><span class="ni-ic">◉</span>Profile</div>
+    <div class="ni"><span class="ni-ic">⊛</span>kogi-net</div>
+  </nav>
+  <div class="pb"><div class="pm"><div class="avsm">JC</div><div><div style="font-size:12px;">Jordan Chen</div><div style="font-size:10px;color:var(--text3);">@jordan.dev</div></div></div></div>
+</div>
+
+<div class="main">
+  <div class="topbar">
+    <div class="tp">KMKT / <span class="cur">Bookings & Scheduling</span></div>
+    <div class="sp"></div>
+    <a style="font-size:10px;font-family:'IBM Plex Mono',monospace;color:var(--teal);text-decoration:none;padding:5px 10px;background:rgba(12,207,202,.08);border:1px solid var(--teal-dim);border-radius:4px;">kogi.net/@jordan.dev/book ↗</a>
+    <button class="btn bg">Availability</button>
+    <button class="btn bt">+ New Booking</button>
+  </div>
+
+  <div class="stats">
+    <div class="sb"><div class="sv" style="color:var(--amber);">3</div><div class="sl">This Week</div></div>
+    <div class="sb"><div class="sv" style="color:var(--teal);">18</div><div class="sl">This Month</div></div>
+    <div class="sb"><div class="sv" style="color:var(--green);">$21,600</div><div class="sl">Booking Revenue</div></div>
+    <div class="sb"><div class="sv">48 min</div><div class="sl">Avg Duration</div></div>
+    <div class="sb"><div class="sv" style="color:var(--blue);">2</div><div class="sl">Slots Left Today</div></div>
+    <div class="sb"><div class="sv">4.9 ★</div><div class="sl">Avg Rating</div></div>
+  </div>
+
+  <div class="layout">
+    <!-- Service types -->
+    <div class="service-nav">
+      <div class="sn-hdr">
+        <div class="sn-title">My Booking Services</div>
+        <input class="sn-search" placeholder="Search services…"/>
+      </div>
+      <div class="sn-sec">Active Services</div>
+
+      <div class="st-card on">
+        <div class="stc-top">
+          <div class="stc-ic" style="background:rgba(12,207,202,.1);border-color:var(--teal-dim);">🏗</div>
+          <div class="stc-name">Architecture Consult</div>
+          <div class="stc-price">$180/hr</div>
+        </div>
+        <div class="stc-meta">60 min · Remote · Video + async debrief</div>
+        <div class="stc-tags"><span class="stc-tag">Systems</span><span class="stc-tag">Rust</span><span class="stc-tag">CRDT</span></div>
+        <div class="stc-toggle"><span style="font-size:10px;color:var(--green);">● Active · 2 slots/wk</span><div class="toggle on"></div></div>
+      </div>
+
+      <div class="st-card">
+        <div class="stc-top">
+          <div class="stc-ic" style="background:rgba(59,130,246,.1);border-color:#1d4ed8;">🔍</div>
+          <div class="stc-name">Code Review Session</div>
+          <div class="stc-price">$720 fixed</div>
+        </div>
+        <div class="stc-meta">4 hrs async · PR review + Loom walkthrough</div>
+        <div class="stc-tags"><span class="stc-tag">Rust</span><span class="stc-tag">TypeScript</span></div>
+        <div class="stc-toggle"><span style="font-size:10px;color:var(--green);">● Active</span><div class="toggle on"></div></div>
+      </div>
+
+      <div class="st-card">
+        <div class="stc-top">
+          <div class="stc-ic" style="background:rgba(168,85,247,.1);border-color:#7c3aed;">🎓</div>
+          <div class="stc-name">1:1 Mentorship</div>
+          <div class="stc-price">$120/hr</div>
+        </div>
+        <div class="stc-meta">50 min · Weekly · Systems + career</div>
+        <div class="stc-tags"><span class="stc-tag">Mentoring</span><span class="stc-tag">Career</span></div>
+        <div class="stc-toggle"><span style="font-size:10px;color:var(--green);">● Active · 3 slots/wk</span><div class="toggle on"></div></div>
+      </div>
+
+      <div class="st-card">
+        <div class="stc-top">
+          <div class="stc-ic" style="background:rgba(34,197,94,.1);border-color:var(--green-dim);">📋</div>
+          <div class="stc-name">Strategy Workshop</div>
+          <div class="stc-price">$2,400 fixed</div>
+        </div>
+        <div class="stc-meta">Half-day · Cooperative + tech strategy</div>
+        <div class="stc-tags"><span class="stc-tag">Strategy</span><span class="stc-tag">Cooperative</span></div>
+        <div class="stc-toggle"><span style="font-size:10px;color:var(--green);">● Active · On request</span><div class="toggle on"></div></div>
+      </div>
+
+      <div class="st-card">
+        <div class="stc-top">
+          <div class="stc-ic" style="background:rgba(232,160,48,.1);border-color:var(--amber-dim);">⚡</div>
+          <div class="stc-name">Quick Q&A (15 min)</div>
+          <div class="stc-price">Free / $45</div>
+        </div>
+        <div class="stc-meta">15 min · Intro call or quick question</div>
+        <div class="stc-tags"><span class="stc-tag">Intro</span><span class="stc-tag">Quick</span></div>
+        <div class="stc-toggle"><span style="font-size:10px;color:var(--amber);">◌ By request</span><div class="toggle on"></div></div>
+      </div>
+
+      <div class="sn-sec">Availability</div>
+      <div style="padding:10px 14px;">
+        <div class="avail-row"><div class="av-day">Mon</div><div class="av-time">9am – 5pm PST</div><div class="av-slots">4 open</div></div>
+        <div class="avail-row"><div class="av-day">Tue</div><div class="av-time">10am – 4pm PST</div><div class="av-slots">3 open</div></div>
+        <div class="avail-row"><div class="av-day">Wed</div><div class="av-time">Busy — Deep work</div><div class="av-slots" style="color:var(--text3);">0</div></div>
+        <div class="avail-row"><div class="av-day">Thu</div><div class="av-time">9am – 6pm PST</div><div class="av-slots">5 open</div></div>
+        <div class="avail-row"><div class="av-day">Fri</div><div class="av-time">9am – 1pm PST</div><div class="av-slots">2 open</div></div>
+        <div class="avail-row"><div class="av-day">Sat</div><div class="av-time">Closed</div><div class="av-slots" style="color:var(--text3);">—</div></div>
+      </div>
+    </div>
+
+    <!-- Calendar + Upcoming bookings -->
+    <div class="calendar-area">
+      <div class="cal-hdr">
+        <div class="cal-nav">
+          <div class="cal-nav-btn">‹</div>
+          <div class="cal-nav-btn">›</div>
+        </div>
+        <div class="cal-title">March 2026 · Week of Mar 14</div>
+        <div class="sp"></div>
+        <div class="cal-views">
+          <div class="cv">Month</div>
+          <div class="cv on">Week</div>
+          <div class="cv">Day</div>
+          <div class="cv">List</div>
+        </div>
+      </div>
+
+      <!-- Week grid -->
+      <div class="week-grid">
+        <div class="week-days">
+          <div class="wd-blank"></div>
+          <div class="wd-label"><div>SUN</div><div class="wd-date">8</div></div>
+          <div class="wd-label"><div>MON</div><div class="wd-date">9</div></div>
+          <div class="wd-label"><div>TUE</div><div class="wd-date">10</div></div>
+          <div class="wd-label"><div>WED</div><div class="wd-date">11</div></div>
+          <div class="wd-label"><div>THU</div><div class="wd-date">12</div></div>
+          <div class="wd-label"><div>FRI</div><div class="wd-date">13</div></div>
+          <div class="wd-label"><div>SAT</div><div class="wd-date wd-today">14</div></div>
+        </div>
+        <div class="time-grid">
+          <!-- 8am -->
+          <div class="tg-time">8 AM</div>
+          <div class="tg-cell"></div><div class="tg-cell"></div><div class="tg-cell"></div><div class="tg-cell"></div><div class="tg-cell"></div><div class="tg-cell"></div>
+          <div class="tg-cell today"></div>
+          <!-- 9am -->
+          <div class="tg-time">9 AM</div>
+          <div class="tg-cell"></div>
+          <div class="tg-cell" style="position:relative;">
+            <div class="booking-block" style="background:#0a9994;top:2px;height:48px;">
+              <div class="bb-title">Architecture Consult</div>
+              <div class="bb-client">Tariq Nasir</div>
+              <div class="bb-type">60 MIN · PAID</div>
+            </div>
+          </div>
+          <div class="tg-cell"></div><div class="tg-cell"></div><div class="tg-cell"></div><div class="tg-cell"></div>
+          <div class="tg-cell today"></div>
+          <!-- 10am -->
+          <div class="tg-time">10 AM</div>
+          <div class="tg-cell"></div><div class="tg-cell"></div>
+          <div class="tg-cell" style="position:relative;">
+            <div class="booking-block" style="background:#7c3aed;top:2px;height:96px;">
+              <div class="bb-title">1:1 Mentorship</div>
+              <div class="bb-client">Priya Bose</div>
+              <div class="bb-type">50 MIN · RECURRING</div>
+            </div>
+          </div>
+          <div class="tg-cell"></div><div class="tg-cell"></div>
+          <div class="tg-cell" style="position:relative;">
+            <div class="booking-block" style="background:#1d4ed8;top:2px;height:200px;">
+              <div class="bb-title">Code Review</div>
+              <div class="bb-client">Nadia Wolff · Async</div>
+              <div class="bb-type">4 HRS · IN PROGRESS</div>
+            </div>
+          </div>
+          <div class="tg-cell today"></div>
+          <!-- 11am -->
+          <div class="tg-time">11 AM</div>
+          <div class="tg-cell"></div><div class="tg-cell"></div><div class="tg-cell"></div><div class="tg-cell"></div><div class="tg-cell"></div><div class="tg-cell"></div>
+          <div class="tg-cell today"></div>
+          <!-- 12pm -->
+          <div class="tg-time">12 PM</div>
+          <div class="tg-cell"></div><div class="tg-cell"></div><div class="tg-cell"></div><div class="tg-cell"></div>
+          <div class="tg-cell" style="position:relative;">
+            <div class="booking-block" style="background:#0a9994;top:2px;height:48px;">
+              <div class="bb-title">Architecture Consult</div>
+              <div class="bb-client">Mesh Studio · Team</div>
+              <div class="bb-type">60 MIN · CONFIRMED</div>
+            </div>
+          </div>
+          <div class="tg-cell"></div>
+          <div class="tg-cell today"></div>
+          <!-- 1pm -->
+          <div class="tg-time">1 PM</div>
+          <div class="tg-cell"></div><div class="tg-cell"></div><div class="tg-cell"></div><div class="tg-cell"></div><div class="tg-cell"></div><div class="tg-cell"></div>
+          <div class="tg-cell today" style="position:relative;">
+            <div class="booking-block" style="background:#b07820;top:2px;height:48px;">
+              <div class="bb-title">Quick Q&A</div>
+              <div class="bb-client">Open slot · 15 min</div>
+            </div>
+          </div>
+          <!-- 2pm -->
+          <div class="tg-time">2 PM</div>
+          <div class="tg-cell"></div><div class="tg-cell"></div><div class="tg-cell"></div><div class="tg-cell"></div><div class="tg-cell"></div><div class="tg-cell"></div>
+          <div class="tg-cell today"></div>
+          <!-- 3pm -->
+          <div class="tg-time">3 PM</div>
+          <div class="tg-cell"></div><div class="tg-cell"></div><div class="tg-cell"></div><div class="tg-cell"></div><div class="tg-cell"></div><div class="tg-cell"></div>
+          <div class="tg-cell today"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Booking detail panel -->
+    <div class="bk-detail">
+      <div class="bd-hdr">
+        <div class="bd-service">🏗 ARCHITECTURE CONSULT · CONFIRMED</div>
+        <div class="bd-title">Rust & Distributed Systems Architecture Review</div>
+        <div class="bd-time">📅 Mon Mar 9 · 9:00 – 10:00 AM PST · 60 min</div>
+        <div class="bd-client-row">
+          <div class="bd-av" style="background:linear-gradient(135deg,#3b82f6,#1d4ed8);">TN</div>
+          <div>
+            <div class="bd-client-name">Tariq Nasir</div>
+            <div class="bd-client-meta">@tariq.infra · 1° connection · 3 prior bookings</div>
+          </div>
+        </div>
+        <div class="bd-actions">
+          <div class="bd-act" style="background:rgba(12,207,202,.1);border-color:var(--teal-dim);color:var(--teal);">Join Video Call</div>
+          <div class="bd-act" style="background:rgba(59,130,246,.08);border-color:#1d4ed8;color:var(--blue);">Send Agenda</div>
+          <div class="bd-act" style="background:transparent;border-color:var(--border2);color:var(--text3);">Reschedule</div>
+          <div class="bd-act" style="background:rgba(239,68,68,.06);border-color:#991b1b;color:var(--red);">Cancel</div>
+        </div>
+      </div>
+
+      <div class="bd-sec">
+        <div class="bd-sec-title">Booking Details</div>
+        <div class="bdr"><span class="bdk">Service</span><span class="bdv t">Architecture Consult</span></div>
+        <div class="bdr"><span class="bdk">Duration</span><span class="bdv">60 minutes</span></div>
+        <div class="bdr"><span class="bdk">Format</span><span class="bdv">Video call (kogi Rooms)</span></div>
+        <div class="bdr"><span class="bdk">Rate</span><span class="bdv t">$180/hr</span></div>
+        <div class="bdr"><span class="bdk">Total</span><span class="bdv g">$180</span></div>
+        <div class="bdr"><span class="bdk">Payment</span><span class="bdv g">Paid · Stripe · Mar 7</span></div>
+        <div class="bdr"><span class="bdk">Invoice</span><span class="bdv t">INV-2026-030 →</span></div>
+      </div>
+
+      <div class="bd-sec">
+        <div class="bd-sec-title">Pre-session Notes</div>
+        <div style="font-size:11px;color:var(--text2);line-height:1.6;background:var(--card2);border-radius:4px;padding:9px;border:1px solid var(--border);">
+          "Scaling a Tokio-based pub-sub service to 50K concurrent connections. Hitting bottlenecks in the broadcast channel implementation. Need advice on backpressure configuration and worker thread topology."
+        </div>
+      </div>
+
+      <div class="bd-sec">
+        <div class="bd-sec-title">Linked Portfolio</div>
+        <div style="background:var(--card2);border:1px solid var(--border);border-radius:5px;padding:9px;cursor:pointer;">
+          <div style="font-size:9px;font-family:'IBM Plex Mono',monospace;color:var(--teal);margin-bottom:3px;">◈ CONSULTATION RECORD</div>
+          <div style="font-size:12px;color:var(--text);">Architecture Review · Tariq Nasir #3</div>
+          <div style="font-size:10px;color:var(--text3);margin-top:2px;">Saved to portfolio · Notes + recording after session</div>
+        </div>
+      </div>
+
+      <div class="bd-sec">
+        <div class="bd-sec-title">Booking History · Tariq Nasir</div>
+        <div style="display:flex;flex-direction:column;gap:5px;">
+          <div style="display:flex;justify-content:space-between;font-size:10px;"><span style="color:var(--text2);">Architecture Consult #1</span><span style="font-family:'IBM Plex Mono',monospace;color:var(--green);">★★★★★ · Jan 12</span></div>
+          <div style="display:flex;justify-content:space-between;font-size:10px;"><span style="color:var(--text2);">Code Review Session #1</span><span style="font-family:'IBM Plex Mono',monospace;color:var(--green);">★★★★★ · Feb 3</span></div>
+          <div style="display:flex;justify-content:space-between;font-size:10px;"><span style="color:var(--text2);">Architecture Consult #2</span><span style="font-family:'IBM Plex Mono',monospace;color:var(--amber);">Upcoming · Mar 9</span></div>
+        </div>
+      </div>
+
+      <div class="bd-sec" style="border-bottom:none;">
+        <div class="bd-sec-title">◉ Oba Pre-session Brief</div>
+        <div style="background:rgba(12,207,202,.04);border:1px solid var(--teal-dim);border-radius:5px;padding:10px;font-size:11px;color:var(--text2);line-height:1.55;">
+          Tariq is working on async Rust pub-sub at scale. His prior session focused on Redis fanout. Since then, crdt-rs v2.4.0 shipped the async_broadcast fix that may resolve his issue. Consider sharing the example code from crdt-rs v2.4.0 during the call.
+        </div>
+        <button class="btn bt" style="width:100%;padding:6px;font-size:10px;margin-top:8px;">Generate Session Notes Template</button>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

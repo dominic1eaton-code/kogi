@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>KOGI · Collective Campaign Workspace</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap');
+:root{--bg:#070910;--sidebar:#0b0d16;--card:#0f1221;--card2:#131729;--border:#1a2035;--border2:#232a42;--teal:#0ccfca;--teal-dim:#0a9994;--amber:#e8a030;--amber-dim:#b07820;--green:#22c55e;--green-dim:#15803d;--blue:#3b82f6;--red:#ef4444;--purple:#a855f7;--text:#dde4f0;--text2:#7a879e;--text3:#3d4a62;}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--bg);color:var(--text);font-family:'IBM Plex Sans',sans-serif;font-size:13px;display:flex;height:100vh;overflow:hidden;}
+.sidebar{width:200px;min-width:200px;background:var(--sidebar);border-right:1px solid var(--border);display:flex;flex-direction:column;}
+.logo{padding:18px 16px;border-bottom:1px solid var(--border);}
+.logo-text{font-family:'IBM Plex Mono',monospace;font-size:18px;font-weight:600;letter-spacing:.08em;color:var(--teal);}
+.logo-sub{font-size:9px;color:var(--text3);letter-spacing:.15em;text-transform:uppercase;margin-top:2px;}
+.nav{padding:12px 0;flex:1;overflow-y:auto;}
+.ns{padding:8px 16px 4px;font-size:9px;color:var(--text3);letter-spacing:.18em;text-transform:uppercase;font-family:'IBM Plex Mono',monospace;}
+.ni{display:flex;align-items:center;gap:10px;padding:7px 16px;color:var(--text2);cursor:pointer;font-size:12px;border-left:2px solid transparent;}
+.ni.on{color:var(--teal);background:rgba(12,207,202,.07);border-left-color:var(--teal);}
+.ni-ic{width:14px;text-align:center;font-size:12px;}
+.pb{padding:12px 16px;border-top:1px solid var(--border);}
+.pm{display:flex;align-items:center;gap:8px;}
+.avsm{width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,#0ccfca,#3b82f6);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:#fff;}
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden;}
+.topbar{height:48px;border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 20px;gap:12px;background:var(--sidebar);flex-shrink:0;}
+.tp{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text3);}
+.tp span{color:var(--text2);}
+.tp .cur{color:var(--text);}
+.sp{flex:1;}
+.btn{padding:5px 12px;border-radius:4px;font-size:11px;font-family:'IBM Plex Mono',monospace;cursor:pointer;border:1px solid;}
+.bt{background:rgba(12,207,202,.12);border-color:var(--teal-dim);color:var(--teal);}
+.bg{background:transparent;border-color:var(--border2);color:var(--text2);}
+.ba{background:rgba(232,160,48,.1);border-color:var(--amber-dim);color:var(--amber);}
+.bv{background:rgba(168,85,247,.1);border-color:#7c3aed;color:var(--purple);}
+/* Campaign header strip */
+.cmp-strip{padding:14px 20px;background:var(--sidebar);border-bottom:1px solid var(--border);flex-shrink:0;}
+.cs-top{display:flex;align-items:flex-start;gap:14px;margin-bottom:12px;}
+.cs-ic{width:44px;height:44px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:22px;border:1px solid;flex-shrink:0;}
+.cs-title{font-size:15px;font-weight:600;color:var(--text);}
+.cs-org{font-size:11px;color:var(--text3);margin-top:2px;display:flex;align-items:center;gap:6px;}
+.cs-type{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--amber);}
+.cs-progress-row{display:flex;align-items:center;gap:14px;}
+.cs-bar-wrap{flex:1;}
+.cs-bar{height:10px;background:var(--border);border-radius:5px;overflow:hidden;}
+.cs-fill{height:100%;border-radius:5px;}
+.cs-pct{font-family:'IBM Plex Mono',monospace;font-size:20px;font-weight:600;}
+.cs-kpis{display:flex;gap:16px;}
+.csk{text-align:center;}
+.csk-val{font-family:'IBM Plex Mono',monospace;font-size:14px;font-weight:600;}
+.csk-lbl{font-size:9px;color:var(--text3);text-transform:uppercase;}
+/* Stats row */
+.stats{display:grid;grid-template-columns:repeat(6,1fr);gap:1px;background:var(--border);border-bottom:1px solid var(--border);flex-shrink:0;}
+.sb{background:var(--card);padding:10px 14px;}
+.sv{font-family:'IBM Plex Mono',monospace;font-size:15px;font-weight:600;}
+.sl{font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.1em;margin-top:1px;}
+/* 3 col layout */
+.layout{flex:1;display:grid;grid-template-columns:240px 1fr 280px;overflow:hidden;}
+/* Left: task / role panel */
+.roles{background:var(--sidebar);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden;}
+.roles-hdr{padding:12px 14px;border-bottom:1px solid var(--border);}
+.roles-title{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text2);margin-bottom:2px;}
+.roles-sub{font-size:10px;color:var(--text3);}
+.roles-scroll{flex:1;overflow-y:auto;}
+.role-sec{padding:6px 14px 3px;font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.14em;font-family:'IBM Plex Mono',monospace;background:var(--card2);border-bottom:1px solid var(--border);}
+.role-item{padding:10px 14px;border-bottom:1px solid var(--border);}
+.ri-top{display:flex;align-items:center;gap:8px;margin-bottom:5px;}
+.ri-av{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:600;color:#fff;flex-shrink:0;}
+.ri-name{font-size:12px;color:var(--text);flex:1;}
+.ri-badge{font-size:9px;font-family:'IBM Plex Mono',monospace;padding:1px 6px;border-radius:3px;border:1px solid;}
+.ri-tasks{display:flex;flex-direction:column;gap:4px;margin-top:5px;}
+.rt{display:flex;align-items:center;gap:6px;font-size:10px;color:var(--text3);}
+.rt-dot{width:5px;height:5px;border-radius:50%;flex-shrink:0;}
+.rt.done .rt-dot{background:var(--green);}
+.rt.todo .rt-dot{background:var(--amber);}
+.rt.block .rt-dot{background:var(--red);}
+.rt.done{text-decoration:line-through;opacity:.5;}
+/* Main workspace */
+.workspace{overflow-y:auto;padding:16px;}
+/* Section header */
+.ws-sec{display:flex;align-items:center;gap:10px;margin-bottom:12px;}
+.wss-title{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--text2);text-transform:uppercase;letter-spacing:.12em;}
+.wss-line{flex:1;height:1px;background:var(--border);}
+.wss-act{font-size:10px;color:var(--teal);cursor:pointer;font-family:'IBM Plex Mono',monospace;}
+/* Activity feed cards */
+.act-card{background:var(--card);border:1px solid var(--border);border-radius:6px;padding:12px;margin-bottom:10px;}
+.ac-header{display:flex;align-items:center;gap:9px;margin-bottom:8px;}
+.ac-av{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:600;color:#fff;flex-shrink:0;}
+.ac-meta{flex:1;}
+.ac-name{font-size:12px;color:var(--text);font-weight:500;}
+.ac-time{font-size:10px;color:var(--text3);font-family:'IBM Plex Mono',monospace;}
+.ac-type{font-size:9px;font-family:'IBM Plex Mono',monospace;padding:2px 7px;border-radius:3px;border:1px solid;margin-left:auto;}
+.ac-body{font-size:11px;color:var(--text2);line-height:1.55;margin-bottom:8px;}
+.ac-link{background:var(--card2);border:1px solid var(--border);border-radius:5px;padding:8px 10px;font-size:11px;color:var(--text2);cursor:pointer;}
+.ac-link-label{font-size:9px;font-family:'IBM Plex Mono',monospace;color:var(--teal);margin-bottom:2px;}
+.ac-reactions{display:flex;gap:5px;margin-top:6px;}
+.ac-react{padding:2px 7px;background:var(--card2);border:1px solid var(--border2);border-radius:10px;font-size:11px;cursor:pointer;}
+/* governance event -->
+.gov-event{background:rgba(168,85,247,.04);border:1px solid #7c3aed40;border-radius:6px;padding:12px;margin-bottom:10px;}
+.ge-badge{font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--purple);text-transform:uppercase;margin-bottom:5px;}
+.ge-title{font-size:12px;font-weight:600;color:var(--text);margin-bottom:4px;}
+.ge-progress{height:5px;background:var(--border);border-radius:3px;overflow:hidden;margin:6px 0;}
+.ge-fill{height:100%;background:var(--purple);border-radius:3px;}
+.ge-votes{display:flex;justify-content:space-between;font-size:10px;font-family:'IBM Plex Mono',monospace;color:var(--text3);}
+.ge-actions{display:flex;gap:6px;margin-top:8px;}
+.ge-act{padding:4px 10px;border-radius:3px;font-size:10px;font-family:'IBM Plex Mono',monospace;cursor:pointer;border:1px solid;}
+/* campaign compose -->
+.cmp-compose{border-top:1px solid var(--border);padding:10px 14px;background:var(--card);flex-shrink:0;}
+.cc-tools{display:flex;gap:5px;margin-bottom:7px;}
+.cct{width:26px;height:26px;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:12px;color:var(--text3);cursor:pointer;border:1px solid transparent;}
+.cct:hover{background:var(--card2);border-color:var(--border2);}
+.cc-row{display:flex;gap:8px;align-items:flex-end;}
+.cc-field{flex:1;background:var(--card2);border:1px solid var(--border2);border-radius:7px;padding:7px 11px;color:var(--text);font-size:11px;font-family:'IBM Plex Sans',sans-serif;outline:none;resize:none;min-height:34px;line-height:1.5;}
+.cc-field:focus{border-color:var(--teal-dim);}
+.cc-field::placeholder{color:var(--text3);}
+.cc-send{width:32px;height:32px;border-radius:5px;background:var(--teal);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--bg);font-size:13px;}
+/* Right panel -->
+.info{background:var(--sidebar);border-left:1px solid var(--border);overflow-y:auto;display:flex;flex-direction:column;}
+.is{padding:11px 14px;border-bottom:1px solid var(--border);}
+.is-title{font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.14em;margin-bottom:7px;}
+.isr{display:flex;justify-content:space-between;margin-bottom:5px;}
+.isk{font-size:11px;color:var(--text3);}
+.isv{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text2);}
+.isv.t{color:var(--teal);}
+.isv.g{color:var(--green);}
+.isv.a{color:var(--amber);}
+.isv.p{color:var(--purple);}
+/* backer list -->
+.backer-row{display:flex;align-items:center;gap:7px;padding:7px 0;border-bottom:1px solid var(--border);}
+.backer-row:last-child{border-bottom:none;}
+.br-av{width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:600;color:#fff;flex-shrink:0;}
+.br-name{flex:1;font-size:11px;color:var(--text2);}
+.br-amount{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--purple);}
+.br-pct{font-size:9px;color:var(--text3);}
+</style>
+</head>
+<body>
+<div class="sidebar">
+  <div class="logo"><div class="logo-text">KOGI</div><div class="logo-sub">Independent Worker OS</div></div>
+  <nav class="nav">
+    <div class="ns">Capital & Growth</div>
+    <div class="ni on"><span class="ni-ic">⚙</span>Mesh Studio · Campaigns</div>
+    <div class="ni"><span class="ni-ic">🎯</span>Campaign Builder</div>
+    <div class="ni"><span class="ni-ic">🌐</span>Discover Campaigns</div>
+    <div class="ns">Cooperative</div>
+    <div class="ni"><span class="ni-ic">🏛</span>Group Economics</div>
+    <div class="ni"><span class="ni-ic">⚖</span>Governance</div>
+    <div class="ni"><span class="ni-ic">👥</span>Members</div>
+    <div class="ns">Finance</div>
+    <div class="ni"><span class="ni-ic">💳</span>Wallet</div>
+    <div class="ni"><span class="ni-ic">♦</span>Bank</div>
+  </nav>
+  <div class="pb"><div class="pm"><div class="avsm">JC</div><div><div style="font-size:12px;">Jordan Chen</div><div style="font-size:10px;color:var(--text3);">Admin · Mesh Studio</div></div></div></div>
+</div>
+
+<div class="main">
+  <div class="topbar">
+    <div class="tp">KCMP / <span>Mesh Studio</span> / <span class="cur">Design System Revenue Share Campaign</span></div>
+    <div class="sp"></div>
+    <button class="btn bg">Campaign Settings</button>
+    <button class="btn bv">⚖ Governance Vote</button>
+    <button class="btn bt">◉ Oba Campaign Intel</button>
+  </div>
+
+  <!-- Campaign header -->
+  <div class="cmp-strip">
+    <div class="cs-top">
+      <div class="cs-ic" style="background:rgba(168,85,247,.1);border-color:#7c3aed;">📈</div>
+      <div style="flex:1;">
+        <div class="cs-title">Design System Revenue Share Campaign</div>
+        <div class="cs-org">
+          <span>⚙ Mesh Studio Cooperative · 8 members</span>
+          <span class="cs-type">REVENUE SHARE · 12% · 2 YRS · COLLECTIVE CAMPAIGN</span>
+        </div>
+      </div>
+      <div style="display:flex;gap:6px;">
+        <button class="btn bg" style="font-size:10px;padding:4px 8px;">Campaign Page ↗</button>
+        <button class="btn ba" style="font-size:10px;padding:4px 8px;">Pause Campaign</button>
+      </div>
+    </div>
+    <div class="cs-progress-row">
+      <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--text3);">Progress</div>
+      <div class="cs-bar-wrap">
+        <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text3);font-family:'IBM Plex Mono',monospace;margin-bottom:3px;"><span>$27,000 raised of $60,000 goal</span><span>56 days left</span></div>
+        <div class="cs-bar"><div class="cs-fill" style="width:45%;background:var(--purple);"></div></div>
+      </div>
+      <div class="cs-pct" style="color:var(--purple);">45%</div>
+      <div class="cs-kpis">
+        <div class="csk"><div class="csk-val" style="color:var(--blue);">18</div><div class="csk-lbl">Backers</div></div>
+        <div class="csk"><div class="csk-val" style="color:var(--amber);">$1,500</div><div class="csk-lbl">Avg. Invest</div></div>
+        <div class="csk"><div class="csk-val" style="color:var(--green);">$482/day</div><div class="csk-lbl">Velocity</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="stats">
+    <div class="sb"><div class="sv" style="color:var(--purple);">45%</div><div class="sl">Funded</div></div>
+    <div class="sb"><div class="sv" style="color:var(--green);">18</div><div class="sl">Backers</div></div>
+    <div class="sb"><div class="sv" style="color:var(--teal);">$482/d</div><div class="sl">Velocity</div></div>
+    <div class="sb"><div class="sv" style="color:var(--amber);">56</div><div class="sl">Days Left</div></div>
+    <div class="sb"><div class="sv" style="color:var(--blue);">124</div><div class="sl">Page Views</div></div>
+    <div class="sb"><div class="sv">7.2%</div><div class="sl">Conversion</div></div>
+  </div>
+
+  <div class="layout">
+    <!-- Member roles panel -->
+    <div class="roles">
+      <div class="roles-hdr">
+        <div class="roles-title">Campaign Team · 8 members</div>
+        <div class="roles-sub">Roles, tasks, and responsibilities</div>
+      </div>
+      <div class="roles-scroll">
+        <div class="role-sec">Admins</div>
+        <div class="role-item">
+          <div class="ri-top">
+            <div class="ri-av" style="background:linear-gradient(135deg,#0ccfca,#3b82f6);">JC</div>
+            <div class="ri-name">Jordan Chen</div>
+            <div class="ri-badge" style="background:rgba(12,207,202,.06);border-color:var(--teal-dim);color:var(--teal);">Campaign Lead</div>
+          </div>
+          <div class="ri-tasks">
+            <div class="rt done"><div class="rt-dot"></div>Launch campaign page</div>
+            <div class="rt done"><div class="rt-dot"></div>Write campaign description</div>
+            <div class="rt todo"><div class="rt-dot"></div>Send investor outreach ×12</div>
+            <div class="rt todo"><div class="rt-dot"></div>Post Twitter thread update</div>
+          </div>
+        </div>
+        <div class="role-item">
+          <div class="ri-top">
+            <div class="ri-av" style="background:linear-gradient(135deg,#e8a030,#d97706);">LM</div>
+            <div class="ri-name">Lena Maier</div>
+            <div class="ri-badge" style="background:rgba(168,85,247,.06);border-color:#7c3aed;color:var(--purple);">Governance</div>
+          </div>
+          <div class="ri-tasks">
+            <div class="rt done"><div class="rt-dot"></div>Draft governance proposal</div>
+            <div class="rt todo"><div class="rt-dot"></div>Collect member votes (5/8)</div>
+            <div class="rt block"><div class="rt-dot"></div>Awaiting Tariq + Priya vote</div>
+          </div>
+        </div>
+        <div class="role-sec">Contributors</div>
+        <div class="role-item">
+          <div class="ri-top">
+            <div class="ri-av" style="background:linear-gradient(135deg,#a855f7,#ec4899);">SR</div>
+            <div class="ri-name">Sofia Reyes</div>
+            <div class="ri-badge" style="background:rgba(122,135,158,.06);border-color:var(--text3);color:var(--text3);">Comms</div>
+          </div>
+          <div class="ri-tasks">
+            <div class="rt done"><div class="rt-dot"></div>Design campaign banner</div>
+            <div class="rt done"><div class="rt-dot"></div>Write pitch deck</div>
+            <div class="rt todo"><div class="rt-dot"></div>Product video (Loom)</div>
+          </div>
+        </div>
+        <div class="role-item">
+          <div class="ri-top">
+            <div class="ri-av" style="background:linear-gradient(135deg,#22c55e,#16a34a);">MP</div>
+            <div class="ri-name">Marcus Park</div>
+            <div class="ri-badge" style="background:rgba(34,197,94,.06);border-color:var(--green-dim);color:var(--green);">Treasury</div>
+          </div>
+          <div class="ri-tasks">
+            <div class="rt done"><div class="rt-dot"></div>Set up campaign account</div>
+            <div class="rt todo"><div class="rt-dot"></div>Weekly backer reports</div>
+          </div>
+        </div>
+        <div class="role-sec">Observers / Approvers</div>
+        <div class="role-item" style="opacity:.7;">
+          <div class="ri-top">
+            <div class="ri-av" style="background:linear-gradient(135deg,#3b82f6,#1d4ed8);">TN</div>
+            <div class="ri-name">Tariq Nasir</div>
+            <div class="ri-badge" style="background:rgba(122,135,158,.06);border-color:var(--text3);color:var(--text3);">Approver</div>
+          </div>
+          <div class="ri-tasks">
+            <div class="rt block"><div class="rt-dot"></div>Vote on governance proposal</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Campaign workspace feed -->
+    <div style="overflow-y:auto;display:flex;flex-direction:column;">
+      <div style="flex:1;overflow-y:auto;padding:14px;">
+
+        <div class="ws-sec"><div class="wss-title">Campaign Activity · Team Feed</div><div class="wss-line"></div><div class="wss-act">Filter →</div></div>
+
+        <!-- Governance vote needed -->
+        <div class="gov-event">
+          <div class="ge-badge">⚖ GOVERNANCE · PROPOSAL #14 · REQUIRES YOUR VOTE</div>
+          <div class="ge-title">Authorize campaign milestone 2 disbursement — $18,000 to Operating Account</div>
+          <div style="font-size:11px;color:var(--text3);margin-bottom:6px;">Proposed by Lena Maier · Requires 6/8 member votes · Closes in 3 days</div>
+          <div class="ge-progress"><div class="ge-fill" style="width:62%;"></div></div>
+          <div class="ge-votes"><span>5/8 votes cast · 1 more needed</span><span style="color:var(--red);">⏱ 3 days left</span></div>
+          <div class="ge-actions">
+            <div class="ge-act" style="background:rgba(34,197,94,.08);border-color:var(--green-dim);color:var(--green);">✓ Approve Disbursement</div>
+            <div class="ge-act" style="background:rgba(239,68,68,.06);border-color:#991b1b;color:var(--red);">✗ Reject</div>
+            <div class="ge-act" style="background:transparent;border-color:var(--border2);color:var(--text3);">Discuss</div>
+          </div>
+        </div>
+
+        <!-- New backer activity -->
+        <div class="act-card">
+          <div class="ac-header">
+            <div class="ac-av" style="background:linear-gradient(135deg,#0ccfca,#3b82f6);">LM</div>
+            <div class="ac-meta">
+              <div class="ac-name">Lena Maier</div>
+              <div class="ac-time">2h ago</div>
+            </div>
+            <div class="ac-type" style="background:rgba(34,197,94,.06);border-color:var(--green-dim);color:var(--green);">BACKER UPDATE</div>
+          </div>
+          <div class="ac-body">New backer confirmed! <strong>Cooperative Tech Inc</strong> just committed <strong style="color:var(--purple);">$5,000</strong> to the Design System campaign. That brings us to 45% funded. Huge momentum — 3 more investors at this level and we're at goal! 🎉</div>
+          <div class="ac-link"><div class="ac-link-label">NEW BACKER · COMMITTED</div>Cooperative Tech Inc · $5,000 · Revenue Share backers list</div>
+          <div class="ac-reactions"><div class="ac-react">🎉 6</div><div class="ac-react">💪 4</div><div class="ac-react">🚀 3</div></div>
+        </div>
+
+        <!-- Jordan's outreach update -->
+        <div class="act-card">
+          <div class="ac-header">
+            <div class="ac-av" style="background:linear-gradient(135deg,#0ccfca,#3b82f6);">JC</div>
+            <div class="ac-meta">
+              <div class="ac-name">Jordan Chen · Campaign Lead</div>
+              <div class="ac-time">4h ago</div>
+            </div>
+            <div class="ac-type" style="background:rgba(59,130,246,.06);border-color:#1d4ed8;color:var(--blue);">OUTREACH</div>
+          </div>
+          <div class="ac-body">Sent outreach to 8 warm leads from our Builder Network investor shortlist. Oba drafted tailored messages for each, focusing on the cooperative design system market size and our 1,284 GitHub stars. Expecting 2–3 responses by end of week.</div>
+          <div class="ac-reactions"><div class="ac-react">👍 5</div></div>
+        </div>
+
+        <!-- Sofia's design update -->
+        <div class="act-card">
+          <div class="ac-header">
+            <div class="ac-av" style="background:linear-gradient(135deg,#a855f7,#ec4899);">SR</div>
+            <div class="ac-meta">
+              <div class="ac-name">Sofia Reyes · Comms</div>
+              <div class="ac-time">Yesterday · 2:30 PM</div>
+            </div>
+            <div class="ac-type" style="background:rgba(168,85,247,.06);border-color:#7c3aed;color:var(--purple);">CONTENT</div>
+          </div>
+          <div class="ac-body">Product demo video is ready for review. 3:42 walkthrough of the design system — component library, dark/light themes, Figma export, React integration. Ready to embed on campaign page.</div>
+          <div class="ac-link"><div class="ac-link-label">📹 VIDEO ASSET · PENDING REVIEW</div>design-system-demo-v1.mp4 · 3:42 · 48MB · Loom preview available</div>
+          <div class="ac-reactions"><div class="ac-react">✅ 4</div><div class="ac-react">🔥 3</div></div>
+        </div>
+
+        <!-- Oba intelligence -->
+        <div class="act-card" style="border-color:var(--teal-dim);">
+          <div class="ac-header">
+            <div class="ac-av" style="background:rgba(12,207,202,.15);border:1px solid var(--teal-dim);font-size:14px;">◉</div>
+            <div class="ac-meta">
+              <div class="ac-name" style="color:var(--teal);">Oba · Campaign Intelligence</div>
+              <div class="ac-time">Daily briefing</div>
+            </div>
+            <div class="ac-type" style="background:rgba(12,207,202,.06);border-color:var(--teal-dim);color:var(--teal);">AI BRIEF</div>
+          </div>
+          <div class="ac-body">At current velocity ($482/day), you'll hit your $60K goal in <strong>68 days</strong> — 12 days after your deadline. To close the gap: <strong style="color:var(--amber);">(1)</strong> Post a Twitter thread today about the 1,284 stars milestone — estimated +8K impressions. <strong style="color:var(--amber);">(2)</strong> 5 high-probability backers visited your campaign page yesterday without investing. Oba has drafted follow-up messages for your review.</div>
+          <div style="display:flex;gap:6px;margin-top:8px;">
+            <button class="btn bt" style="flex:1;padding:5px;font-size:10px;">Review 5 Follow-ups →</button>
+            <button class="btn bg" style="padding:5px;font-size:10px;">Draft Tweet Thread</button>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Compose -->
+      <div class="cmp-compose">
+        <div class="cc-tools">
+          <div class="cct">📎</div><div class="cct">📊</div><div class="cct">⚖</div><div class="cct">💰</div><div class="cct">📣</div>
+        </div>
+        <div class="cc-row">
+          <textarea class="cc-field" placeholder="Post a campaign update to the team… (/backer-update, /governance, /milestone, /broadcast)" rows="1"></textarea>
+          <div class="cc-send">↑</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Info panel -->
+    <div class="info">
+      <div class="is">
+        <div class="is-title">Campaign Details</div>
+        <div class="isr"><span class="isk">Entity</span><span class="isv t">⚙ Mesh Studio</span></div>
+        <div class="isr"><span class="isk">Type</span><span class="isv">Cooperative</span></div>
+        <div class="isr"><span class="isk">Campaign type</span><span class="isv p">Revenue Share</span></div>
+        <div class="isr"><span class="isk">Instrument</span><span class="isv">12% rev · 2 years</span></div>
+        <div class="isr"><span class="isk">Goal</span><span class="isv">$60,000</span></div>
+        <div class="isr"><span class="isk">Min investment</span><span class="isv">$500</span></div>
+        <div class="isr"><span class="isk">All-or-nothing</span><span class="isv g">Yes ✓</span></div>
+        <div class="isr"><span class="isk">Governance req.</span><span class="isv p">6/8 member vote</span></div>
+        <div class="isr"><span class="isk">Campaign account</span><span class="isv t">$27,000 held</span></div>
+      </div>
+
+      <div class="is">
+        <div class="is-title">Top Backers</div>
+        <div class="backer-row">
+          <div class="br-av" style="background:linear-gradient(135deg,#0ccfca,#3b82f6);">CT</div>
+          <div class="br-name">Coop Tech Inc</div>
+          <div><div class="br-amount">$5,000</div><div class="br-pct">18.5%</div></div>
+        </div>
+        <div class="backer-row">
+          <div class="br-av" style="background:linear-gradient(135deg,#e8a030,#d97706);">AP</div>
+          <div class="br-name">Aisha Patel</div>
+          <div><div class="br-amount">$4,000</div><div class="br-pct">14.8%</div></div>
+        </div>
+        <div class="backer-row">
+          <div class="br-av" style="background:linear-gradient(135deg,#a855f7,#7c3aed);">PI</div>
+          <div class="br-name">Protocol Inc</div>
+          <div><div class="br-amount">$3,500</div><div class="br-pct">13.0%</div></div>
+        </div>
+        <div class="backer-row">
+          <div class="br-av" style="background:linear-gradient(135deg,#3b82f6,#1d4ed8);">TN</div>
+          <div class="br-name">Tariq Nasir</div>
+          <div><div class="br-amount">$2,000</div><div class="br-pct">7.4%</div></div>
+        </div>
+        <div style="font-size:10px;color:var(--text3);padding:5px 0;cursor:pointer;">+ 14 more backers · $12,500 →</div>
+      </div>
+
+      <div class="is">
+        <div class="is-title">Milestone Disbursement</div>
+        <div style="display:flex;flex-direction:column;gap:6px;">
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:7px 9px;background:var(--card2);border-radius:4px;border:1px solid var(--border);">
+            <div><div style="font-size:10px;color:var(--text);">M1 · Engineering Q2</div><div style="font-size:9px;color:var(--text3);">On goal · $18,000</div></div>
+            <div style="font-size:9px;font-family:'IBM Plex Mono',monospace;color:var(--amber);border:1px solid var(--amber-dim);padding:2px 6px;border-radius:3px;">Vote pending</div>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:7px 9px;background:var(--card2);border-radius:4px;border:1px solid var(--border);">
+            <div><div style="font-size:10px;color:var(--text3);">M2 · Design + Docs</div><div style="font-size:9px;color:var(--text3);">75% funded · $24,000</div></div>
+            <div style="font-size:9px;font-family:'IBM Plex Mono',monospace;color:var(--text3);border:1px solid var(--border2);padding:2px 6px;border-radius:3px;">Locked</div>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:7px 9px;background:var(--card2);border-radius:4px;border:1px solid var(--border);">
+            <div><div style="font-size:10px;color:var(--text3);">M3 · Launch + Marketing</div><div style="font-size:9px;color:var(--text3);">100% funded · $18,000</div></div>
+            <div style="font-size:9px;font-family:'IBM Plex Mono',monospace;color:var(--text3);border:1px solid var(--border2);padding:2px 6px;border-radius:3px;">Locked</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="is" style="border-bottom:none;">
+        <div class="is-title">Quick Actions</div>
+        <div style="display:flex;flex-direction:column;gap:6px;">
+          <button class="btn" style="width:100%;padding:6px;font-size:10px;background:rgba(168,85,247,.08);border-color:#7c3aed;color:var(--purple);">⚖ Propose Disbursement Vote</button>
+          <button class="btn" style="width:100%;padding:6px;font-size:10px;background:rgba(12,207,202,.08);border-color:var(--teal-dim);color:var(--teal);">📣 Post Campaign Update</button>
+          <button class="btn" style="width:100%;padding:6px;font-size:10px;background:transparent;border-color:var(--border2);color:var(--text3);">Invite Member to Team</button>
+          <button class="btn" style="width:100%;padding:6px;font-size:10px;background:transparent;border-color:var(--border2);color:var(--text3);">Export Backer Report</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>
