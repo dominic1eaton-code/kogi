@@ -13,16 +13,9 @@
 
 :root{
 
---emerald:#10b981;
---emerald-deep:#059669;
-
---amber:#f59e0b;
---amber-soft:#fbbf24;
-
 --bg:#0c1216;
 --bg-card:#0f1f26;
-/* --bg-hover:#132830; */
---bg-hover: linear-gradient(135deg, #fbbe2411,#b8c7b246);
+--bg-hover:#132830;
 
 --border:rgba(255,255,255,0.06);
 --border-hi:rgba(255,255,255,0.15);
@@ -31,6 +24,11 @@
 --text-2:#8ea6ad;
 --text-3:#5d747c;
 
+--emerald:#10b981;
+--emerald-deep:#059669;
+
+--amber:#f59e0b;
+--amber-soft:#fbbf24;
 
 --grad:linear-gradient(135deg,#10b981,#059669);
 
@@ -39,9 +37,8 @@
 
 }
 
-html,body{
+body{
 
-height:100%;
 background-color:var(--bg);
 color:var(--text);
 font-family:var(--font);
@@ -52,17 +49,14 @@ linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
 
 background-size:40px 40px;
 
-}
-
-body{
 display:flex;
 flex-direction:column;
 align-items:center;
-justify-content:flex-start;
-padding:28px 20px 20px;
+padding:28px 20px 40px;
+
 }
 
-/* subtle gradient lighting */
+/* gradient lighting */
 
 body::before{
 content:'';
@@ -72,7 +66,6 @@ left:-120px;
 width:420px;
 height:420px;
 background:radial-gradient(circle,rgba(16,185,129,.08) 0%,transparent 70%);
-pointer-events:none;
 }
 
 body::after{
@@ -83,7 +76,6 @@ right:-80px;
 width:350px;
 height:350px;
 background:radial-gradient(circle,rgba(245,158,11,.06) 0%,transparent 70%);
-pointer-events:none;
 }
 
 /* logo */
@@ -92,7 +84,7 @@ pointer-events:none;
 display:flex;
 align-items:center;
 gap:10px;
-margin-bottom:32px;
+margin-bottom:26px;
 }
 
 .logo-icon{
@@ -117,13 +109,12 @@ box-shadow:
 
 }
 
-.logo-name{
+.logo span{
 font-weight:700;
 font-size:18px;
-letter-spacing:-0.4px;
 }
 
-/* heading */
+/* header */
 
 h1{
 
@@ -133,7 +124,7 @@ letter-spacing:-0.6px;
 
 text-align:center;
 
-margin-bottom:8px;
+margin-bottom:6px;
 
 }
 
@@ -143,11 +134,11 @@ font-size:13px;
 color:var(--text-2);
 
 text-align:center;
-margin-bottom:26px;
+margin-bottom:22px;
 
 }
 
-/* steps */
+/* step track */
 
 .steps-row{
 
@@ -202,19 +193,9 @@ background:var(--border);
 
 }
 
-.step-label{
+/* role cards */
 
-font-size:11px;
-color:var(--text-3);
-
-text-align:center;
-margin-bottom:16px;
-
-}
-
-/* options */
-
-.options-grid{
+.roles-grid{
 
 display:grid;
 grid-template-columns:1fr 1fr;
@@ -227,7 +208,7 @@ margin-bottom:20px;
 
 }
 
-.option-card{
+.role-card{
 
 background:var(--bg-card);
 
@@ -248,7 +229,7 @@ transition:all .18s ease;
 
 }
 
-.option-card:hover{
+.role-card:hover{
 
 transform:translateY(-2px);
 
@@ -260,13 +241,13 @@ background:var(--bg-hover);
 
 }
 
-.option-card.selected{
+.role-card.selected{
 
-border-color:var(--amber-soft);
+border-color:var(--emerald);
 
 }
 
-.option-card.selected::after{
+.role-card.selected::after{
 
 content:'✓';
 
@@ -279,24 +260,23 @@ font-weight:700;
 
 }
 
-.option-icon{
+.role-icon{
 
 font-size:22px;
 
 }
 
-.option-name{
+.role-name{
 
 font-size:13.5px;
 font-weight:700;
 
 }
 
-.option-desc{
+.role-desc{
 
 font-size:11.5px;
 color:var(--text-2);
-line-height:1.45;
 
 }
 
@@ -314,45 +294,6 @@ padding:2px 7px;
 border-radius:5px;
 
 width:fit-content;
-
-}
-
-/* info strips */
-
-.info-row{
-
-display:grid;
-grid-template-columns:repeat(3,1fr);
-
-gap:8px;
-
-width:100%;
-max-width:580px;
-
-margin-bottom:18px;
-
-}
-
-.info-strip{
-
-background:var(--bg-card);
-
-border:1px solid var(--border);
-border-radius:8px;
-
-padding:10px 12px;
-
-display:flex;
-align-items:center;
-gap:8px;
-
-font-size:11.5px;
-
-}
-
-.info-icon{
-
-color:var(--amber-soft);
 
 }
 
@@ -412,11 +353,56 @@ background:rgba(16,185,129,0.08);
 
 }
 
+/* stats */
+
+.stats{
+
+display:grid;
+grid-template-columns:repeat(3,1fr);
+gap:8px;
+
+max-width:580px;
+width:100%;
+
+margin-top:14px;
+
+}
+
+.stat{
+
+background:var(--bg-card);
+border:1px solid var(--border);
+border-radius:8px;
+
+padding:10px;
+
+text-align:center;
+
+}
+
+.stat .v{
+
+font-size:18px;
+font-weight:700;
+
+font-family:var(--mono);
+
+}
+
+.stat .l{
+
+font-size:10px;
+color:var(--text-3);
+
+}
+
 /* button */
 
 .btn-primary{
 
-background:linear-gradient(135deg,#10b981,#059669);
+margin-top:18px;
+
+background:var(--grad);
 
 border:none;
 
@@ -450,7 +436,7 @@ box-shadow:0 10px 30px rgba(16,185,129,0.35);
 
 <div class="logo">
 <div class="logo-icon">K</div>
-<span class="logo-name">kogi</span>
+<span>kogi</span>
 </div>
 
 <h1>Welcome, Jordan! 👋</h1>
@@ -466,33 +452,31 @@ box-shadow:0 10px 30px rgba(16,185,129,0.35);
 <div class="step inactive">4</div>
 </div>
 
-<!-- <p class="step-label">Step 1 of 4 — about 2 minutes</p> -->
+<div class="roles-grid">
 
-<div class="options-grid">
-
-<div class="option-card selected">
-<div class="option-icon">⚒</div>
-<div class="option-name">Freelancer</div>
-<div class="option-desc">Entreprenuer, Designer, developer, writer, consultant</div>
+<div class="role-card selected">
+<div class="role-icon">⚒</div>
+<div class="role-name">Freelancer</div>
+<div class="role-desc">Designer, developer, writer, consultant</div>
 <div class="badge-popular">Most popular</div>
 </div>
 
-<div class="option-card">
-<div class="option-icon">👥</div>
-<div class="option-name">Micro-Agency</div>
-<div class="option-desc">Small team of 2–15 collaborators</div>
+<div class="role-card">
+<div class="role-icon">👥</div>
+<div class="role-name">Micro-Agency</div>
+<div class="role-desc">Small team of 2–15 collaborators</div>
 </div>
 
-<div class="option-card">
-<div class="option-icon">⊞</div>
-<div class="option-name">Cooperative</div>
-<div class="option-desc">Large team, worker co-op, collective with shared ownership</div>
+<div class="role-card">
+<div class="role-icon">🏢</div>
+<div class="role-name">Cooperative</div>
+<div class="role-desc">Worker co-op or collective</div>
 </div>
 
-<div class="option-card">
-<div class="option-icon">💡</div>
-<div class="option-name">Explorer</div>
-<div class="option-desc">Just checking out the platform</div>
+<div class="role-card">
+<div class="role-icon">💡</div>
+<div class="role-name">Explorer</div>
+<div class="role-desc">Just checking out the platform</div>
 </div>
 
 </div>
@@ -519,6 +503,8 @@ Primary focus areas (select all that apply)
 </div>
 
 <button class="btn-primary">Continue →</button>
+
+</div>
 
 </body>
 </html>

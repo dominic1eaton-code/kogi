@@ -13,16 +13,9 @@
 
 :root{
 
---emerald:#10b981;
---emerald-deep:#059669;
-
---amber:#f59e0b;
---amber-soft:#fbbf24;
-
 --bg:#0c1216;
 --bg-card:#0f1f26;
-/* --bg-hover:#132830; */
---bg-hover: linear-gradient(135deg, #fbbe2411,#b8c7b246);
+--bg-hover:#132830;
 
 --border:rgba(255,255,255,0.06);
 --border-hi:rgba(255,255,255,0.15);
@@ -31,6 +24,11 @@
 --text-2:#8ea6ad;
 --text-3:#5d747c;
 
+--emerald:#10b981;
+--emerald-deep:#059669;
+
+--amber:#f59e0b;
+--amber-soft:#fbbf24;
 
 --grad:linear-gradient(135deg,#10b981,#059669);
 
@@ -262,7 +260,7 @@ background:var(--bg-hover);
 
 .option-card.selected{
 
-border-color:var(--amber-soft);
+border-color:var(--emerald);
 
 }
 
@@ -356,62 +354,6 @@ color:var(--amber-soft);
 
 }
 
-/* focus tags */
-
-.focus-box{
-
-background:var(--bg-card);
-border:1px solid var(--border);
-border-radius:10px;
-
-padding:12px;
-
-max-width:580px;
-width:100%;
-
-margin-bottom:16px;
-
-}
-
-.focus-title{
-
-font-size:12px;
-font-weight:600;
-margin-bottom:8px;
-
-}
-
-.tag-row{
-
-display:flex;
-flex-wrap:wrap;
-gap:6px;
-
-}
-
-.tag{
-
-padding:4px 9px;
-border-radius:6px;
-
-font-size:11px;
-
-border:1px solid var(--border);
-color:var(--text-2);
-
-cursor:pointer;
-
-}
-
-.tag.selected{
-
-border-color:var(--emerald);
-color:var(--emerald);
-
-background:rgba(16,185,129,0.08);
-
-}
-
 /* button */
 
 .btn-primary{
@@ -466,7 +408,7 @@ box-shadow:0 10px 30px rgba(16,185,129,0.35);
 <div class="step inactive">4</div>
 </div>
 
-<!-- <p class="step-label">Step 1 of 4 — about 2 minutes</p> -->
+<p class="step-label">Step 1 of 4 — about 2 minutes</p>
 
 <div class="options-grid">
 
@@ -497,28 +439,17 @@ box-shadow:0 10px 30px rgba(16,185,129,0.35);
 
 </div>
 
-<div class="focus-box">
+<div class="info-row">
 
-<div class="focus-title">
-Primary focus areas (select all that apply)
-</div>
-
-<div class="tag-row">
-
-<div class="tag selected">Design</div>
-<div class="tag selected">Development</div>
-<div class="tag">Writing</div>
-<div class="tag">Marketing</div>
-<div class="tag">Strategy</div>
-<div class="tag">Finance</div>
-<div class="tag">Video</div>
-<div class="tag">Audio</div>
+<div class="info-strip"><span class="info-icon">⊟</span>Portfolio OS included</div>
+<div class="info-strip"><span class="info-icon">◈</span>AI Agent ready</div>
+<div class="info-strip"><span class="info-icon">◎</span>2.5% marketplace fee</div>
 
 </div>
 
-</div>
 
 <button class="btn-primary">Continue →</button>
+
 
 </body>
 </html>
