@@ -1,0 +1,145 @@
+<div class="dashboard-layout">
+
+  <!-- SIDEBAR -->
+
+  <aside class="sidebar">
+
+    <div class="sidebar-brand">
+
+      <div class="brand-icon">K</div>
+      <div class="brand-name">kogi</div>
+
+    </div>
+
+    <nav class="sidebar-nav">
+
+      <a class="nav-item active">Dashboard</a>
+      <a class="nav-item">Projects</a>
+      <a class="nav-item">Marketplace</a>
+      <a class="nav-item">Portfolio</a>
+      <a class="nav-item">Finance</a>
+      <a class="nav-item">Governance</a>
+      <a class="nav-item">AI Agent</a>
+
+    </nav>
+
+  </aside>
+
+
+  <!-- MAIN -->
+
+  <main class="main">
+
+    <header class="topbar">
+
+      <div class="topbar-left">
+        <h1>Dashboard</h1>
+      </div>
+
+      <div class="topbar-right">
+
+        <div class="user-chip">
+
+          <div class="avatar">
+            {{user.name[0]}}
+          </div>
+
+          <span>{{user.name}}</span>
+
+        </div>
+
+      </div>
+
+    </header>
+
+
+
+    <section class="dashboard-grid">
+
+      <!-- METRICS -->
+
+      <div class="card metric-card">
+
+        <div class="metric-label">Active Projects</div>
+
+        <div class="metric-value">
+          {{metrics.projects}}
+        </div>
+
+      </div>
+
+
+      <div class="card metric-card">
+
+        <div class="metric-label">Wallet Balance</div>
+
+        <div class="metric-value">
+          ${{metrics.wallet}}
+        </div>
+
+      </div>
+
+
+      <div class="card metric-card">
+
+        <div class="metric-label">Proposals Sent</div>
+
+        <div class="metric-value">
+          12
+        </div>
+
+      </div>
+
+
+      <div class="card metric-card">
+
+        <div class="metric-label">Reputation Score</div>
+
+        <div class="metric-value">
+          4.8
+        </div>
+
+      </div>
+
+    </section>
+
+
+
+    <section class="dashboard-panels">
+
+      <div class="card panel">
+
+        <h3>Recent Activity</h3>
+
+        <ul class="activity-list">
+
+          <li>Project proposal submitted</li>
+          <li>Client payment received</li>
+          <li>Portfolio updated</li>
+
+        </ul>
+
+      </div>
+
+
+
+      <div class="card panel">
+
+        <h3>Upcoming Tasks</h3>
+
+        <ul class="task-list">
+
+          <li>Finish landing page design</li>
+          <li>Client review meeting</li>
+          <li>Submit proposal</li>
+
+        </ul>
+
+      </div>
+
+    </section>
+
+
+  </main>
+
+</div>

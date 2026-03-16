@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kogi — Welcome</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+<style>
+
+*{margin:0;padding:0;box-sizing:border-box}
+
+:root{
+
+--bg:#0c1216;
+--bg-card:#0f1f26;
+--bg-hover:#132830;
+
+--border:rgba(255,255,255,0.06);
+--border-hi:rgba(255,255,255,0.15);
+
+--text:#e6f1f4;
+--text-2:#8ea6ad;
+--text-3:#5d747c;
+
+--emerald:#10b981;
+--emerald-deep:#059669;
+
+--amber:#f59e0b;
+--amber-soft:#fbbf24;
+
+--grad:linear-gradient(135deg,#10b981,#059669);
+
+--font:'Space Grotesk',sans-serif;
+--mono:'JetBrains Mono',monospace;
+
+}
+
+html,body{
+
+height:100%;
+background-color:var(--bg);
+color:var(--text);
+font-family:var(--font);
+
+background-image:
+linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
+linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
+
+background-size:40px 40px;
+
+}
+
+body{
+display:flex;
+flex-direction:column;
+align-items:center;
+justify-content:flex-start;
+padding:28px 20px 20px;
+}
+
+/* subtle gradient lighting */
+
+body::before{
+content:'';
+position:fixed;
+top:-120px;
+left:-120px;
+width:420px;
+height:420px;
+background:radial-gradient(circle,rgba(16,185,129,.08) 0%,transparent 70%);
+pointer-events:none;
+}
+
+body::after{
+content:'';
+position:fixed;
+bottom:-80px;
+right:-80px;
+width:350px;
+height:350px;
+background:radial-gradient(circle,rgba(245,158,11,.06) 0%,transparent 70%);
+pointer-events:none;
+}
+
+/* logo */
+
+.logo{
+display:flex;
+align-items:center;
+gap:10px;
+margin-bottom:32px;
+}
+
+.logo-icon{
+
+width:34px;
+height:34px;
+
+background:var(--grad);
+border-radius:9px;
+
+display:flex;
+align-items:center;
+justify-content:center;
+
+font-weight:800;
+font-size:15px;
+color:#fff;
+
+box-shadow:
+0 4px 20px rgba(16,185,129,0.35),
+0 0 40px rgba(245,158,11,0.12);
+
+}
+
+.logo-name{
+font-weight:700;
+font-size:18px;
+letter-spacing:-0.4px;
+}
+
+/* heading */
+
+h1{
+
+font-size:30px;
+font-weight:800;
+letter-spacing:-0.6px;
+
+text-align:center;
+
+margin-bottom:8px;
+
+}
+
+.subtitle{
+
+font-size:13px;
+color:var(--text-2);
+
+text-align:center;
+margin-bottom:26px;
+
+}
+
+/* steps */
+
+.steps-row{
+
+display:flex;
+align-items:center;
+gap:6px;
+
+margin-bottom:18px;
+
+}
+
+.step{
+
+width:28px;
+height:28px;
+
+border-radius:50%;
+
+display:flex;
+align-items:center;
+justify-content:center;
+
+font-size:11px;
+font-weight:700;
+
+font-family:var(--mono);
+
+}
+
+.step.active{
+
+background:var(--emerald);
+color:#fff;
+
+}
+
+.step.inactive{
+
+background:var(--bg-card);
+border:1px solid var(--border);
+
+color:var(--text-3);
+
+}
+
+.step-line{
+
+height:1px;
+width:36px;
+
+background:var(--border);
+
+}
+
+.step-label{
+
+font-size:11px;
+color:var(--text-3);
+
+text-align:center;
+margin-bottom:16px;
+
+}
+
+/* options */
+
+.options-grid{
+
+display:grid;
+grid-template-columns:1fr 1fr;
+gap:10px;
+
+width:100%;
+max-width:580px;
+
+margin-bottom:20px;
+
+}
+
+.option-card{
+
+background:var(--bg-card);
+
+border:1px solid var(--border);
+border-radius:10px;
+
+padding:16px;
+
+cursor:pointer;
+
+display:flex;
+flex-direction:column;
+gap:8px;
+
+position:relative;
+
+transition:all .18s ease;
+
+}
+
+.option-card:hover{
+
+transform:translateY(-2px);
+
+border-color:var(--border-hi);
+
+box-shadow:0 8px 22px rgba(0,0,0,0.35);
+
+background:var(--bg-hover);
+
+}
+
+.option-card.selected{
+
+border-color:var(--emerald);
+
+}
+
+.option-card.selected::after{
+
+content:'✓';
+
+position:absolute;
+top:10px;
+right:12px;
+
+color:var(--emerald);
+font-weight:700;
+
+}
+
+.option-icon{
+
+font-size:22px;
+
+}
+
+.option-name{
+
+font-size:13.5px;
+font-weight:700;
+
+}
+
+.option-desc{
+
+font-size:11.5px;
+color:var(--text-2);
+line-height:1.45;
+
+}
+
+.badge-popular{
+
+background:rgba(245,158,11,0.12);
+color:var(--amber-soft);
+
+border:1px solid rgba(245,158,11,0.25);
+
+font-size:10px;
+font-weight:700;
+
+padding:2px 7px;
+border-radius:5px;
+
+width:fit-content;
+
+}
+
+/* info strips */
+
+.info-row{
+
+display:grid;
+grid-template-columns:repeat(3,1fr);
+
+gap:8px;
+
+width:100%;
+max-width:580px;
+
+margin-bottom:18px;
+
+}
+
+.info-strip{
+
+background:var(--bg-card);
+
+border:1px solid var(--border);
+border-radius:8px;
+
+padding:10px 12px;
+
+display:flex;
+align-items:center;
+gap:8px;
+
+font-size:11.5px;
+
+}
+
+.info-icon{
+
+color:var(--amber-soft);
+
+}
+
+/* button */
+
+.btn-primary{
+
+background:linear-gradient(135deg,#10b981,#059669);
+
+border:none;
+
+color:#fff;
+
+padding:12px 34px;
+
+border-radius:10px;
+
+cursor:pointer;
+
+font-size:13.5px;
+font-weight:700;
+
+transition:all .2s;
+
+}
+
+.btn-primary:hover{
+
+transform:translateY(-1px);
+
+box-shadow:0 10px 30px rgba(16,185,129,0.35);
+
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="logo">
+<div class="logo-icon">K</div>
+<span class="logo-name">kogi</span>
+</div>
+
+<h1>Welcome, Jordan! 👋</h1>
+<p class="subtitle">Let's personalize your workspace. What describes you best?</p>
+
+<div class="steps-row">
+<div class="step active">1</div>
+<div class="step-line"></div>
+<div class="step inactive">2</div>
+<div class="step-line"></div>
+<div class="step inactive">3</div>
+<div class="step-line"></div>
+<div class="step inactive">4</div>
+</div>
+
+<p class="step-label">Step 1 of 4 — about 2 minutes</p>
+
+<div class="options-grid">
+
+<div class="option-card selected">
+<div class="option-icon">⚒</div>
+<div class="option-name">Freelancer</div>
+<div class="option-desc">Entreprenuer, Designer, developer, writer, consultant</div>
+<div class="badge-popular">Most popular</div>
+</div>
+
+<div class="option-card">
+<div class="option-icon">👥</div>
+<div class="option-name">Micro-Agency</div>
+<div class="option-desc">Small team of 2–15 collaborators</div>
+</div>
+
+<div class="option-card">
+<div class="option-icon">⊞</div>
+<div class="option-name">Cooperative</div>
+<div class="option-desc">Large team, worker co-op, collective with shared ownership</div>
+</div>
+
+<div class="option-card">
+<div class="option-icon">💡</div>
+<div class="option-name">Explorer</div>
+<div class="option-desc">Just checking out the platform</div>
+</div>
+
+</div>
+
+<div class="info-row">
+
+<div class="info-strip"><span class="info-icon">⊟</span>Portfolio OS included</div>
+<div class="info-strip"><span class="info-icon">◈</span>AI Agent ready</div>
+<div class="info-strip"><span class="info-icon">◎</span>2.5% marketplace fee</div>
+
+</div>
+
+<button class="btn-primary">Continue →</button>
+
+</body>
+</html>

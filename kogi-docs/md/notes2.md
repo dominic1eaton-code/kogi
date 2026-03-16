@@ -1007,6 +1007,7 @@ spaces
 content
 timeline
 feed
+calendar
 
 
 work/user flows+journeys
@@ -1076,6 +1077,16 @@ kogi-root
 - portfolio
 
 
+- dashboard -> home, profiles, personas, roles, search+filter+index, quick views+actions, alerts+messages+notifications
+- portfolio -> office, schedule, boards, timelines, schedules, roadmaps, strategy center, strategies, tactics, operations, work management system, root portfolio spreadsheet, studio, projects, programs, assets, artifacts, solutions, resources, skills, knowledge, capital, labor, land, estates, real estate, investments, processes, systems, (legal) entites, ideas, notes, prototypes, concepts, mockups, designs, blueprints, testbeds, documents, files, containers, folders, binders, books, briefs, dossiers, charters, registries, OKRs, archives 
+- wallet -> banking, resource management+allocation+raising, accounts, payments, taxes, portable benefits, microfinancing, financing, equity, securities, liquidity, billing, orders, invoices, funding, donations, investments, campaigns, crowdfunding, group economics, 
+- spaces -> community, rooms, chats, message, timeline, feeds, communication+distribution channels, linknet+tree+forest, contacts, directories, registries
+- market -> marketplace, exchange, barter, trade, offers, deals+deal rooms, offers, bids, requests, proposals, gigs, contracts, consultations, tasks, campaigns, bookings, resources, capital, labor, skills+knowledge, grants, donations, investments, solutions, registries
+- organization -> teams, collectives, cooperatives, governance+voting+proposals+allocation, policies, procedures, frameworks, autonomous organizations, federations, microprenuership, registries
+- assistant -> analytics, optimization, AI agent+chat, data management, metrics, KPIs, performance, visualizations+dashboards
+- settings -> settings, options, parameters, preferences, styles, configurations, developer API+SDK
+
+
 ---
 
 pbulication channels
@@ -1103,7 +1114,12 @@ file:///C:/dev/ws/kogi_dev/kogi-docs/screen-pages/community-07-events.html
 file:///C:/dev/ws/kogi_dev/kogi-docs/screen-pages/kogi-deal-room.html
 file:///C:/dev/ws/kogi_dev/kogi-docs/screen-pages/kogi-group-messages.html
 file:///C:/dev/ws/kogi_dev/kogi-docs/screen-pages/kogi-inbox-dm.html
+file:///C:/dev/ws/kogi_dev/kogi-docs/screen-pages/kogi-collective-campaign.html
 
+
+---
+
+read the uploaded docs and generate various calendar views html pages for the kogi platform
 
 ---
 

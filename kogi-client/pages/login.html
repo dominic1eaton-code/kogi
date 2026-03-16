@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Kogi — Create Account</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+<style>
+
+:root{
+
+--bg:#0a1013;
+--bg-left:#0f1a1f;
+--bg-right:#070d11;
+
+--bg-l:#101e24d2;
+--bg-r:#070d11c4;
+
+--bg-el:#132830d6;
+--bg-in:#0c1d23a9;
+
+--panel:#101e24;
+--panel-2:#0c171c;
+
+--input:#0a1a20;
+
+--border:rgba(255,255,255,0.07);
+--border-strong:rgba(255,255,255,0.16);
+
+--text:#e8f2f4;
+--text-2:#90a6ad;
+--text-3:#5c747b;
+
+--emerald:#10b981;
+--emerald-2:#059669;
+
+--amber:#f59e0b;
+--amber-soft:#fbbf24;
+
+--grad:linear-gradient(135deg,#10b981,#059669);
+
+}
+
+/* RESET */
+
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+}
+
+body{
+
+font-family:'Space Grotesk',sans-serif;
+
+background:var(--bg);
+
+background-image:
+linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),
+linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
+
+background-size:42px 42px;
+
+color:var(--text);
+
+min-height:100vh;
+
+display:grid;
+grid-template-columns:1fr 1fr;
+
+}
+
+/* LEFT PANEL */
+
+.left{
+
+padding:64px;
+
+background:var(--bg-left);
+
+display:flex;
+flex-direction:column;
+justify-content:center;
+
+position:relative;
+
+background-image:
+radial-gradient(ellipse 600px 400px at 30% 20%,rgba(16,185,129,0.10),transparent 70%),
+radial-gradient(ellipse 300px 300px at 70% 80%,rgba(245,158,11,0.08),transparent 70%);
+
+}
+
+/* LOGO */
+
+.logo{
+display:flex;
+align-items:center;
+gap:12px;
+margin-bottom:80px;
+}
+
+.logo-box{
+
+width:34px;
+height:34px;
+
+border-radius:9px;
+
+background:var(--grad);
+
+display:flex;
+align-items:center;
+justify-content:center;
+
+font-weight:800;
+font-size:14px;
+
+color:white;
+
+box-shadow:
+0 6px 25px rgba(16,185,129,0.4);
+
+}
+
+.logo span{
+font-weight:600;
+}
+
+/* HERO */
+
+.hero h1{
+
+font-size:44px;
+font-weight:800;
+
+line-height:1.1;
+
+letter-spacing:-0.5px;
+
+margin-bottom:14px;
+
+}
+
+.hero p{
+
+color:var(--text-2);
+
+font-size:15px;
+
+max-width:420px;
+
+line-height:1.6;
+
+}
+
+/* RIGHT PANEL */
+
+.right{
+
+background:var(--bg-r);
+
+padding:48px;
+
+display:flex;
+flex-direction:column;
+justify-content:center;
+
+}
+
+/* HEADER */
+
+.form-hdr{
+margin-bottom:28px;
+}
+
+.form-hdr h2{
+font-size:26px;
+font-weight:700;
+margin-bottom:6px;
+}
+
+.form-hdr p{
+font-size:13px;
+color:var(--text-2);
+}
+
+/* OAUTH */
+
+.oauth-grid{
+
+display:grid;
+grid-template-columns:1fr 1fr;
+gap:8px;
+
+margin-bottom:20px;
+
+}
+
+.oauth-btn{
+
+padding:10px;
+
+background:var(--bg-el);
+
+border:1px solid var(--border);
+border-radius:8px;
+
+color:var(--text-2);
+
+font-size:12px;
+
+cursor:pointer;
+
+display:flex;
+align-items:center;
+justify-content:center;
+
+gap:6px;
+
+transition:all .15s;
+
+}
+
+.oauth-btn:hover{
+
+border-color:var(--amber);
+color:var(--text);
+
+}
+
+/* DIVIDER */
+
+.divider{
+
+display:flex;
+align-items:center;
+gap:12px;
+
+margin-bottom:20px;
+
+font-size:12px;
+color:var(--text-3);
+
+}
+
+.divider::before,
+.divider::after{
+
+content:'';
+flex:1;
+
+height:1px;
+background:var(--border);
+
+}
+
+/* FORM */
+
+.fg{
+margin-bottom:14px;
+}
+
+.fg label{
+
+display:block;
+
+font-size:11px;
+font-weight:600;
+
+color:var(--text-2);
+
+margin-bottom:5px;
+
+text-transform:uppercase;
+letter-spacing:0.5px;
+
+}
+
+.fg-row{
+display:flex;
+justify-content:space-between;
+margin-bottom:5px;
+}
+
+.fg-row a{
+font-size:12px;
+color:var(--amber-soft);
+text-decoration:none;
+}
+
+.fg input{
+
+width:100%;
+padding:10px 14px;
+
+background:var(--bg-in);
+
+border:1px solid var(--border);
+border-radius:8px;
+
+color:var(--text);
+
+font-size:13px;
+
+outline:none;
+
+transition:border-color .15s, box-shadow .15s, transform .05s;
+
+}
+
+.fg input:focus{
+
+border-color:var(--emerald);
+
+box-shadow:0 0 0 3px rgba(16,185,129,0.15);
+
+transform:translateY(-1px);
+
+}
+
+.fg-pass{
+position:relative;
+}
+
+.show-btn{
+
+position:absolute;
+
+right:12px;
+top:50%;
+
+transform:translateY(-50%);
+
+background:none;
+border:none;
+
+color:var(--amber-soft);
+
+font-size:12px;
+
+cursor:pointer;
+
+}
+
+/* CHECKBOX */
+
+.check-row{
+
+display:flex;
+align-items:center;
+gap:8px;
+
+margin-bottom:18px;
+
+font-size:13px;
+color:var(--text-2);
+
+}
+
+.check-row input{
+accent-color:var(--emerald);
+}
+
+/* BUTTON */
+
+.btn-primary{
+
+width:100%;
+padding:13px;
+
+background:linear-gradient(135deg,#10b981,#059669);
+
+border:none;
+border-radius:10px;
+
+color:white;
+
+font-size:14px;
+font-weight:600;
+
+cursor:pointer;
+
+transition:all .2s;
+
+}
+
+.btn-primary:hover{
+
+transform:translateY(-1px);
+
+box-shadow:0 10px 30px rgba(16,185,129,0.35);
+
+}
+
+/* SIGNUP */
+
+.signup-row{
+
+font-size:12px;
+color:var(--text-2);
+
+text-align:center;
+
+margin-top:14px;
+
+}
+
+.signup-row a{
+color:var(--amber-soft);
+text-decoration:none;
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="left">
+
+<div class="logo">
+<div class="logo-box">K</div>
+<span>kogi</span>
+</div>
+
+<div class="hero">
+
+<h1>Your independent work,<br>unified</h1>
+
+<p>
+Portfolio, marketplace, finance, governance, and AI —
+all unified in one platform for modern independent work.
+</p>
+
+</div>
+
+</div>
+
+
+<div class="right">
+
+<div class="form-hdr">
+<h2>Welcome back</h2>
+<p>Sign in to your Kogi account</p>
+</div>
+
+<div class="oauth-grid">
+
+<button class="oauth-btn">G Continue with Google</button>
+<button class="oauth-btn">◆ GitHub</button>
+
+</div>
+
+<div class="divider">or continue with email</div>
+
+<div class="fg">
+<label>Email address</label>
+<input type="email" value="jordan@studio.io">
+</div>
+
+<div class="fg">
+
+<div class="fg-row">
+<label>Password</label>
+<a href="#">Forgot password?</a>
+</div>
+
+<div class="fg-pass">
+<input type="password" value="••••••••••••">
+<button class="show-btn">show</button>
+</div>
+
+</div>
+
+<div class="check-row">
+<input type="checkbox" checked>
+<span>Keep me signed in for 30 days</span>
+</div>
+
+<button class="btn-primary">Sign in</button>
+
+<p class="signup-row">
+Don't have an account?
+<a href="#">Create one free</a>
+</p>
+
+</div>
+
+
+</body>
+</html>

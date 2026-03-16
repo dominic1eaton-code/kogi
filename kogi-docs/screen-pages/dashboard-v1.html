@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -5,7 +6,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Kogi — Dashboard</title>
 
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 
 <style>
 
@@ -13,17 +14,17 @@
 
 :root{
 
---bg:#0b1217;
---bg-card:#111c22;
---bg-sidebar:#0d171d;
---bg-hover:#16252d;
+--bg:#0c1216;
+--bg-card:#0f1f26;
+--bg-sidebar:#0e1a20;
+--bg-hover:#132830;
 
---border:#1e323c;
---border-hi:#2b4653;
+--border:rgba(255,255,255,0.06);
+--border-hi:rgba(255,255,255,0.15);
 
---text:#e7f2f6;
---text-2:#8fa6af;
---text-3:#5d7680;
+--text:#e6f1f4;
+--text-2:#8ea6ad;
+--text-3:#5d747c;
 
 --emerald:#10b981;
 --emerald-deep:#059669;
@@ -33,6 +34,8 @@
 
 --red:#ef4444;
 --purple:#8b5cf6;
+
+--grad:linear-gradient(135deg,#10b981,#059669);
 
 --sw:210px;
 --th:54px;
@@ -45,14 +48,14 @@
 html,body{
 
 height:100%;
-background:var(--bg);
+background-color:var(--bg);
 color:var(--text);
 font-family:var(--font);
 font-size:13px;
 
 background-image:
-linear-gradient(rgba(255,255,255,.025) 1px,transparent 1px),
-linear-gradient(90deg,rgba(255,255,255,.025) 1px,transparent 1px);
+linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
+linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
 
 background-size:40px 40px;
 
@@ -67,6 +70,7 @@ overflow:hidden;
 position:fixed;
 left:0;
 top:0;
+
 width:var(--sw);
 height:100%;
 
@@ -85,7 +89,6 @@ align-items:center;
 gap:10px;
 
 padding:16px;
-
 border-bottom:1px solid var(--border);
 
 }
@@ -95,7 +98,7 @@ border-bottom:1px solid var(--border);
 width:30px;
 height:30px;
 
-background:linear-gradient(135deg,#10b981,#059669);
+background:var(--grad);
 
 border-radius:8px;
 
@@ -103,9 +106,13 @@ display:flex;
 align-items:center;
 justify-content:center;
 
-font-weight:700;
+font-weight:800;
+font-size:14px;
+color:white;
 
-box-shadow:0 8px 25px rgba(16,185,129,.35);
+box-shadow:
+0 4px 20px rgba(16,185,129,0.35),
+0 0 40px rgba(245,158,11,0.12);
 
 }
 
@@ -115,8 +122,10 @@ font-size:16px;
 }
 
 .nav{
+
 flex:1;
 padding:10px 8px;
+
 }
 
 .nav-item{
@@ -125,15 +134,18 @@ display:flex;
 align-items:center;
 gap:9px;
 
-padding:8px 10px;
+padding:7px 10px;
 border-radius:7px;
 
 cursor:pointer;
 
 color:var(--text-2);
+
 font-size:12.5px;
 
-transition:.15s;
+margin-bottom:2px;
+
+transition:all .15s;
 
 }
 
@@ -146,7 +158,7 @@ color:var(--text);
 
 .nav-item.active{
 
-background:rgba(16,185,129,.15);
+background:rgba(16,185,129,0.15);
 color:var(--emerald);
 
 }
@@ -173,8 +185,6 @@ border-radius:10px;
 font-family:var(--mono);
 
 }
-
-/* USER */
 
 .user-row{
 
@@ -265,7 +275,7 @@ color:var(--text-2);
 
 font-size:12px;
 
-min-width:200px;
+min-width:190px;
 
 }
 
@@ -303,7 +313,15 @@ cursor:pointer;
 font-size:12.5px;
 font-weight:600;
 
-box-shadow:0 8px 24px rgba(16,185,129,.35);
+transition:all .2s;
+
+}
+
+.btn-primary:hover{
+
+transform:translateY(-1px);
+
+box-shadow:0 10px 30px rgba(16,185,129,0.35);
 
 }
 
@@ -315,17 +333,18 @@ margin-left:var(--sw);
 margin-top:var(--th);
 
 height:calc(100vh - var(--th));
+
 overflow-y:auto;
 
-padding:18px;
+padding:16px;
 
 }
 
-/* BANNER */
+/* Banner */
 
 .banner{
 
-background:linear-gradient(135deg,#0f2a27,#0e1f29);
+background:linear-gradient(135deg,#0f1f26,#0f2f2a);
 
 border:1px solid var(--border-hi);
 
@@ -342,23 +361,28 @@ margin-bottom:14px;
 }
 
 .banner-text h2{
+
 font-size:17px;
 font-weight:700;
+
 margin-bottom:4px;
+
 }
 
 .banner-text p{
+
 font-size:12px;
 color:var(--text-2);
+
 }
 
-/* METRICS */
+/* Metrics */
 
 .metrics-grid{
 
 display:grid;
 grid-template-columns:repeat(3,1fr);
-gap:12px;
+gap:10px;
 
 margin-bottom:14px;
 
@@ -372,7 +396,7 @@ border:1px solid var(--border);
 
 border-radius:8px;
 
-padding:14px;
+padding:12px 14px;
 
 position:relative;
 
@@ -389,6 +413,8 @@ bottom:0;
 
 width:3px;
 
+border-radius:3px 0 0 3px;
+
 background:linear-gradient(180deg,#10b981,#34d399);
 
 }
@@ -404,11 +430,10 @@ background:linear-gradient(180deg,#ef4444,#f87171);
 .metric-num{
 
 font-family:var(--mono);
-
 font-size:26px;
 font-weight:700;
 
-margin-bottom:5px;
+margin-bottom:4px;
 
 }
 
@@ -417,7 +442,7 @@ margin-bottom:5px;
 font-size:11px;
 color:var(--text-2);
 
-margin-bottom:4px;
+margin-bottom:5px;
 
 }
 
@@ -432,14 +457,11 @@ font-weight:600;
 .metric-change.down{color:var(--red)}
 .metric-change.warn{color:var(--amber)}
 
-/* BOTTOM GRID */
-
 .bottom-grid{
 
 display:grid;
 grid-template-columns:1fr 1fr;
-
-gap:12px;
+gap:10px;
 
 }
 
@@ -457,7 +479,7 @@ overflow:hidden;
 
 .section-header{
 
-padding:12px 14px;
+padding:11px 14px;
 
 border-bottom:1px solid var(--border);
 
@@ -468,8 +490,10 @@ justify-content:space-between;
 }
 
 .section-header h3{
+
 font-size:12.5px;
 font-weight:700;
+
 }
 
 .view-all{
@@ -481,11 +505,9 @@ cursor:pointer;
 
 }
 
-/* PROJECT ROW */
-
 .project-row{
 
-padding:10px 14px;
+padding:9px 14px;
 
 border-bottom:1px solid var(--border);
 
@@ -512,6 +534,7 @@ border-radius:50%;
 
 .project-name{
 flex:1;
+font-weight:500;
 }
 
 .project-bar-wrap{
@@ -527,8 +550,10 @@ overflow:hidden;
 }
 
 .project-bar{
+
 height:100%;
 border-radius:2px;
+
 }
 
 .bar-green{background:var(--emerald)}
@@ -540,7 +565,6 @@ border-radius:2px;
 
 <body>
 
-<!-- Sidebar -->
 <aside class="sidebar">
 
 <div class="logo">
@@ -598,6 +622,28 @@ border-radius:2px;
 </div>
 
 <button class="btn-primary">Ask AI Agent</button>
+
+</div>
+
+<div class="metrics-grid">
+
+<div class="metric-card">
+<div class="metric-num">6</div>
+<div class="metric-label">Active Projects</div>
+<div class="metric-change up">▲ 2 this month</div>
+</div>
+
+<div class="metric-card amber">
+<div class="metric-num">73%</div>
+<div class="metric-label">Portfolio Health</div>
+<div class="metric-change down">▼ 4pts</div>
+</div>
+
+<div class="metric-card">
+<div class="metric-num">$4,820</div>
+<div class="metric-label">Wallet Balance</div>
+<div class="metric-change up">▲ $1,200 received</div>
+</div>
 
 </div>
 

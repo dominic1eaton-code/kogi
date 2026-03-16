@@ -1,0 +1,71 @@
+<div class="auth-layout">
+
+  <div class="auth-left">
+
+    <div class="brand">
+      <div class="brand-icon">K</div>
+      <div class="brand-name">kogi</div>
+    </div>
+
+    <h1 class="auth-headline">
+      Your independent<br>
+      work, unified.
+    </h1>
+
+    <p class="auth-description">
+      Portfolio, marketplace, finance, governance, and AI —
+      all in one platform built for independent workers.
+    </p>
+
+  </div>
+
+
+  <div class="auth-right">
+
+    <div class="auth-card">
+
+      <h2 class="auth-title">Welcome back</h2>
+      <p class="auth-subtitle">Sign in to continue</p>
+
+      <form ng-submit="login()">
+
+        <div class="form-group">
+          <label>Email</label>
+          <input
+            type="email"
+            class="input"
+            ng-model="user.email"
+            placeholder="name@email.com"
+            required>
+        </div>
+
+        <div class="form-group">
+          <label>Password</label>
+          <input
+            type="password"
+            class="input"
+            ng-model="user.password"
+            placeholder="••••••••"
+            required>
+        </div>
+
+        <button class="btn btn-primary btn-block">
+          Sign In
+        </button>
+
+      </form>
+
+      <div class="auth-footer">
+
+        <p>
+          Don't have an account?
+          <a href="#!/onboarding">Create one</a>
+        </p>
+
+      </div>
+
+    </div>
+
+  </div>
+
+</div>

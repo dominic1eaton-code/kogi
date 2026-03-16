@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kogi — Sign In</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap');
+  :root{--bg:#0a1628;--bg-l:#0c1a32;--bg-r:#080e1a;--bg-card:#111d30;--bg-el:#16253e;--bg-in:#0f1c30;--border:rgba(255,255,255,0.07);--border-a:rgba(59,130,246,0.5);--text:#e8edf5;--text-2:#7a8fa8;--text-3:#4a5e78;--blue:#3b82f6;--teal:#0ea5e9;--green:#22c55e;--grad:linear-gradient(135deg,#38bdf8,#3b82f6,#6366f1);}
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{font-family:'Space Grotesk',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:grid;grid-template-columns:1fr 1fr;}
+
+  .left{background:var(--bg-l);padding:48px;display:flex;flex-direction:column;position:relative;overflow:hidden;background-image:radial-gradient(ellipse 500px 400px at 30% 20%,rgba(59,130,246,0.08),transparent 70%),radial-gradient(ellipse 300px 300px at 70% 80%,rgba(14,165,233,0.05),transparent 70%);}
+  .left::after{content:'';position:absolute;top:60px;right:-80px;width:300px;height:300px;border-radius:50%;border:1px solid rgba(59,130,246,0.1);pointer-events:none;}
+  .logo{display:flex;align-items:center;gap:10px;margin-bottom:80px;}
+  .lb{width:32px;height:32px;background:var(--grad);border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px;color:white;}
+  .logo span{font-size:16px;font-weight:600;}
+  .hero h1{font-size:40px;font-weight:800;line-height:1.1;letter-spacing:-0.5px;margin-bottom:14px;}
+  .hero p{font-size:14px;color:var(--text-2);line-height:1.6;margin-bottom:28px;max-width:300px;}
+
+  /* Feature tags — kogi-v3 dense row */
+  .tag-row{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:32px;}
+  .ftag{padding:5px 12px;border-radius:20px;font-size:11px;font-weight:600;border:1px solid;}
+  .ftag.blue{background:rgba(59,130,246,0.1);color:var(--blue);border-color:rgba(59,130,246,0.2);}
+  .ftag.teal{background:rgba(14,165,233,0.1);color:var(--teal);border-color:rgba(14,165,233,0.2);}
+  .ftag.purple{background:rgba(167,139,250,0.1);color:#a78bfa;border-color:rgba(167,139,250,0.2);}
+  .ftag.amber{background:rgba(251,191,36,0.1);color:#fbbf24;border-color:rgba(251,191,36,0.2);}
+
+  /* Stats grid */
+  .stats-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;}
+  .stat{padding:12px;background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:8px;}
+  .stat .v{font-size:20px;font-weight:800;color:var(--blue);font-family:'JetBrains Mono',monospace;}
+  .stat .l{font-size:10px;color:var(--text-3);margin-top:2px;text-transform:uppercase;letter-spacing:0.5px;}
+
+  .right{background:var(--bg-r);padding:48px;display:flex;flex-direction:column;justify-content:center;overflow-y:auto;}
+  .form-hdr{margin-bottom:28px;}
+  .form-hdr h2{font-size:26px;font-weight:700;letter-spacing:-0.3px;margin-bottom:6px;}
+  .form-hdr p{font-size:13px;color:var(--text-2);}
+
+  /* OAuth grid */
+  .oauth-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:20px;}
+  .oauth-btn{padding:10px;background:var(--bg-el);border:1px solid var(--border);border-radius:8px;color:var(--text-2);font-family:'Space Grotesk',sans-serif;font-size:12px;font-weight:500;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;transition:all .15s;}
+  .oauth-btn:hover{border-color:var(--border-a);color:var(--text);}
+
+  .divider{display:flex;align-items:center;gap:12px;margin-bottom:20px;font-size:12px;color:var(--text-3);}
+  .divider::before,.divider::after{content:'';flex:1;height:1px;background:var(--border);}
+
+  .fg{margin-bottom:14px;}
+  .fg label{display:block;font-size:11px;font-weight:600;color:var(--text-2);margin-bottom:5px;text-transform:uppercase;letter-spacing:0.5px;}
+  .fg-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:5px;}
+  .fg-row label{font-size:11px;font-weight:600;color:var(--text-2);text-transform:uppercase;letter-spacing:0.5px;}
+  .fg-row a{font-size:12px;color:var(--blue);text-decoration:none;}
+  .fg input{width:100%;padding:10px 14px;background:var(--bg-in);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:'Space Grotesk',sans-serif;font-size:13px;outline:none;transition:border-color .15s;}
+  .fg input:focus{border-color:var(--border-a);box-shadow:0 0 0 3px rgba(59,130,246,0.1);}
+  .fg-pass{position:relative;}
+  .fg-pass input{padding-right:50px;}
+  .show-btn{position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--blue);font-size:12px;font-family:'Space Grotesk',sans-serif;cursor:pointer;}
+
+  .check-row{display:flex;align-items:center;gap:8px;margin-bottom:18px;font-size:13px;color:var(--text-2);}
+  .check-row input[type=checkbox]{accent-color:var(--blue);}
+
+  .btn-primary{width:100%;padding:13px;background:var(--blue);border:none;border-radius:10px;color:white;font-family:'Space Grotesk',sans-serif;font-size:14px;font-weight:600;cursor:pointer;transition:all .2s;}
+  .btn-primary:hover{background:#2563eb;transform:translateY(-1px);box-shadow:0 6px 20px rgba(59,130,246,0.35);}
+  .signup-row{font-size:12px;color:var(--text-2);text-align:center;margin-top:14px;}
+  .signup-row a{color:var(--blue);text-decoration:none;}
+</style>
+</head>
+<body>
+<div class="left">
+  <div class="logo"><div class="lb">K</div><span>kogi</span></div>
+  <div class="hero">
+    <h1>Your independent<br>work, unified.</h1>
+    <p>Portfolio, marketplace, finance, governance, and AI — all in one platform built for the independent worker.</p>
+    <div class="tag-row">
+      <span class="ftag blue">Portfolio OS</span>
+      <span class="ftag teal">2.5% Marketplace</span>
+      <span class="ftag purple">AI Agent</span>
+      <span class="ftag amber">Co-op Governance</span>
+    </div>
+    <div class="stats-grid">
+      <div class="stat"><div class="v">18K+</div><div class="l">Members</div></div>
+      <div class="stat"><div class="v">2.5%</div><div class="l">Platform fee</div></div>
+      <div class="stat"><div class="v">$2.1M</div><div class="l">Paid out</div></div>
+      <div class="stat"><div class="v">4.9★</div><div class="l">Avg. rating</div></div>
+    </div>
+  </div>
+</div>
+
+<div class="right">
+  <div class="form-hdr">
+    <h2>Welcome back</h2>
+    <p>Sign in to your Kogi account</p>
+  </div>
+
+  <div class="oauth-grid">
+    <button class="oauth-btn">G Continue with Google</button>
+    <button class="oauth-btn">◆ GitHub</button>
+  </div>
+
+  <div class="divider">or continue with email</div>
+
+  <div class="fg">
+    <label>Email address</label>
+    <input type="email" value="jordan@studio.io">
+  </div>
+
+  <div class="fg">
+    <div class="fg-row"><label>Password</label><a href="#">Forgot password?</a></div>
+    <div class="fg-pass">
+      <input type="password" value="••••••••••••">
+      <button class="show-btn">show</button>
+    </div>
+  </div>
+
+  <div class="check-row">
+    <input type="checkbox" checked>
+    <span>Keep me signed in for 30 days</span>
+  </div>
+
+  <button class="btn-primary">Sign in</button>
+  <p class="signup-row">Don't have an account? <a href="#">Create one free</a></p>
+</div>
+</body>
+</html>
