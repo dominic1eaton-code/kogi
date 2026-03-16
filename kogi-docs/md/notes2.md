@@ -1086,10 +1086,197 @@ kogi-root
 - assistant -> analytics, optimization, AI agent+chat, data management, metrics, KPIs, performance, visualizations+dashboards
 - settings -> settings, options, parameters, preferences, styles, configurations, developer API+SDK
 
+---
+
+integrations+connections+vendors
+
+portfolio
+- google workspace+account
+- notion
+- jira
+- monday
+- gitlab
+- github
+- yahoo account
+- microsoft account
+- asana
+- calendly
+- clickup
+- gohighlevel
+- servicenow
+- coda
+- obdisdian
+- motion
+- airtable
+- figma
+- clickify
+- trello
+- dropbox
+- evernote
+- zoho
+- odoo
+- salesforce
+- pipedrive
+- akiflow
+- obsidian
+- sansama
+- mayday
+- toggl track
+- superhuman
+- ideashell
+- anytype
+- craft
+
+wallet
+- wellsfargo
+- bank of america
+- stripe
+- venmo
+- paypal
+- coinbase
+- ethereum
+- mpesa
+- quickbooks
+- cashapp
+- wise
+- robinhood
+- zelle
+- apple cash
+- googlepay
+- payoneer
+- square
+- startengine
+- patreon
+- gofundme
+- wefunder
+- indiegogo
+- kickstarter
+- freshbooks
+
+
+marketplace
+- amazon
+- ebay
+- craigslist
+- behance
+- LTK
+- etsy
+- shopify
+- shopmy
+- beacons
+- mavely
+- stylmatch
+- dribbble
+- wix
+- squarespace
+- ghost
+- mightynetworks
+- kajabi
+- wordpress
+- skool
+- kartra
+- circle
+- uber
+- lyft
+- instacart
+- shipt
+- taskrabbit
+- fiverr
+- upwork
+- freelancer.com
+- peopleperhour
+- guru
+- toptal
+- gigsmart
+- thumbtack
+- angies list
+- yelp
+- rover
+- wag!
+- clickworker
+- shiftsmart
+- handy
+- porch
+- nextdoor
+- care.com
+- wonolo
+- airtasker
+- airbnb
+- usertesting
+- docusign
+- bidsketch
+- eversign
+- hubspot
+- mailchimp
+- jobber
+- housecallpro
+
+
+spaces|community
+- slack
+- discord
+- meetup
+- whatsapp
+- facebook
+- linkedlin
+- youtube
+- X/twitter
+- bluesky
+- mastadon
+- twitch
+- telegram
+- snapchat
+- instagram
+- tiktok
+- fanbase
+- onlyfans
+- justforfans
+- meetup
+- eventbrite
+- linktree
+- substack
+- reddit
+- pinterest
+- vimeo
+- ghost
+- spotify
+- apple music+podcast
+- google hangouts+meets
+- zoom
+
+
+assistant
+- openai
+- chatGPT
+- claude
+- grok
+- deepseek
+- mistral
+- llama
+- perplexity
+- poe
+- gemini
+- cursor
+- windsurf
+- codex
+- saner.ai
+- zapier
+- castmagic
+- luvable
+- replit
+- base44
+- heyjen
+- bolt.new
+- bubble
+- v0
+- magicpatterns
+- orchids
+- firebase studio
+- reclaim.ai
 
 ---
 
-pbulication channels
+publication channels
 - marketplace
 - community
 - exchange
@@ -1120,6 +1307,14 @@ file:///C:/dev/ws/kogi_dev/kogi-docs/screen-pages/kogi-collective-campaign.html
 ---
 
 read the uploaded docs and generate various calendar views html pages for the kogi platform
+
+---
+
+a host, hosts a cluster of services. so services go out, find and attach themselves to the nearest kogi host, or set/group of connected kogi hosts. if one host goes down, services can find and attach themselves to another host. hosts manages all the resources and acts a central coordinates/orchestrator for a group/cluster of interconnected services. a content delivery type architecture, where hosts are regional and serve localized areas
+
+---
+
+umeOS the programmable business vehicle
 
 ---
 
