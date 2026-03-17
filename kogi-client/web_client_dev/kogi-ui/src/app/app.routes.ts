@@ -6,6 +6,7 @@ import { DashboardComponent } from './dashboard/dashboard.component'
 import { CreatingWorkspaceComponent } from './creating-workspace/creating-workspace.component';
 import { PortfolioComponent } from './portfolio/portfolio.component';
 import { PortfolioCreateComponent } from './portfolio/portfolio-create/portfolio-create.component';
+import { WalletComponent } from './wallet/wallet.component';
 import { TestComponent } from './test/test';
 
 export const routes: Routes = [
@@ -17,6 +18,7 @@ export const routes: Routes = [
     {path: 'dashboard', component: DashboardComponent, title: 'Dashboard'},
     {path: 'portfolio/new', component: PortfolioCreateComponent, title: 'Create Portfolio'},
     {path: 'portfolio', component: PortfolioComponent, title: 'Portfolio'},
+    {path: 'wallet', component: WalletComponent, title: 'Wallet'},
     {path: 'test', component: TestComponent, title: "Testing Page"},
     {path: '**', redirectTo: '' }
 ];
