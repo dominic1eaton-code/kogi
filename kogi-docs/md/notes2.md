@@ -34,7 +34,7 @@ marketplace
         - invest
         - contribute
         - find, find talent  (labor, skills, etc...), find resources, find portfolios (and portfolio components (programs, projects, assets, etc...))
-    - equity crowdfunding, group economics, regulation crowdfunding, schedule forms/document management system
+    - equity crowdfunding, group economics, regulation crowdfunding, schedule forms/document management system, analytics + capitalization rates/tables + investment metrics
 
 community
     - feed
@@ -690,6 +690,7 @@ qala resources
 
 
 READ all of the docs and generate a design document for the kogi-platform bank system: with independent worker + autonomous/independent organization + collective + cooperative + independent teams banking, independent worker accounting+journals+ledgers, wallets system, escrow, investment and different types of accounts+wallets (accounts as stores of capital+resources+liquidity+equity+financial assets/instrucments, and wallets as points of transactions of these financial items/entites/components), funding+donor/donation+capital+resources+bids+offers+deals+erequests+proposals+contracts+gigs+tasks management and campaigns
+
 
 
 READ all of the docs and generate a design document for the kogi-platform game system+engine:
@@ -1352,6 +1353,89 @@ update C:\dev\ws\kogi_dev\kogi-client\web_client_dev\kogi-ui\src\app\login and a
 
 ---
 
+implement a wallet component that implements file:///C:/dev/ws/kogi_dev/kogi-docs/screen-pages/kogi-wallet.html but fixes the wallet panels so that they are in a grid view, and make sure that the navigation panels and overall style matches that of the dashboard/portfolio components. also make the page have the structure of file:///C:/dev/ws/kogi_dev/kogi-docs/screen-pages/kogi-bank-group.html but have the side panel navigation and overall style still of the dashboard/portfolio components, AND have the grid wallets panels
+
+
+
+update all of the scrollbars so that they match the aesthetic of the platform, dark soft amber glow semi-transparent glass style/color scheme
+
+
+
+update the wallet-dashboard component so that the page has the structure of file:///C:/dev/ws/kogi_dev/kogi-docs/screen-pages/kogi-bank-01-dashboard.html
+
+preserve the primary side navigation, top navigation, and the secondary navigation panel that has:
+
+ <div class="text-[9px] font-['JetBrains_Mono'] uppercase tracking-[0.3em] text-[#5d747c]">
+            <span>Dashboard</span>
+            <span>&middot;</span>
+            <span class="text-[#10b981]">Wallets</span>
+            <span>&middot;</span>
+            <span>Accounts</span>
+            <span>&middot;</span>
+            Portable Benefits
+            <span>&middot;</span>
+            Grants
+            <span>&middot;</span>
+            Group Economics
+          </div>
+
+          and makgin each of these span elements selectable navigation menu items, where when a user clicks on the <span>Dashboard</span> menu item it navigates to the dashboard page with the structure of file:///C:/dev/ws/kogi_dev/kogi-docs/screen-pages/kogi-bank-01-dashboard.html
+
+and so only change the elements within the content panel of the wallet component, whose structure matches exactly file:///C:/dev/ws/kogi_dev/kogi-docs/screen-pages/kogi-bank-01-dashboard.html but has a style that is consistent with the existing wallet component.
+
+so move the current content view into a new component called wallet-wallets component and keep the common view in the top level wallet component, with the primary side and top navigations bars and the secondary navigation panel (Dashboard, Wallets, Accounts, Portable Benefits, Grants, Group Economics navigation panel)
+
+
+
+create a subcomponent page for taxes that has the structure of file:///C:/dev/ws/kogi_dev/kogi-docs/screen-pages/kogi-bank-05-tax.html but has the same overall style of the wallet component applied, that preserves the [Dashboard · Wallets · Accounts · Portable Benefits · Grants · Group Economics] menu and the [OVERVIEW
+TAXES
+CREDIT
+DEBT
+EQUITY
+SECURITIES
+PORTABLE BENEFITS
+GRANTS & MICROFINANCING
+GROUP ECONOMICS
+EQUITY CROWDFUNDING] sub navigation menus, and the component is created in path kogi-client\web_client_dev\kogi-ui\src\app\wallet\wallet-wallets\wallets-taxes
+
+
+read all the docs in C:\dev\ws\kogi_dev\kogi-docs\md related to spaces, messages, chats, rooms, communications, channels, timelines, feeds, posts, community, etc... and generate a spaces component and an  dashboard+overview page with the same style as the wallet component and also have the initial dashboard+overview page have a primary and secondary top navigation too
+
+
+
+read all of these pages create a synthesized structure and implement the rooms sub component:
+file:///C:/dev/ws/kogi_dev/kogi-docs/screen-pages/community-04-rooms-chat.html
+file:///C:/dev/ws/kogi_dev/kogi-docs/screen-pages/03-deal-room.html
+file:///C:/dev/ws/kogi_dev/kogi-docs/screen-pages/exchange-03-deal-room.html
+
+
+
+implement the feed and timeline subcompoennts for the spaces component
+
+
+add a top navigation menu to the dashboard page, similar to the one of the wallet/spaces component, and have the menu have: Overview, Inbox, Calendar, Contacts, Tools, Analytics
+
+
+
+spaces -> rooms -> channels -> chats -> messages|voice|video|text, attachments, multimedia, reactions, emojis, images, videos
+
+---
+
+ume navigation+modules
+
+dashboard - overview, messages, communications
+marketing - marketing, sales
+finance - financial, accounting, compliance, audit
+operations - operations, supply chain, logistics, warehouse, inventory, projects, programs
+legal - contracts, agreements, IP, licensing, rights, entity management, charters, documents
+solutions - production, manufacturing, fabrication, goods, products, services, branding, design
+governance - strategy, tactics, frameworks, policies, procedures
+infrastructure - analytics, data, IT, value chain, software, integrations, tools, vendors
+
+
+---
+
 independent workers/organizations achieve outcomes+resuls+solutions through the execution of programs+projects that utilize resources+assets and generate artifacts
 
 kogi is your personal work operating system
+
