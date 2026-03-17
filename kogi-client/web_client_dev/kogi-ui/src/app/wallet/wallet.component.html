@@ -152,59 +152,30 @@
         <div>
           <div class="text-[16px] font-semibold">Wallet</div>
           <div class="text-[9px] font-['JetBrains_Mono'] uppercase tracking-[0.3em] text-[#5d747c]">
-            <span
-              [ngClass]="secondaryNavItemClass('dashboard')"
-              role="button"
-              tabindex="0"
-              (click)="setActiveSecondaryNav('dashboard')"
+            <a
+              routerLink="/wallet/dashboard"
+              routerLinkActive="text-[#10b981]"
+              [routerLinkActiveOptions]="{ exact: true }"
+              class="cursor-pointer transition-colors hover:text-[#e6f1f4]"
             >
               Dashboard
-            </span>
+            </a>
             <span>&middot;</span>
-            <span
-              [ngClass]="secondaryNavItemClass('wallets')"
-              role="button"
-              tabindex="0"
-              (click)="setActiveSecondaryNav('wallets')"
+            <a
+              routerLink="/wallet/wallets/overview"
+              routerLinkActive="text-[#10b981]"
+              class="cursor-pointer transition-colors hover:text-[#e6f1f4]"
             >
               Wallets
-            </span>
+            </a>
             <span>&middot;</span>
-            <span
-              [ngClass]="secondaryNavItemClass('accounts')"
-              role="button"
-              tabindex="0"
-              (click)="setActiveSecondaryNav('accounts')"
-            >
-              Accounts
-            </span>
+            <span class="cursor-pointer transition-colors hover:text-[#e6f1f4]">Accounts</span>
             <span>&middot;</span>
-            <span
-              [ngClass]="secondaryNavItemClass('portable-benefits')"
-              role="button"
-              tabindex="0"
-              (click)="setActiveSecondaryNav('portable-benefits')"
-            >
-              Portable Benefits
-            </span>
+            <span class="cursor-pointer transition-colors hover:text-[#e6f1f4]">Portable Benefits</span>
             <span>&middot;</span>
-            <span
-              [ngClass]="secondaryNavItemClass('grants')"
-              role="button"
-              tabindex="0"
-              (click)="setActiveSecondaryNav('grants')"
-            >
-              Grants
-            </span>
+            <span class="cursor-pointer transition-colors hover:text-[#e6f1f4]">Grants</span>
             <span>&middot;</span>
-            <span
-              [ngClass]="secondaryNavItemClass('group-economics')"
-              role="button"
-              tabindex="0"
-              (click)="setActiveSecondaryNav('group-economics')"
-            >
-              Group Economics
-            </span>
+            <span class="cursor-pointer transition-colors hover:text-[#e6f1f4]">Group Economics</span>
           </div>
         </div>
       </div>
