@@ -1291,7 +1291,7 @@ equity+resource+capital+knowledge+skill distirbution channels
 
 ---
 
-regenerate each of these html pages where posts/messages/tiles have multimedia, some have background images, some have media/file attachments, links, pictures, graphics, images, text, emojis, reactions, and any other social platfrom/netowkring/media artifacts, spriknled throughout:
+regenerate each of these html pages where posts/messages/tiles have multimedia, some have background images, some have media/file attachments, links, pictures, graphics, images, text, emojis, reactions, and any other social platfrom/netowkring/media artifacts, sprinkled throughout:
 
 file:///C:/dev/ws/kogi_dev/kogi-docs/screen-pages/community-01-feed.html
 file:///C:/dev/ws/kogi_dev/kogi-docs/screen-pages/community-04-rooms-chat.html
@@ -1317,4 +1317,11 @@ a host, hosts a cluster of services. so services go out, find and attach themsel
 umeOS the programmable business vehicle
 
 ---
+
+read the portfolio-grid html file and create html screen pages for adding, creating, editing, updating, removing, archiving: portfolio components, portfolio items, portfolio containers, projects, programs, artifacts, assets, resources, solutions, investments, land, labor, skills, knowledge, deals, real estate, funds, campaigns, etc...
+
+
+
+C:\dev\ws\kogi_dev\kogi-docs\screen-pages\01-portfolio-grid.v2.html   read the portfolio-grid html file and create html screen pages for adding, creating, editing, updating, removing, archiving: portfolio components, portfolio items, portfolio containers, projects, programs, artifacts, assets, resources, solutions, investments, land, labor, skills, knowledge, deals, real estate, funds, campaigns, etc...
+
 
