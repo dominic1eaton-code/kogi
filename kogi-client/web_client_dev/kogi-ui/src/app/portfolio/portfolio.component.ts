@@ -16,9 +16,17 @@ export class PortfolioComponent {
   showSecondaryNav = true;
   showItemsSection = true;
   showContainersSection = true;
+  viewMode: 'grid' | 'list' | 'tree' | 'board' = 'grid';
+
+  readonly activeViewTabClass = 'bg-[#0f1f26] text-[#e6f1f4]';
+  readonly inactiveViewTabClass = 'text-[#8ea6ad]';
 
   toggleSecondaryNav(): void {
     this.showSecondaryNav = !this.showSecondaryNav;
+  }
+
+  setViewMode(view: 'grid' | 'list' | 'tree' | 'board'): void {
+    this.viewMode = view;
   }
 
   toggleItemsSection(): void {

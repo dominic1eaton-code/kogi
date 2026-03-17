@@ -349,10 +349,38 @@
             <span class="rounded-[6px] border border-[rgba(255,255,255,0.06)] bg-[#101e24] px-2 py-[2px] text-[9px] font-['JetBrains_Mono'] text-[#8ea6ad]">Archived</span>
           </div>
           <div class="ml-auto flex overflow-hidden rounded-[8px] border border-[rgba(255,255,255,0.06)] bg-[#101e24]">
-            <span class="px-3 py-[4px] text-[9px] font-['JetBrains_Mono'] text-[#e6f1f4]">Grid</span>
-            <span class="border-l border-[rgba(255,255,255,0.06)] px-3 py-[4px] text-[9px] font-['JetBrains_Mono'] text-[#8ea6ad]">List</span>
-            <span class="border-l border-[rgba(255,255,255,0.06)] px-3 py-[4px] text-[9px] font-['JetBrains_Mono'] text-[#8ea6ad]">Tree</span>
-            <span class="border-l border-[rgba(255,255,255,0.06)] px-3 py-[4px] text-[9px] font-['JetBrains_Mono'] text-[#8ea6ad]">Board</span>
+            <button
+              type="button"
+              class="px-3 py-[4px] text-[9px] font-['JetBrains_Mono']"
+              [ngClass]="viewMode === 'grid' ? activeViewTabClass : inactiveViewTabClass"
+              (click)="setViewMode('grid')"
+            >
+              Grid
+            </button>
+            <button
+              type="button"
+              class="border-l border-[rgba(255,255,255,0.06)] px-3 py-[4px] text-[9px] font-['JetBrains_Mono']"
+              [ngClass]="viewMode === 'list' ? activeViewTabClass : inactiveViewTabClass"
+              (click)="setViewMode('list')"
+            >
+              List
+            </button>
+            <button
+              type="button"
+              class="border-l border-[rgba(255,255,255,0.06)] px-3 py-[4px] text-[9px] font-['JetBrains_Mono']"
+              [ngClass]="viewMode === 'tree' ? activeViewTabClass : inactiveViewTabClass"
+              (click)="setViewMode('tree')"
+            >
+              Tree
+            </button>
+            <button
+              type="button"
+              class="border-l border-[rgba(255,255,255,0.06)] px-3 py-[4px] text-[9px] font-['JetBrains_Mono']"
+              [ngClass]="viewMode === 'board' ? activeViewTabClass : inactiveViewTabClass"
+              (click)="setViewMode('board')"
+            >
+              Board
+            </button>
           </div>
         </div>
 
@@ -405,7 +433,7 @@
                 {{ showItemsSection ? 'collapse' : 'expand' }}
               </button>
             </div>
-            <div *ngIf="showItemsSection" class="mt-3 grid grid-cols-[repeat(auto-fill,minmax(210px,1fr))] gap-3">
+            <div *ngIf="showItemsSection && viewMode === 'grid'" class="mt-3 grid grid-cols-[repeat(auto-fill,minmax(210px,1fr))] gap-3">
               <div class="rounded-[10px] border border-[rgba(255,255,255,0.06)] bg-[#0f1f26]">
                 <div class="flex items-center gap-2 border-b border-[rgba(255,255,255,0.06)] px-3 py-2">
                   <span class="h-[6px] w-[6px] rounded-full bg-[#10b981]"></span>
@@ -746,6 +774,235 @@
                 <div class="text-[9px] text-[#5d747c]">Templates available</div>
               </a>
             </div>
+
+            <div *ngIf="showItemsSection && viewMode === 'list'" class="mt-3 space-y-2">
+              <div class="flex items-center gap-3 rounded-[8px] border border-[rgba(255,255,255,0.06)] bg-[#0f1f26] px-3 py-2">
+                <span class="h-[6px] w-[6px] rounded-full bg-[#10b981]"></span>
+                <div class="min-w-[140px] flex-1">
+                  <div class="text-[11px] font-semibold font-['JetBrains_Mono']">Alpha Platform</div>
+                  <div class="text-[9px] text-[#5d747c]">Portfolio</div>
+                </div>
+                <span class="rounded-[4px] border border-[#10b981] bg-[rgba(16,185,129,0.12)] px-2 py-[1px] text-[8px] text-[#10b981]">Active</span>
+                <div class="w-[90px] text-right text-[9px] text-[#8ea6ad]">Health 87</div>
+                <div class="hidden w-[120px] md:block">
+                  <div class="h-[3px] rounded-[3px] bg-[#1e2f36]"><div class="h-full rounded-[3px] bg-[#10b981]" style="width:72%"></div></div>
+                </div>
+              </div>
+
+              <div class="flex items-center gap-3 rounded-[8px] border border-[rgba(255,255,255,0.06)] bg-[#0f1f26] px-3 py-2">
+                <span class="h-[6px] w-[6px] rounded-full bg-[#f59e0b]"></span>
+                <div class="min-w-[140px] flex-1">
+                  <div class="text-[11px] font-semibold font-['JetBrains_Mono']">Community Growth</div>
+                  <div class="text-[9px] text-[#5d747c]">Program</div>
+                </div>
+                <span class="rounded-[4px] border border-[#10b981] bg-[rgba(16,185,129,0.12)] px-2 py-[1px] text-[8px] text-[#10b981]">Active</span>
+                <div class="w-[90px] text-right text-[9px] text-[#8ea6ad]">Align 76</div>
+                <div class="hidden w-[120px] md:block">
+                  <div class="h-[3px] rounded-[3px] bg-[#1e2f36]"><div class="h-full rounded-[3px] bg-[#f59e0b]" style="width:60%"></div></div>
+                </div>
+              </div>
+
+              <div class="flex items-center gap-3 rounded-[8px] border border-[rgba(16,185,129,0.4)] bg-[#0f1f26] px-3 py-2">
+                <span class="h-[6px] w-[6px] rounded-full bg-[#8b5cf6]"></span>
+                <div class="min-w-[140px] flex-1">
+                  <div class="text-[11px] font-semibold font-['JetBrains_Mono']">Brand Identity System</div>
+                  <div class="text-[9px] text-[#5d747c]">Project · Creative</div>
+                </div>
+                <span class="rounded-[4px] border border-[#10b981] bg-[rgba(16,185,129,0.12)] px-2 py-[1px] text-[8px] text-[#10b981]">Active</span>
+                <div class="w-[90px] text-right text-[9px] text-[#8ea6ad]">68%</div>
+                <div class="hidden w-[120px] md:block">
+                  <div class="h-[3px] rounded-[3px] bg-[#1e2f36]"><div class="h-full rounded-[3px] bg-[#8b5cf6]" style="width:68%"></div></div>
+                </div>
+              </div>
+
+              <div class="flex items-center gap-3 rounded-[8px] border border-[rgba(255,255,255,0.06)] bg-[#0f1f26] px-3 py-2">
+                <span class="h-[6px] w-[6px] rounded-full bg-[#3b82f6]"></span>
+                <div class="min-w-[140px] flex-1">
+                  <div class="text-[11px] font-semibold font-['JetBrains_Mono']">Jordan Chen · Lead</div>
+                  <div class="text-[9px] text-[#5d747c]">Resource · Contact</div>
+                </div>
+                <span class="rounded-[4px] border border-[#10b981] bg-[rgba(16,185,129,0.12)] px-2 py-[1px] text-[8px] text-[#10b981]">Active</span>
+                <div class="w-[90px] text-right text-[9px] text-[#8ea6ad]">Util 88%</div>
+                <div class="hidden w-[120px] md:block">
+                  <div class="h-[3px] rounded-[3px] bg-[#1e2f36]"><div class="h-full rounded-[3px] bg-[#f472b6]" style="width:88%"></div></div>
+                </div>
+              </div>
+
+              <div class="flex items-center gap-3 rounded-[8px] border border-[rgba(255,255,255,0.06)] bg-[#0f1f26] px-3 py-2">
+                <span class="h-[6px] w-[6px] rounded-full bg-[#f97316]"></span>
+                <div class="min-w-[140px] flex-1">
+                  <div class="text-[11px] font-semibold font-['JetBrains_Mono']">Design System Library</div>
+                  <div class="text-[9px] text-[#5d747c]">Asset · Digital</div>
+                </div>
+                <span class="rounded-[4px] border border-[#10b981] bg-[rgba(16,185,129,0.12)] px-2 py-[1px] text-[8px] text-[#10b981]">Active</span>
+                <div class="w-[90px] text-right text-[9px] text-[#8ea6ad]">$28k</div>
+                <div class="hidden w-[120px] md:block">
+                  <div class="h-[3px] rounded-[3px] bg-[#1e2f36]"><div class="h-full rounded-[3px] bg-[#f97316]" style="width:91%"></div></div>
+                </div>
+              </div>
+
+              <div class="flex items-center gap-3 rounded-[8px] border border-[rgba(255,255,255,0.06)] bg-[#0f1f26] px-3 py-2">
+                <span class="h-[6px] w-[6px] rounded-full bg-[#f472b6]"></span>
+                <div class="min-w-[140px] flex-1">
+                  <div class="text-[11px] font-semibold font-['JetBrains_Mono']">Q3 Strategy Deck</div>
+                  <div class="text-[9px] text-[#5d747c]">Artifact · Doc</div>
+                </div>
+                <span class="rounded-[4px] border border-[#3b82f6] bg-[rgba(59,130,246,0.12)] px-2 py-[1px] text-[8px] text-[#3b82f6]">Complete</span>
+                <div class="w-[90px] text-right text-[9px] text-[#8ea6ad]">94</div>
+                <div class="hidden w-[120px] md:block">
+                  <div class="h-[3px] rounded-[3px] bg-[#1e2f36]"><div class="h-full rounded-[3px] bg-[#f472b6]" style="width:100%"></div></div>
+                </div>
+              </div>
+
+              <div class="flex items-center gap-3 rounded-[8px] border border-[rgba(255,255,255,0.06)] bg-[#0f1f26] px-3 py-2">
+                <span class="h-[6px] w-[6px] rounded-full bg-[#f59e0b]"></span>
+                <div class="min-w-[140px] flex-1">
+                  <div class="text-[11px] font-semibold font-['JetBrains_Mono']">Finance Infrastructure</div>
+                  <div class="text-[9px] text-[#5d747c]">Project · Technical</div>
+                </div>
+                <span class="rounded-[4px] border border-[#f59e0b] bg-[rgba(245,158,11,0.12)] px-2 py-[1px] text-[8px] text-[#f59e0b]">Paused</span>
+                <div class="w-[90px] text-right text-[9px] text-[#8ea6ad]">34%</div>
+                <div class="hidden w-[120px] md:block">
+                  <div class="h-[3px] rounded-[3px] bg-[#1e2f36]"><div class="h-full rounded-[3px] bg-[#f59e0b]" style="width:34%"></div></div>
+                </div>
+              </div>
+
+              <div class="flex items-center gap-3 rounded-[8px] border border-[rgba(255,255,255,0.06)] bg-[#0f1f26] px-3 py-2">
+                <span class="h-[6px] w-[6px] rounded-full bg-[#5d747c]"></span>
+                <div class="min-w-[140px] flex-1">
+                  <div class="text-[11px] font-semibold font-['JetBrains_Mono']">Marketplace Engine v2</div>
+                  <div class="text-[9px] text-[#5d747c]">Project · AI</div>
+                </div>
+                <span class="rounded-[4px] border border-[rgba(255,255,255,0.16)] bg-[rgba(255,255,255,0.03)] px-2 py-[1px] text-[8px] text-[#5d747c]">Draft</span>
+                <div class="w-[90px] text-right text-[9px] text-[#8ea6ad]">8%</div>
+                <div class="hidden w-[120px] md:block">
+                  <div class="h-[3px] rounded-[3px] bg-[#1e2f36]"><div class="h-full rounded-[3px] bg-[#5d747c]" style="width:8%"></div></div>
+                </div>
+              </div>
+
+              <div class="flex items-center gap-3 rounded-[8px] border border-[rgba(255,255,255,0.06)] bg-[#0f1f26] px-3 py-2">
+                <span class="h-[6px] w-[6px] rounded-full bg-[#10b981]"></span>
+                <div class="min-w-[140px] flex-1">
+                  <div class="text-[11px] font-semibold font-['JetBrains_Mono']">Mobile App MVP</div>
+                  <div class="text-[9px] text-[#5d747c]">Project · Software</div>
+                </div>
+                <span class="rounded-[4px] border border-[#10b981] bg-[rgba(16,185,129,0.12)] px-2 py-[1px] text-[8px] text-[#10b981]">Active</span>
+                <div class="w-[90px] text-right text-[9px] text-[#8ea6ad]">52%</div>
+                <div class="hidden w-[120px] md:block">
+                  <div class="h-[3px] rounded-[3px] bg-[#1e2f36]"><div class="h-full rounded-[3px] bg-[#10b981]" style="width:52%"></div></div>
+                </div>
+              </div>
+
+              <div class="flex items-center gap-3 rounded-[8px] border border-[rgba(255,255,255,0.06)] bg-[#0f1f26] px-3 py-2">
+                <span class="h-[6px] w-[6px] rounded-full bg-[#22c55e]"></span>
+                <div class="min-w-[140px] flex-1">
+                  <div class="text-[11px] font-semibold font-['JetBrains_Mono']">Worker Portal v1</div>
+                  <div class="text-[9px] text-[#5d747c]">Project · Software</div>
+                </div>
+                <span class="rounded-[4px] border border-[#10b981] bg-[rgba(16,185,129,0.12)] px-2 py-[1px] text-[8px] text-[#10b981]">Active</span>
+                <div class="w-[90px] text-right text-[9px] text-[#8ea6ad]">81%</div>
+                <div class="hidden w-[120px] md:block">
+                  <div class="h-[3px] rounded-[3px] bg-[#1e2f36]"><div class="h-full rounded-[3px] bg-[#22c55e]" style="width:81%"></div></div>
+                </div>
+              </div>
+
+              <div class="flex items-center gap-3 rounded-[8px] border border-[rgba(255,255,255,0.06)] bg-[#0f1f26] px-3 py-2">
+                <span class="h-[6px] w-[6px] rounded-full bg-[#f97316]"></span>
+                <div class="min-w-[140px] flex-1">
+                  <div class="text-[11px] font-semibold font-['JetBrains_Mono']">Bloom&#39;s Building Fund</div>
+                  <div class="text-[9px] text-[#5d747c]">Asset · Investment</div>
+                </div>
+                <span class="rounded-[4px] border border-[#10b981] bg-[rgba(16,185,129,0.12)] px-2 py-[1px] text-[8px] text-[#10b981]">Active</span>
+                <div class="w-[90px] text-right text-[9px] text-[#8ea6ad]">$28k</div>
+                <div class="hidden w-[120px] md:block">
+                  <div class="h-[3px] rounded-[3px] bg-[#1e2f36]"><div class="h-full rounded-[3px] bg-[#f97316]" style="width:91%"></div></div>
+                </div>
+              </div>
+            </div>
+
+            <div *ngIf="showItemsSection && viewMode === 'tree'" class="mt-3 rounded-[10px] border border-[rgba(255,255,255,0.06)] bg-[#0f1f26]">
+              <div class="border-b border-[rgba(255,255,255,0.06)] px-3 py-2 text-[9px] uppercase tracking-[0.3em] text-[#5d747c] font-['JetBrains_Mono']">
+                Portfolio Tree
+              </div>
+              <div class="space-y-3 px-3 py-3 text-[10px]">
+                <div class="flex items-center gap-2 text-[#e6f1f4]">
+                  <span class="text-[#5d747c]">&#9662;</span>
+                  Portfolio
+                </div>
+                <div class="space-y-2 border-l border-[rgba(255,255,255,0.08)] pl-3">
+                  <div>
+                    <div class="text-[9px] uppercase tracking-[0.2em] text-[#8ea6ad]">Projects</div>
+                    <div class="mt-1 space-y-1 pl-2">
+                      <div class="flex items-center gap-2"><span class="h-[6px] w-[6px] rounded-full bg-[#10b981]"></span>Alpha Platform</div>
+                      <div class="flex items-center gap-2"><span class="h-[6px] w-[6px] rounded-full bg-[#8b5cf6]"></span>Brand Identity System</div>
+                      <div class="flex items-center gap-2"><span class="h-[6px] w-[6px] rounded-full bg-[#f59e0b]"></span>Finance Infrastructure</div>
+                      <div class="flex items-center gap-2"><span class="h-[6px] w-[6px] rounded-full bg-[#5d747c]"></span>Marketplace Engine v2</div>
+                      <div class="flex items-center gap-2"><span class="h-[6px] w-[6px] rounded-full bg-[#10b981]"></span>Mobile App MVP</div>
+                      <div class="flex items-center gap-2"><span class="h-[6px] w-[6px] rounded-full bg-[#22c55e]"></span>Worker Portal v1</div>
+                    </div>
+                  </div>
+                  <div>
+                    <div class="text-[9px] uppercase tracking-[0.2em] text-[#8ea6ad]">Programs</div>
+                    <div class="mt-1 space-y-1 pl-2">
+                      <div class="flex items-center gap-2"><span class="h-[6px] w-[6px] rounded-full bg-[#f59e0b]"></span>Community Growth</div>
+                    </div>
+                  </div>
+                  <div>
+                    <div class="text-[9px] uppercase tracking-[0.2em] text-[#8ea6ad]">Artifacts</div>
+                    <div class="mt-1 space-y-1 pl-2">
+                      <div class="flex items-center gap-2"><span class="h-[6px] w-[6px] rounded-full bg-[#f472b6]"></span>Q3 Strategy Deck</div>
+                    </div>
+                  </div>
+                  <div>
+                    <div class="text-[9px] uppercase tracking-[0.2em] text-[#8ea6ad]">Assets</div>
+                    <div class="mt-1 space-y-1 pl-2">
+                      <div class="flex items-center gap-2"><span class="h-[6px] w-[6px] rounded-full bg-[#f97316]"></span>Design System Library</div>
+                      <div class="flex items-center gap-2"><span class="h-[6px] w-[6px] rounded-full bg-[#f97316]"></span>Bloom&#39;s Building Fund</div>
+                    </div>
+                  </div>
+                  <div>
+                    <div class="text-[9px] uppercase tracking-[0.2em] text-[#8ea6ad]">Resources</div>
+                    <div class="mt-1 space-y-1 pl-2">
+                      <div class="flex items-center gap-2"><span class="h-[6px] w-[6px] rounded-full bg-[#3b82f6]"></span>Jordan Chen · Lead</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div *ngIf="showItemsSection && viewMode === 'board'" class="mt-3 grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-4">
+              <div class="rounded-[10px] border border-[rgba(255,255,255,0.06)] bg-[#0f1f26]">
+                <div class="border-b border-[rgba(255,255,255,0.06)] px-3 py-2 text-[10px] font-semibold text-[#10b981]">Active</div>
+                <div class="space-y-2 p-3 text-[10px]">
+                  <div class="rounded-[8px] border border-[rgba(255,255,255,0.06)] bg-[#101e24] p-2">Alpha Platform</div>
+                  <div class="rounded-[8px] border border-[rgba(255,255,255,0.06)] bg-[#101e24] p-2">Community Growth</div>
+                  <div class="rounded-[8px] border border-[rgba(255,255,255,0.06)] bg-[#101e24] p-2">Brand Identity System</div>
+                  <div class="rounded-[8px] border border-[rgba(255,255,255,0.06)] bg-[#101e24] p-2">Jordan Chen · Lead</div>
+                  <div class="rounded-[8px] border border-[rgba(255,255,255,0.06)] bg-[#101e24] p-2">Design System Library</div>
+                  <div class="rounded-[8px] border border-[rgba(255,255,255,0.06)] bg-[#101e24] p-2">Mobile App MVP</div>
+                  <div class="rounded-[8px] border border-[rgba(255,255,255,0.06)] bg-[#101e24] p-2">Worker Portal v1</div>
+                  <div class="rounded-[8px] border border-[rgba(255,255,255,0.06)] bg-[#101e24] p-2">Bloom&#39;s Building Fund</div>
+                </div>
+              </div>
+              <div class="rounded-[10px] border border-[rgba(255,255,255,0.06)] bg-[#0f1f26]">
+                <div class="border-b border-[rgba(255,255,255,0.06)] px-3 py-2 text-[10px] font-semibold text-[#f59e0b]">Paused</div>
+                <div class="space-y-2 p-3 text-[10px]">
+                  <div class="rounded-[8px] border border-[rgba(255,255,255,0.06)] bg-[#101e24] p-2">Finance Infrastructure</div>
+                </div>
+              </div>
+              <div class="rounded-[10px] border border-[rgba(255,255,255,0.06)] bg-[#0f1f26]">
+                <div class="border-b border-[rgba(255,255,255,0.06)] px-3 py-2 text-[10px] font-semibold text-[#5d747c]">Draft</div>
+                <div class="space-y-2 p-3 text-[10px]">
+                  <div class="rounded-[8px] border border-[rgba(255,255,255,0.06)] bg-[#101e24] p-2">Marketplace Engine v2</div>
+                </div>
+              </div>
+              <div class="rounded-[10px] border border-[rgba(255,255,255,0.06)] bg-[#0f1f26]">
+                <div class="border-b border-[rgba(255,255,255,0.06)] px-3 py-2 text-[10px] font-semibold text-[#3b82f6]">Complete</div>
+                <div class="space-y-2 p-3 text-[10px]">
+                  <div class="rounded-[8px] border border-[rgba(255,255,255,0.06)] bg-[#101e24] p-2">Q3 Strategy Deck</div>
+                </div>
+              </div>
+            </div>
           </div>
           <div id="portfolio-containers">
             <div class="flex items-center gap-2 border-b border-[rgba(255,255,255,0.06)] pb-2">
@@ -763,7 +1020,7 @@
                 {{ showContainersSection ? 'collapse' : 'expand' }}
               </button>
             </div>
-            <div *ngIf="showContainersSection" class="mt-3 grid grid-cols-[repeat(auto-fill,minmax(210px,1fr))] gap-3">
+            <div *ngIf="showContainersSection && viewMode === 'grid'" class="mt-3 grid grid-cols-[repeat(auto-fill,minmax(210px,1fr))] gap-3">
               <div class="rounded-[10px] border border-[rgba(255,255,255,0.06)] bg-[#0f1f26]">
                 <div class="flex items-center gap-2 border-b border-[rgba(255,255,255,0.06)] px-3 py-2">
                   <span class="h-[6px] w-[6px] rounded-full bg-[#5ca0bf]"></span>
@@ -925,6 +1182,149 @@
                 <div class="text-[12px] font-semibold">Create New Container</div>
                 <div class="text-[9px] text-[#5d747c]">Templates available</div>
               </a>
+            </div>
+
+            <div *ngIf="showContainersSection && viewMode === 'list'" class="mt-3 space-y-2">
+              <div class="flex items-center gap-3 rounded-[8px] border border-[rgba(255,255,255,0.06)] bg-[#0f1f26] px-3 py-2">
+                <span class="h-[6px] w-[6px] rounded-full bg-[#5ca0bf]"></span>
+                <div class="min-w-[160px] flex-1">
+                  <div class="text-[11px] font-semibold font-['JetBrains_Mono']">Platform Binder</div>
+                  <div class="text-[9px] text-[#5d747c]">Binder</div>
+                </div>
+                <span class="rounded-[4px] border border-[#10b981] bg-[rgba(16,185,129,0.12)] px-2 py-[1px] text-[8px] text-[#10b981]">Active</span>
+                <div class="w-[90px] text-right text-[9px] text-[#8ea6ad]">91%</div>
+                <div class="hidden w-[120px] md:block">
+                  <div class="h-[3px] rounded-[3px] bg-[#1e2f36]"><div class="h-full rounded-[3px] bg-[#5ca0bf]" style="width:91%"></div></div>
+                </div>
+              </div>
+
+              <div class="flex items-center gap-3 rounded-[8px] border border-[rgba(255,255,255,0.06)] bg-[#0f1f26] px-3 py-2">
+                <span class="h-[6px] w-[6px] rounded-full bg-[#bf9a5c]"></span>
+                <div class="min-w-[160px] flex-1">
+                  <div class="text-[11px] font-semibold font-['JetBrains_Mono']">Project Dossier · Brand</div>
+                  <div class="text-[9px] text-[#5d747c]">Book · ItemBook</div>
+                </div>
+                <span class="rounded-[4px] border border-[#10b981] bg-[rgba(16,185,129,0.12)] px-2 py-[1px] text-[8px] text-[#10b981]">Active</span>
+                <div class="w-[90px] text-right text-[9px] text-[#8ea6ad]">88</div>
+                <div class="hidden w-[120px] md:block">
+                  <div class="h-[3px] rounded-[3px] bg-[#1e2f36]"><div class="h-full rounded-[3px] bg-[#bf9a5c]" style="width:88%"></div></div>
+                </div>
+              </div>
+
+              <div class="flex items-center gap-3 rounded-[8px] border border-[rgba(255,255,255,0.06)] bg-[#0f1f26] px-3 py-2">
+                <span class="h-[6px] w-[6px] rounded-full bg-[#5cbf7a]"></span>
+                <div class="min-w-[160px] flex-1">
+                  <div class="text-[11px] font-semibold font-['JetBrains_Mono']">Growth Playbook</div>
+                  <div class="text-[9px] text-[#5d747c]">Book · PlayBook</div>
+                </div>
+                <span class="rounded-[4px] border border-[#10b981] bg-[rgba(16,185,129,0.12)] px-2 py-[1px] text-[8px] text-[#10b981]">Active</span>
+                <div class="w-[90px] text-right text-[9px] text-[#8ea6ad]">12 plays</div>
+                <div class="hidden w-[120px] md:block">
+                  <div class="h-[3px] rounded-[3px] bg-[#1e2f36]"><div class="h-full rounded-[3px] bg-[#5cbf7a]" style="width:70%"></div></div>
+                </div>
+              </div>
+
+              <div class="flex items-center gap-3 rounded-[8px] border border-[rgba(255,255,255,0.06)] bg-[#0f1f26] px-3 py-2">
+                <span class="h-[6px] w-[6px] rounded-full bg-[#7abf5c]"></span>
+                <div class="min-w-[160px] flex-1">
+                  <div class="text-[11px] font-semibold font-['JetBrains_Mono']">Project Metadata Record</div>
+                  <div class="text-[9px] text-[#5d747c]">Record</div>
+                </div>
+                <span class="rounded-[4px] border border-[#10b981] bg-[rgba(16,185,129,0.12)] px-2 py-[1px] text-[8px] text-[#10b981]">Active</span>
+                <div class="w-[90px] text-right text-[9px] text-[#8ea6ad]">97</div>
+                <div class="hidden w-[120px] md:block">
+                  <div class="h-[3px] rounded-[3px] bg-[#1e2f36]"><div class="h-full rounded-[3px] bg-[#7abf5c]" style="width:97%"></div></div>
+                </div>
+              </div>
+
+              <div class="flex items-center gap-3 rounded-[8px] border border-[rgba(255,255,255,0.06)] bg-[#0f1f26] px-3 py-2">
+                <span class="h-[6px] w-[6px] rounded-full bg-[#8b5cf6]"></span>
+                <div class="min-w-[160px] flex-1">
+                  <div class="text-[11px] font-semibold font-['JetBrains_Mono']">Design Assets Folder</div>
+                  <div class="text-[9px] text-[#5d747c]">Folder</div>
+                </div>
+                <span class="rounded-[4px] border border-[#10b981] bg-[rgba(16,185,129,0.12)] px-2 py-[1px] text-[8px] text-[#10b981]">Active</span>
+                <div class="w-[90px] text-right text-[9px] text-[#8ea6ad]">82</div>
+                <div class="hidden w-[120px] md:block">
+                  <div class="h-[3px] rounded-[3px] bg-[#1e2f36]"><div class="h-full rounded-[3px] bg-[#8b5cf6]" style="width:82%"></div></div>
+                </div>
+              </div>
+
+              <div class="flex items-center gap-3 rounded-[8px] border border-[rgba(255,255,255,0.06)] bg-[#0f1f26] px-3 py-2">
+                <span class="h-[6px] w-[6px] rounded-full bg-[#f59e0b]"></span>
+                <div class="min-w-[160px] flex-1">
+                  <div class="text-[11px] font-semibold font-['JetBrains_Mono']">Contact Book · Partners</div>
+                  <div class="text-[9px] text-[#5d747c]">Book · ContactBook</div>
+                </div>
+                <span class="rounded-[4px] border border-[#10b981] bg-[rgba(16,185,129,0.12)] px-2 py-[1px] text-[8px] text-[#10b981]">Active</span>
+                <div class="w-[90px] text-right text-[9px] text-[#8ea6ad]">38</div>
+                <div class="hidden w-[120px] md:block">
+                  <div class="h-[3px] rounded-[3px] bg-[#1e2f36]"><div class="h-full rounded-[3px] bg-[#f59e0b]" style="width:75%"></div></div>
+                </div>
+              </div>
+            </div>
+
+            <div *ngIf="showContainersSection && viewMode === 'tree'" class="mt-3 rounded-[10px] border border-[rgba(255,255,255,0.06)] bg-[#0f1f26]">
+              <div class="border-b border-[rgba(255,255,255,0.06)] px-3 py-2 text-[9px] uppercase tracking-[0.3em] text-[#5d747c] font-['JetBrains_Mono']">
+                Container Tree
+              </div>
+              <div class="space-y-3 px-3 py-3 text-[10px]">
+                <div class="flex items-center gap-2 text-[#e6f1f4]">
+                  <span class="text-[#5d747c]">&#9662;</span>
+                  Containers
+                </div>
+                <div class="space-y-2 border-l border-[rgba(255,255,255,0.08)] pl-3">
+                  <div>
+                    <div class="text-[9px] uppercase tracking-[0.2em] text-[#8ea6ad]">Binders</div>
+                    <div class="mt-1 pl-2">Platform Binder</div>
+                  </div>
+                  <div>
+                    <div class="text-[9px] uppercase tracking-[0.2em] text-[#8ea6ad]">Books</div>
+                    <div class="mt-1 space-y-1 pl-2">
+                      <div>Project Dossier · Brand</div>
+                      <div>Growth Playbook</div>
+                      <div>Contact Book · Partners</div>
+                    </div>
+                  </div>
+                  <div>
+                    <div class="text-[9px] uppercase tracking-[0.2em] text-[#8ea6ad]">Records</div>
+                    <div class="mt-1 pl-2">Project Metadata Record</div>
+                  </div>
+                  <div>
+                    <div class="text-[9px] uppercase tracking-[0.2em] text-[#8ea6ad]">Folders</div>
+                    <div class="mt-1 pl-2">Design Assets Folder</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div *ngIf="showContainersSection && viewMode === 'board'" class="mt-3 grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-4">
+              <div class="rounded-[10px] border border-[rgba(255,255,255,0.06)] bg-[#0f1f26]">
+                <div class="border-b border-[rgba(255,255,255,0.06)] px-3 py-2 text-[10px] font-semibold text-[#5ca0bf]">Binders</div>
+                <div class="space-y-2 p-3 text-[10px]">
+                  <div class="rounded-[8px] border border-[rgba(255,255,255,0.06)] bg-[#101e24] p-2">Platform Binder</div>
+                </div>
+              </div>
+              <div class="rounded-[10px] border border-[rgba(255,255,255,0.06)] bg-[#0f1f26]">
+                <div class="border-b border-[rgba(255,255,255,0.06)] px-3 py-2 text-[10px] font-semibold text-[#f59e0b]">Books</div>
+                <div class="space-y-2 p-3 text-[10px]">
+                  <div class="rounded-[8px] border border-[rgba(255,255,255,0.06)] bg-[#101e24] p-2">Project Dossier · Brand</div>
+                  <div class="rounded-[8px] border border-[rgba(255,255,255,0.06)] bg-[#101e24] p-2">Growth Playbook</div>
+                  <div class="rounded-[8px] border border-[rgba(255,255,255,0.06)] bg-[#101e24] p-2">Contact Book · Partners</div>
+                </div>
+              </div>
+              <div class="rounded-[10px] border border-[rgba(255,255,255,0.06)] bg-[#0f1f26]">
+                <div class="border-b border-[rgba(255,255,255,0.06)] px-3 py-2 text-[10px] font-semibold text-[#7abf5c]">Records</div>
+                <div class="space-y-2 p-3 text-[10px]">
+                  <div class="rounded-[8px] border border-[rgba(255,255,255,0.06)] bg-[#101e24] p-2">Project Metadata Record</div>
+                </div>
+              </div>
+              <div class="rounded-[10px] border border-[rgba(255,255,255,0.06)] bg-[#0f1f26]">
+                <div class="border-b border-[rgba(255,255,255,0.06)] px-3 py-2 text-[10px] font-semibold text-[#8b5cf6]">Folders</div>
+                <div class="space-y-2 p-3 text-[10px]">
+                  <div class="rounded-[8px] border border-[rgba(255,255,255,0.06)] bg-[#101e24] p-2">Design Assets Folder</div>
+                </div>
+              </div>
             </div>
           </div>
         </section>
