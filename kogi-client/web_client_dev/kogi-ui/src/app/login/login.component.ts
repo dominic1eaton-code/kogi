@@ -36,9 +36,10 @@
 // }
 
 
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-login',
@@ -67,6 +68,21 @@ export class LoginComponent {
       password: this.password,
       remember: this.remember
     });
+
+    this.router.navigate(['/dashboard']);
+  }
+
+
+  // Inject the Router service
+  private router = inject(Router);
+
+  // Method to handle the navigation
+  goToPage(): void {
+    // Perform any necessary logic here
+    console.log('Navigating to the target page...');
+
+    // Navigate to the specified route
+    this.router.navigate(['/onboarding']);
   }
 }
 

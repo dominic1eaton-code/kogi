@@ -1,0 +1,58 @@
+
+<div class="logo">
+<div class="logo-icon">K</div>
+<span class="logo-name">kogi</span>
+</div>
+
+<div *ngIf="currentStep === 1">
+    <h1>Welcome, Jordan! 👋</h1>
+    <p class="subtitle">Let's personalize your workspace. What describes you best?</p>
+
+    <div class="steps-row">
+    <div class="step active">1</div>
+    <div class="step-line"></div>
+    <div class="step inactive">2</div>
+    <div class="step-line"></div>
+    <div class="step inactive">3</div>
+    <div class="step-line"></div>
+    <div class="step inactive">4</div>
+    </div>
+
+    <p class="step-label">Step 1 of 4 — about 2 minutes</p>
+
+    <div class="options-grid">
+    <div class="option-card selected">
+        <div class="option-icon">⚒</div>
+        <div class="option-name">Freelancer</div>
+        <div class="option-desc">Designer, developer, writer, consultant</div>
+        <div class="badge-popular">Most popular</div>
+    </div>
+    <div class="option-card">
+        <div class="option-icon">👥</div>
+        <div class="option-name">Micro-Agency</div>
+        <div class="option-desc">Small team of 2–15 collaborators</div>
+    </div>
+    <div class="option-card">
+        <div class="option-icon">⊞</div>
+        <div class="option-name">Cooperative</div>
+        <div class="option-desc">Worker co-op or collective with shared ownership</div>
+    </div>
+    <div class="option-card">
+        <div class="option-icon">💡</div>
+        <div class="option-name">Explorer</div>
+        <div class="option-desc">Just checking out the platform</div>
+    </div>
+    </div>
+
+    <div class="info-row">
+    <div class="info-strip"><span class="info-icon">⊟</span>Portfolio OS included</div>
+    <div class="info-strip"><span class="info-icon">◈</span>AI Agent ready</div>
+    <div class="info-strip"><span class="info-icon">◎</span>2.5% marketplace fee</div>
+    </div>
+</div>
+
+<div *ngIf="currentStep === 2">step 2</div>
+<div *ngIf="currentStep === 3">step 3</div>
+<div *ngIf="currentStep === 4">step 4</div>
+
+<button class="btn-primary" (click)="goToNextStep()">Continue →</button>

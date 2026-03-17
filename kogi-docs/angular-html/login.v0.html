@@ -1,0 +1,111 @@
+
+<!-- <div class="font-sans text-text w-screen h-screen grid grid-cols-2"  -->
+<!-- <div class="font-sans text-text min-h-screen grid grid-cols-2" -->
+ <div class="font-sans text-text w-full h-full grid grid-cols-2"
+style="background-color:#0a1013;background-image:linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);background-size:42px 42px;">
+
+<!-- LEFT PANEL -->
+<div class="p-16 w-full h-full flex flex-col justify-center relative"
+style="background:#0f1a1f;background-image:radial-gradient(ellipse 600px 400px at 30% 20%,rgba(16,185,129,0.10),transparent 70%),radial-gradient(ellipse 300px 300px at 70% 80%,rgba(245,158,11,0.08),transparent 70%);">
+
+<div class="flex items-center gap-3 mb-20">
+
+<div class="w-[34px] h-[34px] rounded-[9px] flex items-center justify-center text-white text-[14px] font-extrabold shadow-[0_6px_25px_rgba(16,185,129,0.4)]"
+style="background:linear-gradient(135deg,#10b981,#059669)">
+K
+</div>
+
+<span class="font-semibold">kogi</span>
+
+</div>
+
+<div class="max-w-[420px]">
+
+<h1 class="text-[44px] font-extrabold leading-[1.1] tracking-[-0.5px] mb-[14px]">
+Your independent work,<br>unified
+</h1>
+
+<p class="text-[#90a6ad] text-[15px] leading-[1.6]">
+Portfolio, marketplace, finance, governance, and AI —
+all unified in one platform for modern independent work.
+</p>
+
+</div>
+
+</div>
+
+
+<!-- RIGHT PANEL -->
+<div class="p-12 w-full h-full flex flex-col justify-center" style="background:#070d11">
+
+<div class="mb-7">
+<h2 class="text-[26px] font-bold mb-1">Welcome back</h2>
+<p class="text-[13px] text-[#90a6ad]">Sign in to your Kogi account</p>
+</div>
+
+<div class="grid grid-cols-2 gap-2 mb-5">
+
+<button class="py-[10px] bg-[#132830d6] border border-[rgba(255,255,255,0.07)] rounded-[8px] text-[#90a6ad] text-[12px] flex items-center justify-center gap-[6px] hover:border-[#f59e0b] hover:text-white transition">
+G Continue with Google
+</button>
+
+<button class="py-[10px] bg-[#132830d6] border border-[rgba(255,255,255,0.07)] rounded-[8px] text-[#90a6ad] text-[12px] flex items-center justify-center gap-[6px] hover:border-[#f59e0b] hover:text-white transition">
+◆ GitHub
+</button>
+
+</div>
+
+<div class="flex items-center gap-3 mb-5 text-[12px] text-[#5c747b]">
+<div class="flex-1 h-[1px] bg-[rgba(255,255,255,0.07)]"></div>
+or continue with email
+<div class="flex-1 h-[1px] bg-[rgba(255,255,255,0.07)]"></div>
+</div>
+
+
+<form (ngSubmit)="login()">
+
+<div class="mb-3">
+<label class="block text-[11px] font-semibold text-[#90a6ad] mb-[5px] uppercase tracking-[0.5px]">Email address</label>
+<input type="email" [(ngModel)]="email" name="email"
+class="w-full px-[14px] py-[10px] bg-[#0c1d23a9] border border-[rgba(255,255,255,0.07)] rounded-[8px] text-[13px] text-white outline-none focus:border-[#10b981] focus:shadow-[0_0_0_3px_rgba(16,185,129,0.15)] focus:-translate-y-[1px] transition"/>
+</div>
+
+
+<div class="mb-3">
+
+<div class="flex justify-between mb-[5px]">
+<label class="text-[11px] font-semibold text-[#90a6ad] uppercase tracking-[0.5px]">Password</label>
+<a class="text-[12px] text-[#fbbf24]" href="#">Forgot password?</a>
+</div>
+
+<div class="relative">
+<input [type]="showPassword ? 'text' : 'password'" [(ngModel)]="password" name="password"
+class="w-full px-[14px] py-[10px] bg-[#0c1d23a9] border border-[rgba(255,255,255,0.07)] rounded-[8px] text-[13px] text-white outline-none focus:border-[#10b981] focus:shadow-[0_0_0_3px_rgba(16,185,129,0.15)] focus:-translate-y-[1px] transition"/>
+
+<button type="button" (click)="togglePassword()" class="absolute right-3 top-1/2 -translate-y-1/2 text-[#fbbf24] text-[12px]">
+{{ showPassword ? 'hide' : 'show' }}
+</button>
+</div>
+
+</div>
+
+<div class="flex items-center gap-2 mb-5 text-[13px] text-[#90a6ad]">
+<input type="checkbox" [(ngModel)]="remember" name="remember" class="accent-[#10b981]" />
+<span>Keep me signed in for 30 days</span>
+</div>
+
+<button type="submit" class="w-full py-[13px] rounded-[10px] text-white text-[14px] font-semibold transition hover:-translate-y-[1px] hover:shadow-[0_10px_30px_rgba(16,185,129,0.35)]"
+style="background:linear-gradient(135deg,#10b981,#059669)">
+Sign in
+</button>
+
+</form>
+
+<p class="text-[12px] text-[#90a6ad] text-center mt-3">
+Don't have an account?
+<a href="#" class="text-[#fbbf24]">Create one free</a>
+</p>
+
+</div>
+
+</div>
