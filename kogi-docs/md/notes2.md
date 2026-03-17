@@ -34,7 +34,7 @@ marketplace
         - invest
         - contribute
         - find, find talent  (labor, skills, etc...), find resources, find portfolios (and portfolio components (programs, projects, assets, etc...))
-    - equity crowdfunding, group economics
+    - equity crowdfunding, group economics, regulation crowdfunding, schedule forms/document management system
 
 community
     - feed
@@ -1098,6 +1098,8 @@ kogi-root
 
 ---
 
+content creation portfolio management
+
 integrations+connections+vendors
 
 portfolio
@@ -1136,6 +1138,10 @@ portfolio
 - ideashell
 - anytype
 - craft
+- verilyme
+- stride health
+- shiftmate
+- alia health
 
 wallet
 - wellsfargo
@@ -1253,6 +1259,7 @@ spaces|community
 - apple music+podcast
 - google hangouts+meets
 - zoom
+- skype
 
 
 assistant
@@ -1330,6 +1337,8 @@ umeOS the programmable business vehicle
 
 read the portfolio-grid html file and create html screen pages for adding, creating, editing, updating, removing, archiving: portfolio components, portfolio items, portfolio containers, projects, programs, artifacts, assets, resources, solutions, investments, land, labor, skills, knowledge, deals, real estate, funds, campaigns, etc...
 
+add to  the portfolio component breadcrumb sub portfolio pages/views for the user adding, creating, editing, updating, removing, archiving: portfolio components, portfolio items, portfolio containers, projects, programs, artifacts, assets, resources, solutions, investments, land, labor, skills, knowledge, deals, real estate, funds, campaigns, etc...
+
 
 C:\dev\ws\kogi_dev\kogi-docs\screen-pages\01-portfolio-grid.v2.html   read the portfolio-grid html file and create html screen pages for adding, creating, editing, updating, removing, archiving: portfolio components, portfolio items, portfolio containers, projects, programs, artifacts, assets, resources, solutions, investments, land, labor, skills, knowledge, deals, real estate, funds, campaigns, etc...
 
@@ -1341,3 +1350,8 @@ update C:\dev\ws\kogi_dev\kogi-client\web_client_dev\kogi-ui\src\app\login and a
     - tailored spaces|buildings for different types of independent workers, professionals, entreprenuers, freelancers, creatives, hobbyists, enthusiasts
     - investment funds for organization, of different classes|categories|types
 
+---
+
+independent workers/organizations achieve outcomes+resuls+solutions through the execution of programs+projects that utilize resources+assets and generate artifacts
+
+kogi is your personal work operating system
