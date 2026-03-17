@@ -11,6 +11,10 @@ import { WalletDashboardComponent } from './wallet/wallet-dashboard/wallet-dashb
 import { WalletWalletsComponent } from './wallet/wallet-wallets/wallet-wallets.component';
 import { WalletsOverviewComponent } from './wallet/wallet-wallets/wallets-overview/wallets-overview.component';
 import { WalletsTaxesComponent } from './wallet/wallet-wallets/wallets-taxes/wallets-taxes.component';
+import { SpacesComponent } from './spaces/spaces.component';
+import { SpacesDashboardComponent } from './spaces/spaces-dashboard/spaces-dashboard.component';
+import { SpacesSpacesComponent } from './spaces/spaces-spaces/spaces-spaces.component';
+import { SpacesRoomsComponent } from './spaces/spaces-rooms/spaces-rooms.component';
 import { TestComponent } from './test/test';
 
 export const routes: Routes = [
@@ -40,6 +44,18 @@ export const routes: Routes = [
                     {path: '**', redirectTo: 'overview'}
                 ]
             }
+        ]
+    },
+    {
+        path: 'spaces',
+        component: SpacesComponent,
+        title: 'Spaces',
+        children: [
+            {path: '', redirectTo: 'dashboard', pathMatch: 'full'},
+            {path: 'overview', redirectTo: 'dashboard', pathMatch: 'full'},
+            {path: 'dashboard', component: SpacesDashboardComponent, title: 'Spaces Dashboard'},
+            {path: 'spaces', component: SpacesSpacesComponent, title: 'Spaces'},
+            {path: 'rooms', component: SpacesRoomsComponent, title: 'Rooms'}
         ]
     },
     {path: 'test', component: TestComponent, title: "Testing Page"},

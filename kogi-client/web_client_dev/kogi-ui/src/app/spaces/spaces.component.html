@@ -10,11 +10,11 @@
 >
   <div
     class="pointer-events-none fixed -left-[120px] -top-[150px] h-[500px] w-[500px]"
-    style="background: radial-gradient(circle, rgba(16, 185, 129, 0.08), transparent 70%);"
+    style="background: radial-gradient(circle, rgba(59, 130, 246, 0.12), transparent 70%);"
   ></div>
   <div
     class="pointer-events-none fixed -bottom-[120px] -right-[120px] h-[450px] w-[450px]"
-    style="background: radial-gradient(circle, rgba(245, 158, 11, 0.08), transparent 70%);"
+    style="background: radial-gradient(circle, rgba(16, 185, 129, 0.08), transparent 70%);"
   ></div>
 
   <aside
@@ -46,16 +46,16 @@
       </a>
       <a
         routerLink="/wallet"
-        class="flex items-center gap-2 rounded-[8px] bg-[rgba(16,185,129,0.15)] px-3 py-2 text-[13px] text-[#10b981]"
+        class="flex items-center gap-2 rounded-[8px] px-3 py-2 text-[13px] text-[#8ea6ad] hover:bg-[#132830] hover:text-[#e6f1f4]"
       >
-        <span class="text-[12px] opacity-80">&#8862;</span>
+        <span class="text-[12px] opacity-70">&#8862;</span>
         Wallet
       </a>
       <a
         routerLink="/spaces"
-        class="flex items-center gap-2 rounded-[8px] px-3 py-2 text-[13px] text-[#8ea6ad] hover:bg-[#132830] hover:text-[#e6f1f4]"
+        class="flex items-center gap-2 rounded-[8px] bg-[rgba(16,185,129,0.15)] px-3 py-2 text-[13px] text-[#10b981]"
       >
-        <span class="text-[12px] opacity-70">&#9671;</span>
+        <span class="text-[12px] opacity-80">&#9671;</span>
         Spaces
       </a>
       <a
@@ -110,9 +110,9 @@
         <div class="flex items-center gap-1 text-[11px] font-['JetBrains_Mono'] text-[#5d747c]">
           <a routerLink="/dashboard" class="text-[#8ea6ad] hover:text-[#e6f1f4]">Office</a>
           <span>/</span>
-          <a routerLink="/wallet" class="text-[#e6f1f4] hover:text-white">Wallet</a>
+          <a routerLink="/spaces" class="text-[#e6f1f4] hover:text-white">Spaces</a>
         </div>
-        <div class="text-[9px] font-['JetBrains_Mono'] text-[#5d747c]">Finance hub &middot; rules &amp; disbursements</div>
+        <div class="text-[9px] font-['JetBrains_Mono'] text-[#5d747c]">Community &middot; rooms &middot; feeds &middot; messaging</div>
       </div>
     </div>
     <div class="ml-auto flex items-center gap-2">
@@ -120,19 +120,19 @@
         class="rounded-[8px] border border-[rgba(255,255,255,0.06)] bg-[#0f1f26] px-3 py-[7px] text-[11px] font-semibold text-[#8ea6ad]"
         type="button"
       >
-        Add Payment Method
+        Create Room
       </button>
       <button
         class="rounded-[8px] border border-[rgba(255,255,255,0.06)] bg-[#0f1f26] px-3 py-[7px] text-[11px] font-semibold text-[#8ea6ad]"
         type="button"
       >
-        Auto-Split Rules
+        Post Update
       </button>
       <button
         class="rounded-[8px] bg-gradient-to-br from-[#10b981] to-[#059669] px-3 py-[7px] text-[11px] font-semibold text-white"
         type="button"
       >
-         New Wallet
+        New Space
       </button>
     </div>
   </header>
@@ -145,15 +145,15 @@
     >
       <div class="flex items-center gap-3">
         <div
-          class="flex h-[40px] w-[40px] items-center justify-center rounded-[10px] bg-[rgba(16,185,129,0.15)] text-[16px] text-[#10b981]"
+          class="flex h-[40px] w-[40px] items-center justify-center rounded-[10px] bg-[rgba(59,130,246,0.16)] text-[16px] text-[#60a5fa]"
         >
-          &#8862;
+          &#9671;
         </div>
         <div>
-          <div class="text-[16px] font-semibold">Wallet</div>
+          <div class="text-[16px] font-semibold">Spaces</div>
           <div class="text-[9px] font-['JetBrains_Mono'] uppercase tracking-[0.3em] text-[#5d747c]">
             <a
-              routerLink="/wallet/dashboard"
+              routerLink="/spaces/dashboard"
               routerLinkActive="text-[#10b981]"
               [routerLinkActiveOptions]="{ exact: true }"
               class="cursor-pointer transition-colors hover:text-[#e6f1f4]"
@@ -162,32 +162,44 @@
             </a>
             <span>&middot;</span>
             <a
-              routerLink="/wallet/wallets/overview"
+              routerLink="/spaces/spaces"
               routerLinkActive="text-[#10b981]"
+              [routerLinkActiveOptions]="{ exact: true }"
               class="cursor-pointer transition-colors hover:text-[#e6f1f4]"
             >
-              Wallets
+              Spaces
             </a>
             <span>&middot;</span>
-            <span class="cursor-pointer transition-colors hover:text-[#e6f1f4]">Accounts</span>
+            <a
+              routerLink="/spaces/rooms"
+              routerLinkActive="text-[#10b981]"
+              [routerLinkActiveOptions]="{ exact: true }"
+              class="cursor-pointer transition-colors hover:text-[#e6f1f4]"
+            >
+              Rooms
+            </a>
             <span>&middot;</span>
-            <span class="cursor-pointer transition-colors hover:text-[#e6f1f4]">Portable Benefits</span>
+            <span class="cursor-pointer transition-colors hover:text-[#e6f1f4]">Messages</span>
             <span>&middot;</span>
-            <span class="cursor-pointer transition-colors hover:text-[#e6f1f4]">Grants</span>
+            <span class="cursor-pointer transition-colors hover:text-[#e6f1f4]">Channels</span>
             <span>&middot;</span>
-            <span class="cursor-pointer transition-colors hover:text-[#e6f1f4]">Group Economics</span>
+            <span class="cursor-pointer transition-colors hover:text-[#e6f1f4]">Feed</span>
+            <span>&middot;</span>
+            <span class="cursor-pointer transition-colors hover:text-[#e6f1f4]">Timeline</span>
+            <span>&middot;</span>
+            <span class="cursor-pointer transition-colors hover:text-[#e6f1f4]">Events</span>
           </div>
         </div>
       </div>
       <div class="flex items-center gap-2">
         <input
           class="hidden w-[180px] rounded-[8px] border border-[rgba(255,255,255,0.06)] bg-[#0f1f26] px-3 py-[6px] text-[11px] text-[#8ea6ad] placeholder:text-[#5d747c] md:block"
-          placeholder="Search..."
+          placeholder="Search spaces..."
           type="text"
         />
         <span
-          class="rounded-[6px] border border-[rgba(16,185,129,0.35)] bg-[rgba(16,185,129,0.12)] px-2 py-[4px] text-[10px] font-semibold text-[#10b981]"
-          >PRO</span
+          class="rounded-[6px] border border-[rgba(59,130,246,0.35)] bg-[rgba(59,130,246,0.12)] px-2 py-[4px] text-[10px] font-semibold text-[#60a5fa]"
+          >COMMUNITY</span
         >
         <div
           class="flex h-[28px] w-[28px] items-center justify-center rounded-full bg-gradient-to-br from-[#f59e0b] to-[#f97316] text-[12px] font-bold text-[#0b1115]"
@@ -200,6 +212,5 @@
     <div class="min-w-0">
       <router-outlet></router-outlet>
     </div>
-
   </main>
 </div>
