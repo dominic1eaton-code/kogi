@@ -1423,15 +1423,17 @@ spaces -> rooms -> channels -> chats -> messages|voice|video|text, attachments, 
 
 ume navigation+modules
 
-dashboard - overview, messages, communications
-marketing - marketing, sales
-finance - financial, accounting, compliance, audit
-operations - operations, supply chain, logistics, warehouse, inventory, projects, programs
+dashboard - overview, messages, administration, organization bootsrapping+configuration
+marketing - marketing, sales, CRM, orders, invoices, billing, communications, public relations PR, reviews, testimonials, surveys, engagement, 
+finance - financials, accounting, compliance, audit, investments, taxes, securities, debts
+operations - operations, supply chain, logistics, warehouse, inventory, projects, programs, schedules, planning, (organizational) project management, work management, HR
 legal - contracts, agreements, IP, licensing, rights, entity management, charters, documents
 solutions - production, manufacturing, fabrication, goods, products, services, branding, design
-governance - strategy, tactics, frameworks, policies, procedures
-infrastructure - analytics, data, IT, value chain, software, integrations, tools, vendors
+governance - strategy, tactics, frameworks, policies, procedures, board management, 
+infrastructure - analytics, data, IT, value chain, software, integrations, tools, vendors, master data management + root organization spreadsheet, 
 
+
+settings - options, parameters, configurations, profiles, personas, preferences
 
 ---
 
