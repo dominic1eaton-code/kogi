@@ -9,6 +9,9 @@ import { Router } from '@angular/router';
   imports: [CommonModule, FormsModule],
   templateUrl: './onboarding.component.html',
   styleUrls: ['./onboarding.component.css'],
+  host: {
+    class: 'block w-full min-h-screen'
+  }
 })
 export class OnboardingComponent {
   currentStep = 1;
@@ -19,9 +22,8 @@ export class OnboardingComponent {
     if (this.currentStep < this.max_steps) {
       this.currentStep++;
     } else {
-      // Onboarding complete, navigate to dashboard
-      this.router.navigate(['/dashboard']);
+      // Onboarding complete, navigate to workspace creation
+      this.router.navigate(['/creating-workspace']);
     }
   }
 }
-

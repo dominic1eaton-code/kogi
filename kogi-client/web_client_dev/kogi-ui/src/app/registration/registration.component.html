@@ -1,58 +1,138 @@
+﻿<div
+  class="relative flex min-h-screen w-full items-center justify-center overflow-hidden bg-[#060b0f] font-['Space_Grotesk'] text-[#ecf5f7]"
+>
+  <div
+    class="pointer-events-none fixed left-1/2 top-1/2 h-[1200px] w-[1200px] -translate-x-1/2 -translate-y-1/2 blur-[80px] animate-[float_18s_ease-in-out_infinite]"
+    style="
+      background:
+        radial-gradient(circle at 30% 40%, rgba(16, 185, 129, 0.25), transparent 60%),
+        radial-gradient(circle at 70% 60%, rgba(245, 158, 11, 0.2), transparent 60%);
+    "
+  ></div>
 
-<div class="card">
+  <div
+    class="relative z-10 w-[420px] rounded-[16px] border border-[rgba(255,255,255,0.08)] bg-[rgba(20,35,42,0.55)] p-10 shadow-[0_30px_90px_rgba(0,0,0,0.6)] backdrop-blur-[18px]"
+  >
+    <div class="mb-8 flex items-center gap-2.5">
+      <div
+        class="flex h-[34px] w-[34px] items-center justify-center rounded-[10px] bg-gradient-to-br from-[#10b981] to-[#059669] font-bold"
+      >
+        K
+      </div>
+      <span class="font-semibold">Kogi</span>
+    </div>
 
-<div class="logo">
-<div class="logo-box">K</div>
-<span>Kogi</span>
-</div>
+    <div class="mb-[26px]">
+      <h1 class="mb-1.5 text-[26px] font-bold">Create your account</h1>
+      <p class="text-[13px] text-[#8aa4ab]">Start building your independent workspace</p>
+    </div>
 
-<div class="header">
-<h1>Create your account</h1>
-<p>Start building your independent workspace</p>
-</div>
+    <div class="mb-[18px] grid grid-cols-2 gap-2">
+      <button
+        type="button"
+        class="rounded-lg border border-[rgba(255,255,255,0.06)] bg-[#102028] py-[11px] text-[#8aa4ab] transition duration-200 hover:-translate-y-[1px] hover:border-[#f59e0b] hover:text-[#ecf5f7]"
+      >
+        Google
+      </button>
+      <button
+        type="button"
+        class="rounded-lg border border-[rgba(255,255,255,0.06)] bg-[#102028] py-[11px] text-[#8aa4ab] transition duration-200 hover:-translate-y-[1px] hover:border-[#f59e0b] hover:text-[#ecf5f7]"
+      >
+        GitHub
+      </button>
+    </div>
 
-<div class="oauth">
-<button>Google</button>
-<button>GitHub</button>
-</div>
+    <div class="my-[18px] flex items-center gap-2.5 text-[12px] text-[#8aa4ab]">
+      <span class="h-px flex-1 bg-[rgba(255,255,255,0.06)]"></span>
+      or continue with email
+      <span class="h-px flex-1 bg-[rgba(255,255,255,0.06)]"></span>
+    </div>
 
-<div class="divider">or continue with email</div>
+    <form>
+      <div class="relative mb-[18px]">
+        <input
+          id="name"
+          placeholder=" "
+          type="text"
+          class="peer w-full rounded-lg border border-[rgba(255,255,255,0.06)] bg-[#0d1e24] px-[14px] py-[14px] text-[13px] text-[#ecf5f7] outline-none"
+        />
+        <label
+          for="name"
+          class="pointer-events-none absolute left-2 top-[-7px] bg-[#060b0f] px-1 text-[10px] text-[#8aa4ab] transition-all duration-150 peer-placeholder-shown:left-3 peer-placeholder-shown:top-[13px] peer-placeholder-shown:bg-transparent peer-placeholder-shown:text-[12px] peer-focus:left-2 peer-focus:top-[-7px] peer-focus:bg-[#060b0f] peer-focus:text-[10px]"
+        >
+          Full Name
+        </label>
+      </div>
 
-<div class="form-group">
-<input id="name" placeholder=" " type="text">
-<label for="name">Full Name</label>
-</div>
+      <div class="relative mb-[18px]">
+        <input
+          id="email"
+          placeholder=" "
+          type="email"
+          class="peer w-full rounded-lg border border-[rgba(255,255,255,0.06)] bg-[#0d1e24] px-[14px] py-[14px] text-[13px] text-[#ecf5f7] outline-none"
+        />
+        <label
+          for="email"
+          class="pointer-events-none absolute left-2 top-[-7px] bg-[#060b0f] px-1 text-[10px] text-[#8aa4ab] transition-all duration-150 peer-placeholder-shown:left-3 peer-placeholder-shown:top-[13px] peer-placeholder-shown:bg-transparent peer-placeholder-shown:text-[12px] peer-focus:left-2 peer-focus:top-[-7px] peer-focus:bg-[#060b0f] peer-focus:text-[10px]"
+        >
+          Email Address
+        </label>
+      </div>
 
-<div class="form-group">
-<input id="email" placeholder=" " type="email">
-<label for="email">Email Address</label>
-</div>
+      <div class="relative mb-[18px]">
+        <input
+          id="password"
+          placeholder=" "
+          type="password"
+          class="peer w-full rounded-lg border border-[rgba(255,255,255,0.06)] bg-[#0d1e24] px-[14px] py-[14px] text-[13px] text-[#ecf5f7] outline-none"
+          (input)="onPasswordInput($event)"
+        />
+        <label
+          for="password"
+          class="pointer-events-none absolute left-2 top-[-7px] bg-[#060b0f] px-1 text-[10px] text-[#8aa4ab] transition-all duration-150 peer-placeholder-shown:left-3 peer-placeholder-shown:top-[13px] peer-placeholder-shown:bg-transparent peer-placeholder-shown:text-[12px] peer-focus:left-2 peer-focus:top-[-7px] peer-focus:bg-[#060b0f] peer-focus:text-[10px]"
+        >
+          Password
+        </label>
 
-<div class="form-group">
-<input id="password" placeholder=" " type="password">
-<label for="password">Password</label>
+        <div class="mt-[6px] h-[5px] overflow-hidden rounded-[10px] bg-[#0f2026]">
+          <span
+            id="strengthBar"
+            class="block h-full w-0 bg-gradient-to-r from-[#f59e0b] to-[#10b981] transition-[width] duration-300"
+            [style.width.%]="passwordStrength"
+          ></span>
+        </div>
+      </div>
 
-<div class="strength">
-<span id="strengthBar"></span>
-</div>
+      <div class="relative mb-[18px]">
+        <input
+          placeholder=" "
+          type="password"
+          class="peer w-full rounded-lg border border-[rgba(255,255,255,0.06)] bg-[#0d1e24] px-[14px] py-[14px] text-[13px] text-[#ecf5f7] outline-none"
+        />
+        <label
+          class="pointer-events-none absolute left-2 top-[-7px] bg-[#060b0f] px-1 text-[10px] text-[#8aa4ab] transition-all duration-150 peer-placeholder-shown:left-3 peer-placeholder-shown:top-[13px] peer-placeholder-shown:bg-transparent peer-placeholder-shown:text-[12px] peer-focus:left-2 peer-focus:top-[-7px] peer-focus:bg-[#060b0f] peer-focus:text-[10px]"
+        >
+          Confirm Password
+        </label>
+      </div>
 
-</div>
+      <label class="mb-4 flex items-center gap-2 text-[12px] text-[#8aa4ab]">
+        <input type="checkbox" class="h-4 w-4 accent-[#10b981]" />
+        <span>I agree to the Terms and Privacy Policy</span>
+      </label>
 
-<div class="form-group">
-<input placeholder=" " type="password">
-<label>Confirm Password</label>
-</div>
+      <button
+        type="button"
+        class="w-full rounded-[10px] bg-gradient-to-br from-[#10b981] to-[#059669] py-[13px] font-semibold text-[rgba(215,214,198,0.87)] transition duration-200 hover:-translate-y-[2px] hover:shadow-[0_12px_30px_rgba(16,185,129,0.4)]"
+        (click)="goToPage()"
+      >
+        Create account
+      </button>
+    </form>
 
-<div class="check">
-<input type="checkbox">
-<span>I agree to the Terms and Privacy Policy</span>
-</div>
-
-<button class="btn" (click)="goToPage()">Create account</button>
-
-<div class="footer">
-Already have an account?
-<a href="/login">Sign in</a>
-</div>
-
+    <div class="mt-4 text-center text-[12px] text-[#8aa4ab]">
+      Already have an account?
+      <a class="text-[#f59e0b]" routerLink="/login">Sign in</a>
+    </div>
+  </div>
 </div>

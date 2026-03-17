@@ -1,58 +1,267 @@
+﻿<div
+  class="relative flex min-h-screen w-full flex-col items-center justify-start bg-[#0c1216] px-[20px] pb-[20px] pt-[28px] font-['Space_Grotesk'] text-[#e6f1f4]"
+  style="
+    background-image:
+      linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+  "
+>
+  <div
+    class="pointer-events-none fixed left-[-120px] top-[-120px] h-[420px] w-[420px]"
+    style="background: radial-gradient(circle, rgba(16, 185, 129, 0.08) 0%, transparent 70%);"
+  ></div>
+  <div
+    class="pointer-events-none fixed bottom-[-80px] right-[-80px] h-[350px] w-[350px]"
+    style="background: radial-gradient(circle, rgba(245, 158, 11, 0.06) 0%, transparent 70%);"
+  ></div>
 
-<div class="logo">
-<div class="logo-icon">K</div>
-<span class="logo-name">kogi</span>
+  <div class="relative z-10 flex w-full flex-col items-center">
+    <div class="mb-8 flex items-center gap-2.5">
+      <div
+        class="flex h-[34px] w-[34px] items-center justify-center rounded-[9px] bg-gradient-to-br from-[#10b981] to-[#059669] text-[15px] font-extrabold text-white shadow-[0_4px_20px_rgba(16,185,129,0.35),0_0_40px_rgba(245,158,11,0.12)]"
+      >
+        K
+      </div>
+      <span class="text-[18px] font-bold tracking-[-0.4px]">kogi</span>
+    </div>
+
+    <ng-container *ngIf="currentStep === 1">
+      <h1 class="mb-2 text-center text-[30px] font-extrabold tracking-[-0.6px]">Welcome, Jordan! &#128075;</h1>
+      <p class="mb-[26px] text-center text-[13px] text-[#8ea6ad]">
+        Let's personalize your workspace. What describes you best?
+      </p>
+
+      <div class="mb-[18px] flex items-center gap-[6px]">
+        <div class="flex h-[28px] w-[28px] items-center justify-center rounded-full bg-[#10b981] text-[11px] font-bold text-white font-['JetBrains_Mono']">1</div>
+        <div class="h-px w-[36px] bg-[rgba(255,255,255,0.06)]"></div>
+        <div class="flex h-[28px] w-[28px] items-center justify-center rounded-full border border-[rgba(255,255,255,0.06)] bg-[#0f1f26] text-[11px] font-bold text-[#5d747c] font-['JetBrains_Mono']">2</div>
+        <div class="h-px w-[36px] bg-[rgba(255,255,255,0.06)]"></div>
+        <div class="flex h-[28px] w-[28px] items-center justify-center rounded-full border border-[rgba(255,255,255,0.06)] bg-[#0f1f26] text-[11px] font-bold text-[#5d747c] font-['JetBrains_Mono']">3</div>
+        <div class="h-px w-[36px] bg-[rgba(255,255,255,0.06)]"></div>
+        <div class="flex h-[28px] w-[28px] items-center justify-center rounded-full border border-[rgba(255,255,255,0.06)] bg-[#0f1f26] text-[11px] font-bold text-[#5d747c] font-['JetBrains_Mono']">4</div>
+      </div>
+
+      <div class="mb-5 grid w-full max-w-[580px] grid-cols-2 gap-[10px]">
+        <div
+          class="relative flex cursor-pointer flex-col gap-2 rounded-[10px] border border-[#fbbf24] bg-[#0f1f26] p-4 transition duration-150 hover:-translate-y-[2px] hover:border-[rgba(255,255,255,0.15)] hover:bg-[linear-gradient(135deg,#fbbe2411,#b8c7b246)] hover:shadow-[0_8px_22px_rgba(0,0,0,0.35)]"
+        >
+          <span class="absolute right-[12px] top-[10px] text-[#10b981] font-bold">&#10003;</span>
+          <div class="text-[22px]">&#9874;</div>
+          <div class="text-[13.5px] font-bold">Freelancer</div>
+          <div class="text-[11.5px] leading-[1.45] text-[#8ea6ad]">
+            Entreprenuer, Designer, developer, writer, consultant
+          </div>
+          <div
+            class="w-fit rounded-[5px] border border-[rgba(245,158,11,0.25)] bg-[rgba(245,158,11,0.12)] px-[7px] py-[2px] text-[10px] font-bold text-[#fbbf24]"
+          >
+            Most popular
+          </div>
+        </div>
+
+        <div
+          class="flex cursor-pointer flex-col gap-2 rounded-[10px] border border-[rgba(255,255,255,0.06)] bg-[#0f1f26] p-4 transition duration-150 hover:-translate-y-[2px] hover:border-[rgba(255,255,255,0.15)] hover:bg-[linear-gradient(135deg,#fbbe2411,#b8c7b246)] hover:shadow-[0_8px_22px_rgba(0,0,0,0.35)]"
+        >
+          <div class="text-[22px]">&#128101;</div>
+          <div class="text-[13.5px] font-bold">Micro-Agency</div>
+          <div class="text-[11.5px] leading-[1.45] text-[#8ea6ad]">Small team of 2&ndash;15 collaborators</div>
+        </div>
+
+        <div
+          class="flex cursor-pointer flex-col gap-2 rounded-[10px] border border-[rgba(255,255,255,0.06)] bg-[#0f1f26] p-4 transition duration-150 hover:-translate-y-[2px] hover:border-[rgba(255,255,255,0.15)] hover:bg-[linear-gradient(135deg,#fbbe2411,#b8c7b246)] hover:shadow-[0_8px_22px_rgba(0,0,0,0.35)]"
+        >
+          <div class="text-[22px]">&#8862;</div>
+          <div class="text-[13.5px] font-bold">Cooperative</div>
+          <div class="text-[11.5px] leading-[1.45] text-[#8ea6ad]">
+            Large team, worker co-op, collective with shared ownership
+          </div>
+        </div>
+
+        <div
+          class="flex cursor-pointer flex-col gap-2 rounded-[10px] border border-[rgba(255,255,255,0.06)] bg-[#0f1f26] p-4 transition duration-150 hover:-translate-y-[2px] hover:border-[rgba(255,255,255,0.15)] hover:bg-[linear-gradient(135deg,#fbbe2411,#b8c7b246)] hover:shadow-[0_8px_22px_rgba(0,0,0,0.35)]"
+        >
+          <div class="text-[22px]">&#128161;</div>
+          <div class="text-[13.5px] font-bold">Explorer</div>
+          <div class="text-[11.5px] leading-[1.45] text-[#8ea6ad]">Just checking out the platform</div>
+        </div>
+      </div>
+
+      <div class="mb-4 w-full max-w-[580px] rounded-[10px] border border-[rgba(255,255,255,0.06)] bg-[#0f1f26] p-3">
+        <div class="mb-2 text-[12px] font-semibold">Primary focus areas (select all that apply)</div>
+        <div class="flex flex-wrap gap-[6px]">
+          <div class="rounded-[6px] border border-[#10b981] bg-[rgba(16,185,129,0.08)] px-[9px] py-[4px] text-[11px] text-[#10b981]">Design</div>
+          <div class="rounded-[6px] border border-[#10b981] bg-[rgba(16,185,129,0.08)] px-[9px] py-[4px] text-[11px] text-[#10b981]">Development</div>
+          <div class="rounded-[6px] border border-[rgba(255,255,255,0.06)] px-[9px] py-[4px] text-[11px] text-[#8ea6ad]">Writing</div>
+          <div class="rounded-[6px] border border-[rgba(255,255,255,0.06)] px-[9px] py-[4px] text-[11px] text-[#8ea6ad]">Marketing</div>
+          <div class="rounded-[6px] border border-[rgba(255,255,255,0.06)] px-[9px] py-[4px] text-[11px] text-[#8ea6ad]">Strategy</div>
+          <div class="rounded-[6px] border border-[rgba(255,255,255,0.06)] px-[9px] py-[4px] text-[11px] text-[#8ea6ad]">Finance</div>
+          <div class="rounded-[6px] border border-[rgba(255,255,255,0.06)] px-[9px] py-[4px] text-[11px] text-[#8ea6ad]">Video</div>
+          <div class="rounded-[6px] border border-[rgba(255,255,255,0.06)] px-[9px] py-[4px] text-[11px] text-[#8ea6ad]">Audio</div>
+        </div>
+      </div>
+
+      <button
+        class="rounded-[10px] bg-gradient-to-br from-[#10b981] to-[#059669] px-[34px] py-[12px] text-[13.5px] font-bold text-white transition duration-200 hover:-translate-y-[1px] hover:shadow-[0_10px_30px_rgba(16,185,129,0.35)]"
+        (click)="goToNextStep()"
+      >
+        Continue &#8594;
+      </button>
+    </ng-container>
+
+    <ng-container *ngIf="currentStep === 2">
+      <h1 class="mb-2 text-center text-[30px] font-extrabold tracking-[-0.6px]">What do you want to build first?</h1>
+      <p class="mb-[26px] text-center text-[13px] text-[#8ea6ad]">
+        Choose the outcome that will move your independent work forward fastest.
+      </p>
+
+      <div class="mb-[18px] flex items-center gap-[6px]">
+        <div class="flex h-[28px] w-[28px] items-center justify-center rounded-full border border-[rgba(255,255,255,0.06)] bg-[#0f1f26] text-[11px] font-bold text-[#5d747c] font-['JetBrains_Mono']">1</div>
+        <div class="h-px w-[36px] bg-[rgba(255,255,255,0.06)]"></div>
+        <div class="flex h-[28px] w-[28px] items-center justify-center rounded-full bg-[#10b981] text-[11px] font-bold text-white font-['JetBrains_Mono']">2</div>
+        <div class="h-px w-[36px] bg-[rgba(255,255,255,0.06)]"></div>
+        <div class="flex h-[28px] w-[28px] items-center justify-center rounded-full border border-[rgba(255,255,255,0.06)] bg-[#0f1f26] text-[11px] font-bold text-[#5d747c] font-['JetBrains_Mono']">3</div>
+        <div class="h-px w-[36px] bg-[rgba(255,255,255,0.06)]"></div>
+        <div class="flex h-[28px] w-[28px] items-center justify-center rounded-full border border-[rgba(255,255,255,0.06)] bg-[#0f1f26] text-[11px] font-bold text-[#5d747c] font-['JetBrains_Mono']">4</div>
+      </div>
+
+      <div class="mb-5 grid w-full max-w-[580px] grid-cols-2 gap-[10px]">
+        <div
+          class="relative flex cursor-pointer flex-col gap-2 rounded-[10px] border border-[#fbbf24] bg-[#0f1f26] p-4 transition duration-150 hover:-translate-y-[2px] hover:border-[rgba(255,255,255,0.15)] hover:bg-[linear-gradient(135deg,#fbbe2411,#b8c7b246)] hover:shadow-[0_8px_22px_rgba(0,0,0,0.35)]"
+        >
+          <span class="absolute right-[12px] top-[10px] text-[#10b981] font-bold">&#10003;</span>
+          <div class="text-[22px]">&#129513;</div>
+          <div class="text-[13.5px] font-bold">Portfolio OS</div>
+          <div class="text-[11.5px] leading-[1.45] text-[#8ea6ad]">Launch a polished profile and case studies</div>
+        </div>
+
+        <div
+          class="flex cursor-pointer flex-col gap-2 rounded-[10px] border border-[rgba(255,255,255,0.06)] bg-[#0f1f26] p-4 transition duration-150 hover:-translate-y-[2px] hover:border-[rgba(255,255,255,0.15)] hover:bg-[linear-gradient(135deg,#fbbe2411,#b8c7b246)] hover:shadow-[0_8px_22px_rgba(0,0,0,0.35)]"
+        >
+          <div class="text-[22px]">&#128188;</div>
+          <div class="text-[13.5px] font-bold">Client Pipeline</div>
+          <div class="text-[11.5px] leading-[1.45] text-[#8ea6ad]">Track leads, proposals, and contracts</div>
+        </div>
+
+        <div
+          class="flex cursor-pointer flex-col gap-2 rounded-[10px] border border-[rgba(255,255,255,0.06)] bg-[#0f1f26] p-4 transition duration-150 hover:-translate-y-[2px] hover:border-[rgba(255,255,255,0.15)] hover:bg-[linear-gradient(135deg,#fbbe2411,#b8c7b246)] hover:shadow-[0_8px_22px_rgba(0,0,0,0.35)]"
+        >
+          <div class="text-[22px]">&#128179;</div>
+          <div class="text-[13.5px] font-bold">Invoicing &amp; Finance</div>
+          <div class="text-[11.5px] leading-[1.45] text-[#8ea6ad]">Send invoices, track payments, and taxes</div>
+        </div>
+
+        <div
+          class="flex cursor-pointer flex-col gap-2 rounded-[10px] border border-[rgba(255,255,255,0.06)] bg-[#0f1f26] p-4 transition duration-150 hover:-translate-y-[2px] hover:border-[rgba(255,255,255,0.15)] hover:bg-[linear-gradient(135deg,#fbbe2411,#b8c7b246)] hover:shadow-[0_8px_22px_rgba(0,0,0,0.35)]"
+        >
+          <div class="text-[22px]">&#128722;</div>
+          <div class="text-[13.5px] font-bold">Marketplace Listing</div>
+          <div class="text-[11.5px] leading-[1.45] text-[#8ea6ad]">Get discovered and sell your services</div>
+        </div>
+      </div>
+
+      <div class="mb-[18px] grid w-full max-w-[580px] grid-cols-3 gap-2">
+        <div class="flex items-center gap-2 rounded-[8px] border border-[rgba(255,255,255,0.06)] bg-[#0f1f26] px-3 py-2 text-[11.5px]">
+          <span class="text-[#fbbf24]">&#10022;</span> Portfolio OS included
+        </div>
+        <div class="flex items-center gap-2 rounded-[8px] border border-[rgba(255,255,255,0.06)] bg-[#0f1f26] px-3 py-2 text-[11.5px]">
+          <span class="text-[#fbbf24]">&#9670;</span> AI agent ready
+        </div>
+        <div class="flex items-center gap-2 rounded-[8px] border border-[rgba(255,255,255,0.06)] bg-[#0f1f26] px-3 py-2 text-[11.5px]">
+          <span class="text-[#fbbf24]">&#9678;</span> 2.5% marketplace fee
+        </div>
+      </div>
+
+      <button
+        class="rounded-[10px] bg-gradient-to-br from-[#10b981] to-[#059669] px-[34px] py-[12px] text-[13.5px] font-bold text-white transition duration-200 hover:-translate-y-[1px] hover:shadow-[0_10px_30px_rgba(16,185,129,0.35)]"
+        (click)="goToNextStep()"
+      >
+        Continue &#8594;
+      </button>
+    </ng-container>
+
+    <ng-container *ngIf="currentStep === 3">
+      <h1 class="mb-2 text-center text-[30px] font-extrabold tracking-[-0.6px]">Connect your stack</h1>
+      <p class="mb-[26px] text-center text-[13px] text-[#8ea6ad]">
+        Pick the tools you use most so we can personalize your workspace.
+      </p>
+
+      <div class="mb-[18px] flex items-center gap-[6px]">
+        <div class="flex h-[28px] w-[28px] items-center justify-center rounded-full border border-[rgba(255,255,255,0.06)] bg-[#0f1f26] text-[11px] font-bold text-[#5d747c] font-['JetBrains_Mono']">1</div>
+        <div class="h-px w-[36px] bg-[rgba(255,255,255,0.06)]"></div>
+        <div class="flex h-[28px] w-[28px] items-center justify-center rounded-full border border-[rgba(255,255,255,0.06)] bg-[#0f1f26] text-[11px] font-bold text-[#5d747c] font-['JetBrains_Mono']">2</div>
+        <div class="h-px w-[36px] bg-[rgba(255,255,255,0.06)]"></div>
+        <div class="flex h-[28px] w-[28px] items-center justify-center rounded-full bg-[#10b981] text-[11px] font-bold text-white font-['JetBrains_Mono']">3</div>
+        <div class="h-px w-[36px] bg-[rgba(255,255,255,0.06)]"></div>
+        <div class="flex h-[28px] w-[28px] items-center justify-center rounded-full border border-[rgba(255,255,255,0.06)] bg-[#0f1f26] text-[11px] font-bold text-[#5d747c] font-['JetBrains_Mono']">4</div>
+      </div>
+
+      <div class="mb-4 w-full max-w-[580px] rounded-[10px] border border-[rgba(255,255,255,0.06)] bg-[#0f1f26] p-3">
+        <div class="mb-2 text-[12px] font-semibold">Tools you use every week</div>
+        <div class="flex flex-wrap gap-[6px]">
+          <div class="rounded-[6px] border border-[#10b981] bg-[rgba(16,185,129,0.08)] px-[9px] py-[4px] text-[11px] text-[#10b981]">Figma</div>
+          <div class="rounded-[6px] border border-[#10b981] bg-[rgba(16,185,129,0.08)] px-[9px] py-[4px] text-[11px] text-[#10b981]">GitHub</div>
+          <div class="rounded-[6px] border border-[#10b981] bg-[rgba(16,185,129,0.08)] px-[9px] py-[4px] text-[11px] text-[#10b981]">Notion</div>
+          <div class="rounded-[6px] border border-[rgba(255,255,255,0.06)] px-[9px] py-[4px] text-[11px] text-[#8ea6ad]">Slack</div>
+          <div class="rounded-[6px] border border-[rgba(255,255,255,0.06)] px-[9px] py-[4px] text-[11px] text-[#8ea6ad]">Linear</div>
+          <div class="rounded-[6px] border border-[rgba(255,255,255,0.06)] px-[9px] py-[4px] text-[11px] text-[#8ea6ad]">Airtable</div>
+          <div class="rounded-[6px] border border-[rgba(255,255,255,0.06)] px-[9px] py-[4px] text-[11px] text-[#8ea6ad]">Stripe</div>
+          <div class="rounded-[6px] border border-[rgba(255,255,255,0.06)] px-[9px] py-[4px] text-[11px] text-[#8ea6ad]">Google Drive</div>
+          <div class="rounded-[6px] border border-[rgba(255,255,255,0.06)] px-[9px] py-[4px] text-[11px] text-[#8ea6ad]">Calendly</div>
+        </div>
+      </div>
+
+      <button
+        class="rounded-[10px] bg-gradient-to-br from-[#10b981] to-[#059669] px-[34px] py-[12px] text-[13.5px] font-bold text-white transition duration-200 hover:-translate-y-[1px] hover:shadow-[0_10px_30px_rgba(16,185,129,0.35)]"
+        (click)="goToNextStep()"
+      >
+        Continue &#8594;
+      </button>
+    </ng-container>
+
+    <ng-container *ngIf="currentStep === 4">
+      <h1 class="mb-2 text-center text-[30px] font-extrabold tracking-[-0.6px]">Create your workspace</h1>
+      <p class="mb-[26px] text-center text-[13px] text-[#8ea6ad]">
+        Pick a name and handle so we can set up your home base.
+      </p>
+
+      <div class="mb-[18px] flex items-center gap-[6px]">
+        <div class="flex h-[28px] w-[28px] items-center justify-center rounded-full border border-[rgba(255,255,255,0.06)] bg-[#0f1f26] text-[11px] font-bold text-[#5d747c] font-['JetBrains_Mono']">1</div>
+        <div class="h-px w-[36px] bg-[rgba(255,255,255,0.06)]"></div>
+        <div class="flex h-[28px] w-[28px] items-center justify-center rounded-full border border-[rgba(255,255,255,0.06)] bg-[#0f1f26] text-[11px] font-bold text-[#5d747c] font-['JetBrains_Mono']">2</div>
+        <div class="h-px w-[36px] bg-[rgba(255,255,255,0.06)]"></div>
+        <div class="flex h-[28px] w-[28px] items-center justify-center rounded-full border border-[rgba(255,255,255,0.06)] bg-[#0f1f26] text-[11px] font-bold text-[#5d747c] font-['JetBrains_Mono']">3</div>
+        <div class="h-px w-[36px] bg-[rgba(255,255,255,0.06)]"></div>
+        <div class="flex h-[28px] w-[28px] items-center justify-center rounded-full bg-[#10b981] text-[11px] font-bold text-white font-['JetBrains_Mono']">4</div>
+      </div>
+
+      <div class="mb-5 w-full max-w-[580px] rounded-[10px] border border-[rgba(255,255,255,0.06)] bg-[#0f1f26] p-4">
+        <div class="mb-3">
+          <label class="mb-1 block text-[12px] font-semibold text-[#8ea6ad]">Workspace name</label>
+          <input
+            type="text"
+            placeholder="Jordan Studio"
+            class="w-full rounded-[8px] border border-[rgba(255,255,255,0.06)] bg-[#0c1216] px-3 py-2 text-[13px] text-[#e6f1f4] outline-none"
+          />
+        </div>
+        <div>
+          <label class="mb-1 block text-[12px] font-semibold text-[#8ea6ad]">Workspace URL</label>
+          <div class="flex items-center rounded-[8px] border border-[rgba(255,255,255,0.06)] bg-[#0c1216] px-3 py-2">
+            <span class="text-[12px] text-[#5d747c]">kogi.so/</span>
+            <input
+              type="text"
+              placeholder="jordan-studio"
+              class="ml-2 flex-1 bg-transparent text-[13px] text-[#e6f1f4] outline-none"
+            />
+          </div>
+        </div>
+      </div>
+
+      <button
+        class="rounded-[10px] bg-gradient-to-br from-[#10b981] to-[#059669] px-[34px] py-[12px] text-[13.5px] font-bold text-white transition duration-200 hover:-translate-y-[1px] hover:shadow-[0_10px_30px_rgba(16,185,129,0.35)]"
+        (click)="goToNextStep()"
+      >
+        Continue &#8594;
+      </button>
+    </ng-container>
+  </div>
 </div>
-
-<div *ngIf="currentStep === 1">
-    <h1>Welcome, Jordan! 👋</h1>
-    <p class="subtitle">Let's personalize your workspace. What describes you best?</p>
-
-    <div class="steps-row">
-    <div class="step active">1</div>
-    <div class="step-line"></div>
-    <div class="step inactive">2</div>
-    <div class="step-line"></div>
-    <div class="step inactive">3</div>
-    <div class="step-line"></div>
-    <div class="step inactive">4</div>
-    </div>
-
-    <p class="step-label">Step 1 of 4 — about 2 minutes</p>
-
-    <div class="options-grid">
-    <div class="option-card selected">
-        <div class="option-icon">⚒</div>
-        <div class="option-name">Freelancer</div>
-        <div class="option-desc">Designer, developer, writer, consultant</div>
-        <div class="badge-popular">Most popular</div>
-    </div>
-    <div class="option-card">
-        <div class="option-icon">👥</div>
-        <div class="option-name">Micro-Agency</div>
-        <div class="option-desc">Small team of 2–15 collaborators</div>
-    </div>
-    <div class="option-card">
-        <div class="option-icon">⊞</div>
-        <div class="option-name">Cooperative</div>
-        <div class="option-desc">Worker co-op or collective with shared ownership</div>
-    </div>
-    <div class="option-card">
-        <div class="option-icon">💡</div>
-        <div class="option-name">Explorer</div>
-        <div class="option-desc">Just checking out the platform</div>
-    </div>
-    </div>
-
-    <div class="info-row">
-    <div class="info-strip"><span class="info-icon">⊟</span>Portfolio OS included</div>
-    <div class="info-strip"><span class="info-icon">◈</span>AI Agent ready</div>
-    <div class="info-strip"><span class="info-icon">◎</span>2.5% marketplace fee</div>
-    </div>
-</div>
-
-<div *ngIf="currentStep === 2">step 2</div>
-<div *ngIf="currentStep === 3">step 3</div>
-<div *ngIf="currentStep === 4">step 4</div>
-
-<button class="btn-primary" (click)="goToNextStep()">Continue →</button>

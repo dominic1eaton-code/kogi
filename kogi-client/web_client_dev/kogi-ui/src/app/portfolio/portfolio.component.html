@@ -1,0 +1,1015 @@
+<div
+  class="relative min-h-screen w-full font-['Space_Grotesk'] text-[#e6f1f4]"
+  style="
+    background-color: #0b1115;
+    background-image:
+      linear-gradient(rgba(255, 255, 255, 0.025) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255, 255, 255, 0.025) 1px, transparent 1px);
+    background-size: 42px 42px;
+  "
+>
+  <div
+    class="pointer-events-none fixed -left-[120px] -top-[150px] h-[500px] w-[500px]"
+    style="background: radial-gradient(circle, rgba(16, 185, 129, 0.08), transparent 70%);"
+  ></div>
+  <div
+    class="pointer-events-none fixed -bottom-[120px] -right-[120px] h-[450px] w-[450px]"
+    style="background: radial-gradient(circle, rgba(245, 158, 11, 0.08), transparent 70%);"
+  ></div>
+
+  <aside
+    class="fixed inset-y-0 left-0 hidden w-[220px] flex-col border-r border-[rgba(255,255,255,0.06)] bg-gradient-to-b from-[#0f1b21] to-[#0c1419] lg:flex"
+  >
+    <div class="flex items-center gap-2.5 border-b border-[rgba(255,255,255,0.06)] px-[18px] py-[18px]">
+      <div
+        class="flex h-[34px] w-[34px] items-center justify-center rounded-[9px] bg-gradient-to-br from-[#10b981] to-[#059669] text-sm font-extrabold text-white"
+      >
+        K
+      </div>
+      <span class="text-sm font-semibold">kogi</span>
+    </div>
+
+    <div class="flex-1 space-y-1 p-[10px]">
+      <a
+        routerLink="/dashboard"
+        class="flex items-center gap-2 rounded-[8px] px-3 py-2 text-[13px] text-[#8ea6ad] hover:bg-[#132830] hover:text-[#e6f1f4]"
+      >
+        <span class="text-[12px] opacity-70">&#9671;</span>
+        Dashboard
+      </a>
+      <a
+        routerLink="/portfolio"
+        class="flex items-center gap-2 rounded-[8px] bg-[rgba(16,185,129,0.15)] px-3 py-2 text-[13px] text-[#10b981]"
+      >
+        <span class="text-[12px] opacity-80">&#9776;</span>
+        Portfolio
+      </a>
+      <a
+        routerLink="/dashboard"
+        class="flex items-center gap-2 rounded-[8px] px-3 py-2 text-[13px] text-[#8ea6ad] hover:bg-[#132830] hover:text-[#e6f1f4]"
+      >
+        <span class="text-[12px] opacity-70">&#8862;</span>
+        Wallet
+      </a>
+      <a
+        routerLink="/dashboard"
+        class="flex items-center gap-2 rounded-[8px] px-3 py-2 text-[13px] text-[#8ea6ad] hover:bg-[#132830] hover:text-[#e6f1f4]"
+      >
+        <span class="text-[12px] opacity-70">&#9671;</span>
+        Spaces
+      </a>
+      <a
+        routerLink="/dashboard"
+        class="flex items-center gap-2 rounded-[8px] px-3 py-2 text-[13px] text-[#8ea6ad] hover:bg-[#132830] hover:text-[#e6f1f4]"
+      >
+        <span class="text-[12px] opacity-70">&#9711;</span>
+        Marketplace
+      </a>
+      <a
+        routerLink="/dashboard"
+        class="flex items-center gap-2 rounded-[8px] px-3 py-2 text-[13px] text-[#8ea6ad] hover:bg-[#132830] hover:text-[#e6f1f4]"
+      >
+        <span class="text-[12px] opacity-70">&#9673;</span>
+        Hub
+      </a>
+      <a
+        routerLink="/dashboard"
+        class="flex items-center gap-2 rounded-[8px] px-3 py-2 text-[13px] text-[#8ea6ad] hover:bg-[#132830] hover:text-[#e6f1f4]"
+      >
+        <span class="text-[12px] opacity-70">&#10022;</span>
+        Assistant
+      </a>
+      <a
+        routerLink="/dashboard"
+        class="flex items-center gap-2 rounded-[8px] px-3 py-2 text-[13px] text-[#8ea6ad] hover:bg-[#132830] hover:text-[#e6f1f4]"
+      >
+        <span class="text-[12px] opacity-70">&#9670;</span>
+        Apps
+      </a>
+    </div>
+
+    <div class="flex items-center gap-2.5 border-t border-[rgba(255,255,255,0.06)] px-4 py-4">
+      <div
+        class="flex h-[30px] w-[30px] items-center justify-center rounded-full bg-gradient-to-br from-[#8b5cf6] to-[#10b981] text-[12px] font-bold"
+      >
+        JD
+      </div>
+      <div>
+        <div class="text-[12px] font-semibold">Jordan Davis</div>
+        <div class="text-[11px] text-[#5d747c]">Pro Plan</div>
+      </div>
+    </div>
+  </aside>
+
+  <header
+    class="fixed left-0 right-0 top-0 flex h-[56px] items-center gap-3 border-b border-[rgba(255,255,255,0.06)] bg-gradient-to-b from-[#0e1b21] to-[#0b1418] px-5 lg:left-[220px]"
+  >
+    <div class="flex items-center gap-3">
+      <span class="text-[12px] font-['JetBrains_Mono'] font-bold tracking-[0.35em] text-[#10b981]">KOGI</span>
+      <div class="flex items-center gap-1 text-[11px] font-['JetBrains_Mono'] text-[#5d747c]">
+        <span class="text-[#8ea6ad]">Office</span>
+        <span>/</span>
+        <span class="text-[#e6f1f4]">Portfolio</span>
+      </div>
+    </div>
+    <div class="ml-auto flex items-center gap-2">
+      <div
+        class="flex items-center gap-2 rounded-[8px] border border-[rgba(255,255,255,0.06)] bg-[#0f1f26] px-2.5 py-[7px] text-[11px] text-[#8ea6ad]"
+      >
+        &#8981; Search components&hellip;
+      </div>
+      <button
+        class="rounded-[8px] border border-[rgba(255,255,255,0.06)] bg-[#0f1f26] px-3 py-[7px] text-[11px] font-semibold text-[#8ea6ad]"
+        type="button"
+      >
+        Filter
+      </button>
+      <button
+        class="rounded-[8px] border border-[rgba(255,255,255,0.06)] bg-[#0f1f26] px-3 py-[7px] text-[11px] font-semibold text-[#8ea6ad]"
+        type="button"
+      >
+        Import
+      </button>
+      <button
+        class="rounded-[8px] bg-gradient-to-br from-[#10b981] to-[#059669] px-3 py-[7px] text-[11px] font-semibold text-white"
+        type="button"
+      >
+        + New
+      </button>
+      <div class="ml-1 h-[8px] w-[8px] rounded-full bg-[#10b981]"></div>
+    </div>
+  </header>
+
+  <main class="ml-0 px-5 pb-8 pt-[76px] lg:ml-[220px]">
+    <div id="portfolio-top" class="mb-4 h-[2px] w-full rounded bg-gradient-to-r from-[#3b82f6] via-[#a855f7] via-[#ec4899] via-[#f97316] via-[#eab308] via-[#22c55e] to-[#06b6d4]"></div>
+
+    <div class="grid grid-cols-1 gap-4 xl:grid-cols-[200px_minmax(0,1fr)_260px]">
+      <aside class="hidden h-fit flex-col rounded-[12px] border border-[rgba(255,255,255,0.06)] bg-[#0f1f26] xl:flex">
+        <div class="border-b border-[rgba(255,255,255,0.06)] px-3 py-3">
+          <div class="text-[12px] font-semibold font-['JetBrains_Mono']">Portfolio Navigation</div>
+          <div class="text-[9px] text-[#5d747c] font-['JetBrains_Mono']">Browse components</div>
+        </div>
+        <nav class="flex flex-col gap-1 p-3 text-[11px]">
+          <div class="px-2 pt-1 text-[9px] font-semibold uppercase tracking-[0.3em] text-[#5d747c] font-['JetBrains_Mono']">
+            Navigation
+          </div>
+          <a
+            routerLink="/portfolio"
+            fragment="portfolio-top"
+            class="flex items-center gap-2 rounded-[8px] px-2.5 py-1.5 text-[#8ea6ad] hover:bg-[#132830] hover:text-[#e6f1f4]"
+          >
+            <span class="text-[12px] opacity-70">&#127968;</span>
+            Home
+          </a>
+          <a
+            routerLink="/portfolio"
+            fragment="portfolio-items"
+            class="flex items-center gap-2 rounded-[8px] bg-[rgba(16,185,129,0.15)] px-2.5 py-1.5 text-[#10b981]"
+          >
+            <span class="text-[12px] opacity-80">&#128193;</span>
+            Portfolio
+            <span
+              class="ml-auto rounded-[6px] border border-[rgba(16,185,129,0.35)] bg-[rgba(16,185,129,0.12)] px-2 py-[1px] text-[9px] font-semibold text-[#10b981]"
+              >24</span
+            >
+          </a>
+          <a
+            routerLink="/portfolio"
+            fragment="portfolio-items"
+            class="flex items-center gap-2 rounded-[8px] px-2.5 py-1.5 text-[#8ea6ad] hover:bg-[#132830] hover:text-[#e6f1f4]"
+          >
+            <span class="text-[12px] opacity-70">&#128203;</span>
+            Programs
+            <span class="ml-auto rounded-[6px] border border-[rgba(255,255,255,0.12)] bg-[#101e24] px-2 py-[1px] text-[9px] text-[#8ea6ad]">6</span>
+          </a>
+          <a
+            routerLink="/portfolio"
+            fragment="portfolio-items"
+            class="flex items-center gap-2 rounded-[8px] px-2.5 py-1.5 text-[#8ea6ad] hover:bg-[#132830] hover:text-[#e6f1f4]"
+          >
+            <span class="text-[12px] opacity-70">&#128311;</span>
+            Projects
+            <span class="ml-auto rounded-[6px] border border-[rgba(255,255,255,0.12)] bg-[#101e24] px-2 py-[1px] text-[9px] text-[#8ea6ad]">12</span>
+          </a>
+          <a
+            routerLink="/portfolio"
+            fragment="portfolio-items"
+            class="flex items-center gap-2 rounded-[8px] px-2.5 py-1.5 text-[#8ea6ad] hover:bg-[#132830] hover:text-[#e6f1f4]"
+          >
+            <span class="text-[12px] opacity-70">&#128100;</span>
+            Resources
+            <span class="ml-auto rounded-[6px] border border-[rgba(255,255,255,0.12)] bg-[#101e24] px-2 py-[1px] text-[9px] text-[#8ea6ad]">8</span>
+          </a>
+          <a
+            routerLink="/portfolio"
+            fragment="portfolio-items"
+            class="flex items-center gap-2 rounded-[8px] px-2.5 py-1.5 text-[#8ea6ad] hover:bg-[#132830] hover:text-[#e6f1f4]"
+          >
+            <span class="text-[12px] opacity-70">&#128142;</span>
+            Assets
+            <span class="ml-auto rounded-[6px] border border-[rgba(255,255,255,0.12)] bg-[#101e24] px-2 py-[1px] text-[9px] text-[#8ea6ad]">14</span>
+          </a>
+          <a
+            routerLink="/portfolio"
+            fragment="portfolio-items"
+            class="flex items-center gap-2 rounded-[8px] px-2.5 py-1.5 text-[#8ea6ad] hover:bg-[#132830] hover:text-[#e6f1f4]"
+          >
+            <span class="text-[12px] opacity-70">&#128196;</span>
+            Artifacts
+            <span class="ml-auto rounded-[6px] border border-[rgba(255,255,255,0.12)] bg-[#101e24] px-2 py-[1px] text-[9px] text-[#8ea6ad]">31</span>
+          </a>
+
+          <div class="mx-2 my-2 h-px bg-[rgba(255,255,255,0.06)]"></div>
+
+          <div class="px-2 pt-1 text-[9px] font-semibold uppercase tracking-[0.3em] text-[#5d747c] font-['JetBrains_Mono']">
+            Containers
+          </div>
+          <a
+            routerLink="/portfolio"
+            fragment="portfolio-containers"
+            class="flex items-center gap-2 rounded-[8px] px-2.5 py-1.5 text-[#8ea6ad] hover:bg-[#132830] hover:text-[#e6f1f4]"
+          >
+            <span class="text-[12px] opacity-70">&#128214;</span>
+            Books
+            <span class="ml-auto rounded-[6px] border border-[rgba(255,255,255,0.12)] bg-[#101e24] px-2 py-[1px] text-[9px] text-[#8ea6ad]">7</span>
+          </a>
+          <a
+            routerLink="/portfolio"
+            fragment="portfolio-containers"
+            class="flex items-center gap-2 rounded-[8px] px-2.5 py-1.5 text-[#8ea6ad] hover:bg-[#132830] hover:text-[#e6f1f4]"
+          >
+            <span class="text-[12px] opacity-70">&#128450;</span>
+            Binders
+            <span class="ml-auto rounded-[6px] border border-[rgba(255,255,255,0.12)] bg-[#101e24] px-2 py-[1px] text-[9px] text-[#8ea6ad]">5</span>
+          </a>
+          <a
+            routerLink="/portfolio"
+            fragment="portfolio-containers"
+            class="flex items-center gap-2 rounded-[8px] px-2.5 py-1.5 text-[#8ea6ad] hover:bg-[#132830] hover:text-[#e6f1f4]"
+          >
+            <span class="text-[12px] opacity-70">&#128451;</span>
+            Records
+            <span class="ml-auto rounded-[6px] border border-[rgba(255,255,255,0.12)] bg-[#101e24] px-2 py-[1px] text-[9px] text-[#8ea6ad]">9</span>
+          </a>
+          <a
+            routerLink="/portfolio"
+            fragment="portfolio-containers"
+            class="flex items-center gap-2 rounded-[8px] px-2.5 py-1.5 text-[#8ea6ad] hover:bg-[#132830] hover:text-[#e6f1f4]"
+          >
+            <span class="text-[12px] opacity-70">&#128194;</span>
+            Folders
+          </a>
+          <a
+            routerLink="/portfolio"
+            fragment="portfolio-containers"
+            class="flex items-center gap-2 rounded-[8px] px-2.5 py-1.5 text-[#8ea6ad] hover:bg-[#132830] hover:text-[#e6f1f4]"
+          >
+            <span class="text-[12px] opacity-70">&#128452;</span>
+            Registry
+          </a>
+          <a
+            routerLink="/portfolio"
+            fragment="portfolio-containers"
+            class="flex items-center gap-2 rounded-[8px] px-2.5 py-1.5 text-[#8ea6ad] hover:bg-[#132830] hover:text-[#e6f1f4]"
+          >
+            <span class="text-[12px] opacity-70">&#128230;</span>
+            Archive
+          </a>
+
+          <div class="mx-2 my-2 h-px bg-[rgba(255,255,255,0.06)]"></div>
+
+          <div class="px-2 pt-1 text-[9px] font-semibold uppercase tracking-[0.3em] text-[#5d747c] font-['JetBrains_Mono']">
+            Views
+          </div>
+          <a
+            routerLink="/portfolio"
+            fragment="portfolio-detail"
+            class="flex items-center gap-2 rounded-[8px] px-2.5 py-1.5 text-[#8ea6ad] hover:bg-[#132830] hover:text-[#e6f1f4]"
+          >
+            <span class="text-[12px] opacity-70">&#128202;</span>
+            Analytics
+          </a>
+          <a
+            routerLink="/portfolio"
+            fragment="portfolio-detail"
+            class="flex items-center gap-2 rounded-[8px] px-2.5 py-1.5 text-[#8ea6ad] hover:bg-[#132830] hover:text-[#e6f1f4]"
+          >
+            <span class="text-[12px] opacity-70">&#9881;</span>
+            Governance
+          </a>
+          <a
+            routerLink="/portfolio"
+            fragment="portfolio-detail"
+            class="flex items-center gap-2 rounded-[8px] px-2.5 py-1.5 text-[#8ea6ad] hover:bg-[#132830] hover:text-[#e6f1f4]"
+          >
+            <span class="text-[12px] opacity-70">&#128279;</span>
+            Graph
+          </a>
+        </nav>
+      </aside>
+
+      <div class="min-w-0 space-y-4">
+        <div
+          class="flex flex-wrap items-center gap-2 rounded-[10px] border border-[rgba(255,255,255,0.06)] bg-[#0f1f26] px-3 py-2"
+        >
+          <span class="text-[13px] font-semibold font-['JetBrains_Mono']">Portfolio</span>
+          <span class="text-[10px] font-['JetBrains_Mono'] text-[#5d747c]">24 components</span>
+          <div class="ml-2 flex flex-wrap items-center gap-1">
+            <span
+              class="rounded-[6px] border border-[rgba(16,185,129,0.5)] bg-[rgba(16,185,129,0.12)] px-2 py-[2px] text-[9px] font-['JetBrains_Mono'] text-[#10b981]"
+            >
+              All
+            </span>
+            <span class="rounded-[6px] border border-[rgba(255,255,255,0.06)] bg-[#101e24] px-2 py-[2px] text-[9px] font-['JetBrains_Mono'] text-[#8ea6ad]">Items</span>
+            <span class="rounded-[6px] border border-[rgba(255,255,255,0.06)] bg-[#101e24] px-2 py-[2px] text-[9px] font-['JetBrains_Mono'] text-[#8ea6ad]">Containers</span>
+            <span class="rounded-[6px] border border-[rgba(255,255,255,0.06)] bg-[#101e24] px-2 py-[2px] text-[9px] font-['JetBrains_Mono'] text-[#8ea6ad]">Active</span>
+            <span class="rounded-[6px] border border-[rgba(255,255,255,0.06)] bg-[#101e24] px-2 py-[2px] text-[9px] font-['JetBrains_Mono'] text-[#8ea6ad]">Archived</span>
+          </div>
+          <div class="ml-auto flex overflow-hidden rounded-[8px] border border-[rgba(255,255,255,0.06)] bg-[#101e24]">
+            <span class="px-3 py-[4px] text-[9px] font-['JetBrains_Mono'] text-[#e6f1f4]">Grid</span>
+            <span class="border-l border-[rgba(255,255,255,0.06)] px-3 py-[4px] text-[9px] font-['JetBrains_Mono'] text-[#8ea6ad]">List</span>
+            <span class="border-l border-[rgba(255,255,255,0.06)] px-3 py-[4px] text-[9px] font-['JetBrains_Mono'] text-[#8ea6ad]">Tree</span>
+            <span class="border-l border-[rgba(255,255,255,0.06)] px-3 py-[4px] text-[9px] font-['JetBrains_Mono'] text-[#8ea6ad]">Board</span>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-6 overflow-hidden rounded-[10px] border border-[rgba(255,255,255,0.06)] bg-[#0f1f26]">
+          <div class="border-r border-[rgba(255,255,255,0.06)] p-3">
+            <div class="text-[9px] uppercase tracking-[0.25em] text-[#5d747c] font-['JetBrains_Mono']">Total Components</div>
+            <div class="text-[20px] font-bold leading-none font-['JetBrains_Mono']">24</div>
+            <div class="mt-1 text-[9px] text-[#10b981] font-['JetBrains_Mono']">+3 this month</div>
+          </div>
+          <div class="border-r border-[rgba(255,255,255,0.06)] p-3">
+            <div class="text-[9px] uppercase tracking-[0.25em] text-[#5d747c] font-['JetBrains_Mono']">Active</div>
+            <div class="text-[20px] font-bold leading-none text-[#10b981] font-['JetBrains_Mono']">18</div>
+            <div class="mt-2 h-[4px] rounded-[3px] bg-[#1e2f36]"><div class="h-full rounded-[3px] bg-[#10b981]" style="width:75%"></div></div>
+          </div>
+          <div class="border-r border-[rgba(255,255,255,0.06)] p-3">
+            <div class="text-[9px] uppercase tracking-[0.25em] text-[#5d747c] font-['JetBrains_Mono']">Health Score</div>
+            <div class="text-[20px] font-bold leading-none text-[#22c55e] font-['JetBrains_Mono']">84</div>
+            <div class="mt-2 h-[4px] rounded-[3px] bg-[#1e2f36]"><div class="h-full rounded-[3px] bg-[#22c55e]" style="width:84%"></div></div>
+          </div>
+          <div class="border-r border-[rgba(255,255,255,0.06)] p-3">
+            <div class="text-[9px] uppercase tracking-[0.25em] text-[#5d747c] font-['JetBrains_Mono']">Budget Used</div>
+            <div class="text-[18px] font-bold leading-none text-[#f59e0b] font-['JetBrains_Mono']">$84.2k</div>
+            <div class="mt-2 h-[4px] rounded-[3px] bg-[#1e2f36]"><div class="h-full rounded-[3px] bg-[#f59e0b]" style="width:68%"></div></div>
+          </div>
+          <div class="border-r border-[rgba(255,255,255,0.06)] p-3">
+            <div class="text-[9px] uppercase tracking-[0.25em] text-[#5d747c] font-['JetBrains_Mono']">At Risk</div>
+            <div class="text-[20px] font-bold leading-none text-[#f472b6] font-['JetBrains_Mono']">3</div>
+            <div class="mt-1 text-[9px] text-[#f472b6] font-['JetBrains_Mono']">&#9650; 1 this week</div>
+          </div>
+          <div class="p-3">
+            <div class="text-[9px] uppercase tracking-[0.25em] text-[#5d747c] font-['JetBrains_Mono']">Pending Approval</div>
+            <div class="text-[20px] font-bold leading-none font-['JetBrains_Mono']">5</div>
+          </div>
+        </div>
+
+        <section class="space-y-4">
+          <div id="portfolio-items">
+            <div class="flex items-center gap-2 border-b border-[rgba(255,255,255,0.06)] pb-2">
+              <span class="text-[9px] font-['JetBrains_Mono'] uppercase tracking-[0.3em] text-[#8ea6ad]">Items</span>
+              <span class="rounded-[6px] border border-[rgba(255,255,255,0.06)] bg-[#101e24] px-2 py-[1px] text-[9px] font-['JetBrains_Mono'] text-[#5d747c]">16</span>
+              <div class="h-px flex-1 bg-[rgba(255,255,255,0.06)]"></div>
+              <button class="text-[10px] font-['JetBrains_Mono'] text-[#5d747c]" type="button">&#9662; collapse</button>
+            </div>
+            <div class="mt-3 grid grid-cols-[repeat(auto-fill,minmax(210px,1fr))] gap-3">
+              <div class="rounded-[10px] border border-[rgba(255,255,255,0.06)] bg-[#0f1f26]">
+                <div class="flex items-center gap-2 border-b border-[rgba(255,255,255,0.06)] px-3 py-2">
+                  <span class="h-[6px] w-[6px] rounded-full bg-[#10b981]"></span>
+                  <span class="flex-1 truncate text-[12px] font-semibold font-['JetBrains_Mono']">Alpha Platform</span>
+                  <span class="rounded-[4px] border border-[#10b981] bg-[rgba(16,185,129,0.12)] px-2 py-[1px] text-[8px] font-semibold text-[#10b981]">Active</span>
+                </div>
+                <div class="space-y-3 px-3 py-2">
+                  <p class="text-[10px] text-[#8ea6ad]">Core independent worker OS &mdash; central portfolio driving all downstream systems.</p>
+                  <div class="grid grid-cols-2 gap-2 text-[10px] font-['JetBrains_Mono']">
+                    <div>
+                      <div class="text-[8px] text-[#5d747c]">Health</div>
+                      <div class="text-[11px] font-semibold text-[#22c55e]">87</div>
+                    </div>
+                    <div>
+                      <div class="text-[8px] text-[#5d747c]">Budget</div>
+                      <div class="text-[11px] font-semibold text-[#8ea6ad]">$45k</div>
+                    </div>
+                  </div>
+                  <div class="h-[4px] rounded-[3px] bg-[#1e2f36]"><div class="h-full rounded-[3px] bg-[#10b981]" style="width:72%"></div></div>
+                </div>
+                <div class="flex items-center gap-2 border-t border-[rgba(255,255,255,0.06)] px-3 py-2 text-[8px] font-['JetBrains_Mono']">
+                  <span class="uppercase tracking-[0.2em] text-[#10b981]">Portfolio</span>
+                  <div class="ml-auto flex items-center gap-1">
+                    <span class="rounded-[4px] border border-[rgba(255,255,255,0.06)] bg-[#101e24] px-1.5 py-[1px] text-[#8ea6ad]">platform</span>
+                    <span class="rounded-[4px] border border-[rgba(255,255,255,0.06)] bg-[#101e24] px-1.5 py-[1px] text-[#8ea6ad]">core</span>
+                  </div>
+                  <div class="flex -space-x-1">
+                    <div class="flex h-[18px] w-[18px] items-center justify-center rounded-full border border-[#0f1f26] bg-[#10b981] text-[9px] font-bold text-[#0b1115]">J</div>
+                    <div class="flex h-[18px] w-[18px] items-center justify-center rounded-full border border-[#0f1f26] bg-[#f59e0b] text-[9px] font-bold text-[#0b1115]">M</div>
+                    <div class="flex h-[18px] w-[18px] items-center justify-center rounded-full border border-[#0f1f26] bg-[#8b5cf6] text-[9px] font-bold text-[#0b1115]">P</div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="rounded-[10px] border border-[rgba(255,255,255,0.06)] bg-[#0f1f26]">
+                <div class="flex items-center gap-2 border-b border-[rgba(255,255,255,0.06)] px-3 py-2">
+                  <span class="h-[6px] w-[6px] rounded-full bg-[#f59e0b]"></span>
+                  <span class="flex-1 truncate text-[12px] font-semibold font-['JetBrains_Mono']">Community Growth</span>
+                  <span class="rounded-[4px] border border-[#10b981] bg-[rgba(16,185,129,0.12)] px-2 py-[1px] text-[8px] font-semibold text-[#10b981]">Active</span>
+                </div>
+                <div class="space-y-3 px-3 py-2">
+                  <p class="text-[10px] text-[#8ea6ad]">Program to grow 50k active community members by Q4 2026.</p>
+                  <div class="grid grid-cols-2 gap-2 text-[10px] font-['JetBrains_Mono']">
+                    <div>
+                      <div class="text-[8px] text-[#5d747c]">Alignment</div>
+                      <div class="text-[11px] font-semibold text-[#f59e0b]">76</div>
+                    </div>
+                    <div>
+                      <div class="text-[8px] text-[#5d747c]">Projects</div>
+                      <div class="text-[11px] font-semibold text-[#8ea6ad]">4</div>
+                    </div>
+                  </div>
+                  <div class="h-[4px] rounded-[3px] bg-[#1e2f36]"><div class="h-full rounded-[3px] bg-[#f59e0b]" style="width:60%"></div></div>
+                </div>
+                <div class="flex items-center gap-2 border-t border-[rgba(255,255,255,0.06)] px-3 py-2 text-[8px] font-['JetBrains_Mono']">
+                  <span class="uppercase tracking-[0.2em] text-[#f59e0b]">Program</span>
+                  <div class="ml-auto flex items-center gap-1">
+                    <span class="rounded-[4px] border border-[rgba(255,255,255,0.06)] bg-[#101e24] px-1.5 py-[1px] text-[#8ea6ad]">community</span>
+                  </div>
+                  <div class="flex -space-x-1">
+                    <div class="flex h-[18px] w-[18px] items-center justify-center rounded-full border border-[#0f1f26] bg-[#fb7185] text-[9px] font-bold text-[#0b1115]">A</div>
+                    <div class="flex h-[18px] w-[18px] items-center justify-center rounded-full border border-[#0f1f26] bg-[#3b82f6] text-[9px] font-bold text-[#0b1115]">K</div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="rounded-[10px] border border-[#10b981] bg-[#0f1f26]">
+                <div class="flex items-center gap-2 border-b border-[rgba(255,255,255,0.06)] px-3 py-2">
+                  <span class="h-[6px] w-[6px] rounded-full bg-[#8b5cf6]"></span>
+                  <span class="flex-1 truncate text-[12px] font-semibold font-['JetBrains_Mono']">Brand Identity System</span>
+                  <span class="rounded-[4px] border border-[#10b981] bg-[rgba(16,185,129,0.12)] px-2 py-[1px] text-[8px] font-semibold text-[#10b981]">Active</span>
+                </div>
+                <div class="space-y-3 px-3 py-2">
+                  <p class="text-[10px] text-[#8ea6ad]">v2.0 rebrand: design system, motion language, brand guidelines, partnership deck.</p>
+                  <div class="grid grid-cols-2 gap-2 text-[10px] font-['JetBrains_Mono']">
+                    <div>
+                      <div class="text-[8px] text-[#5d747c]">Completion</div>
+                      <div class="text-[11px] font-semibold text-[#8b5cf6]">68%</div>
+                    </div>
+                    <div>
+                      <div class="text-[8px] text-[#5d747c]">Sprint</div>
+                      <div class="text-[11px] font-semibold text-[#8ea6ad]">3 / 5</div>
+                    </div>
+                  </div>
+                  <div class="h-[4px] rounded-[3px] bg-[#1e2f36]"><div class="h-full rounded-[3px] bg-[#8b5cf6]" style="width:68%"></div></div>
+                </div>
+                <div class="flex items-center gap-2 border-t border-[rgba(255,255,255,0.06)] px-3 py-2 text-[8px] font-['JetBrains_Mono']">
+                  <span class="uppercase tracking-[0.2em] text-[#8b5cf6]">Project &middot; Creative</span>
+                  <div class="ml-auto flex items-center gap-1">
+                    <span class="rounded-[4px] border border-[rgba(255,255,255,0.06)] bg-[#101e24] px-1.5 py-[1px] text-[#8ea6ad]">design</span>
+                    <span class="rounded-[4px] border border-[rgba(255,255,255,0.06)] bg-[#101e24] px-1.5 py-[1px] text-[#8ea6ad]">brand</span>
+                  </div>
+                  <div class="flex -space-x-1">
+                    <div class="flex h-[18px] w-[18px] items-center justify-center rounded-full border border-[#0f1f26] bg-[#f472b6] text-[9px] font-bold text-[#0b1115]">S</div>
+                    <div class="flex h-[18px] w-[18px] items-center justify-center rounded-full border border-[#0f1f26] bg-[#f97316] text-[9px] font-bold text-[#0b1115]">D</div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="rounded-[10px] border border-[rgba(255,255,255,0.06)] bg-[#0f1f26]">
+                <div class="flex items-center gap-2 border-b border-[rgba(255,255,255,0.06)] px-3 py-2">
+                  <span class="h-[6px] w-[6px] rounded-full bg-[#3b82f6]"></span>
+                  <span class="flex-1 truncate text-[12px] font-semibold font-['JetBrains_Mono']">Jordan Chen &middot; Lead</span>
+                  <span class="rounded-[4px] border border-[#10b981] bg-[rgba(16,185,129,0.12)] px-2 py-[1px] text-[8px] font-semibold text-[#10b981]">Active</span>
+                </div>
+                <div class="space-y-3 px-3 py-2">
+                  <p class="text-[10px] text-[#8ea6ad]">Senior product designer. 32hr/wk. Design systems + interaction specialization.</p>
+                  <div class="grid grid-cols-2 gap-2 text-[10px] font-['JetBrains_Mono']">
+                    <div>
+                      <div class="text-[8px] text-[#5d747c]">Utilization</div>
+                      <div class="text-[11px] font-semibold text-[#f472b6]">88%</div>
+                    </div>
+                    <div>
+                      <div class="text-[8px] text-[#5d747c]">Rate</div>
+                      <div class="text-[11px] font-semibold text-[#8ea6ad]">$145/h</div>
+                    </div>
+                  </div>
+                  <div class="h-[4px] rounded-[3px] bg-[#1e2f36]"><div class="h-full rounded-[3px] bg-[#f472b6]" style="width:88%"></div></div>
+                </div>
+                <div class="flex items-center gap-2 border-t border-[rgba(255,255,255,0.06)] px-3 py-2 text-[8px] font-['JetBrains_Mono']">
+                  <span class="uppercase tracking-[0.2em] text-[#3b82f6]">Resource &middot; Contact</span>
+                  <div class="ml-auto flex items-center gap-1">
+                    <span class="rounded-[4px] border border-[rgba(255,255,255,0.06)] bg-[#101e24] px-1.5 py-[1px] text-[#8ea6ad]">design</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="rounded-[10px] border border-[rgba(255,255,255,0.06)] bg-[#0f1f26]">
+                <div class="flex items-center gap-2 border-b border-[rgba(255,255,255,0.06)] px-3 py-2">
+                  <span class="h-[6px] w-[6px] rounded-full bg-[#f97316]"></span>
+                  <span class="flex-1 truncate text-[12px] font-semibold font-['JetBrains_Mono']">Design System Library</span>
+                  <span class="rounded-[4px] border border-[#10b981] bg-[rgba(16,185,129,0.12)] px-2 py-[1px] text-[8px] font-semibold text-[#10b981]">Active</span>
+                </div>
+                <div class="space-y-3 px-3 py-2">
+                  <p class="text-[10px] text-[#8ea6ad]">Reusable UI component system with tokens, patterns, and documentation.</p>
+                  <div class="grid grid-cols-2 gap-2 text-[10px] font-['JetBrains_Mono']">
+                    <div>
+                      <div class="text-[8px] text-[#5d747c]">Valuation</div>
+                      <div class="text-[11px] font-semibold text-[#f97316]">$28k</div>
+                    </div>
+                    <div>
+                      <div class="text-[8px] text-[#5d747c]">Reuse</div>
+                      <div class="text-[11px] font-semibold text-[#8ea6ad]">42&times;</div>
+                    </div>
+                  </div>
+                  <div class="h-[4px] rounded-[3px] bg-[#1e2f36]"><div class="h-full rounded-[3px] bg-[#f97316]" style="width:91%"></div></div>
+                </div>
+                <div class="flex items-center gap-2 border-t border-[rgba(255,255,255,0.06)] px-3 py-2 text-[8px] font-['JetBrains_Mono']">
+                  <span class="uppercase tracking-[0.2em] text-[#f97316]">Asset &middot; Digital</span>
+                  <div class="ml-auto flex items-center gap-1">
+                    <span class="rounded-[4px] border border-[rgba(255,255,255,0.06)] bg-[#101e24] px-1.5 py-[1px] text-[#8ea6ad]">IP</span>
+                    <span class="rounded-[4px] border border-[rgba(255,255,255,0.06)] bg-[#101e24] px-1.5 py-[1px] text-[#8ea6ad]">design</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="rounded-[10px] border border-[rgba(255,255,255,0.06)] bg-[#0f1f26]">
+                <div class="flex items-center gap-2 border-b border-[rgba(255,255,255,0.06)] px-3 py-2">
+                  <span class="h-[6px] w-[6px] rounded-full bg-[#f472b6]"></span>
+                  <span class="flex-1 truncate text-[12px] font-semibold font-['JetBrains_Mono']">Q3 Strategy Deck</span>
+                  <span class="rounded-[4px] border border-[#3b82f6] bg-[rgba(59,130,246,0.12)] px-2 py-[1px] text-[8px] font-semibold text-[#3b82f6]">Complete</span>
+                </div>
+                <div class="space-y-3 px-3 py-2">
+                  <p class="text-[10px] text-[#8ea6ad]">Quarterly strategy presentation covering OKRs and product roadmap for exec review.</p>
+                  <div class="grid grid-cols-2 gap-2 text-[10px] font-['JetBrains_Mono']">
+                    <div>
+                      <div class="text-[8px] text-[#5d747c]">Maturity</div>
+                      <div class="text-[11px] font-semibold text-[#22c55e]">94</div>
+                    </div>
+                    <div>
+                      <div class="text-[8px] text-[#5d747c]">Version</div>
+                      <div class="text-[11px] font-semibold text-[#8ea6ad]">v2.4</div>
+                    </div>
+                  </div>
+                  <div class="h-[4px] rounded-[3px] bg-[#1e2f36]"><div class="h-full rounded-[3px] bg-[#f472b6]" style="width:100%"></div></div>
+                </div>
+                <div class="flex items-center gap-2 border-t border-[rgba(255,255,255,0.06)] px-3 py-2 text-[8px] font-['JetBrains_Mono']">
+                  <span class="uppercase tracking-[0.2em] text-[#f472b6]">Artifact &middot; Doc</span>
+                  <div class="ml-auto flex items-center gap-1">
+                    <span class="rounded-[4px] border border-[rgba(255,255,255,0.06)] bg-[#101e24] px-1.5 py-[1px] text-[#8ea6ad]">strategy</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="rounded-[10px] border border-[rgba(255,255,255,0.06)] bg-[#0f1f26]">
+                <div class="flex items-center gap-2 border-b border-[rgba(255,255,255,0.06)] px-3 py-2">
+                  <span class="h-[6px] w-[6px] rounded-full bg-[#f59e0b]"></span>
+                  <span class="flex-1 truncate text-[12px] font-semibold font-['JetBrains_Mono']">Finance Infrastructure</span>
+                  <span class="rounded-[4px] border border-[#f59e0b] bg-[rgba(245,158,11,0.12)] px-2 py-[1px] text-[8px] font-semibold text-[#f59e0b]">Paused</span>
+                </div>
+                <div class="space-y-3 px-3 py-2">
+                  <p class="text-[10px] text-[#8ea6ad]">Payment rails + banking integration. On hold pending legal review completion.</p>
+                  <div class="grid grid-cols-2 gap-2 text-[10px] font-['JetBrains_Mono']">
+                    <div>
+                      <div class="text-[8px] text-[#5d747c]">Completion</div>
+                      <div class="text-[11px] font-semibold text-[#8ea6ad]">34%</div>
+                    </div>
+                    <div>
+                      <div class="text-[8px] text-[#5d747c]">Budget</div>
+                      <div class="text-[11px] font-semibold text-[#8ea6ad]">$18.3k</div>
+                    </div>
+                  </div>
+                  <div class="h-[4px] rounded-[3px] bg-[#1e2f36]"><div class="h-full rounded-[3px] bg-[#f59e0b]" style="width:34%"></div></div>
+                </div>
+                <div class="flex items-center gap-2 border-t border-[rgba(255,255,255,0.06)] px-3 py-2 text-[8px] font-['JetBrains_Mono']">
+                  <span class="uppercase tracking-[0.2em] text-[#f59e0b]">Project &middot; Technical</span>
+                  <div class="ml-auto flex items-center gap-1">
+                    <span class="rounded-[4px] border border-[rgba(255,255,255,0.06)] bg-[#101e24] px-1.5 py-[1px] text-[#8ea6ad]">finance</span>
+                    <span class="rounded-[4px] border border-[rgba(255,255,255,0.06)] bg-[#101e24] px-1.5 py-[1px] text-[#8ea6ad]">legal</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="rounded-[10px] border border-[rgba(255,255,255,0.06)] bg-[#0f1f26]">
+                <div class="flex items-center gap-2 border-b border-[rgba(255,255,255,0.06)] px-3 py-2">
+                  <span class="h-[6px] w-[6px] rounded-full bg-[#5d747c]"></span>
+                  <span class="flex-1 truncate text-[12px] font-semibold font-['JetBrains_Mono']">Marketplace Engine v2</span>
+                  <span class="rounded-[4px] border border-[rgba(255,255,255,0.16)] bg-[rgba(255,255,255,0.03)] px-2 py-[1px] text-[8px] font-semibold text-[#5d747c]">Draft</span>
+                </div>
+                <div class="space-y-3 px-3 py-2">
+                  <p class="text-[10px] text-[#8ea6ad]">Next-gen marketplace with AI-powered recommendations and exchange protocols.</p>
+                  <div class="grid grid-cols-2 gap-2 text-[10px] font-['JetBrains_Mono']">
+                    <div>
+                      <div class="text-[8px] text-[#5d747c]">Completion</div>
+                      <div class="text-[11px] font-semibold text-[#8ea6ad]">8%</div>
+                    </div>
+                    <div>
+                      <div class="text-[8px] text-[#5d747c]">Budget</div>
+                      <div class="text-[11px] font-semibold text-[#8ea6ad]">$0</div>
+                    </div>
+                  </div>
+                  <div class="h-[4px] rounded-[3px] bg-[#1e2f36]"><div class="h-full rounded-[3px] bg-[#5d747c]" style="width:8%"></div></div>
+                </div>
+                <div class="flex items-center gap-2 border-t border-[rgba(255,255,255,0.06)] px-3 py-2 text-[8px] font-['JetBrains_Mono']">
+                  <span class="uppercase tracking-[0.2em] text-[#8ea6ad]">Project &middot; AI</span>
+                  <div class="ml-auto flex items-center gap-1">
+                    <span class="rounded-[4px] border border-[rgba(255,255,255,0.06)] bg-[#101e24] px-1.5 py-[1px] text-[#8ea6ad]">marketplace</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="rounded-[10px] border border-[rgba(255,255,255,0.06)] bg-[#0f1f26]">
+                <div class="flex items-center gap-2 border-b border-[rgba(255,255,255,0.06)] px-3 py-2">
+                  <span class="h-[6px] w-[6px] rounded-full bg-[#10b981]"></span>
+                  <span class="flex-1 truncate text-[12px] font-semibold font-['JetBrains_Mono']">Mobile App MVP</span>
+                  <span class="rounded-[4px] border border-[#10b981] bg-[rgba(16,185,129,0.12)] px-2 py-[1px] text-[8px] font-semibold text-[#10b981]">Active</span>
+                </div>
+                <div class="space-y-3 px-3 py-2">
+                  <p class="text-[10px] text-[#8ea6ad]">iOS + Android MVP. Auth, dashboard, portfolio view, and basic marketplace flows.</p>
+                  <div class="grid grid-cols-2 gap-2 text-[10px] font-['JetBrains_Mono']">
+                    <div>
+                      <div class="text-[8px] text-[#5d747c]">Completion</div>
+                      <div class="text-[11px] font-semibold text-[#10b981]">52%</div>
+                    </div>
+                    <div>
+                      <div class="text-[8px] text-[#5d747c]">Sprint</div>
+                      <div class="text-[11px] font-semibold text-[#8ea6ad]">4 / 8</div>
+                    </div>
+                  </div>
+                  <div class="h-[4px] rounded-[3px] bg-[#1e2f36]"><div class="h-full rounded-[3px] bg-[#10b981]" style="width:52%"></div></div>
+                </div>
+                <div class="flex items-center gap-2 border-t border-[rgba(255,255,255,0.06)] px-3 py-2 text-[8px] font-['JetBrains_Mono']">
+                  <span class="uppercase tracking-[0.2em] text-[#10b981]">Project &middot; Software</span>
+                  <div class="ml-auto flex items-center gap-1">
+                    <span class="rounded-[4px] border border-[rgba(255,255,255,0.06)] bg-[#101e24] px-1.5 py-[1px] text-[#8ea6ad]">mobile</span>
+                  </div>
+                  <div class="flex -space-x-1">
+                    <div class="flex h-[18px] w-[18px] items-center justify-center rounded-full border border-[#0f1f26] bg-[#3b82f6] text-[9px] font-bold text-[#0b1115]">K</div>
+                    <div class="flex h-[18px] w-[18px] items-center justify-center rounded-full border border-[#0f1f26] bg-[#22c55e] text-[9px] font-bold text-[#0b1115]">L</div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="rounded-[10px] border border-[rgba(255,255,255,0.06)] bg-[#0f1f26]">
+                <div class="flex items-center gap-2 border-b border-[rgba(255,255,255,0.06)] px-3 py-2">
+                  <span class="h-[6px] w-[6px] rounded-full bg-[#22c55e]"></span>
+                  <span class="flex-1 truncate text-[12px] font-semibold font-['JetBrains_Mono']">Worker Portal v1</span>
+                  <span class="rounded-[4px] border border-[#10b981] bg-[rgba(16,185,129,0.12)] px-2 py-[1px] text-[8px] font-semibold text-[#10b981]">Active</span>
+                </div>
+                <div class="space-y-3 px-3 py-2">
+                  <p class="text-[10px] text-[#8ea6ad]">Self-service portal for independent workers. Profile, gigs, earnings, and benefits.</p>
+                  <div class="grid grid-cols-2 gap-2 text-[10px] font-['JetBrains_Mono']">
+                    <div>
+                      <div class="text-[8px] text-[#5d747c]">Completion</div>
+                      <div class="text-[11px] font-semibold text-[#22c55e]">81%</div>
+                    </div>
+                    <div>
+                      <div class="text-[8px] text-[#5d747c]">Users</div>
+                      <div class="text-[11px] font-semibold text-[#8ea6ad]">2.4k</div>
+                    </div>
+                  </div>
+                  <div class="h-[4px] rounded-[3px] bg-[#1e2f36]"><div class="h-full rounded-[3px] bg-[#22c55e]" style="width:81%"></div></div>
+                </div>
+                <div class="flex items-center gap-2 border-t border-[rgba(255,255,255,0.06)] px-3 py-2 text-[8px] font-['JetBrains_Mono']">
+                  <span class="uppercase tracking-[0.2em] text-[#22c55e]">Project &middot; Software</span>
+                  <div class="ml-auto flex items-center gap-1">
+                    <span class="rounded-[4px] border border-[rgba(255,255,255,0.06)] bg-[#101e24] px-1.5 py-[1px] text-[#8ea6ad]">portal</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="rounded-[10px] border border-[rgba(255,255,255,0.06)] bg-[#0f1f26]">
+                <div class="flex items-center gap-2 border-b border-[rgba(255,255,255,0.06)] px-3 py-2">
+                  <span class="h-[6px] w-[6px] rounded-full bg-[#f97316]"></span>
+                  <span class="flex-1 truncate text-[12px] font-semibold font-['JetBrains_Mono']">Bloom&#39;s Building Fund</span>
+                  <span class="rounded-[4px] border border-[#10b981] bg-[rgba(16,185,129,0.12)] px-2 py-[1px] text-[8px] font-semibold text-[#10b981]">Active</span>
+                </div>
+                <div class="space-y-3 px-3 py-2">
+                  <p class="text-[10px] text-[#8ea6ad]">Bloom Building Real estate investment asset</p>
+                  <div class="grid grid-cols-2 gap-2 text-[10px] font-['JetBrains_Mono']">
+                    <div>
+                      <div class="text-[8px] text-[#5d747c]">Valuation</div>
+                      <div class="text-[11px] font-semibold text-[#f97316]">$28k</div>
+                    </div>
+                    <div>
+                      <div class="text-[8px] text-[#5d747c]">Reuse</div>
+                      <div class="text-[11px] font-semibold text-[#8ea6ad]">42&times;</div>
+                    </div>
+                  </div>
+                  <div class="h-[4px] rounded-[3px] bg-[#1e2f36]"><div class="h-full rounded-[3px] bg-[#f97316]" style="width:91%"></div></div>
+                </div>
+                <div class="flex items-center gap-2 border-t border-[rgba(255,255,255,0.06)] px-3 py-2 text-[8px] font-['JetBrains_Mono']">
+                  <span class="uppercase tracking-[0.2em] text-[#f97316]">Asset &middot; Investment</span>
+                  <div class="ml-auto flex items-center gap-1">
+                    <span class="rounded-[4px] border border-[rgba(255,255,255,0.06)] bg-[#101e24] px-1.5 py-[1px] text-[#8ea6ad]">IP</span>
+                    <span class="rounded-[4px] border border-[rgba(255,255,255,0.06)] bg-[#101e24] px-1.5 py-[1px] text-[#8ea6ad]">design</span>
+                  </div>
+                </div>
+              </div>
+
+              <div
+                class="flex flex-col items-center justify-center gap-2 rounded-[10px] border border-dashed border-[rgba(16,185,129,0.35)] bg-[#0f1f26] px-3 py-6 text-center text-[#8ea6ad] hover:border-[#f59e0b] hover:text-[#e6f1f4]"
+              >
+                <div class="text-[26px]">&#8853;</div>
+                <div class="text-[12px] font-semibold">Create New Item</div>
+                <div class="text-[9px] text-[#5d747c]">Templates available</div>
+              </div>
+            </div>
+          </div>
+          <div id="portfolio-containers">
+            <div class="flex items-center gap-2 border-b border-[rgba(255,255,255,0.06)] pb-2">
+              <span class="text-[9px] font-['JetBrains_Mono'] uppercase tracking-[0.3em] text-[#8ea6ad]">Containers</span>
+              <span class="rounded-[6px] border border-[rgba(255,255,255,0.06)] bg-[#101e24] px-2 py-[1px] text-[9px] font-['JetBrains_Mono'] text-[#5d747c]">8</span>
+              <div class="h-px flex-1 bg-[rgba(255,255,255,0.06)]"></div>
+              <button class="text-[10px] font-['JetBrains_Mono'] text-[#5d747c]" type="button">&#9662; collapse</button>
+            </div>
+            <div class="mt-3 grid grid-cols-[repeat(auto-fill,minmax(210px,1fr))] gap-3">
+              <div class="rounded-[10px] border border-[rgba(255,255,255,0.06)] bg-[#0f1f26]">
+                <div class="flex items-center gap-2 border-b border-[rgba(255,255,255,0.06)] px-3 py-2">
+                  <span class="h-[6px] w-[6px] rounded-full bg-[#5ca0bf]"></span>
+                  <span class="flex-1 truncate text-[12px] font-semibold font-['JetBrains_Mono']">Platform Binder</span>
+                  <span class="rounded-[4px] border border-[#10b981] bg-[rgba(16,185,129,0.12)] px-2 py-[1px] text-[8px] font-semibold text-[#10b981]">Active</span>
+                </div>
+                <div class="space-y-3 px-3 py-2">
+                  <p class="text-[10px] text-[#8ea6ad]">Logical collection grouping all platform-related components by domain.</p>
+                  <div class="grid grid-cols-2 gap-2 text-[10px] font-['JetBrains_Mono']">
+                    <div>
+                      <div class="text-[8px] text-[#5d747c]">Coverage</div>
+                      <div class="text-[11px] font-semibold text-[#5ca0bf]">91%</div>
+                    </div>
+                    <div>
+                      <div class="text-[8px] text-[#5d747c]">Items</div>
+                      <div class="text-[11px] font-semibold text-[#8ea6ad]">14</div>
+                    </div>
+                  </div>
+                  <div class="h-[4px] rounded-[3px] bg-[#1e2f36]"><div class="h-full rounded-[3px] bg-[#5ca0bf]" style="width:91%"></div></div>
+                </div>
+                <div class="flex items-center gap-2 border-t border-[rgba(255,255,255,0.06)] px-3 py-2 text-[8px] font-['JetBrains_Mono']">
+                  <span class="uppercase tracking-[0.2em] text-[#5ca0bf]">Binder</span>
+                </div>
+              </div>
+
+              <div class="rounded-[10px] border border-[rgba(255,255,255,0.06)] bg-[#0f1f26]">
+                <div class="flex items-center gap-2 border-b border-[rgba(255,255,255,0.06)] px-3 py-2">
+                  <span class="h-[6px] w-[6px] rounded-full bg-[#bf9a5c]"></span>
+                  <span class="flex-1 truncate text-[12px] font-semibold font-['JetBrains_Mono']">Project Dossier &middot; Brand</span>
+                  <span class="rounded-[4px] border border-[#10b981] bg-[rgba(16,185,129,0.12)] px-2 py-[1px] text-[8px] font-semibold text-[#10b981]">Active</span>
+                </div>
+                <div class="space-y-3 px-3 py-2">
+                  <p class="text-[10px] text-[#8ea6ad]">ItemBook for Brand Identity System &mdash; charter, workspace, catalogue, library, logs.</p>
+                  <div class="grid grid-cols-2 gap-2 text-[10px] font-['JetBrains_Mono']">
+                    <div>
+                      <div class="text-[8px] text-[#5d747c]">Consistency</div>
+                      <div class="text-[11px] font-semibold text-[#bf9a5c]">88</div>
+                    </div>
+                    <div>
+                      <div class="text-[8px] text-[#5d747c]">Sections</div>
+                      <div class="text-[11px] font-semibold text-[#8ea6ad]">9</div>
+                    </div>
+                  </div>
+                </div>
+                <div class="flex items-center gap-2 border-t border-[rgba(255,255,255,0.06)] px-3 py-2 text-[8px] font-['JetBrains_Mono']">
+                  <span class="uppercase tracking-[0.2em] text-[#bf9a5c]">Book &middot; ItemBook</span>
+                  <div class="ml-auto flex items-center gap-1">
+                    <span class="rounded-[4px] border border-[rgba(255,255,255,0.06)] bg-[#101e24] px-1.5 py-[1px] text-[#8ea6ad]">charter</span>
+                    <span class="rounded-[4px] border border-[rgba(255,255,255,0.06)] bg-[#101e24] px-1.5 py-[1px] text-[#8ea6ad]">logs</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="rounded-[10px] border border-[rgba(255,255,255,0.06)] bg-[#0f1f26]">
+                <div class="flex items-center gap-2 border-b border-[rgba(255,255,255,0.06)] px-3 py-2">
+                  <span class="h-[6px] w-[6px] rounded-full bg-[#5cbf7a]"></span>
+                  <span class="flex-1 truncate text-[12px] font-semibold font-['JetBrains_Mono']">Growth Playbook</span>
+                  <span class="rounded-[4px] border border-[#10b981] bg-[rgba(16,185,129,0.12)] px-2 py-[1px] text-[8px] font-semibold text-[#10b981]">Active</span>
+                </div>
+                <div class="space-y-3 px-3 py-2">
+                  <p class="text-[10px] text-[#8ea6ad]">Trigger-based plays for user acquisition, activation, and retention loops.</p>
+                  <div class="grid grid-cols-2 gap-2 text-[10px] font-['JetBrains_Mono']">
+                    <div>
+                      <div class="text-[8px] text-[#5d747c]">Plays</div>
+                      <div class="text-[11px] font-semibold text-[#5cbf7a]">12</div>
+                    </div>
+                    <div>
+                      <div class="text-[8px] text-[#5d747c]">Active</div>
+                      <div class="text-[11px] font-semibold text-[#8ea6ad]">7</div>
+                    </div>
+                  </div>
+                </div>
+                <div class="flex items-center gap-2 border-t border-[rgba(255,255,255,0.06)] px-3 py-2 text-[8px] font-['JetBrains_Mono']">
+                  <span class="uppercase tracking-[0.2em] text-[#5cbf7a]">Book &middot; PlayBook</span>
+                </div>
+              </div>
+
+              <div class="rounded-[10px] border border-[rgba(255,255,255,0.06)] bg-[#0f1f26]">
+                <div class="flex items-center gap-2 border-b border-[rgba(255,255,255,0.06)] px-3 py-2">
+                  <span class="h-[6px] w-[6px] rounded-full bg-[#7abf5c]"></span>
+                  <span class="flex-1 truncate text-[12px] font-semibold font-['JetBrains_Mono']">Project Metadata Record</span>
+                  <span class="rounded-[4px] border border-[#10b981] bg-[rgba(16,185,129,0.12)] px-2 py-[1px] text-[8px] font-semibold text-[#10b981]">Active</span>
+                </div>
+                <div class="space-y-3 px-3 py-2">
+                  <p class="text-[10px] text-[#8ea6ad]">Schematised key-value store for brand identity project properties and config flags.</p>
+                  <div class="grid grid-cols-2 gap-2 text-[10px] font-['JetBrains_Mono']">
+                    <div>
+                      <div class="text-[8px] text-[#5d747c]">Integrity</div>
+                      <div class="text-[11px] font-semibold text-[#7abf5c]">97</div>
+                    </div>
+                    <div>
+                      <div class="text-[8px] text-[#5d747c]">Entries</div>
+                      <div class="text-[11px] font-semibold text-[#8ea6ad]">48</div>
+                    </div>
+                  </div>
+                </div>
+                <div class="flex items-center gap-2 border-t border-[rgba(255,255,255,0.06)] px-3 py-2 text-[8px] font-['JetBrains_Mono']">
+                  <span class="uppercase tracking-[0.2em] text-[#7abf5c]">Record</span>
+                  <div class="ml-auto flex items-center gap-1">
+                    <span class="rounded-[4px] border border-[rgba(255,255,255,0.06)] bg-[#101e24] px-1.5 py-[1px] text-[#8ea6ad]">schema</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="rounded-[10px] border border-[rgba(255,255,255,0.06)] bg-[#0f1f26]">
+                <div class="flex items-center gap-2 border-b border-[rgba(255,255,255,0.06)] px-3 py-2">
+                  <span class="h-[6px] w-[6px] rounded-full bg-[#8b5cf6]"></span>
+                  <span class="flex-1 truncate text-[12px] font-semibold font-['JetBrains_Mono']">Design Assets Folder</span>
+                  <span class="rounded-[4px] border border-[#10b981] bg-[rgba(16,185,129,0.12)] px-2 py-[1px] text-[8px] font-semibold text-[#10b981]">Active</span>
+                </div>
+                <div class="space-y-3 px-3 py-2">
+                  <p class="text-[10px] text-[#8ea6ad]">File-system hierarchy: brand files, exported assets, reference imagery, exports.</p>
+                  <div class="grid grid-cols-2 gap-2 text-[10px] font-['JetBrains_Mono']">
+                    <div>
+                      <div class="text-[8px] text-[#5d747c]">Organisation</div>
+                      <div class="text-[11px] font-semibold text-[#8b5cf6]">82</div>
+                    </div>
+                    <div>
+                      <div class="text-[8px] text-[#5d747c]">Files</div>
+                      <div class="text-[11px] font-semibold text-[#8ea6ad]">124</div>
+                    </div>
+                  </div>
+                </div>
+                <div class="flex items-center gap-2 border-t border-[rgba(255,255,255,0.06)] px-3 py-2 text-[8px] font-['JetBrains_Mono']">
+                  <span class="uppercase tracking-[0.2em] text-[#8b5cf6]">Folder</span>
+                </div>
+              </div>
+
+              <div class="rounded-[10px] border border-[rgba(255,255,255,0.06)] bg-[#0f1f26]">
+                <div class="flex items-center gap-2 border-b border-[rgba(255,255,255,0.06)] px-3 py-2">
+                  <span class="h-[6px] w-[6px] rounded-full bg-[#f59e0b]"></span>
+                  <span class="flex-1 truncate text-[12px] font-semibold font-['JetBrains_Mono']">Contact Book &middot; Partners</span>
+                  <span class="rounded-[4px] border border-[#10b981] bg-[rgba(16,185,129,0.12)] px-2 py-[1px] text-[8px] font-semibold text-[#10b981]">Active</span>
+                </div>
+                <div class="space-y-3 px-3 py-2">
+                  <p class="text-[10px] text-[#8ea6ad]">Strategic partner contacts, investors, and agency relationships.</p>
+                  <div class="grid grid-cols-2 gap-2 text-[10px] font-['JetBrains_Mono']">
+                    <div>
+                      <div class="text-[8px] text-[#5d747c]">Contacts</div>
+                      <div class="text-[11px] font-semibold text-[#f59e0b]">38</div>
+                    </div>
+                    <div>
+                      <div class="text-[8px] text-[#5d747c]">Groups</div>
+                      <div class="text-[11px] font-semibold text-[#8ea6ad]">5</div>
+                    </div>
+                  </div>
+                </div>
+                <div class="flex items-center gap-2 border-t border-[rgba(255,255,255,0.06)] px-3 py-2 text-[8px] font-['JetBrains_Mono']">
+                  <span class="uppercase tracking-[0.2em] text-[#f59e0b]">Book &middot; ContactBook</span>
+                </div>
+              </div>
+
+              <div
+                class="flex flex-col items-center justify-center gap-2 rounded-[10px] border border-dashed border-[rgba(16,185,129,0.35)] bg-[#0f1f26] px-3 py-6 text-center text-[#8ea6ad] hover:border-[#f59e0b] hover:text-[#e6f1f4]"
+              >
+                <div class="text-[26px]">&#8853;</div>
+                <div class="text-[12px] font-semibold">Create New Container</div>
+                <div class="text-[9px] text-[#5d747c]">Templates available</div>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+      <aside id="portfolio-detail" class="hidden h-fit rounded-[12px] border border-[rgba(255,255,255,0.06)] bg-[#0f1f26] xl:block">
+        <div class="border-b border-[rgba(255,255,255,0.06)] px-4 py-3">
+          <div class="flex items-center gap-2">
+            <span class="h-[8px] w-[8px] rounded-full bg-[#8b5cf6]"></span>
+            <span class="text-[13px] font-semibold font-['JetBrains_Mono']">Brand Identity System</span>
+          </div>
+          <div class="mt-1 text-[10px] text-[#5d747c] font-['JetBrains_Mono']">Project &middot; v1.8.3 &middot; Active &middot; ID #c8a2f4</div>
+        </div>
+        <div class="flex border-b border-[rgba(255,255,255,0.06)] px-4">
+          <button class="border-b-2 border-[#10b981] px-2 py-2 text-[10px] font-['JetBrains_Mono'] text-[#e6f1f4]" type="button">Overview</button>
+          <button class="px-2 py-2 text-[10px] font-['JetBrains_Mono'] text-[#5d747c]" type="button">Analytics</button>
+          <button class="px-2 py-2 text-[10px] font-['JetBrains_Mono'] text-[#5d747c]" type="button">Users</button>
+          <button class="px-2 py-2 text-[10px] font-['JetBrains_Mono'] text-[#5d747c]" type="button">Actions</button>
+        </div>
+        <div class="space-y-4 px-4 py-3 text-[10px]">
+          <div>
+            <div class="text-[9px] uppercase tracking-[0.3em] text-[#5d747c] font-['JetBrains_Mono']">Status</div>
+            <div class="mt-2 space-y-1">
+              <div class="flex items-center justify-between border-b border-[rgba(255,255,255,0.06)] py-1">
+                <span class="text-[#8ea6ad] font-['JetBrains_Mono']">Status</span>
+                <span class="text-[#22c55e] font-['JetBrains_Mono']">Active</span>
+              </div>
+              <div class="flex items-center justify-between border-b border-[rgba(255,255,255,0.06)] py-1">
+                <span class="text-[#8ea6ad] font-['JetBrains_Mono']">State</span>
+                <span class="text-[#e6f1f4] font-['JetBrains_Mono']">Running</span>
+              </div>
+              <div class="flex items-center justify-between border-b border-[rgba(255,255,255,0.06)] py-1">
+                <span class="text-[#8ea6ad] font-['JetBrains_Mono']">Completion</span>
+                <span class="text-[#e6f1f4] font-['JetBrains_Mono']">68%</span>
+              </div>
+              <div class="flex items-center justify-between border-b border-[rgba(255,255,255,0.06)] py-1">
+                <span class="text-[#8ea6ad] font-['JetBrains_Mono']">Budget</span>
+                <span class="text-[#e6f1f4] font-['JetBrains_Mono']">$18k / $28k</span>
+              </div>
+              <div class="flex items-center justify-between border-b border-[rgba(255,255,255,0.06)] py-1">
+                <span class="text-[#8ea6ad] font-['JetBrains_Mono']">Sprint</span>
+                <span class="text-[#e6f1f4] font-['JetBrains_Mono']">3 of 5</span>
+              </div>
+              <div class="flex items-center justify-between py-1">
+                <span class="text-[#8ea6ad] font-['JetBrains_Mono']">Health</span>
+                <span class="text-[#f59e0b] font-['JetBrains_Mono']">74</span>
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <div class="text-[9px] uppercase tracking-[0.3em] text-[#5d747c] font-['JetBrains_Mono']">Progress</div>
+            <div class="mt-2 space-y-2">
+              <div class="flex items-center gap-2">
+                <span class="w-[90px] truncate text-[#8ea6ad] font-['JetBrains_Mono']">Brand Guidelines</span>
+                <div class="h-[4px] flex-1 rounded-[3px] bg-[#1e2f36]"><div class="h-full rounded-[3px] bg-[#10b981]" style="width:90%"></div></div>
+                <span class="w-[32px] text-right text-[#10b981] font-['JetBrains_Mono']">90%</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <span class="w-[90px] truncate text-[#8ea6ad] font-['JetBrains_Mono']">Design System</span>
+                <div class="h-[4px] flex-1 rounded-[3px] bg-[#1e2f36]"><div class="h-full rounded-[3px] bg-[#8b5cf6]" style="width:72%"></div></div>
+                <span class="w-[32px] text-right text-[#8b5cf6] font-['JetBrains_Mono']">72%</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <span class="w-[90px] truncate text-[#8ea6ad] font-['JetBrains_Mono']">Motion Language</span>
+                <div class="h-[4px] flex-1 rounded-[3px] bg-[#1e2f36]"><div class="h-full rounded-[3px] bg-[#f472b6]" style="width:45%"></div></div>
+                <span class="w-[32px] text-right text-[#f472b6] font-['JetBrains_Mono']">45%</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <span class="w-[90px] truncate text-[#8ea6ad] font-['JetBrains_Mono']">Documentation</span>
+                <div class="h-[4px] flex-1 rounded-[3px] bg-[#1e2f36]"><div class="h-full rounded-[3px] bg-[#f59e0b]" style="width:58%"></div></div>
+                <span class="w-[32px] text-right text-[#f59e0b] font-['JetBrains_Mono']">58%</span>
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <div class="text-[9px] uppercase tracking-[0.3em] text-[#5d747c] font-['JetBrains_Mono']">Risks</div>
+            <div class="mt-2 space-y-2">
+              <div class="flex items-center gap-2 border-b border-[rgba(255,255,255,0.06)] pb-2">
+                <span class="rounded-[4px] bg-[rgba(244,114,182,0.15)] px-2 py-[1px] text-[8px] font-semibold text-[#f472b6]">HIGH</span>
+                <span class="flex-1 text-[#8ea6ad]">Timeline slip &mdash; motion sprint</span>
+                <span class="text-[#f59e0b]">Monitoring</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <span class="rounded-[4px] bg-[rgba(245,158,11,0.15)] px-2 py-[1px] text-[8px] font-semibold text-[#f59e0b]">MED</span>
+                <span class="flex-1 text-[#8ea6ad]">Font license dependency</span>
+                <span class="text-[#8ea6ad]">Open</span>
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <div class="text-[9px] uppercase tracking-[0.3em] text-[#5d747c] font-['JetBrains_Mono']">Tags</div>
+            <div class="mt-2 flex flex-wrap gap-1">
+              <span class="rounded-[6px] border border-[rgba(255,255,255,0.06)] bg-[#101e24] px-2 py-[2px] text-[9px] text-[#8ea6ad]">design</span>
+              <span class="rounded-[6px] border border-[rgba(255,255,255,0.06)] bg-[#101e24] px-2 py-[2px] text-[9px] text-[#8ea6ad]">brand</span>
+              <span class="rounded-[6px] border border-[rgba(255,255,255,0.06)] bg-[#101e24] px-2 py-[2px] text-[9px] text-[#8ea6ad]">creative</span>
+              <span class="rounded-[6px] border border-[rgba(255,255,255,0.06)] bg-[#101e24] px-2 py-[2px] text-[9px] text-[#8ea6ad]">v2</span>
+              <span class="rounded-[6px] border border-[rgba(255,255,255,0.06)] bg-[#101e24] px-2 py-[2px] text-[9px] text-[#8ea6ad]">#rebrand</span>
+            </div>
+          </div>
+
+          <div class="space-y-2">
+            <button
+              class="w-full rounded-[8px] border border-[rgba(16,185,129,0.35)] bg-[rgba(16,185,129,0.12)] px-3 py-2 text-left text-[10px] font-semibold text-[#10b981]"
+              type="button"
+            >
+              Open Full Detail &rarr;
+            </button>
+            <button
+              class="w-full rounded-[8px] border border-[rgba(255,255,255,0.06)] bg-[#101e24] px-3 py-2 text-left text-[10px] text-[#8ea6ad]"
+              type="button"
+            >
+              Edit Component
+            </button>
+            <button
+              class="w-full rounded-[8px] border border-[rgba(255,255,255,0.06)] bg-[#101e24] px-3 py-2 text-left text-[10px] text-[#8ea6ad]"
+              type="button"
+            >
+              Open ItemBook
+            </button>
+            <button
+              class="w-full rounded-[8px] border border-[rgba(255,255,255,0.06)] bg-[#101e24] px-3 py-2 text-left text-[10px] text-[#8ea6ad]"
+              type="button"
+            >
+              Share / Publish
+            </button>
+          </div>
+        </div>
+      </aside>
+    </div>
+  </main>
+</div>

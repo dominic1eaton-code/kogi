@@ -899,6 +899,16 @@ work management system
 
 ---
 
+identity management system
+
+- users management system
+- sessions management system
+- profiles management system
+- personas, roles management system
+- contact management system
+- access control system
+
+
 profile management system
 
 users can have different types of profiles, that have different accounts associated with them:
@@ -1321,7 +1331,13 @@ umeOS the programmable business vehicle
 read the portfolio-grid html file and create html screen pages for adding, creating, editing, updating, removing, archiving: portfolio components, portfolio items, portfolio containers, projects, programs, artifacts, assets, resources, solutions, investments, land, labor, skills, knowledge, deals, real estate, funds, campaigns, etc...
 
 
-
 C:\dev\ws\kogi_dev\kogi-docs\screen-pages\01-portfolio-grid.v2.html   read the portfolio-grid html file and create html screen pages for adding, creating, editing, updating, removing, archiving: portfolio components, portfolio items, portfolio containers, projects, programs, artifacts, assets, resources, solutions, investments, land, labor, skills, knowledge, deals, real estate, funds, campaigns, etc...
 
+update C:\dev\ws\kogi_dev\kogi-client\web_client_dev\kogi-ui\src\app\login and all related/connected files so that it matches/implements C:\dev\ws\kogi_dev\kogi-client\pages\login.html, using angular and tailwind
+
+---
+
+- makerspace|creator space, recphilly+wework+regus for creatives, eventually generalized to coworking spaces for any type of independent worker+organization
+    - tailored spaces|buildings for different types of independent workers, professionals, entreprenuers, freelancers, creatives, hobbyists, enthusiasts
+    - investment funds for organization, of different classes|categories|types
 

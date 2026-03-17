@@ -1,0 +1,15 @@
+.progress-bar {
+  animation: progress 2.4s ease-in-out infinite;
+}
+
+@keyframes progress {
+  0% {
+    transform: translateX(-40%);
+  }
+  50% {
+    transform: translateX(60%);
+  }
+  100% {
+    transform: translateX(-40%);
+  }
+}
