@@ -140,6 +140,30 @@
   <main class="ml-0 px-5 pb-10 pt-[76px] lg:ml-[220px]">
     <div class="mb-4 h-[2px] w-full rounded bg-gradient-to-r from-[#3b82f6] via-[#a855f7] via-[#ec4899] via-[#f97316] via-[#eab308] via-[#22c55e] to-[#06b6d4]"></div>
 
+    <div
+      class="mb-3 flex items-center gap-1 overflow-x-auto rounded-[10px] border border-[rgba(255,255,255,0.06)] bg-[#0f1f26] px-2 py-2 text-[10px] font-['JetBrains_Mono']"
+    >
+      <button
+        class="whitespace-nowrap border-b-2 px-3 py-1"
+        type="button"
+        [ngClass]="activeWalletView === 'dashboard' ? activeTopTabClass : inactiveTopTabClass"
+        (click)="setActiveWalletView('dashboard')"
+      >
+        DASHBOARD
+      </button>
+      <button
+        class="whitespace-nowrap border-b-2 px-3 py-1"
+        type="button"
+        [ngClass]="activeWalletView === 'wallets' ? activeTopTabClass : inactiveTopTabClass"
+        (click)="setActiveWalletView('wallets')"
+      >
+        WALLETS
+      </button>
+    </div>
+
+    <app-wallet-dashboard *ngIf="activeWalletView === 'dashboard'"></app-wallet-dashboard>
+
+    <ng-container *ngIf="activeWalletView === 'wallets'">
     <section
       class="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-[12px] border border-[rgba(255,255,255,0.06)] bg-[#0f1f26] p-4"
     >
@@ -155,8 +179,6 @@
             <span>Dashboard</span>
             <span>&middot;</span>
             <span class="text-[#10b981]">Wallets</span>
-            <span>&middot;</span>
-            <span>Accounts</span>
             <span>&middot;</span>
             Portable Benefits
             <span>&middot;</span>
@@ -679,5 +701,6 @@
         </div>
       </aside>
     </div>
+    </ng-container>
   </main>
 </div>
