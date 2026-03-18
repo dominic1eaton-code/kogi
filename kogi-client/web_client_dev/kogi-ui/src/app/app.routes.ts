@@ -14,8 +14,11 @@ import { WalletsOverviewComponent } from './wallet/wallet-wallets/wallets-overvi
 import { WalletsTaxesComponent } from './wallet/wallet-wallets/wallets-taxes/wallets-taxes.component';
 import { SpacesComponent } from './spaces/spaces.component';
 import { SpacesDashboardComponent } from './spaces/spaces-dashboard/spaces-dashboard.component';
+import { SpacesEventsComponent } from './spaces/spaces-events/spaces-events.component';
 import { SpacesSpacesComponent } from './spaces/spaces-spaces/spaces-spaces.component';
 import { SpacesRoomsComponent } from './spaces/spaces-rooms/spaces-rooms.component';
+import { SpacesFeedComponent } from './spaces/spaces-feed/spaces-feed.component';
+import { SpacesTimelineComponent } from './spaces/spaces-timeline/spaces-timeline.component';
 import { TestComponent } from './test/test';
 
 export const routes: Routes = [
@@ -57,7 +60,10 @@ export const routes: Routes = [
             {path: 'overview', redirectTo: 'dashboard', pathMatch: 'full'},
             {path: 'dashboard', component: SpacesDashboardComponent, title: 'Spaces Dashboard'},
             {path: 'spaces', component: SpacesSpacesComponent, title: 'Spaces'},
-            {path: 'rooms', component: SpacesRoomsComponent, title: 'Rooms'}
+            {path: 'rooms', component: SpacesRoomsComponent, title: 'Rooms'},
+            {path: 'feed', component: SpacesFeedComponent, title: 'Spaces Feed'},
+            {path: 'timeline', component: SpacesTimelineComponent, title: 'Spaces Timeline'},
+            {path: 'events', component: SpacesEventsComponent, title: 'Spaces Events'}
         ]
     },
     {path: 'test', component: TestComponent, title: "Testing Page"},

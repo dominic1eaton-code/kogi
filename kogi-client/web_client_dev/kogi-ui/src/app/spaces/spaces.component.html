@@ -190,11 +190,32 @@
             <span>&middot;</span>
             <span class="cursor-pointer transition-colors hover:text-[#e6f1f4]">Channels</span>
             <span>&middot;</span>
-            <span class="cursor-pointer transition-colors hover:text-[#e6f1f4]">Feed</span>
+            <a
+              routerLink="/spaces/feed"
+              routerLinkActive="text-[#10b981]"
+              [routerLinkActiveOptions]="{ exact: true }"
+              class="cursor-pointer transition-colors hover:text-[#e6f1f4]"
+            >
+              Feed
+            </a>
             <span>&middot;</span>
-            <span class="cursor-pointer transition-colors hover:text-[#e6f1f4]">Timeline</span>
+            <a
+              routerLink="/spaces/timeline"
+              routerLinkActive="text-[#10b981]"
+              [routerLinkActiveOptions]="{ exact: true }"
+              class="cursor-pointer transition-colors hover:text-[#e6f1f4]"
+            >
+              Timeline
+            </a>
             <span>&middot;</span>
-            <span class="cursor-pointer transition-colors hover:text-[#e6f1f4]">Events</span>
+            <a
+              routerLink="/spaces/events"
+              routerLinkActive="text-[#10b981]"
+              [routerLinkActiveOptions]="{ exact: true }"
+              class="cursor-pointer transition-colors hover:text-[#e6f1f4]"
+            >
+              Events
+            </a>
           </div>
         </div>
       </div>
