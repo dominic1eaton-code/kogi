@@ -1,0 +1,62 @@
+<section class="mb-4 flex flex-wrap items-center gap-3 rounded-[12px] border border-[rgba(255,255,255,0.06)] bg-[#0f1f26] p-4">
+  <div>
+    <div class="text-[10px] uppercase tracking-[0.3em] text-[#5d747c] font-['JetBrains_Mono']">Community / Network</div>
+    <div class="text-[11px] text-[#8ea6ad]">
+      Linktrees, linkforests, and the kogi-net substrate connecting your contacts.
+    </div>
+  </div>
+  <div class="ml-auto flex flex-wrap items-center gap-2">
+    <button
+      class="rounded-[8px] border border-[rgba(59,130,246,0.35)] bg-[rgba(59,130,246,0.12)] px-3 py-[6px] text-[10px] font-['JetBrains_Mono'] text-[#60a5fa]"
+      type="button"
+    >
+      Import Contacts
+    </button>
+    <button
+      class="rounded-[8px] border border-[rgba(255,255,255,0.08)] bg-[#101e24] px-3 py-[6px] text-[10px] font-['JetBrains_Mono'] text-[#8ea6ad]"
+      type="button"
+    >
+      New Linktree
+    </button>
+    <button
+      class="rounded-[8px] bg-gradient-to-br from-[#10b981] to-[#059669] px-3 py-[6px] text-[10px] font-['JetBrains_Mono'] font-semibold text-white"
+      type="button"
+    >
+      Export Graph
+    </button>
+  </div>
+</section>
+
+<section
+  class="mb-4 flex flex-wrap items-center gap-2 rounded-[12px] border border-[rgba(255,255,255,0.06)] bg-[#101e24] px-3 py-2 text-[10px] font-['JetBrains_Mono']"
+>
+  <a
+    routerLink="/spaces/network/overview"
+    routerLinkActive="border-[rgba(16,185,129,0.35)] bg-[rgba(16,185,129,0.12)] text-[#10b981]"
+    [routerLinkActiveOptions]="{ exact: true }"
+    class="rounded-[999px] border border-[rgba(255,255,255,0.08)] px-3 py-[4px] text-[#8ea6ad] transition-colors hover:text-[#e6f1f4]"
+  >
+    Linknetwork Overview
+  </a>
+  <a
+    routerLink="/spaces/network/linktree"
+    routerLinkActive="border-[rgba(16,185,129,0.35)] bg-[rgba(16,185,129,0.12)] text-[#10b981]"
+    [routerLinkActiveOptions]="{ exact: false }"
+    class="rounded-[999px] border border-[rgba(255,255,255,0.08)] px-3 py-[4px] text-[#8ea6ad] transition-colors hover:text-[#e6f1f4]"
+  >
+    Linktree
+  </a>
+  <a
+    routerLink="/spaces/network/linkforest"
+    routerLinkActive="border-[rgba(16,185,129,0.35)] bg-[rgba(16,185,129,0.12)] text-[#10b981]"
+    [routerLinkActiveOptions]="{ exact: true }"
+    class="rounded-[999px] border border-[rgba(255,255,255,0.08)] px-3 py-[4px] text-[#8ea6ad] transition-colors hover:text-[#e6f1f4]"
+  >
+    Linkforest
+  </a>
+  <span class="ml-auto text-[9px] text-[#5d747c]">
+    Linkforest = connected collection of linktrees on the kogi-net substrate.
+  </span>
+</section>
+
+<router-outlet></router-outlet>

@@ -20,6 +20,11 @@ import { SpacesSpacesComponent } from './spaces/spaces-spaces/spaces-spaces.comp
 import { SpacesRoomsComponent } from './spaces/spaces-rooms/spaces-rooms.component';
 import { SpacesFeedComponent } from './spaces/spaces-feed/spaces-feed.component';
 import { SpacesTimelineComponent } from './spaces/spaces-timeline/spaces-timeline.component';
+import { SpacesNetworkComponent } from './spaces/spaces-network/spaces-network.component';
+import { SpacesNetworkLinknetComponent } from './spaces/spaces-network/network-linknet/network-linknet.component';
+import { SpacesNetworkLinktreeComponent } from './spaces/spaces-network/network-linktree/network-linktree.component';
+import { SpacesNetworkLinktreeEditorComponent } from './spaces/spaces-network/network-linktree-editor/network-linktree-editor.component';
+import { SpacesNetworkLinkforestComponent } from './spaces/spaces-network/network-linkforest/network-linkforest.component';
 import { MarketplaceComponent } from './marketplace/marketplace.component';
 import { HubComponent } from './hub/hub.component';
 import { AssistantComponent } from './assistant/assistant.component';
@@ -71,6 +76,18 @@ export const routes: Routes = [
             {path: 'feed', component: SpacesFeedComponent, title: 'Spaces Feed'},
             {path: 'timeline', component: SpacesTimelineComponent, title: 'Spaces Timeline'},
             {path: 'events', component: SpacesEventsComponent, title: 'Spaces Events'},
+            {
+                path: 'network',
+                component: SpacesNetworkComponent,
+                children: [
+                    {path: '', redirectTo: 'overview', pathMatch: 'full'},
+                    {path: 'overview', component: SpacesNetworkLinknetComponent, title: 'Linknetwork Overview'},
+                    {path: 'linktree/editor', component: SpacesNetworkLinktreeEditorComponent, title: 'Linktree Editor'},
+                    {path: 'linktree', component: SpacesNetworkLinktreeComponent, title: 'Linktree'},
+                    {path: 'linkforest', component: SpacesNetworkLinkforestComponent, title: 'Linkforest'},
+                    {path: '**', redirectTo: 'overview'}
+                ]
+            },
             {path: 'channels', component: SpacesChannelsComponent, title: 'Spaces Channels'}
         ]
     },

@@ -1,0 +1,309 @@
+<section class="mb-4 flex flex-wrap items-center gap-3 rounded-[12px] border border-[rgba(255,255,255,0.06)] bg-[#0f1f26] p-4">
+  <div>
+    <div class="text-[10px] uppercase tracking-[0.3em] text-[#5d747c] font-['JetBrains_Mono']">kogi-net / Linkforest</div>
+    <div class="text-[11px] text-[#8ea6ad]">Explore the connected forest of linktrees across your networks.</div>
+  </div>
+  <div class="ml-auto flex flex-wrap items-center gap-2 text-[10px] font-['JetBrains_Mono']">
+    <span class="text-[#5d747c]">Scope</span>
+    <select class="rounded-[6px] border border-[rgba(255,255,255,0.08)] bg-[#101e24] px-2 py-[6px] text-[#8ea6ad]">
+      <option>My Network (2&deg;)</option>
+      <option>Mesh Studio Linknet</option>
+      <option>Open Source Collective</option>
+      <option>Global kogi-net</option>
+    </select>
+    <button class="rounded-[8px] border border-[rgba(255,255,255,0.08)] bg-[#101e24] px-3 py-[6px] text-[#8ea6ad]" type="button">
+      Find Path
+    </button>
+    <button class="rounded-[8px] border border-[rgba(16,185,129,0.35)] bg-[rgba(16,185,129,0.12)] px-3 py-[6px] text-[#10b981]" type="button">
+      Export Forest
+    </button>
+  </div>
+</section>
+
+<section class="mb-4 grid grid-cols-2 gap-3 text-[10px] md:grid-cols-3 xl:grid-cols-6">
+  <div class="rounded-[10px] border border-[rgba(255,255,255,0.06)] bg-[#0f1f26] p-3">
+    <div class="text-[15px] font-semibold text-[#10b981]">1,848</div>
+    <div class="text-[9px] uppercase tracking-[0.3em] text-[#5d747c] font-['JetBrains_Mono']">Nodes</div>
+  </div>
+  <div class="rounded-[10px] border border-[rgba(255,255,255,0.06)] bg-[#0f1f26] p-3">
+    <div class="text-[15px] font-semibold text-[#60a5fa]">284</div>
+    <div class="text-[9px] uppercase tracking-[0.3em] text-[#5d747c] font-['JetBrains_Mono']">Direct</div>
+  </div>
+  <div class="rounded-[10px] border border-[rgba(255,255,255,0.06)] bg-[#0f1f26] p-3">
+    <div class="text-[15px] font-semibold text-[#f59e0b]">142</div>
+    <div class="text-[9px] uppercase tracking-[0.3em] text-[#5d747c] font-['JetBrains_Mono']">2nd Degree</div>
+  </div>
+  <div class="rounded-[10px] border border-[rgba(255,255,255,0.06)] bg-[#0f1f26] p-3">
+    <div class="text-[15px] font-semibold text-[#22c55e]">28</div>
+    <div class="text-[9px] uppercase tracking-[0.3em] text-[#5d747c] font-['JetBrains_Mono']">Mutuals</div>
+  </div>
+  <div class="rounded-[10px] border border-[rgba(255,255,255,0.06)] bg-[#0f1f26] p-3">
+    <div class="text-[15px] font-semibold text-[#a855f7]">7</div>
+    <div class="text-[9px] uppercase tracking-[0.3em] text-[#5d747c] font-['JetBrains_Mono']">Linknets</div>
+  </div>
+  <div class="rounded-[10px] border border-[rgba(255,255,255,0.06)] bg-[#0f1f26] p-3">
+    <div class="text-[15px] font-semibold text-[#e6f1f4]">1.9</div>
+    <div class="text-[9px] uppercase tracking-[0.3em] text-[#5d747c] font-['JetBrains_Mono']">Avg Degree</div>
+  </div>
+</section>
+
+<section class="grid grid-cols-1 gap-4 xl:grid-cols-[260px_minmax(0,1fr)_280px]">
+  <aside class="overflow-hidden rounded-[12px] border border-[rgba(255,255,255,0.06)] bg-[#0f1f26]">
+    <div class="border-b border-[rgba(255,255,255,0.06)] p-4">
+      <div class="text-[9px] uppercase tracking-[0.3em] text-[#5d747c] font-['JetBrains_Mono']">Search Linkforest</div>
+      <div class="mt-3">
+        <input
+          class="w-full rounded-[8px] border border-[rgba(255,255,255,0.08)] bg-[#101e24] px-3 py-[7px] text-[10px] text-[#8ea6ad] placeholder:text-[#5d747c]"
+          placeholder="Name, skill, handle, org"
+          type="text"
+        />
+      </div>
+    </div>
+
+    <div class="border-b border-[rgba(255,255,255,0.06)] p-4">
+      <div class="text-[9px] uppercase tracking-[0.3em] text-[#5d747c] font-['JetBrains_Mono']">Persona Type</div>
+      <div class="mt-3 flex flex-wrap gap-2 text-[9px]">
+        <span class="rounded-[6px] border border-[rgba(16,185,129,0.35)] bg-[rgba(16,185,129,0.12)] px-2 py-[2px] text-[#10b981]">Developer</span>
+        <span class="rounded-[6px] border border-[rgba(16,185,129,0.35)] bg-[rgba(16,185,129,0.12)] px-2 py-[2px] text-[#10b981]">Technologist</span>
+        <span class="rounded-[6px] border border-[rgba(255,255,255,0.08)] bg-[#101e24] px-2 py-[2px] text-[#5d747c]">Creative</span>
+        <span class="rounded-[6px] border border-[rgba(255,255,255,0.08)] bg-[#101e24] px-2 py-[2px] text-[#5d747c]">Investor</span>
+        <span class="rounded-[6px] border border-[rgba(255,255,255,0.08)] bg-[#101e24] px-2 py-[2px] text-[#5d747c]">Consultant</span>
+      </div>
+    </div>
+
+    <div class="border-b border-[rgba(255,255,255,0.06)] p-4">
+      <div class="text-[9px] uppercase tracking-[0.3em] text-[#5d747c] font-['JetBrains_Mono']">Connection Tier</div>
+      <div class="mt-3 flex flex-wrap gap-2 text-[9px]">
+        <span class="rounded-[6px] border border-[rgba(16,185,129,0.35)] bg-[rgba(16,185,129,0.12)] px-2 py-[2px] text-[#10b981]">Direct (1&deg;)</span>
+        <span class="rounded-[6px] border border-[rgba(16,185,129,0.35)] bg-[rgba(16,185,129,0.12)] px-2 py-[2px] text-[#10b981]">2&deg; Connections</span>
+        <span class="rounded-[6px] border border-[rgba(255,255,255,0.08)] bg-[#101e24] px-2 py-[2px] text-[#5d747c]">3&deg; Connections</span>
+        <span class="rounded-[6px] border border-[rgba(255,255,255,0.08)] bg-[#101e24] px-2 py-[2px] text-[#5d747c]">Same Org</span>
+      </div>
+    </div>
+
+    <div class="border-b border-[rgba(255,255,255,0.06)] p-4">
+      <div class="text-[9px] uppercase tracking-[0.3em] text-[#5d747c] font-['JetBrains_Mono']">Availability</div>
+      <div class="mt-3 flex flex-wrap gap-2 text-[9px]">
+        <span class="rounded-[6px] border border-[rgba(16,185,129,0.35)] bg-[rgba(16,185,129,0.12)] px-2 py-[2px] text-[#10b981]">Available</span>
+        <span class="rounded-[6px] border border-[rgba(255,255,255,0.08)] bg-[#101e24] px-2 py-[2px] text-[#5d747c]">Limited</span>
+        <span class="rounded-[6px] border border-[rgba(255,255,255,0.08)] bg-[#101e24] px-2 py-[2px] text-[#5d747c]">Any</span>
+      </div>
+    </div>
+
+    <div class="max-h-[380px] divide-y divide-[rgba(255,255,255,0.06)] overflow-y-auto text-[10px]">
+      <div class="flex items-start gap-3 px-4 py-3 bg-[rgba(16,185,129,0.08)]">
+        <div class="flex h-[32px] w-[32px] items-center justify-center rounded-full bg-gradient-to-br from-[#10b981] to-[#059669] text-[10px] font-semibold text-[#0b1115]">AK</div>
+        <div class="flex-1">
+          <div class="text-[11px] font-semibold">Amara Kofi</div>
+          <div class="text-[9px] text-[#10b981]">@amara.dev</div>
+          <div class="mt-1 flex flex-wrap gap-1">
+            <span class="rounded-[4px] border border-[rgba(59,130,246,0.35)] bg-[rgba(59,130,246,0.12)] px-2 py-[1px] text-[8px] text-[#60a5fa]">Developer</span>
+            <span class="rounded-[4px] border border-[rgba(16,185,129,0.35)] bg-[rgba(16,185,129,0.12)] px-2 py-[1px] text-[8px] text-[#10b981]">Cooperative</span>
+          </div>
+        </div>
+        <div class="text-right">
+          <div class="text-[11px] font-semibold text-[#10b981]">97</div>
+          <div class="text-[8px] text-[#5d747c]">1&deg; Direct</div>
+        </div>
+      </div>
+      <div class="flex items-start gap-3 px-4 py-3">
+        <div class="flex h-[32px] w-[32px] items-center justify-center rounded-full bg-gradient-to-br from-[#a855f7] to-[#ec4899] text-[10px] font-semibold text-[#0b1115]">SR</div>
+        <div class="flex-1">
+          <div class="text-[11px] font-semibold">Sofia Reyes</div>
+          <div class="text-[9px] text-[#a855f7]">@sofia.design</div>
+          <div class="mt-1 flex flex-wrap gap-1">
+            <span class="rounded-[4px] border border-[rgba(168,85,247,0.35)] bg-[rgba(168,85,247,0.12)] px-2 py-[1px] text-[8px] text-[#a855f7]">Creative</span>
+            <span class="rounded-[4px] border border-[rgba(34,197,94,0.35)] bg-[rgba(34,197,94,0.12)] px-2 py-[1px] text-[8px] text-[#22c55e]">Entrepreneur</span>
+          </div>
+        </div>
+        <div class="text-right">
+          <div class="text-[11px] font-semibold text-[#a855f7]">88</div>
+          <div class="text-[8px] text-[#5d747c]">1&deg; Direct</div>
+        </div>
+      </div>
+      <div class="flex items-start gap-3 px-4 py-3">
+        <div class="flex h-[32px] w-[32px] items-center justify-center rounded-full bg-gradient-to-br from-[#22c55e] to-[#16a34a] text-[10px] font-semibold text-[#0b1115]">MP</div>
+        <div class="flex-1">
+          <div class="text-[11px] font-semibold">Marcus Park</div>
+          <div class="text-[9px] text-[#22c55e]">@marcus.systems</div>
+          <div class="mt-1 flex flex-wrap gap-1">
+            <span class="rounded-[4px] border border-[rgba(96,165,250,0.35)] bg-[rgba(96,165,250,0.12)] px-2 py-[1px] text-[8px] text-[#60a5fa]">Technologist</span>
+            <span class="rounded-[4px] border border-[rgba(168,85,247,0.35)] bg-[rgba(168,85,247,0.12)] px-2 py-[1px] text-[8px] text-[#a855f7]">Consultant</span>
+          </div>
+        </div>
+        <div class="text-right">
+          <div class="text-[11px] font-semibold text-[#22c55e]">85</div>
+          <div class="text-[8px] text-[#5d747c]">1&deg; Direct</div>
+        </div>
+      </div>
+      <div class="flex items-start gap-3 px-4 py-3">
+        <div class="flex h-[32px] w-[32px] items-center justify-center rounded-full bg-gradient-to-br from-[#f59e0b] to-[#d97706] text-[10px] font-semibold text-[#0b1115]">NW</div>
+        <div class="flex-1">
+          <div class="text-[11px] font-semibold">Nadia Wolff</div>
+          <div class="text-[9px] text-[#f59e0b]">@nadia.builds</div>
+          <div class="mt-1 flex flex-wrap gap-1">
+            <span class="rounded-[4px] border border-[rgba(59,130,246,0.35)] bg-[rgba(59,130,246,0.12)] px-2 py-[1px] text-[8px] text-[#60a5fa]">Developer</span>
+            <span class="rounded-[4px] border border-[rgba(34,197,94,0.35)] bg-[rgba(34,197,94,0.12)] px-2 py-[1px] text-[8px] text-[#22c55e]">Entrepreneur</span>
+          </div>
+        </div>
+        <div class="text-right">
+          <div class="text-[11px] font-semibold text-[#f59e0b]">82</div>
+          <div class="text-[8px] text-[#5d747c]">2&deg; via AK</div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <div class="relative overflow-hidden rounded-[12px] border border-[rgba(255,255,255,0.06)] bg-[#0b1115]">
+    <div class="border-b border-[rgba(255,255,255,0.06)] p-4">
+      <div class="text-[10px] uppercase tracking-[0.3em] text-[#5d747c] font-['JetBrains_Mono']">Linkforest Graph</div>
+      <div class="text-[11px] text-[#8ea6ad]">kogi-net visualized as a searchable forest of linktrees.</div>
+    </div>
+    <div class="relative h-[460px]">
+      <svg viewBox="0 0 640 460" class="absolute inset-0 h-full w-full" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <pattern id="forest-grid" width="40" height="40" patternUnits="userSpaceOnUse">
+            <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#1f2937" stroke-width="0.5" />
+          </pattern>
+          <radialGradient id="forest-glow" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stop-color="#10b981" stop-opacity="0.35" />
+            <stop offset="100%" stop-color="#10b981" stop-opacity="0" />
+          </radialGradient>
+        </defs>
+        <rect width="640" height="460" fill="url(#forest-grid)" opacity="0.4" />
+        <line x1="320" y1="230" x2="220" y2="120" stroke="#1f2937" stroke-width="1" />
+        <line x1="320" y1="230" x2="420" y2="120" stroke="#1f2937" stroke-width="1" />
+        <line x1="320" y1="230" x2="470" y2="240" stroke="#1f2937" stroke-width="1" />
+        <line x1="320" y1="230" x2="200" y2="310" stroke="#1f2937" stroke-width="1" />
+        <line x1="320" y1="230" x2="380" y2="330" stroke="#1f2937" stroke-width="1" />
+        <circle cx="320" cy="230" r="30" fill="url(#forest-glow)" />
+        <circle cx="320" cy="230" r="16" fill="#0f172a" stroke="#10b981" stroke-width="2" />
+        <text x="320" y="234" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="#10b981">YOU</text>
+        <circle cx="220" cy="120" r="11" fill="#111827" stroke="#60a5fa" stroke-width="1.5" />
+        <text x="220" y="124" text-anchor="middle" font-family="JetBrains Mono" font-size="7" fill="#60a5fa">AK</text>
+        <circle cx="420" cy="120" r="11" fill="#111827" stroke="#a855f7" stroke-width="1.5" />
+        <text x="420" y="124" text-anchor="middle" font-family="JetBrains Mono" font-size="7" fill="#a855f7">SR</text>
+        <circle cx="470" cy="240" r="10" fill="#111827" stroke="#f59e0b" stroke-width="1.5" />
+        <text x="470" y="243" text-anchor="middle" font-family="JetBrains Mono" font-size="7" fill="#f59e0b">NW</text>
+        <circle cx="200" cy="310" r="10" fill="#111827" stroke="#22c55e" stroke-width="1.5" />
+        <text x="200" y="313" text-anchor="middle" font-family="JetBrains Mono" font-size="7" fill="#22c55e">LM</text>
+        <circle cx="380" cy="330" r="10" fill="#111827" stroke="#d946ef" stroke-width="1.5" />
+        <text x="380" y="333" text-anchor="middle" font-family="JetBrains Mono" font-size="7" fill="#d946ef">PB</text>
+        <circle cx="140" cy="80" r="5" fill="#1f2937" />
+        <circle cx="520" cy="90" r="5" fill="#1f2937" />
+        <circle cx="520" cy="360" r="5" fill="#1f2937" />
+        <circle cx="100" cy="340" r="5" fill="#1f2937" />
+      </svg>
+
+      <div class="absolute left-4 top-4 flex flex-col gap-2">
+        <button class="h-[30px] w-[30px] rounded-[8px] border border-[rgba(255,255,255,0.08)] bg-[#101e24] text-[12px] text-[#8ea6ad]" type="button">+</button>
+        <button class="h-[30px] w-[30px] rounded-[8px] border border-[rgba(255,255,255,0.08)] bg-[#101e24] text-[12px] text-[#8ea6ad]" type="button">-</button>
+        <button class="h-[30px] w-[30px] rounded-[8px] border border-[rgba(255,255,255,0.08)] bg-[#101e24] text-[12px] text-[#8ea6ad]" type="button">&#9633;</button>
+      </div>
+
+      <div class="absolute bottom-4 left-4 rounded-[10px] border border-[rgba(255,255,255,0.08)] bg-[rgba(15,23,42,0.9)] p-3 text-[9px]">
+        <div class="text-[9px] uppercase tracking-[0.3em] text-[#5d747c] font-['JetBrains_Mono']">Legend</div>
+        <div class="mt-2 flex items-center gap-2"><span class="h-[8px] w-[8px] rounded-full bg-[#10b981]"></span><span class="text-[#8ea6ad]">You (root)</span></div>
+        <div class="mt-1 flex items-center gap-2"><span class="h-[8px] w-[8px] rounded-full bg-[#60a5fa]"></span><span class="text-[#8ea6ad]">Direct connection</span></div>
+        <div class="mt-1 flex items-center gap-2"><span class="h-[8px] w-[8px] rounded-full bg-[#1f2937]"></span><span class="text-[#8ea6ad]">2nd / 3rd degree</span></div>
+      </div>
+
+      <div class="absolute right-4 top-4 w-[200px] rounded-[10px] border border-[rgba(255,255,255,0.08)] bg-[rgba(15,23,42,0.92)] p-3 text-[9px]">
+        <div class="text-[9px] uppercase tracking-[0.3em] text-[#10b981] font-['JetBrains_Mono']">Selected</div>
+        <div class="mt-2 text-[11px] font-semibold">Amara Kofi</div>
+        <div class="text-[9px] text-[#10b981]">@amara.dev</div>
+        <div class="mt-2 flex items-center justify-between">
+          <span class="text-[#5d747c]">Distance</span>
+          <span class="text-[#8ea6ad]">1&deg; Direct</span>
+        </div>
+        <div class="mt-1 flex items-center justify-between">
+          <span class="text-[#5d747c]">Match</span>
+          <span class="text-[#10b981]">97 / 100</span>
+        </div>
+        <div class="mt-1 flex items-center justify-between">
+          <span class="text-[#5d747c]">Mutuals</span>
+          <span class="text-[#8ea6ad]">14 contacts</span>
+        </div>
+        <div class="mt-2 flex items-center gap-2">
+          <button class="flex-1 rounded-[6px] border border-[rgba(16,185,129,0.35)] bg-[rgba(16,185,129,0.12)] px-2 py-[4px] text-[#10b981]" type="button">DM</button>
+          <button class="flex-1 rounded-[6px] border border-[rgba(255,255,255,0.08)] bg-[#101e24] px-2 py-[4px] text-[#8ea6ad]" type="button">Profile</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <aside class="overflow-hidden rounded-[12px] border border-[rgba(255,255,255,0.06)] bg-[#0f1f26]">
+    <div class="border-b border-[rgba(255,255,255,0.06)] p-4">
+      <div class="flex items-start gap-3">
+        <div class="flex h-[48px] w-[48px] items-center justify-center rounded-full bg-gradient-to-br from-[#10b981] to-[#059669] text-[13px] font-semibold text-[#0b1115]">AK</div>
+        <div>
+          <div class="text-[12px] font-semibold">Amara Kofi</div>
+          <div class="text-[9px] text-[#10b981]">@amara.dev</div>
+          <div class="mt-2 text-[9px] text-[#5d747c]">Full-stack developer &amp; cooperative technologist.</div>
+        </div>
+      </div>
+      <div class="mt-3 flex flex-wrap gap-2 text-[8px]">
+        <span class="rounded-[6px] border border-[rgba(16,185,129,0.35)] bg-[rgba(16,185,129,0.12)] px-2 py-[2px] text-[#10b981]">Verified</span>
+        <span class="rounded-[6px] border border-[rgba(96,165,250,0.35)] bg-[rgba(96,165,250,0.12)] px-2 py-[2px] text-[#60a5fa]">Developer</span>
+        <span class="rounded-[6px] border border-[rgba(34,197,94,0.35)] bg-[rgba(34,197,94,0.12)] px-2 py-[2px] text-[#22c55e]">Cooperative</span>
+      </div>
+    </div>
+
+    <div class="border-b border-[rgba(255,255,255,0.06)] p-4 text-[10px]">
+      <div class="text-[9px] uppercase tracking-[0.3em] text-[#5d747c] font-['JetBrains_Mono']">Network Signals</div>
+      <div class="mt-3 space-y-2">
+        <div class="flex items-center justify-between"><span class="text-[#5d747c]">Match Score</span><span class="text-[#10b981]">97 / 100</span></div>
+        <div class="flex items-center justify-between"><span class="text-[#5d747c]">Connection</span><span class="text-[#8ea6ad]">1&deg; Direct</span></div>
+        <div class="flex items-center justify-between"><span class="text-[#5d747c]">Mutuals</span><span class="text-[#8ea6ad]">14</span></div>
+        <div class="flex items-center justify-between"><span class="text-[#5d747c]">Shared Orgs</span><span class="text-[#8ea6ad]">2</span></div>
+      </div>
+    </div>
+
+    <div class="border-b border-[rgba(255,255,255,0.06)] p-4 text-[10px]">
+      <div class="text-[9px] uppercase tracking-[0.3em] text-[#5d747c] font-['JetBrains_Mono']">Visible Leaves</div>
+      <div class="mt-2 space-y-2">
+        <div class="flex items-center justify-between rounded-[8px] border border-[rgba(255,255,255,0.06)] bg-[#101e24] px-2 py-2">
+          <span>GitHub</span>
+          <span class="text-[#5d747c]">@amara-builds</span>
+        </div>
+        <div class="flex items-center justify-between rounded-[8px] border border-[rgba(255,255,255,0.06)] bg-[#101e24] px-2 py-2">
+          <span>LinkedIn</span>
+          <span class="text-[#5d747c]">amara-kofi-dev</span>
+        </div>
+        <div class="flex items-center justify-between rounded-[8px] border border-[rgba(255,255,255,0.06)] bg-[#101e24] px-2 py-2">
+          <span>kogi DM</span>
+          <span class="text-[#5d747c]">@amara.dev</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="border-b border-[rgba(255,255,255,0.06)] p-4 text-[10px]">
+      <div class="text-[9px] uppercase tracking-[0.3em] text-[#5d747c] font-['JetBrains_Mono']">Introduction Path</div>
+      <div class="mt-3 space-y-2">
+        <div class="flex items-center gap-2">
+          <div class="flex h-[22px] w-[22px] items-center justify-center rounded-full bg-[#101e24] text-[9px] text-[#10b981]">JC</div>
+          <span class="text-[#8ea6ad]">You (@jordan.dev)</span>
+        </div>
+        <div class="text-[10px] text-[#10b981]">&darr; direct connection</div>
+        <div class="flex items-center gap-2">
+          <div class="flex h-[22px] w-[22px] items-center justify-center rounded-full bg-[#101e24] text-[9px] text-[#10b981]">AK</div>
+          <span class="text-[#8ea6ad]">Amara Kofi</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="p-4 text-[10px]">
+      <div class="text-[9px] uppercase tracking-[0.3em] text-[#5d747c] font-['JetBrains_Mono']">Shared Organizations</div>
+      <div class="mt-3 space-y-2">
+        <div class="rounded-[8px] border border-[rgba(255,255,255,0.06)] bg-[#101e24] px-3 py-2">
+          <div class="text-[10px] font-semibold">Mesh Studio</div>
+          <div class="text-[9px] text-[#5d747c]">Cooperative &middot; Co-members</div>
+        </div>
+        <div class="rounded-[8px] border border-[rgba(255,255,255,0.06)] bg-[#101e24] px-3 py-2">
+          <div class="text-[10px] font-semibold">Open Source Collective</div>
+          <div class="text-[9px] text-[#5d747c]">Collective &middot; Contributors</div>
+        </div>
+      </div>
+    </div>
+  </aside>
+</section>

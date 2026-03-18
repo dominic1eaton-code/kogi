@@ -1,0 +1,198 @@
+<section class="mb-4 grid grid-cols-2 gap-3 text-[10px] md:grid-cols-3 xl:grid-cols-6">
+  <div class="rounded-[10px] border border-[rgba(255,255,255,0.06)] bg-[#0f1f26] p-3">
+    <div class="text-[16px] font-semibold text-[#10b981]">1,842</div>
+    <div class="text-[9px] uppercase tracking-[0.3em] text-[#5d747c] font-['JetBrains_Mono']">Linktrees</div>
+  </div>
+  <div class="rounded-[10px] border border-[rgba(255,255,255,0.06)] bg-[#0f1f26] p-3">
+    <div class="text-[16px] font-semibold text-[#60a5fa]">284</div>
+    <div class="text-[9px] uppercase tracking-[0.3em] text-[#5d747c] font-['JetBrains_Mono']">Direct Links</div>
+  </div>
+  <div class="rounded-[10px] border border-[rgba(255,255,255,0.06)] bg-[#0f1f26] p-3">
+    <div class="text-[16px] font-semibold text-[#f59e0b]">142</div>
+    <div class="text-[9px] uppercase tracking-[0.3em] text-[#5d747c] font-['JetBrains_Mono']">2nd Degree</div>
+  </div>
+  <div class="rounded-[10px] border border-[rgba(255,255,255,0.06)] bg-[#0f1f26] p-3">
+    <div class="text-[16px] font-semibold text-[#a855f7]">7</div>
+    <div class="text-[9px] uppercase tracking-[0.3em] text-[#5d747c] font-['JetBrains_Mono']">Linknets</div>
+  </div>
+  <div class="rounded-[10px] border border-[rgba(255,255,255,0.06)] bg-[#0f1f26] p-3">
+    <div class="text-[16px] font-semibold text-[#22c55e]">23</div>
+    <div class="text-[9px] uppercase tracking-[0.3em] text-[#5d747c] font-['JetBrains_Mono']">Channels</div>
+  </div>
+  <div class="rounded-[10px] border border-[rgba(255,255,255,0.06)] bg-[#0f1f26] p-3">
+    <div class="text-[16px] font-semibold text-[#e6f1f4]">1.9</div>
+    <div class="text-[9px] uppercase tracking-[0.3em] text-[#5d747c] font-['JetBrains_Mono']">Avg Degrees</div>
+  </div>
+</section>
+
+<section class="grid grid-cols-1 gap-4 xl:grid-cols-[minmax(0,1.3fr)_minmax(0,0.8fr)]">
+  <div class="space-y-4">
+    <div class="rounded-[12px] border border-[rgba(255,255,255,0.06)] bg-[#0f1f26] p-4">
+      <div class="flex items-center justify-between">
+        <div>
+          <div class="text-[10px] uppercase tracking-[0.3em] text-[#5d747c] font-['JetBrains_Mono']">Linknetwork Map</div>
+          <div class="text-[11px] text-[#8ea6ad]">Your kogi-net view across linknets, linktrees, and shared channels.</div>
+        </div>
+        <div class="flex items-center gap-2 text-[9px] font-['JetBrains_Mono'] text-[#8ea6ad]">
+          <span class="rounded-[6px] border border-[rgba(96,165,250,0.35)] bg-[rgba(96,165,250,0.12)] px-2 py-[2px] text-[#60a5fa]">GraphEngine</span>
+          <span class="rounded-[6px] border border-[rgba(16,185,129,0.35)] bg-[rgba(16,185,129,0.12)] px-2 py-[2px] text-[#10b981]">SearchEngine</span>
+        </div>
+      </div>
+      <div class="relative mt-4 h-[280px] overflow-hidden rounded-[10px] border border-[rgba(255,255,255,0.06)] bg-[#0b1115]">
+        <svg viewBox="0 0 600 280" class="absolute inset-0 h-full w-full" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <pattern id="linknet-grid" width="40" height="40" patternUnits="userSpaceOnUse">
+              <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#1f2937" stroke-width="0.5" />
+            </pattern>
+            <radialGradient id="linknet-glow" cx="50%" cy="50%" r="50%">
+              <stop offset="0%" stop-color="#10b981" stop-opacity="0.35" />
+              <stop offset="100%" stop-color="#10b981" stop-opacity="0" />
+            </radialGradient>
+          </defs>
+          <rect width="600" height="280" fill="url(#linknet-grid)" opacity="0.4" />
+          <line x1="300" y1="140" x2="160" y2="80" stroke="#1f2937" stroke-width="1" />
+          <line x1="300" y1="140" x2="440" y2="90" stroke="#1f2937" stroke-width="1" />
+          <line x1="300" y1="140" x2="480" y2="200" stroke="#1f2937" stroke-width="1" />
+          <line x1="300" y1="140" x2="140" y2="210" stroke="#1f2937" stroke-width="1" />
+          <circle cx="300" cy="140" r="28" fill="url(#linknet-glow)" />
+          <circle cx="300" cy="140" r="14" fill="#0f172a" stroke="#10b981" stroke-width="2" />
+          <text x="300" y="144" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="#10b981">YOU</text>
+          <circle cx="160" cy="80" r="10" fill="#111827" stroke="#60a5fa" stroke-width="1.5" />
+          <text x="160" y="84" text-anchor="middle" font-family="JetBrains Mono" font-size="7" fill="#60a5fa">AK</text>
+          <circle cx="440" cy="90" r="10" fill="#111827" stroke="#a855f7" stroke-width="1.5" />
+          <text x="440" y="94" text-anchor="middle" font-family="JetBrains Mono" font-size="7" fill="#a855f7">SR</text>
+          <circle cx="480" cy="200" r="9" fill="#111827" stroke="#f59e0b" stroke-width="1.5" />
+          <text x="480" y="203" text-anchor="middle" font-family="JetBrains Mono" font-size="7" fill="#f59e0b">NW</text>
+          <circle cx="140" cy="210" r="9" fill="#111827" stroke="#22c55e" stroke-width="1.5" />
+          <text x="140" y="213" text-anchor="middle" font-family="JetBrains Mono" font-size="7" fill="#22c55e">LM</text>
+          <circle cx="220" cy="50" r="6" fill="#1f2937" />
+          <circle cx="520" cy="120" r="6" fill="#1f2937" />
+          <circle cx="90" cy="120" r="6" fill="#1f2937" />
+        </svg>
+        <div class="absolute left-4 top-4 rounded-[8px] border border-[rgba(255,255,255,0.08)] bg-[rgba(15,23,42,0.85)] px-3 py-2 text-[9px] text-[#8ea6ad]">
+          Root: kogi-net &middot; Scope: 2&deg;
+        </div>
+        <div class="absolute bottom-4 right-4 rounded-[8px] border border-[rgba(16,185,129,0.35)] bg-[rgba(16,185,129,0.12)] px-3 py-2 text-[9px] text-[#10b981]">
+          14 mutual paths surfaced
+        </div>
+      </div>
+    </div>
+
+    <div class="rounded-[12px] border border-[rgba(255,255,255,0.06)] bg-[#0f1f26] p-4">
+      <div class="flex items-center justify-between">
+        <div>
+          <div class="text-[10px] uppercase tracking-[0.3em] text-[#5d747c] font-['JetBrains_Mono']">Introduction Paths</div>
+          <div class="text-[11px] text-[#8ea6ad]">Suggested routes through the linkforest for warm introductions.</div>
+        </div>
+        <button class="text-[10px] font-['JetBrains_Mono'] text-[#60a5fa]" type="button">Find New Paths</button>
+      </div>
+      <div class="mt-3 space-y-3 text-[10px]">
+        <div class="rounded-[10px] border border-[rgba(255,255,255,0.06)] bg-[#101e24] px-3 py-3">
+          <div class="flex items-center justify-between">
+            <span class="font-semibold">You &rarr; Amara &rarr; Nadia</span>
+            <span class="text-[#10b981]">1&deg; / 2&deg;</span>
+          </div>
+          <div class="mt-1 text-[9px] text-[#5d747c]">Shared linknet: Mesh Studio &middot; 4 mutual channels</div>
+        </div>
+        <div class="rounded-[10px] border border-[rgba(255,255,255,0.06)] bg-[#101e24] px-3 py-3">
+          <div class="flex items-center justify-between">
+            <span class="font-semibold">You &rarr; Sofia &rarr; Priya</span>
+            <span class="text-[#60a5fa]">1&deg; / 2&deg;</span>
+          </div>
+          <div class="mt-1 text-[9px] text-[#5d747c]">Shared channels: design guild, DAO sync</div>
+        </div>
+        <div class="rounded-[10px] border border-[rgba(255,255,255,0.06)] bg-[#101e24] px-3 py-3">
+          <div class="flex items-center justify-between">
+            <span class="font-semibold">You &rarr; Marcus &rarr; Tariq</span>
+            <span class="text-[#f59e0b]">2&deg; / 3&deg;</span>
+          </div>
+          <div class="mt-1 text-[9px] text-[#5d747c]">MatchEngine recommends for infra sourcing</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <aside class="space-y-4">
+    <section class="rounded-[12px] border border-[rgba(255,255,255,0.06)] bg-[#0f1f26] p-4">
+      <div class="text-[10px] uppercase tracking-[0.3em] text-[#5d747c] font-['JetBrains_Mono']">Channels & Links</div>
+      <div class="mt-3 space-y-2 text-[10px]">
+        <div class="flex items-center justify-between rounded-[8px] border border-[rgba(16,185,129,0.35)] bg-[rgba(16,185,129,0.12)] px-3 py-2">
+          <span>Email &middot; Primary</span>
+          <span class="text-[#10b981]">Enabled</span>
+        </div>
+        <div class="flex items-center justify-between rounded-[8px] border border-[rgba(96,165,250,0.35)] bg-[rgba(96,165,250,0.12)] px-3 py-2">
+          <span>kogi DM</span>
+          <span class="text-[#60a5fa]">Connected</span>
+        </div>
+        <div class="flex items-center justify-between rounded-[8px] border border-[rgba(255,255,255,0.06)] bg-[#101e24] px-3 py-2">
+          <span>Broadcast Channels</span>
+          <span class="text-[#5d747c]">3 active</span>
+        </div>
+        <div class="flex items-center justify-between rounded-[8px] border border-[rgba(255,255,255,0.06)] bg-[#101e24] px-3 py-2">
+          <span>Shared Calendars</span>
+          <span class="text-[#5d747c]">2 linknets</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="rounded-[12px] border border-[rgba(255,255,255,0.06)] bg-[#0f1f26] p-4">
+      <div class="flex items-center justify-between">
+        <div class="text-[10px] uppercase tracking-[0.3em] text-[#5d747c] font-['JetBrains_Mono']">Active Linknets</div>
+        <button class="text-[10px] font-['JetBrains_Mono'] text-[#10b981]" type="button">Manage</button>
+      </div>
+      <div class="mt-3 space-y-2 text-[10px]">
+        <div class="flex items-center justify-between rounded-[8px] border border-[rgba(255,255,255,0.06)] bg-[#101e24] px-3 py-2">
+          <span>Mesh Studio Cooperative</span>
+          <span class="text-[#10b981]">242 members</span>
+        </div>
+        <div class="flex items-center justify-between rounded-[8px] border border-[rgba(255,255,255,0.06)] bg-[#101e24] px-3 py-2">
+          <span>Open Source Collective</span>
+          <span class="text-[#60a5fa]">1,014 members</span>
+        </div>
+        <div class="flex items-center justify-between rounded-[8px] border border-[rgba(255,255,255,0.06)] bg-[#101e24] px-3 py-2">
+          <span>Worker Co-op Guild</span>
+          <span class="text-[#f59e0b]">128 members</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="rounded-[12px] border border-[rgba(255,255,255,0.06)] bg-[#0f1f26] p-4">
+      <div class="flex items-center justify-between">
+        <div class="text-[10px] uppercase tracking-[0.3em] text-[#5d747c] font-['JetBrains_Mono']">Contactbooks</div>
+        <button class="text-[10px] font-['JetBrains_Mono'] text-[#60a5fa]" type="button">Open</button>
+      </div>
+      <div class="mt-3 space-y-2 text-[10px]">
+        <div class="flex items-center justify-between rounded-[8px] border border-[rgba(255,255,255,0.06)] bg-[#101e24] px-3 py-2">
+          <span>Direct Connections</span>
+          <span class="text-[#10b981]">284</span>
+        </div>
+        <div class="flex items-center justify-between rounded-[8px] border border-[rgba(255,255,255,0.06)] bg-[#101e24] px-3 py-2">
+          <span>Favorites & Friends</span>
+          <span class="text-[#60a5fa]">42</span>
+        </div>
+        <div class="flex items-center justify-between rounded-[8px] border border-[rgba(255,255,255,0.06)] bg-[#101e24] px-3 py-2">
+          <span>Directory: Mesh Studio</span>
+          <span class="text-[#5d747c]">241</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="rounded-[12px] border border-[rgba(255,255,255,0.06)] bg-[#0f1f26] p-4">
+      <div class="text-[10px] uppercase tracking-[0.3em] text-[#5d747c] font-['JetBrains_Mono']">Linknet Concepts</div>
+      <div class="mt-3 space-y-2 text-[10px] text-[#8ea6ad]">
+        <div>
+          <span class="font-semibold text-[#e6f1f4]">Linktree</span> is a structured chain of linked accounts (leaves) organized by branches.
+        </div>
+        <div>
+          <span class="font-semibold text-[#e6f1f4]">Linkforest</span> is a connected collection of linktrees across users and organizations.
+        </div>
+        <div>
+          <span class="font-semibold text-[#e6f1f4]">Linknetwork</span> is the root substrate that connects all trees and forests in kogi-net.
+        </div>
+        <div>
+          <span class="font-semibold text-[#e6f1f4]">Linknet</span> is a scoped subgraph for a community, cooperative, or organization.
+        </div>
+      </div>
+    </section>
+  </aside>
+</section>

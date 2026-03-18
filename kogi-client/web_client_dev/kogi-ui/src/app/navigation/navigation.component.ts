@@ -79,7 +79,8 @@ const NAV_ITEMS: NavItem[] = [
       { label: 'Feed', route: '/spaces/feed' },
       { label: 'Timeline', route: '/spaces/timeline' },
       { label: 'Channels', route: '/spaces/channels' },
-      { label: 'Events', route: '/spaces/events' }
+      { label: 'Events', route: '/spaces/events' },
+      { label: 'Network', route: '/spaces/network' }
     ]
   },
   {

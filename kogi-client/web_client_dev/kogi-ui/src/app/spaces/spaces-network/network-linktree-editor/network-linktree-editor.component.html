@@ -1,0 +1,323 @@
+<section class="mb-4 flex flex-wrap items-center gap-3 rounded-[12px] border border-[rgba(255,255,255,0.06)] bg-[#0f1f26] p-4">
+  <div>
+    <div class="text-[10px] uppercase tracking-[0.3em] text-[#5d747c] font-['JetBrains_Mono']">Linktree Editor</div>
+    <div class="text-[11px] text-[#8ea6ad]">Manage branches, leaves, visibility, and featured links.</div>
+  </div>
+  <div class="ml-auto flex flex-wrap items-center gap-2">
+    <a
+      routerLink="/spaces/network/linktree"
+      class="rounded-[8px] border border-[rgba(255,255,255,0.08)] bg-[#101e24] px-3 py-[6px] text-[10px] font-['JetBrains_Mono'] text-[#8ea6ad]"
+    >
+      Back to Linktree
+    </a>
+    <button
+      class="rounded-[8px] border border-[rgba(255,255,255,0.08)] bg-[#101e24] px-3 py-[6px] text-[10px] font-['JetBrains_Mono'] text-[#8ea6ad]"
+      type="button"
+    >
+      Export vCard
+    </button>
+    <button
+      class="rounded-[8px] border border-[rgba(255,255,255,0.08)] bg-[#101e24] px-3 py-[6px] text-[10px] font-['JetBrains_Mono'] text-[#8ea6ad]"
+      type="button"
+    >
+      QR Code
+    </button>
+    <button
+      class="rounded-[8px] border border-[rgba(245,158,11,0.35)] bg-[rgba(245,158,11,0.12)] px-3 py-[6px] text-[10px] font-['JetBrains_Mono'] text-[#f59e0b]"
+      type="button"
+    >
+      Share
+    </button>
+    <button
+      class="rounded-[8px] bg-gradient-to-br from-[#10b981] to-[#059669] px-3 py-[6px] text-[10px] font-['JetBrains_Mono'] font-semibold text-white"
+      type="button"
+    >
+      Save Changes
+    </button>
+  </div>
+</section>
+
+<section class="mb-4 grid grid-cols-2 gap-3 text-[10px] md:grid-cols-3 xl:grid-cols-6">
+  <div class="rounded-[10px] border border-[rgba(255,255,255,0.06)] bg-[#0f1f26] p-3">
+    <div class="text-[15px] font-semibold text-[#10b981]">28</div>
+    <div class="text-[9px] uppercase tracking-[0.3em] text-[#5d747c] font-['JetBrains_Mono']">Total Leaves</div>
+  </div>
+  <div class="rounded-[10px] border border-[rgba(255,255,255,0.06)] bg-[#0f1f26] p-3">
+    <div class="text-[15px] font-semibold text-[#60a5fa]">8</div>
+    <div class="text-[9px] uppercase tracking-[0.3em] text-[#5d747c] font-['JetBrains_Mono']">Branches</div>
+  </div>
+  <div class="rounded-[10px] border border-[rgba(255,255,255,0.06)] bg-[#0f1f26] p-3">
+    <div class="text-[15px] font-semibold text-[#f59e0b]">1,248</div>
+    <div class="text-[9px] uppercase tracking-[0.3em] text-[#5d747c] font-['JetBrains_Mono']">Clicks (30d)</div>
+  </div>
+  <div class="rounded-[10px] border border-[rgba(255,255,255,0.06)] bg-[#0f1f26] p-3">
+    <div class="text-[15px] font-semibold text-[#22c55e]">22</div>
+    <div class="text-[9px] uppercase tracking-[0.3em] text-[#5d747c] font-['JetBrains_Mono']">Public Leaves</div>
+  </div>
+  <div class="rounded-[10px] border border-[rgba(255,255,255,0.06)] bg-[#0f1f26] p-3">
+    <div class="text-[15px] font-semibold text-[#a855f7]">4</div>
+    <div class="text-[9px] uppercase tracking-[0.3em] text-[#5d747c] font-['JetBrains_Mono']">Featured</div>
+  </div>
+  <div class="rounded-[10px] border border-[rgba(255,255,255,0.06)] bg-[#0f1f26] p-3">
+    <div class="text-[15px] font-semibold text-[#e6f1f4]">100%</div>
+    <div class="text-[9px] uppercase tracking-[0.3em] text-[#5d747c] font-['JetBrains_Mono']">Indexed</div>
+  </div>
+</section>
+
+<section class="grid grid-cols-1 gap-4 xl:grid-cols-[240px_minmax(0,1fr)_300px]">
+  <aside class="overflow-hidden rounded-[12px] border border-[rgba(255,255,255,0.06)] bg-[#0f1f26]">
+    <div class="flex items-center justify-between border-b border-[rgba(255,255,255,0.06)] px-4 py-3">
+      <div class="text-[9px] uppercase tracking-[0.3em] text-[#5d747c] font-['JetBrains_Mono']">Branches</div>
+      <button class="text-[16px] text-[#10b981]" type="button">+</button>
+    </div>
+    <div class="divide-y divide-[rgba(255,255,255,0.06)] text-[10px]">
+      <div class="flex items-center gap-2 px-4 py-3 bg-[rgba(16,185,129,0.08)]">
+        <span class="text-[#5d747c]">&#8942;&#8942;</span>
+        <span class="flex h-[20px] w-[20px] items-center justify-center rounded-[6px] bg-[#101e24] text-[10px] text-[#10b981]">&#9733;</span>
+        <span class="flex-1 text-[#e6f1f4]">Featured</span>
+        <span class="text-[#5d747c]">4</span>
+      </div>
+      <div class="flex items-center gap-2 px-4 py-3">
+        <span class="text-[#5d747c]">&#8942;&#8942;</span>
+        <span class="flex h-[20px] w-[20px] items-center justify-center rounded-[6px] bg-[#101e24] text-[10px] text-[#60a5fa]">CT</span>
+        <span class="flex-1 text-[#8ea6ad]">Contact</span>
+        <span class="text-[#5d747c]">3</span>
+      </div>
+      <div class="flex items-center gap-2 px-4 py-3">
+        <span class="text-[#5d747c]">&#8942;&#8942;</span>
+        <span class="flex h-[20px] w-[20px] items-center justify-center rounded-[6px] bg-[#101e24] text-[10px] text-[#a855f7]">DEV</span>
+        <span class="flex-1 text-[#8ea6ad]">Developer</span>
+        <span class="text-[#5d747c]">5</span>
+      </div>
+      <div class="flex items-center gap-2 px-4 py-3">
+        <span class="text-[#5d747c]">&#8942;&#8942;</span>
+        <span class="flex h-[20px] w-[20px] items-center justify-center rounded-[6px] bg-[#101e24] text-[10px] text-[#f59e0b]">PRO</span>
+        <span class="flex-1 text-[#8ea6ad]">Professional</span>
+        <span class="text-[#5d747c]">3</span>
+      </div>
+      <div class="flex items-center gap-2 px-4 py-3">
+        <span class="text-[#5d747c]">&#8942;&#8942;</span>
+        <span class="flex h-[20px] w-[20px] items-center justify-center rounded-[6px] bg-[#101e24] text-[10px] text-[#22c55e]">SOC</span>
+        <span class="flex-1 text-[#8ea6ad]">Social</span>
+        <span class="text-[#5d747c]">4</span>
+      </div>
+      <div class="flex items-center gap-2 px-4 py-3">
+        <span class="text-[#5d747c]">&#8942;&#8942;</span>
+        <span class="flex h-[20px] w-[20px] items-center justify-center rounded-[6px] bg-[#101e24] text-[10px] text-[#60a5fa]">PUB</span>
+        <span class="flex-1 text-[#8ea6ad]">Publishing</span>
+        <span class="text-[#5d747c]">3</span>
+      </div>
+    </div>
+
+    <div class="border-t border-[rgba(255,255,255,0.06)] p-4">
+      <div class="text-[9px] uppercase tracking-[0.3em] text-[#5d747c] font-['JetBrains_Mono']">Tree Settings</div>
+      <div class="mt-3 space-y-3 text-[10px]">
+        <div>
+          <label class="text-[9px] uppercase tracking-[0.2em] text-[#5d747c] font-['JetBrains_Mono']">Tree Title</label>
+          <input class="mt-1 w-full rounded-[6px] border border-[rgba(255,255,255,0.08)] bg-[#101e24] px-2 py-[6px] text-[10px] text-[#e6f1f4]" type="text" value="Jordan Chen" />
+        </div>
+        <div>
+          <label class="text-[9px] uppercase tracking-[0.2em] text-[#5d747c] font-['JetBrains_Mono']">Description</label>
+          <input class="mt-1 w-full rounded-[6px] border border-[rgba(255,255,255,0.08)] bg-[#101e24] px-2 py-[6px] text-[10px] text-[#e6f1f4]" type="text" value="Developer &middot; Architect &middot; Builder" />
+        </div>
+        <div>
+          <label class="text-[9px] uppercase tracking-[0.2em] text-[#5d747c] font-['JetBrains_Mono']">Theme</label>
+          <select class="mt-1 w-full rounded-[6px] border border-[rgba(255,255,255,0.08)] bg-[#101e24] px-2 py-[6px] text-[10px] text-[#8ea6ad]">
+            <option selected>Dark</option>
+            <option>Light</option>
+            <option>Teal Glass</option>
+            <option>Custom</option>
+          </select>
+        </div>
+        <div>
+          <label class="text-[9px] uppercase tracking-[0.2em] text-[#5d747c] font-['JetBrains_Mono']">Visibility</label>
+          <select class="mt-1 w-full rounded-[6px] border border-[rgba(255,255,255,0.08)] bg-[#101e24] px-2 py-[6px] text-[10px] text-[#8ea6ad]">
+            <option selected>Public</option>
+            <option>Platform</option>
+            <option>Protected</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <div class="border-t border-[rgba(255,255,255,0.06)] p-4">
+      <div class="text-[9px] uppercase tracking-[0.3em] text-[#5d747c] font-['JetBrains_Mono']">Public URL</div>
+      <div class="mt-2 rounded-[8px] border border-[rgba(16,185,129,0.35)] bg-[rgba(16,185,129,0.12)] px-3 py-2 text-[9px] text-[#10b981]">kogi.net/@jordan.dev</div>
+      <div class="mt-2 rounded-[8px] border border-[rgba(96,165,250,0.35)] bg-[rgba(96,165,250,0.12)] px-3 py-2 text-[9px] text-[#60a5fa]">kogi.net/l/jordan-dev</div>
+    </div>
+  </aside>
+
+  <div class="space-y-4">
+    <section class="rounded-[12px] border border-[rgba(255,255,255,0.06)] bg-[#0f1f26] p-4">
+      <div class="flex items-center justify-between">
+        <div>
+          <div class="text-[13px] font-semibold">Featured Leaves</div>
+          <div class="text-[10px] text-[#5d747c]">Pinned at the top of your public linktree.</div>
+        </div>
+        <button class="rounded-[8px] border border-[rgba(16,185,129,0.35)] bg-[rgba(16,185,129,0.12)] px-3 py-[6px] text-[10px] text-[#10b981]" type="button">
+          + Add Leaf
+        </button>
+      </div>
+      <div class="mt-3 flex flex-wrap gap-2">
+        <div class="rounded-[8px] border border-[rgba(16,185,129,0.35)] bg-[rgba(16,185,129,0.08)] px-3 py-2 text-[10px]">
+          <div class="font-semibold">GitHub</div>
+          <div class="text-[9px] text-[#5d747c]">@jordan-dev-os</div>
+        </div>
+        <div class="rounded-[8px] border border-[rgba(96,165,250,0.35)] bg-[rgba(96,165,250,0.08)] px-3 py-2 text-[10px]">
+          <div class="font-semibold">Substack</div>
+          <div class="text-[9px] text-[#5d747c]">workeros.substack.com</div>
+        </div>
+        <div class="rounded-[8px] border border-[rgba(168,85,247,0.35)] bg-[rgba(168,85,247,0.08)] px-3 py-2 text-[10px]">
+          <div class="font-semibold">Portfolio</div>
+          <div class="text-[9px] text-[#5d747c]">meshstudio.dev</div>
+        </div>
+        <div class="rounded-[8px] border border-[rgba(245,158,11,0.35)] bg-[rgba(245,158,11,0.08)] px-3 py-2 text-[10px]">
+          <div class="font-semibold">kogi DM</div>
+          <div class="text-[9px] text-[#5d747c]">@jordan.dev</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="rounded-[12px] border border-[rgba(255,255,255,0.06)] bg-[#0f1f26] p-4">
+      <div class="text-[10px] uppercase tracking-[0.3em] text-[#5d747c] font-['JetBrains_Mono']">Featured Branch</div>
+      <div class="mt-3 space-y-3">
+        <div class="rounded-[10px] border border-[rgba(168,85,247,0.35)] bg-[rgba(168,85,247,0.08)]">
+          <div class="flex items-center gap-3 px-3 py-3">
+            <span class="text-[#5d747c]">&#8942;&#8942;</span>
+            <div class="flex h-[28px] w-[28px] items-center justify-center rounded-[6px] bg-[#0b1115] text-[11px] text-[#a855f7]">GH</div>
+            <div class="flex-1">
+              <div class="text-[11px] font-semibold">GitHub</div>
+              <div class="text-[9px] text-[#5d747c]">github.com/jordan-dev-os</div>
+              <div class="mt-1 flex flex-wrap gap-2 text-[8px]">
+                <span class="rounded-[6px] border border-[rgba(16,185,129,0.35)] bg-[rgba(16,185,129,0.12)] px-2 py-[1px] text-[#10b981]">Public</span>
+                <span class="rounded-[6px] border border-[rgba(168,85,247,0.35)] bg-[rgba(168,85,247,0.12)] px-2 py-[1px] text-[#a855f7]">Featured</span>
+                <span class="rounded-[6px] border border-[rgba(96,165,250,0.35)] bg-[rgba(96,165,250,0.12)] px-2 py-[1px] text-[#60a5fa]">Verified</span>
+              </div>
+            </div>
+            <div class="text-[9px] text-[#5d747c]">612 clicks</div>
+          </div>
+          <div class="border-t border-[rgba(255,255,255,0.06)] bg-[#101e24] px-3 py-3">
+            <div class="grid gap-3 md:grid-cols-2">
+              <div>
+                <label class="text-[9px] uppercase tracking-[0.2em] text-[#5d747c] font-['JetBrains_Mono']">Label</label>
+                <input class="mt-1 w-full rounded-[6px] border border-[rgba(255,255,255,0.08)] bg-[#0f1f26] px-2 py-[6px] text-[10px] text-[#e6f1f4]" type="text" value="GitHub" />
+              </div>
+              <div>
+                <label class="text-[9px] uppercase tracking-[0.2em] text-[#5d747c] font-['JetBrains_Mono']">Platform</label>
+                <input class="mt-1 w-full rounded-[6px] border border-[rgba(255,255,255,0.08)] bg-[#0f1f26] px-2 py-[6px] text-[10px] text-[#e6f1f4]" type="text" value="github" />
+              </div>
+              <div>
+                <label class="text-[9px] uppercase tracking-[0.2em] text-[#5d747c] font-['JetBrains_Mono']">URL / Handle</label>
+                <input class="mt-1 w-full rounded-[6px] border border-[rgba(255,255,255,0.08)] bg-[#0f1f26] px-2 py-[6px] text-[10px] text-[#e6f1f4]" type="text" value="https://github.com/jordan-dev-os" />
+              </div>
+              <div>
+                <label class="text-[9px] uppercase tracking-[0.2em] text-[#5d747c] font-['JetBrains_Mono']">Visibility</label>
+                <select class="mt-1 w-full rounded-[6px] border border-[rgba(255,255,255,0.08)] bg-[#0f1f26] px-2 py-[6px] text-[10px] text-[#8ea6ad]">
+                  <option selected>Public</option>
+                  <option>Platform</option>
+                  <option>Connections</option>
+                  <option>Trusted</option>
+                </select>
+              </div>
+            </div>
+            <div class="mt-3 flex flex-wrap items-center gap-3 text-[10px]">
+              <label class="flex items-center gap-2 text-[#8ea6ad]"><input type="checkbox" checked /> Featured</label>
+              <label class="flex items-center gap-2 text-[#8ea6ad]"><input type="checkbox" checked /> Show verified badge</label>
+              <div class="ml-auto flex items-center gap-2">
+                <button class="rounded-[6px] border border-[rgba(239,68,68,0.45)] bg-[rgba(239,68,68,0.12)] px-3 py-[4px] text-[9px] text-[#ef4444]" type="button">Remove</button>
+                <button class="rounded-[6px] border border-[rgba(16,185,129,0.35)] bg-[rgba(16,185,129,0.12)] px-3 py-[4px] text-[9px] text-[#10b981]" type="button">Save</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="rounded-[10px] border border-[rgba(255,255,255,0.06)] bg-[#101e24] px-3 py-3">
+          <div class="flex items-center gap-3">
+            <span class="text-[#5d747c]">&#8942;&#8942;</span>
+            <div class="flex h-[28px] w-[28px] items-center justify-center rounded-[6px] bg-[#0b1115] text-[11px] text-[#60a5fa]">SS</div>
+            <div class="flex-1">
+              <div class="text-[11px] font-semibold">Substack &mdash; Worker OS</div>
+              <div class="text-[9px] text-[#5d747c]">workeros.substack.com</div>
+            </div>
+            <div class="text-[9px] text-[#5d747c]">380 clicks</div>
+          </div>
+        </div>
+
+        <div class="rounded-[10px] border border-dashed border-[rgba(255,255,255,0.2)] bg-[#0f1f26] px-3 py-3 text-[10px] text-[#5d747c]">
+          + Add leaf to Featured branch
+        </div>
+      </div>
+
+      <div class="mt-4 rounded-[10px] border border-[rgba(16,185,129,0.35)] bg-[rgba(16,185,129,0.08)] p-3">
+        <div class="text-[9px] font-['JetBrains_Mono'] text-[#10b981]">OBA SUGGESTION</div>
+        <div class="mt-2 text-[10px] text-[#8ea6ad]">Your Developer branch has no Stack Overflow or npm profile link. Adding them could improve match visibility.</div>
+        <div class="mt-3 flex items-center gap-2">
+          <button class="rounded-[6px] border border-[rgba(16,185,129,0.35)] bg-[rgba(16,185,129,0.12)] px-3 py-[4px] text-[9px] text-[#10b981]" type="button">
+            Add Stack Overflow
+          </button>
+          <button class="rounded-[6px] border border-[rgba(255,255,255,0.08)] bg-[#101e24] px-3 py-[4px] text-[9px] text-[#8ea6ad]" type="button">
+            Dismiss
+          </button>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <aside class="overflow-hidden rounded-[12px] border border-[rgba(255,255,255,0.06)] bg-[#0f1f26]">
+    <div class="flex items-center justify-between border-b border-[rgba(255,255,255,0.06)] px-4 py-3">
+      <div class="text-[9px] uppercase tracking-[0.3em] text-[#5d747c] font-['JetBrains_Mono']">Live Preview</div>
+      <div class="flex items-center gap-2 text-[9px]">
+        <span class="rounded-[6px] border border-[rgba(16,185,129,0.35)] bg-[rgba(16,185,129,0.12)] px-2 py-[2px] text-[#10b981]">Mobile</span>
+        <span class="rounded-[6px] border border-[rgba(255,255,255,0.08)] bg-[#101e24] px-2 py-[2px] text-[#5d747c]">Desktop</span>
+      </div>
+    </div>
+    <div class="flex justify-center border-b border-[rgba(255,255,255,0.06)] bg-[#0b1115] p-4">
+      <div class="w-[220px] rounded-[24px] border border-[rgba(255,255,255,0.12)] bg-[#0f1f26] p-4">
+        <div class="mx-auto h-[48px] w-[48px] rounded-full bg-gradient-to-br from-[#10b981] via-[#60a5fa] to-[#a855f7] text-center text-[14px] font-semibold text-[#0b1115] leading-[48px]">JC</div>
+        <div class="mt-3 text-center text-[13px] font-semibold">Jordan Chen</div>
+        <div class="text-center text-[9px] text-[#10b981]">@jordan.dev</div>
+        <div class="mt-2 text-center text-[9px] text-[#5d747c]">Full-stack developer &amp; cooperative builder.</div>
+
+        <div class="mt-4 text-[8px] uppercase tracking-[0.3em] text-[#5d747c] font-['JetBrains_Mono']">Featured</div>
+        <div class="mt-2 grid grid-cols-2 gap-2 text-[9px]">
+          <div class="rounded-[8px] border border-[rgba(255,255,255,0.06)] bg-[#101e24] px-2 py-2 text-center">GitHub</div>
+          <div class="rounded-[8px] border border-[rgba(255,255,255,0.06)] bg-[#101e24] px-2 py-2 text-center">Substack</div>
+          <div class="rounded-[8px] border border-[rgba(255,255,255,0.06)] bg-[#101e24] px-2 py-2 text-center">Portfolio</div>
+          <div class="rounded-[8px] border border-[rgba(255,255,255,0.06)] bg-[#101e24] px-2 py-2 text-center">DM Me</div>
+        </div>
+
+        <div class="mt-4 text-[8px] uppercase tracking-[0.3em] text-[#5d747c] font-['JetBrains_Mono']">Developer</div>
+        <div class="mt-2 space-y-2 text-[9px]">
+          <div class="flex items-center justify-between rounded-[8px] border border-[rgba(255,255,255,0.06)] bg-[#101e24] px-2 py-2">
+            <span>GitHub</span>
+            <span class="text-[#5d747c]">2.8K stars</span>
+          </div>
+          <div class="flex items-center justify-between rounded-[8px] border border-[rgba(255,255,255,0.06)] bg-[#101e24] px-2 py-2">
+            <span>crdt-rs</span>
+            <span class="text-[#5d747c]">187K DL</span>
+          </div>
+        </div>
+
+        <div class="mt-4 text-center text-[8px] text-[#5d747c] font-['JetBrains_Mono']">powered by <span class="text-[#10b981]">kogi-net</span></div>
+      </div>
+    </div>
+    <div class="p-4">
+      <div class="text-[9px] uppercase tracking-[0.3em] text-[#5d747c] font-['JetBrains_Mono']">Share Linktree</div>
+      <div class="mt-3 grid grid-cols-2 gap-2 text-[9px]">
+        <button class="rounded-[6px] border border-[rgba(16,185,129,0.35)] bg-[rgba(16,185,129,0.12)] px-2 py-2 text-[#10b981]" type="button">
+          Copy URL
+        </button>
+        <button class="rounded-[6px] border border-[rgba(16,185,129,0.35)] bg-[rgba(16,185,129,0.12)] px-2 py-2 text-[#10b981]" type="button">
+          QR Code
+        </button>
+        <button class="rounded-[6px] border border-[rgba(255,255,255,0.08)] bg-[#101e24] px-2 py-2 text-[#8ea6ad]" type="button">
+          Embed Widget
+        </button>
+        <button class="rounded-[6px] border border-[rgba(255,255,255,0.08)] bg-[#101e24] px-2 py-2 text-[#8ea6ad]" type="button">
+          Export vCard
+        </button>
+      </div>
+      <div class="mt-3 text-[9px] text-[#5d747c]">Custom domain: <span class="text-[#10b981]">links.jordanchen.dev</span></div>
+    </div>
+  </aside>
+</section>
