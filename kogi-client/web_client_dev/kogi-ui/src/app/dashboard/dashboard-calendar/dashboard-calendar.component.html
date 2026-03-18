@@ -1,4 +1,4 @@
-<section class="mb-4 flex flex-wrap items-center gap-3 rounded-[12px] border border-[rgba(255,255,255,0.06)] bg-[#0f1f26] p-4">
+<!-- <section class="mb-4 flex flex-wrap items-center gap-3 rounded-[12px] border border-[rgba(255,255,255,0.06)] bg-[#0f1f26] p-4">
   <div>
     <div class="text-[10px] uppercase tracking-[0.3em] text-[#5d747c] font-['JetBrains_Mono']">Office / Calendar</div>
     <div class="text-[11px] text-[#8ea6ad]">Unified calendar for all schedules and external platforms.</div>
@@ -204,4 +204,592 @@
       </div>
     </section>
   </aside>
+</section> -->
+
+
+<!-- ══════════════════════════════════════════════
+     HEADER
+══════════════════════════════════════════════ -->
+<section class="mb-4 flex flex-wrap items-center gap-3 rounded-xl border bd bg-[#0f1f26] p-4">
+  <div>
+    <div class="font-mono text-9 uppercase tracking-widest text-[#5d747c]">Office / Calendar</div>
+    <div class="mt-0.5 text-11 text-[#8ea6ad]">Unified calendar for all schedules, bookings, meetings, and communications.</div>
+  </div>
+  <div class="ml-auto flex flex-wrap gap-2">
+    <button class="btn-t flex items-center gap-1 rounded-lg border bd-mid bg-[#101e24] px-3 py-1.5 font-mono text-10 text-[#8ea6ad]">📅 New Calendar</button>
+    <button class="btn-t flex items-center gap-1 rounded-lg border bd-mid bg-[#101e24] px-3 py-1.5 font-mono text-10 text-[#8ea6ad]">🔄 Sync Sources</button>
+    <button class="btn-t flex items-center gap-1 rounded-lg border bd-blue-t bg-blue-t px-3 py-1.5 font-mono text-10 text-[#60a5fa]">📌 Book Appointment</button>
+    <button class="btn-t flex items-center gap-1 rounded-lg border bd-purple-t bg-purple-t px-3 py-1.5 font-mono text-10 text-[#a855f7]">🎯 New Sprint</button>
+    <button class="btn-t flex items-center gap-1 rounded-lg border bd-amber-t bg-amber-t px-3 py-1.5 font-mono text-10 text-[#f59e0b]">⏱ Timebox</button>
+    <button class="btn-t rounded-lg bg-gradient-to-br from-[#10b981] to-[#059669] px-3 py-1.5 font-mono text-10 font-semibold text-white">+ New Event</button>
+  </div>
 </section>
+
+<!-- ══════════════════════════════════════════════
+     STAT TILES
+══════════════════════════════════════════════ -->
+<section class="mb-4 grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-8">
+  <div class="rounded-xl border bd bg-[#0f1f26] p-3"><div class="text-xl font-semibold text-[#10b981]">7</div><div class="mt-0.5 font-mono text-9 uppercase tracking-widest text-[#5d747c]">Calendars</div></div>
+  <div class="rounded-xl border bd bg-[#0f1f26] p-3"><div class="text-xl font-semibold text-[#60a5fa]">3</div><div class="mt-0.5 font-mono text-9 uppercase tracking-widest text-[#5d747c]">Ext. Links</div></div>
+  <div class="rounded-xl border bd bg-[#0f1f26] p-3"><div class="text-xl font-semibold text-[#f59e0b]">18</div><div class="mt-0.5 font-mono text-9 uppercase tracking-widest text-[#5d747c]">Events/Wk</div></div>
+  <div class="rounded-xl border bd bg-[#0f1f26] p-3"><div class="text-xl font-semibold text-[#a855f7]">2</div><div class="mt-0.5 font-mono text-9 uppercase tracking-widest text-[#5d747c]">Conflicts</div></div>
+  <div class="rounded-xl border bd bg-[#0f1f26] p-3"><div class="text-xl font-semibold text-[#22d3ee]">5</div><div class="mt-0.5 font-mono text-9 uppercase tracking-widest text-[#5d747c]">Bookings</div></div>
+  <div class="rounded-xl border bd bg-[#0f1f26] p-3"><div class="text-xl font-semibold text-[#f87171]">3</div><div class="mt-0.5 font-mono text-9 uppercase tracking-widest text-[#5d747c]">Alerts</div></div>
+  <div class="rounded-xl border bd bg-[#0f1f26] p-3"><div class="text-xl font-semibold text-[#10b981]">Q1</div><div class="mt-0.5 font-mono text-9 uppercase tracking-widest text-[#5d747c]">Quarter</div></div>
+  <div class="rounded-xl border bd bg-[#0f1f26] p-3"><div class="text-base font-semibold text-[#f59e0b]">Spr 4</div><div class="mt-0.5 font-mono text-9 uppercase tracking-widest text-[#5d747c]">Active Sprint</div></div>
+</section>
+
+<!-- ══════════════════════════════════════════════
+     MAIN 3-COLUMN GRID
+══════════════════════════════════════════════ -->
+<div class="grid grid-cols-1 gap-4 xl:grid-cols-[260px_minmax(0,1fr)_270px]">
+
+  <!-- ─── LEFT SIDEBAR ─────────────────────────── -->
+  <aside class="flex flex-col gap-3">
+
+    <!-- My Calendars -->
+    <div class="overflow-hidden rounded-xl border bd bg-[#0f1f26]">
+      <div class="flex items-center justify-between border-b bd px-4 py-3">
+        <div>
+          <div class="font-mono text-9 uppercase tracking-widest text-[#5d747c]">My Calendars</div>
+          <div class="mt-0.5 text-10 text-[#8ea6ad]">Master, team &amp; external.</div>
+        </div>
+        <a href="#" class="link-hover font-mono text-9 text-[#5d747c]">All →</a>
+      </div>
+      <div class="divide-dim">
+        <div class="flex items-center justify-between px-4 py-2.5">
+          <div><div class="text-10 font-semibold">Master Office Calendar</div><div class="text-9 text-[#5d747c]">All schedules</div></div>
+          <span class="rounded-md border bd-green-t bg-green-t px-2 py-0.5 font-mono text-9 font-medium text-[#10b981]">Primary</span>
+        </div>
+        <div class="flex items-center justify-between px-4 py-2.5">
+          <div><div class="text-10 font-semibold">Client Delivery</div><div class="text-9 text-[#5d747c]">Milestones &amp; demos</div></div>
+          <span class="rounded-md border bd-blue-t bg-blue-t px-2 py-0.5 font-mono text-9 font-medium text-[#60a5fa]">Team</span>
+        </div>
+        <div class="flex items-center justify-between px-4 py-2.5">
+          <div><div class="text-10 font-semibold">Governance</div><div class="text-9 text-[#5d747c]">Votes &amp; assemblies</div></div>
+          <span class="rounded-md border bd-amber-t bg-amber-t px-2 py-0.5 font-mono text-9 font-medium text-[#f59e0b]">Community</span>
+        </div>
+        <div class="flex items-center justify-between px-4 py-2.5">
+          <div><div class="text-10 font-semibold">Personal Focus</div><div class="text-9 text-[#5d747c]">Timeboxes &amp; deep work</div></div>
+          <span class="rounded-md border bd bg-[#101e24] px-2 py-0.5 font-mono text-9 font-medium text-[#5d747c]">Local</span>
+        </div>
+      </div>
+      <div class="border-t bd px-4 py-3">
+        <div class="mb-2 font-mono text-9 uppercase tracking-widest text-[#5d747c]">External Sources</div>
+        <div class="flex flex-col gap-1.5 text-10">
+          <div class="flex items-center justify-between rounded-lg border bd-green-t bg-green-t px-2.5 py-2"><span>Google Calendar</span><span class="text-[#10b981]">Synced</span></div>
+          <div class="flex items-center justify-between rounded-lg border bd-blue-t bg-blue-t px-2.5 py-2"><span>Meetup</span><span class="text-[#60a5fa]">Linked</span></div>
+          <div class="flex items-center justify-between rounded-lg border bd bg-[#101e24] px-2.5 py-2"><span>Outlook</span><span class="text-[#5d747c]">Pending</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bookings & Appointments -->
+    <div class="overflow-hidden rounded-xl border bd bg-[#0f1f26]">
+      <div class="flex items-center justify-between border-b bd px-4 py-3">
+        <div class="font-mono text-9 uppercase tracking-widest text-[#5d747c]">Bookings &amp; Appointments</div>
+        <a href="#" class="link-hover font-mono text-9 text-[#5d747c]">Details →</a>
+      </div>
+      <div class="flex flex-col gap-2 p-3">
+        <div class="row-hover flex items-start gap-2.5 rounded-lg border bd bg-[#101e24] p-2.5">
+          <div class="mt-1 h-2 w-2 shrink-0 rounded-full bg-[#10b981]"></div>
+          <div class="flex-1 min-w-0"><div class="text-10 font-semibold">Dentist Appointment</div><div class="text-9 text-[#5d747c]">Mar 19 · 9:00 AM · 45 min</div></div>
+          <span class="rounded-md border bd-green-t bg-green-t px-1.5 py-0.5 font-mono text-9 text-[#10b981]">Confirmed</span>
+        </div>
+        <div class="row-hover flex items-start gap-2.5 rounded-lg border bd bg-[#101e24] p-2.5">
+          <div class="mt-1 h-2 w-2 shrink-0 rounded-full bg-[#60a5fa]"></div>
+          <div class="flex-1 min-w-0"><div class="text-10 font-semibold">Design Review</div><div class="text-9 text-[#5d747c]">Mar 20 · 2:00 PM · 1 hr</div></div>
+          <span class="rounded-md border bd-blue-t bg-blue-t px-1.5 py-0.5 font-mono text-9 text-[#60a5fa]">Booked</span>
+        </div>
+        <div class="row-hover flex items-start gap-2.5 rounded-lg border bd bg-[#101e24] p-2.5">
+          <div class="mt-1 h-2 w-2 shrink-0 rounded-full bg-[#f59e0b]"></div>
+          <div class="flex-1 min-w-0"><div class="text-10 font-semibold">Strategy 1:1</div><div class="text-9 text-[#5d747c]">Mar 22 · 11:00 AM · 30 min</div></div>
+          <span class="rounded-md border bd-amber-t bg-amber-t px-1.5 py-0.5 font-mono text-9 text-[#f59e0b]">Pending</span>
+        </div>
+        <button class="btn-t mt-1 w-full rounded-lg border bd-mid bg-[#101e24] py-1.5 font-mono text-10 text-[#8ea6ad]">+ Book Slot</button>
+      </div>
+    </div>
+
+    <!-- Notes -->
+    <div class="overflow-hidden rounded-xl border bd bg-[#0f1f26]">
+      <div class="flex items-center justify-between border-b bd px-4 py-3">
+        <div class="font-mono text-9 uppercase tracking-widest text-[#5d747c]">Notes</div>
+        <a href="#" class="link-hover font-mono text-9 text-[#5d747c]">All Notes →</a>
+      </div>
+      <div class="flex flex-col gap-2 p-3">
+        <div class="rounded-r-lg border-l-2 border-[#10b981] bg-[#101e24] p-2.5">
+          <div class="text-10 font-semibold">Sprint kickoff checklist</div>
+          <div class="mt-0.5 text-9 text-[#5d747c]">Finalize acceptance criteria before Mar 22 planning call</div>
+          <div class="mt-1 font-mono text-8 text-[#5d747c]">Mar 17 · Sprint 4</div>
+        </div>
+        <div class="rounded-r-lg border-l-2 border-[#60a5fa] bg-[#101e24] p-2.5">
+          <div class="text-10 font-semibold">Client feedback summary</div>
+          <div class="mt-0.5 text-9 text-[#5d747c]">Three UX issues flagged — share with design before Friday demo</div>
+          <div class="mt-1 font-mono text-8 text-[#5d747c]">Mar 18 · Client Delivery</div>
+        </div>
+        <div class="rounded-r-lg border-l-2 border-[#f59e0b] bg-[#101e24] p-2.5">
+          <div class="text-10 font-semibold">Governance agenda draft</div>
+          <div class="mt-0.5 text-9 text-[#5d747c]">Vote items 3 &amp; 5 need quorum confirmation</div>
+          <div class="mt-1 font-mono text-8 text-[#5d747c]">Mar 16 · Governance</div>
+        </div>
+        <button class="btn-t mt-1 w-full rounded-lg border bd-mid bg-[#101e24] py-1.5 font-mono text-10 text-[#8ea6ad]">+ New Note</button>
+      </div>
+    </div>
+
+  </aside>
+
+  <!-- ─── CENTER ────────────────────────────────── -->
+  <div class="flex flex-col gap-4">
+
+    <!-- Calendar Widget -->
+    <div class="overflow-hidden rounded-xl border bd bg-[#0f1f26]">
+      <div class="border-b bd p-4">
+        <!-- nav -->
+        <div class="flex items-center justify-between">
+          <button class="btn-t flex h-6 w-6 items-center justify-center rounded-md border bd-mid bg-[#101e24] font-mono text-11 text-[#5d747c]">‹</button>
+          <div class="font-mono text-11 text-[#e6f1f4]">March 2026</div>
+          <button class="btn-t flex h-6 w-6 items-center justify-center rounded-md border bd-mid bg-[#101e24] font-mono text-11 text-[#5d747c]">›</button>
+        </div>
+        <!-- day headers -->
+        <div class="mt-3 grid grid-cols-7 gap-1 text-center font-mono text-8 text-[#5d747c]">
+          <div>S</div><div>M</div><div>T</div><div>W</div><div>T</div><div>F</div><div>S</div>
+        </div>
+        <!-- days -->
+        <div class="mt-1 grid grid-cols-7 gap-1">
+          <div class="cal-day dimmed">22</div><div class="cal-day dimmed">23</div><div class="cal-day dimmed">24</div>
+          <div class="cal-day dimmed">25</div><div class="cal-day dimmed">26</div><div class="cal-day dimmed">27</div><div class="cal-day dimmed">28</div>
+          <div class="cal-day dimmed">1</div>
+          <div class="cal-day">2<span class="dot bg-[#10b981]"></span></div>
+          <div class="cal-day">3</div>
+          <div class="cal-day">4<span class="dot bg-[#60a5fa]"></span></div>
+          <div class="cal-day">5</div><div class="cal-day">6</div><div class="cal-day">7</div><div class="cal-day">8</div>
+          <div class="cal-day">9<span class="dot bg-[#f59e0b]"></span></div>
+          <div class="cal-day">10</div><div class="cal-day">11</div><div class="cal-day">12</div>
+          <div class="cal-day">13<span class="dot bg-[#10b981]"></span></div>
+          <div class="cal-day">14</div><div class="cal-day">15</div><div class="cal-day">16</div>
+          <div class="cal-day">17<span class="dot bg-[#a855f7]"></span></div>
+          <div class="cal-day today">18</div>
+          <div class="cal-day">19<span class="dot bg-[#60a5fa]"></span></div>
+          <div class="cal-day">20</div>
+          <div class="cal-day">21<span class="dot bg-[#10b981]"></span></div>
+          <div class="cal-day">22<span class="dot bg-[#f59e0b]"></span></div>
+          <div class="cal-day">23<span class="dot bg-[#10b981]"></span></div>
+          <div class="cal-day">24</div><div class="cal-day">25</div><div class="cal-day">26</div>
+          <div class="cal-day">27<span class="dot bg-[#f87171]"></span></div>
+          <div class="cal-day">28</div><div class="cal-day">29</div>
+          <div class="cal-day">30<span class="dot bg-[#60a5fa]"></span></div>
+          <div class="cal-day">31</div>
+        </div>
+        <!-- view toggle -->
+        <div class="mt-3 flex gap-1.5">
+          <button class="btn-t rounded-md bg-gradient-to-br from-[#10b981] to-[#059669] px-2.5 py-1 font-mono text-8 font-semibold text-white">Day</button>
+          <button class="btn-t rounded-md border bd-mid bg-[#101e24] px-2.5 py-1 font-mono text-8 text-[#8ea6ad]">Week</button>
+          <button class="btn-t rounded-md border bd-mid bg-[#101e24] px-2.5 py-1 font-mono text-8 text-[#8ea6ad]">Month</button>
+          <button class="btn-t rounded-md border bd-mid bg-[#101e24] px-2.5 py-1 font-mono text-8 text-[#8ea6ad]">Quarter</button>
+          <button class="btn-t rounded-md border bd-mid bg-[#101e24] px-2.5 py-1 font-mono text-8 text-[#8ea6ad]">Year</button>
+        </div>
+      </div>
+
+      <!-- Today timeline -->
+      <div class="p-4">
+        <div class="mb-3 flex items-center justify-between">
+          <div class="font-mono text-9 uppercase tracking-widest text-[#5d747c]">Today — Wed Mar 18</div>
+          <a href="#" class="link-hover font-mono text-9 text-[#5d747c]">Full day view →</a>
+        </div>
+        <div class="flex flex-col gap-2.5">
+
+          <!-- Deep Work -->
+          <div class="rounded-lg border bd-purple-t bg-purple-t p-2.5">
+            <div class="flex items-center justify-between text-10">
+              <span class="flex items-center gap-1.5 font-semibold">⏱ Deep Work — Feature Build</span>
+              <span class="font-mono text-[#a855f7]">8:00–10:00 AM</span>
+            </div>
+            <div class="mt-2 flex items-center gap-2">
+              <div class="prog flex-1"><div class="prog-fill w-[65%]" style="background:linear-gradient(90deg,#a855f7,#7c3aed)"></div></div>
+              <span class="font-mono text-9 text-[#5d747c]">2 hr timebox</span>
+            </div>
+          </div>
+
+          <!-- Studio Sync -->
+          <div class="rounded-lg border bd-green-t bg-green-t p-2.5">
+            <div class="flex items-center justify-between text-10">
+              <span class="flex items-center gap-1.5 font-semibold">📹 Studio Sync</span>
+              <span class="font-mono text-[#10b981]">10:00 AM</span>
+            </div>
+            <div class="mt-1 text-9 text-[#5d747c]">Master schedule · Google Meet · 30 min</div>
+            <div class="mt-2 flex gap-1.5">
+              <button class="btn-t rounded-md bg-gradient-to-br from-[#10b981] to-[#059669] px-2 py-1 font-mono text-8 font-semibold text-white">Join Now</button>
+              <button class="btn-t rounded-md border bd-mid bg-[#101e24] px-2 py-1 font-mono text-8 text-[#8ea6ad]">Notes</button>
+              <button class="btn-t rounded-md border bd-mid bg-[#101e24] px-2 py-1 font-mono text-8 text-[#8ea6ad]">Details</button>
+            </div>
+          </div>
+
+          <!-- Client Review -->
+          <div class="rounded-lg border bd-blue-t bg-blue-t p-2.5">
+            <div class="flex items-center justify-between text-10">
+              <span class="flex items-center gap-1.5 font-semibold">🤝 Client Review</span>
+              <span class="font-mono text-[#60a5fa]">1:00 PM</span>
+            </div>
+            <div class="mt-1 text-9 text-[#5d747c]">Google Meet · 1 hr · Acme Corp</div>
+            <div class="mt-2 flex gap-1.5">
+              <button class="btn-t rounded-md border bd-blue-t bg-blue-t px-2 py-1 font-mono text-8 text-[#60a5fa]">Join Video</button>
+              <button class="btn-t rounded-md border bd-mid bg-[#101e24] px-2 py-1 font-mono text-8 text-[#8ea6ad]">Dial In</button>
+              <button class="btn-t rounded-md border bd-mid bg-[#101e24] px-2 py-1 font-mono text-8 text-[#8ea6ad]">Reschedule</button>
+            </div>
+          </div>
+
+          <!-- All-Hands -->
+          <div class="rounded-lg border bd-amber-t bg-amber-t p-2.5">
+            <div class="flex items-center justify-between text-10">
+              <span class="flex items-center gap-1.5 font-semibold">🎤 All-Hands Conference</span>
+              <span class="font-mono text-[#f59e0b]">3:30 PM</span>
+            </div>
+            <div class="mt-1 text-9 text-[#5d747c]">Zoom Webinar · 45 min · 120 attendees</div>
+            <div class="mt-2 flex gap-1.5">
+              <button class="btn-t rounded-md border bd-amber-t bg-amber-t px-2 py-1 font-mono text-8 text-[#f59e0b]">Join Conf</button>
+              <button class="btn-t rounded-md border bd-mid bg-[#101e24] px-2 py-1 font-mono text-8 text-[#8ea6ad]">Agenda</button>
+              <button class="btn-t rounded-md border bd-mid bg-[#101e24] px-2 py-1 font-mono text-8 text-[#8ea6ad]">Broadcast</button>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- Sprints & PI Planning -->
+    <div class="overflow-hidden rounded-xl border bd bg-[#0f1f26]">
+      <div class="flex items-center justify-between border-b bd px-4 py-3">
+        <div>
+          <div class="font-mono text-9 uppercase tracking-widest text-[#5d747c]">Sprints &amp; PI Planning</div>
+          <div class="mt-0.5 text-10 text-[#8ea6ad]">Active sprint, PI cadence, and velocity tracking.</div>
+        </div>
+        <a href="#" class="link-hover font-mono text-9 text-[#5d747c]">Sprint Board →</a>
+      </div>
+      <div class="flex flex-col gap-4 p-4">
+
+        <!-- Active Sprint -->
+        <div class="rounded-xl border bd-green-t bg-green-t p-3">
+          <div class="mb-1.5 flex items-center justify-between">
+            <div class="text-11 font-semibold">Sprint 4 — Feature Hardening</div>
+            <span class="rounded-md border bd-green-t bg-green-t px-2 py-0.5 font-mono text-9 text-[#10b981]">Active</span>
+          </div>
+          <div class="mb-2 text-9 text-[#5d747c]">Mar 11 → Mar 25 · 14 days · 32 pts committed</div>
+          <div class="prog"><div class="prog-fill w-[52%] bg-gradient-to-r from-[#10b981] to-[#059669]"></div></div>
+          <div class="mt-1 flex justify-between font-mono text-9 text-[#5d747c]"><span>Day 7 of 14</span><span>52% complete</span></div>
+          <div class="mt-2.5 flex gap-1.5">
+            <button class="btn-t rounded-md border bd-mid bg-[#101e24] px-2 py-1 font-mono text-8 text-[#8ea6ad]">Backlog</button>
+            <button class="btn-t rounded-md border bd-mid bg-[#101e24] px-2 py-1 font-mono text-8 text-[#8ea6ad]">Burndown</button>
+            <button class="btn-t rounded-md border bd-mid bg-[#101e24] px-2 py-1 font-mono text-8 text-[#8ea6ad]">Retro</button>
+            <button class="btn-t rounded-md bg-gradient-to-br from-[#10b981] to-[#059669] px-2 py-1 font-mono text-8 font-semibold text-white">Sprint Details →</button>
+          </div>
+        </div>
+
+        <!-- PI Sprint Grid -->
+        <div>
+          <div class="mb-2 flex items-center justify-between">
+            <div class="font-mono text-9 uppercase tracking-widest text-[#5d747c]">PI 2026-Q1 · Program Increment</div>
+            <a href="#" class="link-hover font-mono text-9 text-[#5d747c]">PI Board →</a>
+          </div>
+          <div class="grid grid-cols-4 gap-2">
+            <div class="rounded-lg border bd bg-[#101e24] p-2 text-center"><div class="font-mono text-9 text-[#10b981]">Sprint 1</div><div class="mt-0.5 text-8 text-[#5d747c]">✓ Done</div></div>
+            <div class="rounded-lg border bd bg-[#101e24] p-2 text-center"><div class="font-mono text-9 text-[#10b981]">Sprint 2</div><div class="mt-0.5 text-8 text-[#5d747c]">✓ Done</div></div>
+            <div class="rounded-lg border bd-green-t bg-green-t p-2 text-center"><div class="font-mono text-9 text-[#10b981]">Sprint 3</div><div class="mt-0.5 text-8 text-[#5d747c]">▶ Active</div></div>
+            <div class="rounded-lg border bd bg-[#101e24] p-2 text-center opacity-50"><div class="font-mono text-9 text-[#5d747c]">Sprint 4</div><div class="mt-0.5 text-8 text-[#5d747c]">— Planned</div></div>
+          </div>
+        </div>
+
+        <!-- Quarters -->
+        <div>
+          <div class="mb-2 flex items-center justify-between">
+            <div class="font-mono text-9 uppercase tracking-widest text-[#5d747c]">2026 Quarters</div>
+            <a href="#" class="link-hover font-mono text-9 text-[#5d747c]">Annual Roadmap →</a>
+          </div>
+          <div class="grid grid-cols-4 gap-2">
+            <div class="rounded-lg border bd-green-t bg-green-t p-2">
+              <div class="font-mono text-9 text-[#10b981]">Q1</div>
+              <div class="text-8 text-[#5d747c]">Jan–Mar · Active</div>
+              <div class="prog mt-1.5"><div class="prog-fill w-[78%] bg-gradient-to-r from-[#10b981] to-[#059669]"></div></div>
+            </div>
+            <div class="rounded-lg border bd bg-[#101e24] p-2 opacity-70">
+              <div class="font-mono text-9 text-[#5d747c]">Q2</div>
+              <div class="text-8 text-[#5d747c]">Apr–Jun</div>
+              <div class="prog mt-1.5"></div>
+            </div>
+            <div class="rounded-lg border bd bg-[#101e24] p-2 opacity-50">
+              <div class="font-mono text-9 text-[#5d747c]">Q3</div>
+              <div class="text-8 text-[#5d747c]">Jul–Sep</div>
+              <div class="prog mt-1.5"></div>
+            </div>
+            <div class="rounded-lg border bd bg-[#101e24] p-2 opacity-50">
+              <div class="font-mono text-9 text-[#5d747c]">Q4</div>
+              <div class="text-8 text-[#5d747c]">Oct–Dec</div>
+              <div class="prog mt-1.5"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Meetings & Conferences -->
+    <div class="overflow-hidden rounded-xl border bd bg-[#0f1f26]">
+      <div class="flex items-center justify-between border-b bd px-4 py-3">
+        <div>
+          <div class="font-mono text-9 uppercase tracking-widest text-[#5d747c]">Meetings &amp; Conferences</div>
+          <div class="mt-0.5 text-10 text-[#8ea6ad]">Scheduled, recurring, and ad-hoc.</div>
+        </div>
+        <a href="#" class="link-hover font-mono text-9 text-[#5d747c]">Meeting Hub →</a>
+      </div>
+      <div class="flex flex-col gap-2.5 p-4">
+        <div class="grid grid-cols-2 gap-2">
+          <button class="btn-t flex items-center justify-center gap-1.5 rounded-lg bg-gradient-to-br from-[#10b981] to-[#059669] py-2 font-mono text-10 font-semibold text-white">📹 Start Video</button>
+          <button class="btn-t flex items-center justify-center gap-1.5 rounded-lg border bd-blue-t bg-blue-t py-2 font-mono text-10 text-[#60a5fa]">📞 Start Voice</button>
+          <button class="btn-t flex items-center justify-center gap-1.5 rounded-lg border bd-purple-t bg-purple-t py-2 font-mono text-10 text-[#a855f7]">🖥 Schedule Conf</button>
+          <button class="btn-t flex items-center justify-center gap-1.5 rounded-lg border bd-mid bg-[#101e24] py-2 font-mono text-10 text-[#8ea6ad]">🔗 Booking Link</button>
+        </div>
+        <div class="row-hover flex items-center gap-2.5 rounded-lg border bd bg-[#101e24] p-2.5">
+          <div class="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border bd-green-t bg-green-t text-sm">📹</div>
+          <div class="flex-1 min-w-0"><div class="text-10 font-semibold">Weekly Design Sync</div><div class="text-9 text-[#5d747c]">Thu 10:00 AM · Recurring · Google Meet</div></div>
+          <span class="rounded-md border bd-green-t bg-green-t px-1.5 py-0.5 font-mono text-9 text-[#10b981]">Tomorrow</span>
+        </div>
+        <div class="row-hover flex items-center gap-2.5 rounded-lg border bd bg-[#101e24] p-2.5">
+          <div class="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border bd-blue-t bg-blue-t text-sm">🎤</div>
+          <div class="flex-1 min-w-0"><div class="text-10 font-semibold">Quarterly All-Hands</div><div class="text-9 text-[#5d747c]">Mar 25 · 10:00 AM · Zoom · 120 attendees</div></div>
+          <span class="rounded-md border bd-blue-t bg-blue-t px-1.5 py-0.5 font-mono text-9 text-[#60a5fa]">Conf</span>
+        </div>
+        <div class="row-hover flex items-center gap-2.5 rounded-lg border bd bg-[#101e24] p-2.5">
+          <div class="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border bd-amber-t bg-amber-t text-sm">🤝</div>
+          <div class="flex-1 min-w-0"><div class="text-10 font-semibold">Vendor Onboarding</div><div class="text-9 text-[#5d747c]">Mar 21 · 3:00 PM · Teams · External</div></div>
+          <span class="rounded-md border bd-amber-t bg-amber-t px-1.5 py-0.5 font-mono text-9 text-[#f59e0b]">Ext</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Custom Timeboxes -->
+    <div class="overflow-hidden rounded-xl border bd bg-[#0f1f26]">
+      <div class="flex items-center justify-between border-b bd px-4 py-3">
+        <div>
+          <div class="font-mono text-9 uppercase tracking-widest text-[#5d747c]">Custom Timeboxes &amp; Durations</div>
+          <div class="mt-0.5 text-10 text-[#8ea6ad]">Focus blocks, pomodoros, custom timers.</div>
+        </div>
+        <a href="#" class="link-hover font-mono text-9 text-[#5d747c]">Time Tracker →</a>
+      </div>
+      <div class="flex flex-col gap-2.5 p-4">
+        <div class="grid grid-cols-3 gap-2">
+          <button class="btn-t rounded-lg border bd-mid bg-[#101e24] py-1.5 font-mono text-9 text-[#8ea6ad]">🍅 25 min</button>
+          <button class="btn-t rounded-lg border bd-mid bg-[#101e24] py-1.5 font-mono text-9 text-[#8ea6ad]">⏱ 50 min</button>
+          <button class="btn-t rounded-lg border bd-purple-t bg-purple-t py-1.5 font-mono text-9 text-[#a855f7]">+ Custom</button>
+        </div>
+        <!-- Active block -->
+        <div class="rounded-lg border bd-purple-t bg-purple-t p-3">
+          <div class="mb-2 flex items-center justify-between text-10">
+            <span class="font-semibold">Deep Work Block</span>
+            <span class="font-mono text-[#a855f7]">1:23:05 left</span>
+          </div>
+          <div class="prog"><div class="prog-fill w-[38%]" style="background:linear-gradient(90deg,#a855f7,#7c3aed)"></div></div>
+          <div class="mt-2 flex gap-1.5">
+            <button class="btn-t rounded-md border bd-mid bg-[#101e24] px-2 py-1 font-mono text-8 text-[#8ea6ad]">Pause</button>
+            <button class="btn-t rounded-md border bd-red-t bg-red-t px-2 py-1 font-mono text-8 text-[#f87171]">Stop</button>
+            <button class="btn-t rounded-md border bd-mid bg-[#101e24] px-2 py-1 font-mono text-8 text-[#8ea6ad]">Extend 15m</button>
+          </div>
+        </div>
+        <div class="row-hover flex items-center gap-2.5 rounded-lg border bd bg-[#101e24] p-2.5">
+          <div class="h-2 w-2 shrink-0 rounded-full bg-[#22d3ee]"></div>
+          <div class="flex-1 min-w-0"><div class="text-10 font-semibold">Admin &amp; Comms</div><div class="text-9 text-[#5d747c]">30 min · Daily at 4:30 PM</div></div>
+          <span class="rounded-md border bd-cyan-t bg-cyan-t px-1.5 py-0.5 font-mono text-9 text-[#22d3ee]">Recurring</span>
+        </div>
+        <div class="row-hover flex items-center gap-2.5 rounded-lg border bd bg-[#101e24] p-2.5">
+          <div class="h-2 w-2 shrink-0 rounded-full bg-[#f59e0b]"></div>
+          <div class="flex-1 min-w-0"><div class="text-10 font-semibold">Code Review Block</div><div class="text-9 text-[#5d747c]">45 min · Today 5:00 PM</div></div>
+          <span class="rounded-md border bd-amber-t bg-amber-t px-1.5 py-0.5 font-mono text-9 text-[#f59e0b]">Scheduled</span>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /center -->
+
+  <!-- ─── RIGHT SIDEBAR ─────────────────────────── -->
+  <aside class="flex flex-col gap-3">
+
+    <!-- Notifications & Alerts -->
+    <div class="overflow-hidden rounded-xl border bd bg-[#0f1f26]">
+      <div class="flex items-center justify-between border-b bd px-4 py-3">
+        <div class="flex items-center gap-2">
+          <div class="font-mono text-9 uppercase tracking-widest text-[#5d747c]">Notifications &amp; Alerts</div>
+          <span class="h-1.5 w-1.5 rounded-full bg-[#f87171]"></span>
+        </div>
+        <a href="#" class="link-hover font-mono text-9 text-[#5d747c]">All Alerts →</a>
+      </div>
+      <div class="flex flex-col gap-2 p-3">
+        <div class="rounded-lg border bd-red-t bg-red-t p-2.5">
+          <div class="flex items-center gap-1.5 font-mono text-9 font-semibold text-[#f87171]">⚠ Scheduling Conflict</div>
+          <div class="mt-1 text-9 text-[#5d747c]">Client Review overlaps with All-Hands at 3:30 PM</div>
+          <div class="mt-2 flex gap-1.5">
+            <button class="btn-t rounded-md border bd-red-t bg-red-t px-2 py-0.5 font-mono text-8 text-[#f87171]">Resolve</button>
+            <button class="btn-t rounded-md border bd-mid bg-[#101e24] px-2 py-0.5 font-mono text-8 text-[#8ea6ad]">Dismiss</button>
+          </div>
+        </div>
+        <div class="rounded-lg border bd-amber-t bg-amber-t p-2.5">
+          <div class="flex items-center gap-1.5 font-mono text-9 font-semibold text-[#f59e0b]">🔔 Reminder</div>
+          <div class="mt-1 text-9 text-[#5d747c]">Studio Sync in 45 minutes — prep checklist pending</div>
+        </div>
+        <div class="rounded-lg border bd-blue-t bg-blue-t p-2.5">
+          <div class="flex items-center gap-1.5 font-mono text-9 font-semibold text-[#60a5fa]">📩 Meeting Invite</div>
+          <div class="mt-1 text-9 text-[#5d747c]">Alice Chen invited you to Product Retrospective Mar 24</div>
+          <div class="mt-2 flex gap-1.5">
+            <button class="btn-t rounded-md bg-gradient-to-br from-[#10b981] to-[#059669] px-2 py-0.5 font-mono text-8 font-semibold text-white">Accept</button>
+            <button class="btn-t rounded-md border bd-red-t bg-red-t px-2 py-0.5 font-mono text-8 text-[#f87171]">Decline</button>
+            <button class="btn-t rounded-md border bd-mid bg-[#101e24] px-2 py-0.5 font-mono text-8 text-[#8ea6ad]">Maybe</button>
+          </div>
+        </div>
+        <div class="rounded-lg border bd-green-t bg-green-t p-2.5">
+          <div class="flex items-center gap-1.5 font-mono text-9 font-semibold text-[#10b981]">✓ Sync Complete</div>
+          <div class="mt-1 text-9 text-[#5d747c]">Google Calendar synced · 4 new events imported</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Communication Channels -->
+    <div class="overflow-hidden rounded-xl border bd bg-[#0f1f26]">
+      <div class="flex items-center justify-between border-b bd px-4 py-3">
+        <div>
+          <div class="font-mono text-9 uppercase tracking-widest text-[#5d747c]">Comms Channels</div>
+          <div class="mt-0.5 text-10 text-[#8ea6ad]">Messaging, calls &amp; broadcasts.</div>
+        </div>
+        <a href="#" class="link-hover font-mono text-9 text-[#5d747c]">Comms Hub →</a>
+      </div>
+      <div class="flex flex-col gap-1.5 p-3">
+
+        <div class="row-hover flex cursor-pointer items-center gap-2.5 rounded-lg border bd bg-[#101e24] p-2.5">
+          <div class="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border bd-green-t bg-green-t text-sm">📹</div>
+          <div class="flex-1 min-w-0"><div class="text-10 font-semibold">Video Conference</div><div class="text-9 text-[#5d747c]">Zoom · Meet · Teams</div></div>
+          <button class="btn-t rounded-md bg-gradient-to-br from-[#10b981] to-[#059669] px-2 py-1 font-mono text-8 font-semibold text-white">Start</button>
+        </div>
+
+        <div class="row-hover flex cursor-pointer items-center gap-2.5 rounded-lg border bd bg-[#101e24] p-2.5">
+          <div class="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border bd-blue-t bg-blue-t text-sm">📞</div>
+          <div class="flex-1 min-w-0"><div class="text-10 font-semibold">Voice Call</div><div class="text-9 text-[#5d747c]">PSTN · VoIP · SIP</div></div>
+          <button class="btn-t rounded-md border bd-blue-t bg-blue-t px-2 py-1 font-mono text-8 text-[#60a5fa]">Dial</button>
+        </div>
+
+        <div class="row-hover flex cursor-pointer items-center gap-2.5 rounded-lg border bd bg-[#101e24] p-2.5">
+          <div class="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border bd-purple-t bg-purple-t text-sm">💬</div>
+          <div class="flex-1 min-w-0"><div class="text-10 font-semibold">Text / Chat</div><div class="text-9 text-[#5d747c]">Slack · Teams · SMS</div></div>
+          <span class="min-w-[18px] rounded-full bg-[#f87171] px-1 py-0.5 text-center font-mono text-8 text-white">12</span>
+        </div>
+
+        <div class="row-hover flex cursor-pointer items-center gap-2.5 rounded-lg border bd bg-[#101e24] p-2.5">
+          <div class="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border bd-amber-t bg-amber-t text-sm">📢</div>
+          <div class="flex-1 min-w-0"><div class="text-10 font-semibold">Broadcast</div><div class="text-9 text-[#5d747c]">All calendars · push</div></div>
+          <button class="btn-t rounded-md border bd-amber-t bg-amber-t px-2 py-1 font-mono text-8 text-[#f59e0b]">Send</button>
+        </div>
+
+        <div class="row-hover flex cursor-pointer items-center gap-2.5 rounded-lg border bd bg-[#101e24] p-2.5">
+          <div class="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border bd-cyan-t bg-cyan-t text-sm">↔️</div>
+          <div class="flex-1 min-w-0"><div class="text-10 font-semibold">Direct Message</div><div class="text-9 text-[#5d747c]">Unicast · 1:1</div></div>
+          <button class="btn-t rounded-md border bd-cyan-t bg-cyan-t px-2 py-1 font-mono text-8 text-[#22d3ee]">DM</button>
+        </div>
+
+        <div class="row-hover flex cursor-pointer items-center gap-2.5 rounded-lg border bd bg-[#101e24] p-2.5">
+          <div class="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border bd-red-t bg-red-t text-sm">📡</div>
+          <div class="flex-1 min-w-0"><div class="text-10 font-semibold">Multicast Group</div><div class="text-9 text-[#5d747c]">Teams · segments</div></div>
+          <button class="btn-t rounded-md border bd-mid bg-[#101e24] px-2 py-1 font-mono text-8 text-[#8ea6ad]">Groups</button>
+        </div>
+      </div>
+      <!-- Quick compose -->
+      <div class="border-t bd p-3">
+        <div class="flex gap-2">
+          <input class="flex-1 rounded-lg border bd-mid bg-[#101e24] px-3 py-1.5 font-sans text-10 text-[#e6f1f4]" placeholder="Send a message or broadcast…" />
+          <button class="btn-t rounded-lg bg-gradient-to-br from-[#10b981] to-[#059669] px-3 py-1.5 font-mono text-10 font-semibold text-white">→</button>
+        </div>
+        <div class="mt-2 flex flex-wrap gap-1.5">
+          <button class="btn-t rounded-md border bd-mid bg-[#101e24] px-2 py-1 font-mono text-8 text-[#8ea6ad]">📹 Video</button>
+          <button class="btn-t rounded-md border bd-mid bg-[#101e24] px-2 py-1 font-mono text-8 text-[#8ea6ad]">📞 Voice</button>
+          <button class="btn-t rounded-md border bd-mid bg-[#101e24] px-2 py-1 font-mono text-8 text-[#8ea6ad]">📎 Attach</button>
+          <button class="btn-t rounded-md border bd-mid bg-[#101e24] px-2 py-1 font-mono text-8 text-[#8ea6ad]">🌐 Broadcast</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Availability -->
+    <div class="overflow-hidden rounded-xl border bd bg-[#0f1f26]">
+      <div class="flex items-center justify-between border-b bd px-4 py-3">
+        <div class="font-mono text-9 uppercase tracking-widest text-[#5d747c]">Availability</div>
+        <a href="#" class="link-hover font-mono text-9 text-[#5d747c]">Booking Page →</a>
+      </div>
+      <div class="p-3">
+        <div class="mb-2 text-10 text-[#8ea6ad]">Open slots across calendars:</div>
+        <div class="flex flex-col gap-1.5">
+          <div class="flex items-center justify-between rounded-md border bd-green-t bg-green-t px-2.5 py-1.5 font-mono text-9">
+            <span class="text-[#e6f1f4]">Today (remaining)</span><span class="text-[#10b981]">1 opening</span>
+          </div>
+          <div class="flex items-center justify-between rounded-md border bd-blue-t bg-blue-t px-2.5 py-1.5 font-mono text-9">
+            <span class="text-[#e6f1f4]">Tomorrow</span><span class="text-[#60a5fa]">2 openings</span>
+          </div>
+          <div class="flex items-center justify-between rounded-md border bd-blue-t bg-blue-t px-2.5 py-1.5 font-mono text-9">
+            <span class="text-[#e6f1f4]">Friday</span><span class="text-[#60a5fa]">4 openings</span>
+          </div>
+          <div class="flex items-center justify-between rounded-md border bd bg-[#101e24] px-2.5 py-1.5 font-mono text-9">
+            <span class="text-[#e6f1f4]">Weekend</span><span class="text-[#5d747c]">Blocked</span>
+          </div>
+        </div>
+        <button class="btn-t mt-2.5 w-full rounded-lg border bd-mid bg-[#101e24] py-1.5 font-mono text-9 text-[#8ea6ad]">Share Booking Link 🔗</button>
+      </div>
+    </div>
+
+    <!-- Upcoming Events -->
+    <div class="overflow-hidden rounded-xl border bd bg-[#0f1f26]">
+      <div class="flex items-center justify-between border-b bd px-4 py-3">
+        <div class="font-mono text-9 uppercase tracking-widest text-[#5d747c]">Upcoming Events</div>
+        <a href="#" class="link-hover font-mono text-9 text-[#5d747c]">All Events →</a>
+      </div>
+      <div class="flex flex-col gap-2 p-3">
+        <div class="row-hover flex items-center gap-2.5 rounded-lg border bd bg-[#101e24] p-2.5">
+          <div class="h-2 w-2 shrink-0 rounded-full bg-[#f59e0b]"></div>
+          <div class="flex-1 min-w-0"><div class="text-10 font-semibold">Governance Call</div><div class="text-9 text-[#5d747c]">Mar 17 · Community</div></div>
+          <span class="rounded-md border bd bg-[#101e24] px-1.5 py-0.5 font-mono text-8 text-[#5d747c]">Past</span>
+        </div>
+        <div class="row-hover flex items-center gap-2.5 rounded-lg border bd bg-[#101e24] p-2.5">
+          <div class="h-2 w-2 shrink-0 rounded-full bg-[#60a5fa]"></div>
+          <div class="flex-1 min-w-0"><div class="text-10 font-semibold">Prototype Demo</div><div class="text-9 text-[#5d747c]">Mar 19 · Studio</div></div>
+          <span class="rounded-md border bd-blue-t bg-blue-t px-1.5 py-0.5 font-mono text-8 text-[#60a5fa]">1 day</span>
+        </div>
+        <div class="row-hover flex items-center gap-2.5 rounded-lg border bd bg-[#101e24] p-2.5">
+          <div class="h-2 w-2 shrink-0 rounded-full bg-[#a855f7]"></div>
+          <div class="flex-1 min-w-0"><div class="text-10 font-semibold">Sprint 4 Planning</div><div class="text-9 text-[#5d747c]">Mar 22 · 10:00 AM</div></div>
+          <span class="rounded-md border bd-purple-t bg-purple-t px-1.5 py-0.5 font-mono text-8 text-[#a855f7]">4 days</span>
+        </div>
+        <div class="row-hover flex items-center gap-2.5 rounded-lg border bd bg-[#101e24] p-2.5">
+          <div class="h-2 w-2 shrink-0 rounded-full bg-[#10b981]"></div>
+          <div class="flex-1 min-w-0"><div class="text-10 font-semibold">Q1 Review Day</div><div class="text-9 text-[#5d747c]">Mar 31 · All-day</div></div>
+          <span class="rounded-md border bd-green-t bg-green-t px-1.5 py-0.5 font-mono text-8 text-[#10b981]">13 days</span>
+        </div>
+        <div class="row-hover flex items-center gap-2.5 rounded-lg border bd bg-[#101e24] p-2.5">
+          <div class="h-2 w-2 shrink-0 rounded-full bg-[#22d3ee]"></div>
+          <div class="flex-1 min-w-0"><div class="text-10 font-semibold">PI Planning 2026-Q2</div><div class="text-9 text-[#5d747c]">Apr 1 · Full day conf</div></div>
+          <span class="rounded-md border bd-cyan-t bg-cyan-t px-1.5 py-0.5 font-mono text-8 text-[#22d3ee]">14 days</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Page Links -->
+    <div class="overflow-hidden rounded-xl border bd bg-[#0f1f26]">
+      <div class="border-b bd px-4 py-3">
+        <div class="font-mono text-9 uppercase tracking-widest text-[#5d747c]">Pages &amp; Detail Views</div>
+      </div>
+      <div class="grid grid-cols-2 gap-2 p-3">
+        <a href="#" class="link-hover flex items-center gap-1.5 rounded-lg border bd bg-[#101e24] px-2.5 py-2 font-mono text-9 text-[#5d747c] transition-colors">📅 Calendar →</a>
+        <a href="#" class="link-hover flex items-center gap-1.5 rounded-lg border bd bg-[#101e24] px-2.5 py-2 font-mono text-9 text-[#5d747c] transition-colors">🤝 Bookings →</a>
+        <a href="#" class="link-hover flex items-center gap-1.5 rounded-lg border bd bg-[#101e24] px-2.5 py-2 font-mono text-9 text-[#5d747c] transition-colors">📹 Meetings →</a>
+        <a href="#" class="link-hover flex items-center gap-1.5 rounded-lg border bd bg-[#101e24] px-2.5 py-2 font-mono text-9 text-[#5d747c] transition-colors">🎤 Conferences →</a>
+        <a href="#" class="link-hover flex items-center gap-1.5 rounded-lg border bd bg-[#101e24] px-2.5 py-2 font-mono text-9 text-[#5d747c] transition-colors">🎯 Sprints →</a>
+        <a href="#" class="link-hover flex items-center gap-1.5 rounded-lg border bd bg-[#101e24] px-2.5 py-2 font-mono text-9 text-[#5d747c] transition-colors">📊 Quarters →</a>
+        <a href="#" class="link-hover flex items-center gap-1.5 rounded-lg border bd bg-[#101e24] px-2.5 py-2 font-mono text-9 text-[#5d747c] transition-colors">📝 Notes →</a>
+        <a href="#" class="link-hover flex items-center gap-1.5 rounded-lg border bd bg-[#101e24] px-2.5 py-2 font-mono text-9 text-[#5d747c] transition-colors">⏱ Timeboxes →</a>
+        <a href="#" class="link-hover flex items-center gap-1.5 rounded-lg border bd bg-[#101e24] px-2.5 py-2 font-mono text-9 text-[#5d747c] transition-colors">🔔 Alerts →</a>
+        <a href="#" class="link-hover flex items-center gap-1.5 rounded-lg border bd bg-[#101e24] px-2.5 py-2 font-mono text-9 text-[#5d747c] transition-colors">📡 Comms Hub →</a>
+      </div>
+    </div>
+
+  </aside>
+
+</div><!-- /main grid -->
