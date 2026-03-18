@@ -45,6 +45,12 @@ import { SpacesNetworkLinktreeComponent } from './spaces/spaces-network/network-
 import { SpacesNetworkLinktreeEditorComponent } from './spaces/spaces-network/network-linktree-editor/network-linktree-editor.component';
 import { SpacesNetworkLinkforestComponent } from './spaces/spaces-network/network-linkforest/network-linkforest.component';
 import { MarketplaceComponent } from './marketplace/marketplace.component';
+import { MarketplaceDashboardComponent } from './marketplace/marketplace-dashboard/marketplace-dashboard.component';
+import { MarketplaceBarterComponent } from './marketplace/marketplace-barter/marketplace-barter.component';
+import { MarketplaceBarterExchangeComponent } from './marketplace/marketplace-barter/marketplace-barter-exchange/marketplace-barter-exchange.component';
+import { MarketplaceBarterDealsComponent } from './marketplace/marketplace-barter/marketplace-barter-deals/marketplace-barter-deals.component';
+import { MarketplaceBarterOffersComponent } from './marketplace/marketplace-barter/marketplace-barter-offers/marketplace-barter-offers.component';
+import { MarketplaceBarterBidsComponent } from './marketplace/marketplace-barter/marketplace-barter-bids/marketplace-barter-bids.component';
 import { HubComponent } from './hub/hub.component';
 import { AssistantComponent } from './assistant/assistant.component';
 import { TestComponent } from './index/test/test';
@@ -122,7 +128,28 @@ export const routes: Routes = [
             }
         ]
     },
-    {path: 'marketplace', component: MarketplaceComponent, title: 'Marketplace'},
+    {
+        path: 'marketplace',
+        component: MarketplaceComponent,
+        title: 'Marketplace',
+        children: [
+            {path: '', redirectTo: 'dashboard', pathMatch: 'full'},
+            {path: 'dashboard', component: MarketplaceDashboardComponent, title: 'Marketplace Dashboard'},
+            {
+                path: 'barter',
+                component: MarketplaceBarterComponent,
+                children: [
+                    {path: '', redirectTo: 'exchange', pathMatch: 'full'},
+                    {path: 'exchange', component: MarketplaceBarterExchangeComponent, title: 'Barter Exchange'},
+                    {path: 'deals', component: MarketplaceBarterDealsComponent, title: 'Deal Room'},
+                    {path: 'offers', component: MarketplaceBarterOffersComponent, title: 'Offers'},
+                    {path: 'bids', component: MarketplaceBarterBidsComponent, title: 'Bids'},
+                    {path: '**', redirectTo: 'exchange'}
+                ]
+            },
+            {path: '**', redirectTo: 'dashboard'}
+        ]
+    },
     {path: 'hub', component: HubComponent, title: 'Organization Hub'},
     {path: 'assistant', component: AssistantComponent, title: 'Assistant'},
     {
