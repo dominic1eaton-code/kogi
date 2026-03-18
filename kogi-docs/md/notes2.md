@@ -1141,6 +1141,7 @@ portfolio
 - calendly
 - clickup
 - gohighlevel
+- ontraport
 - servicenow
 - coda
 - obdisdian
@@ -1504,7 +1505,54 @@ governance - strategy, tactics, frameworks, policies, procedures, board manageme
 infrastructure - analytics, data, IT, value chain, software, integrations, tools, vendors, master data management + root organization spreadsheet, 
 
 
+crm
+- collect user data
+    - communications channels: email, phone numbers, social media platform handles, 
+
 settings - options, parameters, configurations, profiles, personas, preferences
+
+
+implement the marketplace barter subcomponent that has further subpages for barter and exchanges, deals, offers, bids:
+
+the berter exchange subpage has the structure:
+
+file:///C:/dev/ws/kogi_dev/kogi-docs/screen-pages/kogi-barter-exchange.html
+
+synthesize these pages to form a common structure for the deal room subpage:
+file:///C:/dev/ws/kogi_dev/kogi-docs/screen-pages/exchange-03-deal-room.html
+file:///C:/dev/ws/kogi_dev/kogi-docs/screen-pages/kogi-deal-room.html
+file:///C:/dev/ws/kogi_dev/kogi-docs/screen-pages/03-deal-room.html
+
+read the docs in C:\dev\ws\kogi_dev\kogi-docs\md for the offer and bids subpages
+
+
+
+implement the marketplace campaigns subcomponent that implements all of the features on all of the following pages, and create a structure of subpages/subcomponents and subpages/subcomponents within those subpages, all within the campigns subcomponent, that best covers and structures all of the features+funcitonality of these pages and also has link buttons to appropriate subpages/subcomponents as well:
+
+file:///C:/dev/ws/kogi_dev/kogi-docs/screen-pages/kogi-marketing-campaigns.html
+file:///C:/dev/ws/kogi_dev/kogi-docs/screen-pages/kogi-bank-06-campaigns.html
+file:///C:/dev/ws/kogi_dev/kogi-docs/screen-pages/kogi-campaign-builder.html
+file:///C:/dev/ws/kogi_dev/kogi-docs/screen-pages/kogi-campaign-marketplace.html
+file:///C:/dev/ws/kogi_dev/kogi-docs/screen-pages/kogi-collective-campaign.html
+file:///C:/dev/ws/kogi_dev/kogi-docs/screen-pages/kogi-campaigns.html
+
+
+implement the marketplace market and listings subcomponents that implements all of the features on all of the following pages, and create a structure of subpages/subcomponents and subpages/subcomponents within those subpages, all within the market and listings subcomponents, that best covers and structures all of the features+funcitonality of these pages and also has link buttons to appropriate subpages/subcomponents as well: 
+
+file:///C:/dev/ws/kogi_dev/kogi-docs/screen-pages/kogi-marketplace%20(1).html
+file:///C:/dev/ws/kogi_dev/kogi-docs/screen-pages/kogi-marketplace-crm.html
+file:///C:/dev/ws/kogi_dev/kogi-docs/screen-pages/kogi-marketplace-grants.html
+file:///C:/dev/ws/kogi_dev/kogi-docs/screen-pages/kogi-marketplace-listings.html
+file:///C:/dev/ws/kogi_dev/kogi-docs/screen-pages/kogi-labor-market.html
+file:///C:/dev/ws/kogi_dev/kogi-docs/screen-pages/marketplace.html
+file:///C:/dev/ws/kogi_dev/kogi-docs/screen-pages/01-marketplace-browse.html
+file:///C:/dev/ws/kogi_dev/kogi-docs/screen-pages/04-labor-market.html
+file:///C:/dev/ws/kogi_dev/kogi-docs/screen-pages/02-listing-detail.html
+file:///C:/dev/ws/kogi_dev/kogi-docs/screen-pages/06-my-listings.html
+
+
+funding, royalties, equity distribution/allocation/payouts, IPOs, ICOs, dividends, shares, securities, liquidity, estate, real estate
+
 
 ---
 

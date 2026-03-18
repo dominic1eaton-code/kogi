@@ -76,10 +76,19 @@
             <a
               routerLink="/marketplace/market"
               routerLinkActive="text-[#10b981]"
-              [routerLinkActiveOptions]="{ exact: true }"
+              [routerLinkActiveOptions]="{ exact: false }"
               class="cursor-pointer transition-colors hover:text-[#e6f1f4]"
             >
               Market
+            </a>
+            <span>&middot;</span>
+            <a
+              routerLink="/marketplace/listings"
+              routerLinkActive="text-[#10b981]"
+              [routerLinkActiveOptions]="{ exact: false }"
+              class="cursor-pointer transition-colors hover:text-[#e6f1f4]"
+            >
+              Listings
             </a>
             <span>&middot;</span>
             <a

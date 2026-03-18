@@ -51,6 +51,16 @@ import { MarketplaceBarterExchangeComponent } from './marketplace/marketplace-ba
 import { MarketplaceBarterDealsComponent } from './marketplace/marketplace-barter/marketplace-barter-deals/marketplace-barter-deals.component';
 import { MarketplaceBarterOffersComponent } from './marketplace/marketplace-barter/marketplace-barter-offers/marketplace-barter-offers.component';
 import { MarketplaceBarterBidsComponent } from './marketplace/marketplace-barter/marketplace-barter-bids/marketplace-barter-bids.component';
+import { MarketplaceMarketComponent } from './marketplace/marketplace-market/marketplace-market.component';
+import { MarketplaceMarketOverviewComponent } from './marketplace/marketplace-market/marketplace-market-overview/marketplace-market-overview.component';
+import { MarketplaceMarketBrowseComponent } from './marketplace/marketplace-market/marketplace-market-browse/marketplace-market-browse.component';
+import { MarketplaceMarketCrmComponent } from './marketplace/marketplace-market/marketplace-market-crm/marketplace-market-crm.component';
+import { MarketplaceMarketGrantsComponent } from './marketplace/marketplace-market/marketplace-market-grants/marketplace-market-grants.component';
+import { MarketplaceMarketLaborComponent } from './marketplace/marketplace-market/marketplace-market-labor/marketplace-market-labor.component';
+import { MarketplaceListingsComponent } from './marketplace/marketplace-listings/marketplace-listings.component';
+import { MarketplaceListingsCatalogComponent } from './marketplace/marketplace-listings/marketplace-listings-catalog/marketplace-listings-catalog.component';
+import { MarketplaceListingsDetailComponent } from './marketplace/marketplace-listings/marketplace-listings-detail/marketplace-listings-detail.component';
+import { MarketplaceListingsMineComponent } from './marketplace/marketplace-listings/marketplace-listings-mine/marketplace-listings-mine.component';
 import { MarketplaceCampaignsComponent } from './marketplace/marketplace-campaigns/marketplace-campaigns.component';
 import { MarketplaceCampaignsOverviewComponent } from './marketplace/marketplace-campaigns/marketplace-campaigns-overview/marketplace-campaigns-overview.component';
 import { MarketplaceCampaignsBuilderComponent } from './marketplace/marketplace-campaigns/marketplace-campaigns-builder/marketplace-campaigns-builder.component';
@@ -142,6 +152,30 @@ export const routes: Routes = [
         children: [
             {path: '', redirectTo: 'dashboard', pathMatch: 'full'},
             {path: 'dashboard', component: MarketplaceDashboardComponent, title: 'Marketplace Dashboard'},
+            {
+                path: 'market',
+                component: MarketplaceMarketComponent,
+                children: [
+                    {path: '', redirectTo: 'overview', pathMatch: 'full'},
+                    {path: 'overview', component: MarketplaceMarketOverviewComponent, title: 'Marketplace Overview'},
+                    {path: 'browse', component: MarketplaceMarketBrowseComponent, title: 'Marketplace Browse'},
+                    {path: 'crm', component: MarketplaceMarketCrmComponent, title: 'Marketplace CRM'},
+                    {path: 'grants', component: MarketplaceMarketGrantsComponent, title: 'Marketplace Grants'},
+                    {path: 'labor', component: MarketplaceMarketLaborComponent, title: 'Labor Market'},
+                    {path: '**', redirectTo: 'overview'}
+                ]
+            },
+            {
+                path: 'listings',
+                component: MarketplaceListingsComponent,
+                children: [
+                    {path: '', redirectTo: 'catalog', pathMatch: 'full'},
+                    {path: 'catalog', component: MarketplaceListingsCatalogComponent, title: 'Marketplace Listings'},
+                    {path: 'detail', component: MarketplaceListingsDetailComponent, title: 'Listing Detail'},
+                    {path: 'my-listings', component: MarketplaceListingsMineComponent, title: 'My Listings'},
+                    {path: '**', redirectTo: 'catalog'}
+                ]
+            },
             {
                 path: 'barter',
                 component: MarketplaceBarterComponent,
