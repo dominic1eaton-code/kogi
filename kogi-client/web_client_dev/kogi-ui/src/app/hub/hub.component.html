@@ -51,6 +51,101 @@
 
   <main class="ml-0 px-5 pb-10 pt-[76px] lg:ml-[220px]">
     <div class="mb-4 h-[2px] w-full rounded bg-gradient-to-r from-[#3b82f6] via-[#a855f7] via-[#ec4899] via-[#f97316] via-[#eab308] via-[#22c55e] to-[#06b6d4]"></div>
+    
+    <section
+      class="sticky top-[76px] z-30 mb-4 flex flex-wrap items-center justify-between gap-3 rounded-[12px] border border-[rgba(255,255,255,0.06)] bg-[#0f1f26] p-4"
+    >
+      <div class="flex items-center gap-3">
+        <div
+          class="flex h-[40px] w-[40px] items-center justify-center rounded-[10px] bg-[rgba(59,130,246,0.16)] text-[16px] text-[#60a5fa]"
+        >
+          &#9671;
+        </div>
+        <div>
+          <div class="text-[16px] font-semibold">Hub</div>
+          <div class="text-[9px] font-['JetBrains_Mono'] uppercase tracking-[0.3em] text-[#5d747c]">
+            <a
+              routerLink="/marketplace/dashboard"
+              routerLinkActive="text-[#10b981]"
+              [routerLinkActiveOptions]="{ exact: true }"
+              class="cursor-pointer transition-colors hover:text-[#e6f1f4]"
+            >
+              Dashboard
+            </a>
+            <span>&middot;</span>
+            <a
+              routerLink="/marketplace/marketplace"
+              routerLinkActive="text-[#10b981]"
+              [routerLinkActiveOptions]="{ exact: true }"
+              class="cursor-pointer transition-colors hover:text-[#e6f1f4]"
+            >
+              Governance
+            </a>
+            <span>&middot;</span>
+            <a
+              routerLink="/marketplace/rooms"
+              routerLinkActive="text-[#10b981]"
+              [routerLinkActiveOptions]="{ exact: true }"
+              class="cursor-pointer transition-colors hover:text-[#e6f1f4]"
+            >
+              Voting
+            </a>
+            <span>&middot;</span>
+            <a
+              routerLink="/marketplace/channels"
+              routerLinkActive="text-[#10b981]"
+              [routerLinkActiveOptions]="{ exact: true }"
+              class="cursor-pointer transition-colors hover:text-[#e6f1f4]"
+            >
+              Allocations
+            </a>
+            <span>&middot;</span>
+            <a
+              routerLink="/marketplace/feed"
+              routerLinkActive="text-[#10b981]"
+              [routerLinkActiveOptions]="{ exact: true }"
+              class="cursor-pointer transition-colors hover:text-[#e6f1f4]"
+            >
+              Negotiation
+            </a>
+            <span>&middot;</span>
+            <a
+              routerLink="/marketplace/events"
+              routerLinkActive="text-[#10b981]"
+              [routerLinkActiveOptions]="{ exact: true }"
+              class="cursor-pointer transition-colors hover:text-[#e6f1f4]"
+            >
+              Teams
+            </a>
+            <span>&middot;</span>
+            <a
+              routerLink="/marketplace/network"
+              routerLinkActive="text-[#10b981]"
+              [routerLinkActiveOptions]="{ exact: false }"
+              class="cursor-pointer transition-colors hover:text-[#e6f1f4]"
+            >
+              Organizations
+            </a>
+          </div>
+        </div>
+      </div>
+      <div class="flex items-center gap-2">
+        <input
+          class="hidden w-[180px] rounded-[8px] border border-[rgba(255,255,255,0.06)] bg-[#0f1f26] px-3 py-[6px] text-[11px] text-[#8ea6ad] placeholder:text-[#5d747c] md:block"
+          placeholder="Search marketplace..."
+          type="text"
+        />
+        <span
+          class="rounded-[6px] border border-[rgba(59,130,246,0.35)] bg-[rgba(59,130,246,0.12)] px-2 py-[4px] text-[10px] font-semibold text-[#60a5fa]"
+          >COMMUNITY</span
+        >
+        <div
+          class="flex h-[28px] w-[28px] items-center justify-center rounded-full bg-gradient-to-br from-[#f59e0b] to-[#f97316] text-[12px] font-bold text-[#0b1115]"
+        >
+          J
+        </div>
+      </div>
+    </section>
 
     <section class="grid grid-cols-1 gap-4 xl:grid-cols-[minmax(0,1.4fr)_minmax(0,0.8fr)]">
       <div class="space-y-4">

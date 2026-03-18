@@ -1,6 +1,6 @@
 import { Component, inject } from '@angular/core';
 import { RouterLink, RouterLinkActive, RouterOutlet, Router } from '@angular/router';
-import { NavigationComponent } from '../navigation/navigation.component';
+import { NavigationComponent } from '../index/navigation/navigation.component';
 
 @Component({
   selector: 'app-spaces',
@@ -13,7 +13,6 @@ import { NavigationComponent } from '../navigation/navigation.component';
   }
 })
 export class SpacesComponent {
-
   // Inject the Router service
   private router = inject(Router);
   

@@ -1,12 +1,12 @@
 import { CommonModule } from '@angular/common';
 import { Component, inject } from '@angular/core';
-import { RouterLink, Router } from '@angular/router';
-import { NavigationComponent } from '../navigation/navigation.component';
+import { RouterLink, Router, RouterLinkActive, RouterOutlet } from '@angular/router';
+import { NavigationComponent } from '../index/navigation/navigation.component';
 
 @Component({
   selector: 'app-portfolio',
   standalone: true,
-  imports: [CommonModule, RouterLink, NavigationComponent],
+  imports: [RouterLink, RouterLinkActive, RouterOutlet, CommonModule, NavigationComponent],
   templateUrl: './portfolio.component.html',
   styleUrl: './portfolio.component.css',
   host: {

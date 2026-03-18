@@ -2,7 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component, OnDestroy, OnInit, inject } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { Subscription } from 'rxjs';
-import { NavigationComponent } from '../../navigation/navigation.component';
+import { NavigationComponent } from '../../index/navigation/navigation.component';
 
 @Component({
   selector: 'app-portfolio-create',

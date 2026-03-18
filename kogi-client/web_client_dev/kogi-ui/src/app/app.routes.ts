@@ -1,16 +1,18 @@
 import { Routes } from '@angular/router';
-import { LoginComponent } from './login/login.component';
-import { RegistrationComponent } from './registration/registration.component';
-import { OnboardingComponent } from './onboarding/onboarding.component';
+import { LoginComponent } from './index/login/login.component';
+import { RegistrationComponent } from './index/registration/registration.component';
+import { OnboardingComponent } from './index/onboarding/onboarding.component';
+import { CreatingWorkspaceComponent } from './index/creating-workspace/creating-workspace.component';
 import { DashboardComponent } from './dashboard/dashboard.component'
-import { CreatingWorkspaceComponent } from './creating-workspace/creating-workspace.component';
+import { DashboardOverviewComponent } from './dashboard/dashboard-overview/dashboard-overview.component'
+import { DashboardCalendarComponent } from './dashboard/dashboard-calendar/dashboard-calendar.component';
 import { PortfolioComponent } from './portfolio/portfolio.component';
 import { PortfolioCreateComponent } from './portfolio/portfolio-create/portfolio-create.component';
 import { OfficeComponent } from './office/office.component';
 import { OfficeOverviewComponent } from './office/office-overview/office-overview.component';
 import { OfficeInboxComponent } from './office/office-inbox/office-inbox.component';
 import { OfficeScheduleComponent } from './office/office-schedule/office-schedule.component';
-import { OfficeCalendarComponent } from './office/office-calendar/office-calendar.component';
+import { OfficeMeetingsComponent } from './office/office-meetings/office-meetings.component';
 import { OfficeStudioComponent } from './office/office-studio/office-studio.component';
 import { OfficeStudioOverviewComponent } from './office/office-studio/studio-overview/studio-overview.component';
 import { OfficeStudioIdeasComponent } from './office/office-studio/studio-ideas/studio-ideas.component';
@@ -45,7 +47,7 @@ import { SpacesNetworkLinkforestComponent } from './spaces/spaces-network/networ
 import { MarketplaceComponent } from './marketplace/marketplace.component';
 import { HubComponent } from './hub/hub.component';
 import { AssistantComponent } from './assistant/assistant.component';
-import { TestComponent } from './test/test';
+import { TestComponent } from './index/test/test';
 
 export const routes: Routes = [
     {path: '', component: LoginComponent, title: 'Kogi \u2014 Create Account'},
@@ -53,7 +55,17 @@ export const routes: Routes = [
     {path: 'registration', component: RegistrationComponent, title: 'Registration'},
     {path: 'onboarding', component: OnboardingComponent, title: 'Onboarding'},
     {path: 'creating-workspace', component: CreatingWorkspaceComponent, title: 'Creating Workspace'},
-    {path: 'dashboard', component: DashboardComponent, title: 'Dashboard'},
+    {
+        path: 'dashboard', 
+        component: DashboardComponent, 
+        title: 'Dashboard',
+        children: [
+            {path: '', redirectTo: 'overview', pathMatch: 'full'},
+            {path: 'calendar', component: DashboardCalendarComponent, title: 'Dashboard Calendar'},
+            {path: 'overview', component: DashboardOverviewComponent, title: 'Dashboard Overview'},
+        ]
+
+    },
     {path: 'portfolio/new', component: PortfolioCreateComponent, title: 'Create Portfolio'},
     {path: 'portfolio', component: PortfolioComponent, title: 'Portfolio'},
     {
@@ -66,7 +78,7 @@ export const routes: Routes = [
             {path: 'overview', component: OfficeOverviewComponent, title: 'Office Overview'},
             {path: 'inbox', component: OfficeInboxComponent, title: 'Office Inbox'},
             {path: 'schedule', component: OfficeScheduleComponent, title: 'Office Schedule'},
-            {path: 'calendar', component: OfficeCalendarComponent, title: 'Office Calendar'},
+            {path: 'meetings', component: OfficeMeetingsComponent, title: 'Office Meetings'},
             {path: 'contacts', component: OfficeContactsComponent, title: 'Office Contacts'},
             {
                 path: 'studio',

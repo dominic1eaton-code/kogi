@@ -1,10 +1,10 @@
 import { Component, signal } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
-import { LoginComponent } from './login/login.component';
-import { RegistrationComponent } from './registration/registration.component'
-import { OnboardingComponent } from './onboarding/onboarding.component';
+import { LoginComponent } from './index/login/login.component';
+import { RegistrationComponent } from './index/registration/registration.component'
+import { OnboardingComponent } from './index/onboarding/onboarding.component';
 import { DashboardComponent } from './dashboard/dashboard.component'
-import { TestComponent} from './test/test'
+import { TestComponent} from './index/test/test'
 
 @Component({
   selector: 'app-root',

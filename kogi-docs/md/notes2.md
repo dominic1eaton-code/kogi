@@ -26,6 +26,7 @@ marketplace
         - review
         - match
         - campaign
+        - funnels
         - fundraise, resource gather
         - trade
         - allocate
@@ -185,6 +186,7 @@ portfolio
                 - followers
                 - investors
                 - donors
+                - members
             - actions
                 - like
                 - comment
@@ -902,6 +904,7 @@ work management system
 
 identity management system
 
+- multiple user identities management
 - users management system
 - sessions management system
 - profiles management system
@@ -909,6 +912,16 @@ identity management system
 - contact management system
 - access control system
 
+
+accounts management system
+
+user accounts
+    - personal accounts
+    - work accounts
+    - professional accounts
+    - burner accounts
+    - AI+agent+automation accounts
+service+AI accounts
 
 profile management system
 
@@ -1247,12 +1260,15 @@ spaces|community
 - meetup
 - whatsapp
 - facebook
-- linkedlin
+- facebook messenger
+- LinkedIn
 - youtube
 - X/twitter
 - bluesky
 - mastadon
 - twitch
+- groupme
+- kik
 - telegram
 - snapchat
 - instagram
@@ -1265,6 +1281,9 @@ spaces|community
 - linktree
 - substack
 - reddit
+- threads
+- quora
+- stackk overflow
 - pinterest
 - vimeo
 - ghost
@@ -1276,6 +1295,7 @@ spaces|community
 
 
 assistant
+- oba
 - openai
 - chatGPT
 - claude
@@ -1434,15 +1454,48 @@ file:///C:/dev/ws/kogi_dev/kogi-docs/screen-pages/kogi-comm-channels.html
 file:///C:/dev/ws/kogi_dev/kogi-docs/screen-pages/kogi-channels-hub.html
 
 
+read the docs relevant to the office component in C:\dev\ws\kogi_dev\kogi-docs\md
+
+create the subcomponent pages for the office component:
+
+overview subcomponent, which is a dashboard+overview of a user's office
+
+inbox subcomponent which has the structure:
+file:///C:/dev/ws/kogi_dev/kogi-docs/screen-pages/kogi-inbox-dm.html
+
+schedule subcomponent, which is the users master schedule, with managing+admin+reconciliation of multiple schedules+timelines+timeboxes where a user can manage all of their schedules+timeboxes+time commitments
+
+studio subcomponent which has the structure of: C:\dev\ws\kogi_dev\kogi-docs\screen-pages\studio.html and also allows users manage their entire idea+designs+blueprints+mockups+concepts+prototypes+testing lifecycles+notes+docs+content with appropriate subcomponent pages as well
+
+create the dashboard calendar subcomponent which is the users master calender, and also users can create and manage multiple calenders and also link to calenders in external platforms like google/meetup/etc... calenders
+
+contacts subcomponent, and synthesize these two pages into a single structure to generate this component: 
+file:///C:/dev/ws/kogi_dev/kogi-docs/screen-pages/30-contactbook.html
+file:///C:/dev/ws/kogi_dev/kogi-docs/screen-pages/kogi-contactbook.html
+
+
+
+social media malls (digital user traffic) with social media stores
+
+
+
+If you want, I can tune any of the new Studio subpages to match a specific visual reference or add mock data hooks.
+
+I can also add route-level breadcrumbs in the Office header to reflect the active subpage.
+
+
 
 spaces -> rooms -> channels -> chats -> messages|voice|video|text, attachments, multimedia, reactions, emojis, images, videos
+
+
+kogi builder summit
 
 ---
 
 ume navigation+modules
 
 dashboard - overview, messages, administration, organization bootsrapping+configuration
-marketing - marketing, sales, CRM, orders, invoices, billing, communications, public relations PR, reviews, testimonials, surveys, engagement, 
+marketing - marketing, sales, CRM, orders, invoices, billing, communications, public relations PR, reviews, testimonials, surveys, engagement, following
 finance - financials, accounting, compliance, audit, investments, taxes, securities, debts
 operations - operations, supply chain, logistics, warehouse, inventory, projects, programs, schedules, planning, (organizational) project management, work management, HR
 legal - contracts, agreements, IP, licensing, rights, entity management, charters, documents
@@ -1455,6 +1508,53 @@ settings - options, parameters, configurations, profiles, personas, preferences
 
 ---
 
+portfolio subscription system
+portfolio monetization system
+portfolio resourcing system
+portfolio allocation system
+portfolio+spaces+marketplace+platform gameification system
+    - badges
+    - rewards
+    - discounts
+    - free portfolio content/items/services
+    - paid portfolio content/items/services
+    - audiences, fanbases, paywalls
+    - biddings, listings, allocations
+    - engagement
+    - offers, deals, bids, gigs, tasks, jobs, resources, assets, capital, contracts, bookings, consultations, campaigns+promotions|promotional-campaigns
+    - platform, audience, engagement
+    - collaborations
+portfolio content creation+mangement+adminstration+control system
+portfolio metrics and analytics system
+    - tracking number and traffic of users, donors, investors, etc...
+
+independent worker portfolio to independent worker portfolio subscription/services/products/resources/exchanges/marketplaces
+
+---
+
 independent workers/organizations achieve outcomes+resuls+solutions through the execution of programs+projects that utilize resources+assets and generate artifacts
 
 kogi is your personal work operating system
+
+user -> the user's work -> the portfolio organizing+maintaining++controlling+adminstering all the work -> everything else operating on top of and using that portfolio
+
+---
+
+shango platform
+    - kogi platform
+    - ume platform
+    - qala platform
+    - sambara platform
+    - oru platform
+
+shango pages
+    - home
+        - about/overview
+            - sign in
+            - sign up
+            - careers
+        - platform
+        - products
+        - contact, get in touch, connect
+        - pricing
+        - solutions
