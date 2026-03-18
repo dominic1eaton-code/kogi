@@ -81,7 +81,7 @@
           <div class="text-[16px] font-semibold">Office</div>
           <div class="text-[9px] font-['JetBrains_Mono'] uppercase tracking-[0.3em] text-[#5d747c]">
             <a
-              routerLink="/spaces/dashboard"
+              routerLink="/office/dashboard"
               routerLinkActive="text-[#10b981]"
               [routerLinkActiveOptions]="{ exact: true }"
               class="cursor-pointer transition-colors hover:text-[#e6f1f4]"
@@ -90,7 +90,7 @@
             </a>
             <span>&middot;</span>
             <a
-              routerLink="/spaces/spaces"
+              routerLink="/office/inbox"
               routerLinkActive="text-[#10b981]"
               [routerLinkActiveOptions]="{ exact: true }"
               class="cursor-pointer transition-colors hover:text-[#e6f1f4]"
@@ -99,13 +99,15 @@
             </a>
             <span>&middot;</span>
             <a
-              routerLink="/spaces/rooms"
+              routerLink="/office/schedule"
               routerLinkActive="text-[#10b981]"
               [routerLinkActiveOptions]="{ exact: true }"
               class="cursor-pointer transition-colors hover:text-[#e6f1f4]"
             >
               Schedule
             </a>
+            <span>&middot;</span>
+            <span class="cursor-pointer transition-colors hover:text-[#e6f1f4]">Studio</span>
             <span>&middot;</span>
             <span class="cursor-pointer transition-colors hover:text-[#e6f1f4]">Contacts</span>
             <span>&middot;</span>
