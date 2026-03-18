@@ -1,0 +1,90 @@
+<aside
+  class="fixed inset-y-0 left-0 hidden w-[220px] flex-col border-r border-[rgba(255,255,255,0.06)] bg-gradient-to-b from-[#0f1b21] to-[#0c1419] lg:flex"
+>
+  <div class="flex items-center gap-2.5 border-b border-[rgba(255,255,255,0.06)] px-[18px] py-[18px]">
+    <div
+      class="flex h-[34px] w-[34px] items-center justify-center rounded-[9px] bg-gradient-to-br from-[#10b981] to-[#059669] text-sm font-extrabold text-white"
+    >
+      K
+    </div>
+    <span class="text-sm font-semibold">kogi</span>
+  </div>
+
+  <nav class="flex-1 space-y-1 p-[10px]">
+    <div
+      *ngFor="let item of navItems"
+      class="flex items-center gap-2 rounded-[8px] px-2 py-1 text-[13px] text-[#8ea6ad] hover:bg-[#132830] hover:text-[#e6f1f4]"
+    >
+      <a
+        [routerLink]="item.route"
+        routerLinkActive="bg-[rgba(16,185,129,0.15)] text-[#10b981]"
+        class="flex flex-1 items-center gap-2 rounded-[8px] px-2 py-2"
+        (click)="openSection(item.key)"
+      >
+        <span class="text-[12px] opacity-70" [innerHTML]="item.icon"></span>
+        <span>{{ item.label }}</span>
+      </a>
+      <button
+        class="flex h-[26px] w-[26px] items-center justify-center rounded-[6px] border border-[rgba(255,255,255,0.08)] bg-[#0f1f26] text-[11px] text-[#5d747c]"
+        type="button"
+        (click)="toggleSection(item.key, $event)"
+        [attr.aria-expanded]="expandedSection() === item.key"
+      >
+        <span class="inline-block" [class.rotate-90]="expandedSection() === item.key">&#9656;</span>
+      </button>
+    </div>
+  </nav>
+
+  <div class="flex items-center gap-2.5 border-t border-[rgba(255,255,255,0.06)] px-4 py-4">
+    <div
+      class="flex h-[30px] w-[30px] items-center justify-center rounded-full bg-gradient-to-br from-[#8b5cf6] to-[#10b981] text-[12px] font-bold"
+    >
+      JD
+    </div>
+    <div>
+      <div class="text-[12px] font-semibold">Jordan Davis</div>
+      <div class="text-[11px] text-[#5d747c]">Pro Plan</div>
+    </div>
+  </div>
+</aside>
+
+<aside
+  *ngIf="activeSection() as active"
+  class="fixed inset-y-0 left-[220px] hidden w-[220px] flex-col border-r border-[rgba(255,255,255,0.06)] bg-[#0f1f26] lg:flex"
+>
+  <div class="flex items-center justify-between border-b border-[rgba(255,255,255,0.06)] px-4 py-3">
+    <div class="text-[10px] uppercase tracking-[0.3em] text-[#5d747c] font-['JetBrains_Mono']">
+      {{ active.label }}
+    </div>
+    <button
+      class="flex h-[22px] w-[22px] items-center justify-center rounded-[6px] border border-[rgba(255,255,255,0.08)] bg-[#101e24] text-[12px] text-[#5d747c]"
+      type="button"
+      (click)="closePanel($event)"
+    >
+      &times;
+    </button>
+  </div>
+
+  <div class="flex-1 space-y-2 px-4 py-3 text-[10px] text-[#8ea6ad]">
+    <ng-container *ngFor="let sub of active.secondary">
+      <a
+        *ngIf="sub.route; else secondaryLabel"
+        [routerLink]="sub.route"
+        class="flex flex-col gap-1 rounded-[8px] border border-[rgba(255,255,255,0.06)] bg-[#101e24] px-3 py-2 hover:border-[#10b981] hover:text-[#e6f1f4]"
+      >
+        <span class="text-[11px] font-semibold text-[#e6f1f4]">{{ sub.label }}</span>
+        <span *ngIf="sub.meta" class="text-[9px] text-[#5d747c]">{{ sub.meta }}</span>
+      </a>
+      <ng-template #secondaryLabel>
+        <div class="rounded-[8px] border border-[rgba(255,255,255,0.06)] bg-[#0f1f26] px-3 py-2">
+          <div class="text-[11px] font-semibold text-[#e6f1f4]">{{ sub.label }}</div>
+          <div *ngIf="sub.meta" class="text-[9px] text-[#5d747c]">{{ sub.meta }}</div>
+        </div>
+      </ng-template>
+    </ng-container>
+  </div>
+
+  <div class="border-t border-[rgba(255,255,255,0.06)] px-4 py-3 text-[9px] text-[#5d747c]">
+    Click a channel to open its menu, or use the expand arrow to pin this panel.
+  </div>
+</aside>

@@ -2,11 +2,12 @@ import { CommonModule } from '@angular/common';
 import { Component, OnDestroy, OnInit, inject } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { Subscription } from 'rxjs';
+import { NavigationComponent } from '../../navigation/navigation.component';
 
 @Component({
   selector: 'app-portfolio-create',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule, RouterLink, NavigationComponent],
   templateUrl: './portfolio-create.component.html',
   styleUrl: './portfolio-create.component.css',
   host: {

@@ -20,6 +20,8 @@ import { SpacesSpacesComponent } from './spaces/spaces-spaces/spaces-spaces.comp
 import { SpacesRoomsComponent } from './spaces/spaces-rooms/spaces-rooms.component';
 import { SpacesFeedComponent } from './spaces/spaces-feed/spaces-feed.component';
 import { SpacesTimelineComponent } from './spaces/spaces-timeline/spaces-timeline.component';
+import { HubComponent } from './hub/hub.component';
+import { AssistantComponent } from './assistant/assistant.component';
 import { TestComponent } from './test/test';
 
 export const routes: Routes = [
@@ -52,6 +54,8 @@ export const routes: Routes = [
         ]
     },
     {path: 'office', component: OfficeComponent, title: "Office"},
+    {path: 'hub', component: HubComponent, title: "Organization Hub"},
+    {path: 'assistant', component: AssistantComponent, title: "Assistant"},
     {
         path: 'spaces',
         component: SpacesComponent,

@@ -1,10 +1,11 @@
 import { Component, inject } from '@angular/core';
 import { Router, RouterLink, RouterLinkActive, RouterOutlet  } from '@angular/router'
+import { NavigationComponent } from '../navigation/navigation.component';
 
 @Component({
   selector: 'app-office',
   standalone: true,
-  imports: [RouterLink, RouterLinkActive, RouterOutlet],
+  imports: [RouterLink, RouterLinkActive, RouterOutlet, NavigationComponent],
   templateUrl: './office.component.html',
   styleUrl: './office.component.css',
   host: {
