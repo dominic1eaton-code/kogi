@@ -1,1 +1,65 @@
+<section class="mb-4 rounded-[12px] border border-[rgba(255,255,255,0.06)] bg-[#0f1f26] p-4">
+  <div class="flex flex-wrap items-center justify-between gap-3">
+    <div>
+      <div class="text-[10px] uppercase tracking-[0.3em] text-[#5d747c] font-['JetBrains_Mono']">Escrow Center</div>
+      <div class="mt-1 text-[12px] text-[#8ea6ad]">
+        Manage multi-party escrow, dispute workflows, and milestone releases across marketplace deals.
+      </div>
+    </div>
+    <div class="flex flex-wrap items-center gap-2">
+      <button
+        class="rounded-[8px] border border-[rgba(255,255,255,0.08)] bg-[#101e24] px-3 py-[6px] text-[10px] font-semibold text-[#8ea6ad]"
+        type="button"
+      >
+        History
+      </button>
+      <button
+        class="rounded-[8px] border border-[rgba(239,68,68,0.35)] bg-[rgba(239,68,68,0.12)] px-3 py-[6px] text-[10px] font-semibold text-[#ef4444]"
+        type="button"
+      >
+        Open Dispute
+      </button>
+      <button
+        class="rounded-[8px] bg-gradient-to-br from-[#10b981] to-[#059669] px-3 py-[6px] text-[10px] font-semibold text-white"
+        type="button"
+      >
+        Fund Escrow
+      </button>
+    </div>
+  </div>
 
+  <div class="mt-3 flex flex-wrap gap-2 text-[9px] font-['JetBrains_Mono'] uppercase tracking-[0.2em] text-[#5d747c]">
+    <a
+      routerLink="overview"
+      routerLinkActive="text-[#10b981] border-[rgba(16,185,129,0.45)] bg-[rgba(16,185,129,0.12)]"
+      [routerLinkActiveOptions]="{ exact: true }"
+      class="rounded-[8px] border border-[rgba(255,255,255,0.08)] bg-[#101e24] px-3 py-[6px] transition-colors hover:text-[#e6f1f4]"
+    >
+      Overview
+    </a>
+    <a
+      routerLink="bank"
+      routerLinkActive="text-[#10b981] border-[rgba(16,185,129,0.45)] bg-[rgba(16,185,129,0.12)]"
+      [routerLinkActiveOptions]="{ exact: true }"
+      class="rounded-[8px] border border-[rgba(255,255,255,0.08)] bg-[#101e24] px-3 py-[6px] transition-colors hover:text-[#e6f1f4]"
+    >
+      Bank View
+    </a>
+    <a
+      routerLink="/marketplace/exchange/deal-room"
+      class="rounded-[8px] border border-[rgba(59,130,246,0.35)] bg-[rgba(59,130,246,0.12)] px-3 py-[6px] text-[#60a5fa] transition-colors hover:text-white"
+    >
+      Deal Rooms
+    </a>
+    <a
+      routerLink="/marketplace/exchange/wallet"
+      class="rounded-[8px] border border-[rgba(168,85,247,0.35)] bg-[rgba(168,85,247,0.12)] px-3 py-[6px] text-[#a855f7] transition-colors hover:text-white"
+    >
+      Exchange Wallet
+    </a>
+  </div>
+</section>
+
+<div class="min-w-0">
+  <router-outlet></router-outlet>
+</div>

@@ -1,1 +1,266 @@
+<section class="mb-4 grid grid-cols-2 gap-3 lg:grid-cols-6">
+  <div class="rounded-[12px] border border-[rgba(16,185,129,0.35)] bg-[rgba(16,185,129,0.12)] p-3">
+    <div class="text-[12px] font-semibold text-[#10b981]">7</div>
+    <div class="text-[9px] text-[#5d747c]">Active Markets</div>
+  </div>
+  <div class="rounded-[12px] border border-[rgba(255,255,255,0.08)] bg-[#101e24] p-3">
+    <div class="text-[12px] font-semibold text-[#e6f1f4]">12</div>
+    <div class="text-[9px] text-[#5d747c]">Open Deals</div>
+  </div>
+  <div class="rounded-[12px] border border-[rgba(245,158,11,0.35)] bg-[rgba(245,158,11,0.12)] p-3">
+    <div class="text-[12px] font-semibold text-[#f59e0b]">$284K</div>
+    <div class="text-[9px] text-[#5d747c]">Volume (30d)</div>
+  </div>
+  <div class="rounded-[12px] border border-[rgba(168,85,247,0.35)] bg-[rgba(168,85,247,0.12)] p-3">
+    <div class="text-[12px] font-semibold text-[#a855f7]">$38,400</div>
+    <div class="text-[9px] text-[#5d747c]">Escrow Locked</div>
+  </div>
+  <div class="rounded-[12px] border border-[rgba(59,130,246,0.35)] bg-[rgba(59,130,246,0.12)] p-3">
+    <div class="text-[12px] font-semibold text-[#60a5fa]">$124,500</div>
+    <div class="text-[9px] text-[#5d747c]">Settled (30d)</div>
+  </div>
+  <div class="rounded-[12px] border border-[rgba(34,197,94,0.3)] bg-[rgba(34,197,94,0.12)] p-3">
+    <div class="text-[12px] font-semibold text-[#22c55e]">94%</div>
+    <div class="text-[9px] text-[#5d747c]">Match Score</div>
+  </div>
+</section>
 
+<section class="mb-4 grid grid-cols-2 gap-3 lg:grid-cols-4">
+  <a
+    routerLink="/marketplace/exchange/wallet"
+    class="rounded-[12px] border border-[rgba(59,130,246,0.35)] bg-[rgba(59,130,246,0.12)] p-4 text-left"
+  >
+    <div class="text-[10px] uppercase tracking-[0.3em] text-[#5d747c] font-['JetBrains_Mono']">Wallet</div>
+    <div class="mt-2 text-[13px] font-semibold text-[#60a5fa]">$4,820 Available</div>
+    <div class="text-[10px] text-[#8ea6ad]">Add funds, invoice, or withdraw</div>
+  </a>
+  <a
+    routerLink="/marketplace/exchange/labor"
+    class="rounded-[12px] border border-[rgba(16,185,129,0.35)] bg-[rgba(16,185,129,0.12)] p-4 text-left"
+  >
+    <div class="text-[10px] uppercase tracking-[0.3em] text-[#5d747c] font-['JetBrains_Mono']">Labor Market</div>
+    <div class="mt-2 text-[13px] font-semibold text-[#10b981]">284 Active Workers</div>
+    <div class="text-[10px] text-[#8ea6ad]">AI-matched talent pools</div>
+  </a>
+  <a
+    routerLink="/marketplace/exchange/capital"
+    class="rounded-[12px] border border-[rgba(168,85,247,0.35)] bg-[rgba(168,85,247,0.12)] p-4 text-left"
+  >
+    <div class="text-[10px] uppercase tracking-[0.3em] text-[#5d747c] font-['JetBrains_Mono']">Capital</div>
+    <div class="mt-2 text-[13px] font-semibold text-[#a855f7]">6 Live Campaigns</div>
+    <div class="text-[10px] text-[#8ea6ad]">Equity, rev-share, bonds</div>
+  </a>
+  <a
+    routerLink="/marketplace/exchange/asset-transfer"
+    class="rounded-[12px] border border-[rgba(245,158,11,0.35)] bg-[rgba(245,158,11,0.12)] p-4 text-left"
+  >
+    <div class="text-[10px] uppercase tracking-[0.3em] text-[#5d747c] font-['JetBrains_Mono']">Asset Transfer</div>
+    <div class="mt-2 text-[13px] font-semibold text-[#f59e0b]">12 Active Transfers</div>
+    <div class="text-[10px] text-[#8ea6ad]">Escrow-backed handoffs</div>
+  </a>
+</section>
+
+<section class="grid grid-cols-1 gap-4 xl:grid-cols-3">
+  <div class="rounded-[14px] border border-[rgba(255,255,255,0.06)] bg-[#0f1f26] xl:col-span-2">
+    <div class="flex items-center justify-between border-b border-[rgba(255,255,255,0.06)] px-4 py-3">
+      <div class="text-[10px] uppercase tracking-[0.3em] text-[#5d747c] font-['JetBrains_Mono']">Active Markets</div>
+      <span class="rounded-[8px] border border-[rgba(16,185,129,0.35)] bg-[rgba(16,185,129,0.12)] px-2 py-[3px] text-[9px] text-[#10b981]">AI Match On</span>
+    </div>
+    <div class="grid gap-3 p-4 md:grid-cols-2">
+      <a routerLink="/marketplace/exchange/labor" class="rounded-[10px] border border-[rgba(255,255,255,0.06)] bg-[#101e24] p-3">
+        <div class="flex items-center justify-between">
+          <div class="text-[11px] font-semibold">Labor Market</div>
+          <span class="rounded-[6px] border border-[rgba(245,158,11,0.4)] bg-[rgba(245,158,11,0.12)] px-2 py-[2px] text-[8px] text-[#f59e0b]">HOT</span>
+        </div>
+        <div class="mt-2 flex gap-3 text-[9px] text-[#5d747c]">
+          <span>Listings 284</span>
+          <span>Workers 1,840</span>
+          <span>Avg $94/hr</span>
+        </div>
+        <div class="mt-2 h-[4px] w-full rounded-full bg-[#0b1418]">
+          <div class="h-full w-[78%] rounded-full bg-[#10b981]"></div>
+        </div>
+      </a>
+      <a routerLink="/marketplace/exchange/commodities" class="rounded-[10px] border border-[rgba(255,255,255,0.06)] bg-[#101e24] p-3">
+        <div class="flex items-center justify-between">
+          <div class="text-[11px] font-semibold">Portfolio Commodities</div>
+          <span class="rounded-[6px] border border-[rgba(34,197,94,0.4)] bg-[rgba(34,197,94,0.12)] px-2 py-[2px] text-[8px] text-[#22c55e]">LIVE</span>
+        </div>
+        <div class="mt-2 flex gap-3 text-[9px] text-[#5d747c]">
+          <span>Items 142</span>
+          <span>Vol $89K</span>
+          <span>Active 28</span>
+        </div>
+        <div class="mt-2 h-[4px] w-full rounded-full bg-[#0b1418]">
+          <div class="h-full w-[52%] rounded-full bg-[#f59e0b]"></div>
+        </div>
+      </a>
+      <a routerLink="/marketplace/exchange/capital" class="rounded-[10px] border border-[rgba(255,255,255,0.06)] bg-[#101e24] p-3">
+        <div class="flex items-center justify-between">
+          <div class="text-[11px] font-semibold">Financial Instruments</div>
+          <span class="rounded-[6px] border border-[rgba(168,85,247,0.4)] bg-[rgba(168,85,247,0.12)] px-2 py-[2px] text-[8px] text-[#a855f7]">LIVE</span>
+        </div>
+        <div class="mt-2 flex gap-3 text-[9px] text-[#5d747c]">
+          <span>Instruments 34</span>
+          <span>Vol $124K</span>
+          <span>Rounds 6</span>
+        </div>
+        <div class="mt-2 h-[4px] w-full rounded-full bg-[#0b1418]">
+          <div class="h-full w-[64%] rounded-full bg-[#a855f7]"></div>
+        </div>
+      </a>
+      <a routerLink="/marketplace/exchange/resources" class="rounded-[10px] border border-[rgba(255,255,255,0.06)] bg-[#101e24] p-3">
+        <div class="flex items-center justify-between">
+          <div class="text-[11px] font-semibold">Resource Exchange</div>
+          <span class="rounded-[6px] border border-[rgba(59,130,246,0.4)] bg-[rgba(59,130,246,0.12)] px-2 py-[2px] text-[8px] text-[#60a5fa]">LIVE</span>
+        </div>
+        <div class="mt-2 flex gap-3 text-[9px] text-[#5d747c]">
+          <span>Resources 97</span>
+          <span>Vol $41K</span>
+          <span>Types 8</span>
+        </div>
+        <div class="mt-2 h-[4px] w-full rounded-full bg-[#0b1418]">
+          <div class="h-full w-[43%] rounded-full bg-[#ec4899]"></div>
+        </div>
+      </a>
+    </div>
+  </div>
+
+  <div class="rounded-[14px] border border-[rgba(255,255,255,0.06)] bg-[#0f1f26]">
+    <div class="flex items-center justify-between border-b border-[rgba(255,255,255,0.06)] px-4 py-3">
+      <div class="text-[10px] uppercase tracking-[0.3em] text-[#5d747c] font-['JetBrains_Mono']">Recent Activity</div>
+      <span class="rounded-[8px] border border-[rgba(16,185,129,0.35)] bg-[rgba(16,185,129,0.12)] px-2 py-[3px] text-[9px] text-[#10b981]">Live</span>
+    </div>
+    <div class="space-y-3 p-4 text-[10px] text-[#8ea6ad]">
+      <div class="flex items-start gap-3">
+        <div class="mt-1 h-2 w-2 rounded-full bg-[#10b981]"></div>
+        <div>
+          <div class="text-[#e6f1f4]">Escrow funded &middot; $12,400 locked</div>
+          <div class="font-['JetBrains_Mono'] text-[#5d747c]">2m ago</div>
+        </div>
+      </div>
+      <div class="flex items-start gap-3">
+        <div class="mt-1 h-2 w-2 rounded-full bg-[#f59e0b]"></div>
+        <div>
+          <div class="text-[#e6f1f4]">Proposal sent &middot; Web Platform RFP</div>
+          <div class="font-['JetBrains_Mono'] text-[#5d747c]">8m ago</div>
+        </div>
+      </div>
+      <div class="flex items-start gap-3">
+        <div class="mt-1 h-2 w-2 rounded-full bg-[#22c55e]"></div>
+        <div>
+          <div class="text-[#e6f1f4]">Deal closed &middot; React Component Kit</div>
+          <div class="font-['JetBrains_Mono'] text-[#5d747c]">24m ago</div>
+        </div>
+      </div>
+      <div class="flex items-start gap-3">
+        <div class="mt-1 h-2 w-2 rounded-full bg-[#a855f7]"></div>
+        <div>
+          <div class="text-[#e6f1f4]">New bid &middot; Legal Template Bundle</div>
+          <div class="font-['JetBrains_Mono'] text-[#5d747c]">41m ago</div>
+        </div>
+      </div>
+      <div class="flex items-start gap-3">
+        <div class="mt-1 h-2 w-2 rounded-full bg-[#60a5fa]"></div>
+        <div>
+          <div class="text-[#e6f1f4]">Listing active &middot; Data Pipeline Automation</div>
+          <div class="font-['JetBrains_Mono'] text-[#5d747c]">1h ago</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="rounded-[14px] border border-[rgba(255,255,255,0.06)] bg-[#0f1f26] xl:col-span-2">
+    <div class="flex items-center justify-between border-b border-[rgba(255,255,255,0.06)] px-4 py-3">
+      <div class="text-[10px] uppercase tracking-[0.3em] text-[#5d747c] font-['JetBrains_Mono']">Open Deals</div>
+      <span class="rounded-[8px] border border-[rgba(16,185,129,0.35)] bg-[rgba(16,185,129,0.12)] px-2 py-[3px] text-[9px] text-[#10b981]">12 active</span>
+    </div>
+    <div class="divide-y divide-[rgba(255,255,255,0.06)]">
+      <div class="flex items-center gap-3 px-4 py-3">
+        <div class="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-[#10b981] to-[#3b82f6] text-[10px] font-semibold text-[#0b1115]">JC</div>
+        <div class="flex-1">
+          <div class="text-[11px] font-semibold">Brand Identity System v2.0</div>
+          <div class="text-[9px] text-[#5d747c]">Jordan Chen &middot; Milestone 2/3</div>
+        </div>
+        <div class="text-[11px] font-semibold text-[#10b981]">$12,400</div>
+        <span class="rounded-[6px] border border-[rgba(168,85,247,0.4)] bg-[rgba(168,85,247,0.12)] px-2 py-[2px] text-[8px] text-[#a855f7]">Escrow</span>
+      </div>
+      <div class="flex items-center gap-3 px-4 py-3">
+        <div class="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-[#f59e0b] to-[#f97316] text-[10px] font-semibold text-[#0b1115]">PS</div>
+        <div class="flex-1">
+          <div class="text-[11px] font-semibold">Web Platform Architecture</div>
+          <div class="text-[9px] text-[#5d747c]">Priya Singh &middot; Proposal v2</div>
+        </div>
+        <div class="text-[11px] font-semibold text-[#f59e0b]">$28,000</div>
+        <span class="rounded-[6px] border border-[rgba(245,158,11,0.4)] bg-[rgba(245,158,11,0.12)] px-2 py-[2px] text-[8px] text-[#f59e0b]">Negotiation</span>
+      </div>
+      <div class="flex items-center gap-3 px-4 py-3">
+        <div class="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-[#a855f7] to-[#ec4899] text-[10px] font-semibold text-[#0b1115]">MB</div>
+        <div class="flex-1">
+          <div class="text-[11px] font-semibold">Community Growth Strategy</div>
+          <div class="text-[9px] text-[#5d747c]">Marcus Brown &middot; Deliverable submitted</div>
+        </div>
+        <div class="text-[11px] font-semibold text-[#60a5fa]">$5,500</div>
+        <span class="rounded-[6px] border border-[rgba(59,130,246,0.4)] bg-[rgba(59,130,246,0.12)] px-2 py-[2px] text-[8px] text-[#60a5fa]">Review</span>
+      </div>
+      <div class="flex items-center gap-3 px-4 py-3">
+        <div class="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-[#f472b6] to-[#fb7185] text-[10px] font-semibold text-[#0b1115]">LM</div>
+        <div class="flex-1">
+          <div class="text-[11px] font-semibold">Legal Contract Templates</div>
+          <div class="text-[9px] text-[#5d747c]">Lena M. &middot; Deal complete</div>
+        </div>
+        <div class="text-[11px] font-semibold text-[#22c55e]">$2,800</div>
+        <span class="rounded-[6px] border border-[rgba(34,197,94,0.4)] bg-[rgba(34,197,94,0.12)] px-2 py-[2px] text-[8px] text-[#22c55e]">Complete</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="rounded-[14px] border border-[rgba(255,255,255,0.06)] bg-[#0f1f26]">
+    <div class="flex items-center justify-between border-b border-[rgba(255,255,255,0.06)] px-4 py-3">
+      <div class="text-[10px] uppercase tracking-[0.3em] text-[#5d747c] font-['JetBrains_Mono']">Order Book &mdash; Labor</div>
+      <span class="rounded-[8px] border border-[rgba(245,158,11,0.35)] bg-[rgba(245,158,11,0.12)] px-2 py-[3px] text-[9px] text-[#f59e0b]">284 listings</span>
+    </div>
+    <div class="divide-y divide-[rgba(255,255,255,0.06)] px-4">
+      <div class="flex items-center gap-3 py-2 text-[10px]">
+        <span class="font-['JetBrains_Mono'] text-[#22c55e]">BID</span>
+        <span class="flex-1 text-[#8ea6ad]">Senior React Developer &middot; 3mo retainer</span>
+        <span class="font-['JetBrains_Mono'] text-[#22c55e]">$9,200/mo</span>
+        <span class="rounded-[6px] bg-[rgba(16,185,129,0.12)] px-2 py-[2px] text-[8px] text-[#10b981]">Active</span>
+      </div>
+      <div class="flex items-center gap-3 py-2 text-[10px]">
+        <span class="font-['JetBrains_Mono'] text-[#ef4444]">ASK</span>
+        <span class="flex-1 text-[#8ea6ad]">UX/UI Design &middot; Brand refresh &middot; 6wk</span>
+        <span class="font-['JetBrains_Mono'] text-[#ef4444]">$14,400</span>
+        <span class="rounded-[6px] bg-[rgba(16,185,129,0.12)] px-2 py-[2px] text-[8px] text-[#10b981]">Active</span>
+      </div>
+      <div class="flex items-center gap-3 py-2 text-[10px]">
+        <span class="font-['JetBrains_Mono'] text-[#22c55e]">BID</span>
+        <span class="flex-1 text-[#8ea6ad]">Data Engineer &middot; Kafka pipeline setup</span>
+        <span class="font-['JetBrains_Mono'] text-[#22c55e]">$7,800</span>
+        <span class="rounded-[6px] bg-[rgba(245,158,11,0.12)] px-2 py-[2px] text-[8px] text-[#f59e0b]">Pending</span>
+      </div>
+      <div class="flex items-center gap-3 py-2 text-[10px]">
+        <span class="font-['JetBrains_Mono'] text-[#ef4444]">ASK</span>
+        <span class="flex-1 text-[#8ea6ad]">Legal Review &middot; SaaS contract templates</span>
+        <span class="font-['JetBrains_Mono'] text-[#ef4444]">$3,200</span>
+        <span class="rounded-[6px] bg-[rgba(16,185,129,0.12)] px-2 py-[2px] text-[8px] text-[#10b981]">Active</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="rounded-[14px] border border-[rgba(255,255,255,0.06)] bg-[#0f1f26]">
+    <div class="flex items-center justify-between border-b border-[rgba(255,255,255,0.06)] px-4 py-3">
+      <div class="text-[10px] uppercase tracking-[0.3em] text-[#5d747c] font-['JetBrains_Mono']">Linked Platforms</div>
+    </div>
+    <div class="flex flex-wrap gap-2 p-4 text-[9px] text-[#8ea6ad]">
+      <span class="rounded-[6px] border border-[rgba(59,130,246,0.35)] bg-[rgba(59,130,246,0.12)] px-2 py-[3px] text-[#60a5fa]">Robinhood</span>
+      <span class="rounded-[6px] border border-[rgba(16,185,129,0.35)] bg-[rgba(16,185,129,0.12)] px-2 py-[3px] text-[#10b981]">Stripe</span>
+      <span class="rounded-[6px] border border-[rgba(168,85,247,0.35)] bg-[rgba(168,85,247,0.12)] px-2 py-[3px] text-[#a855f7]">AngelList</span>
+      <span class="rounded-[6px] border border-[rgba(255,255,255,0.08)] bg-[#101e24] px-2 py-[3px]">Coinbase</span>
+      <span class="rounded-[6px] border border-[rgba(255,255,255,0.08)] bg-[#101e24] px-2 py-[3px]">Upwork</span>
+      <span class="rounded-[6px] border border-[rgba(255,255,255,0.08)] bg-[#101e24] px-2 py-[3px]">Fiverr</span>
+      <span class="rounded-[6px] border border-[rgba(255,255,255,0.08)] bg-[#101e24] px-2 py-[3px]">Wefunder</span>
+      <span class="rounded-[6px] border border-[rgba(255,255,255,0.08)] bg-[#101e24] px-2 py-[3px]">Ethereum</span>
+    </div>
+  </div>
+</section>

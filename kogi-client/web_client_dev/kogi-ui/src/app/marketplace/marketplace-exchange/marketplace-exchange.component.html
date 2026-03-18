@@ -1,1 +1,124 @@
+<section class="mb-4 rounded-[12px] border border-[rgba(255,255,255,0.06)] bg-[#0f1f26] p-4">
+  <div class="flex flex-wrap items-center justify-between gap-3">
+    <div>
+      <div class="text-[10px] uppercase tracking-[0.3em] text-[#5d747c] font-['JetBrains_Mono']">Exchange Hub</div>
+      <div class="mt-1 text-[12px] text-[#8ea6ad]">
+        Market intelligence, deal rooms, and settlement tools for labor, capital, resources, and assets.
+      </div>
+    </div>
+    <div class="flex flex-wrap items-center gap-2">
+      <button
+        class="rounded-[8px] border border-[rgba(255,255,255,0.08)] bg-[#101e24] px-3 py-[6px] text-[10px] font-semibold text-[#8ea6ad]"
+        type="button"
+      >
+        Order Book
+      </button>
+      <button
+        class="rounded-[8px] border border-[rgba(245,158,11,0.35)] bg-[rgba(245,158,11,0.12)] px-3 py-[6px] text-[10px] font-semibold text-[#f59e0b]"
+        type="button"
+      >
+        Post Requirement
+      </button>
+      <button
+        class="rounded-[8px] border border-[rgba(59,130,246,0.35)] bg-[rgba(59,130,246,0.12)] px-3 py-[6px] text-[10px] font-semibold text-[#60a5fa]"
+        type="button"
+      >
+        New Deal
+      </button>
+      <button
+        routerLink="/marketplace/escrow/overview"
+        class="rounded-[8px] bg-gradient-to-br from-[#10b981] to-[#059669] px-3 py-[6px] text-[10px] font-semibold text-white"
+        type="button"
+      >
+        Fund Escrow
+      </button>
+    </div>
+  </div>
 
+  <div class="mt-3 flex flex-wrap gap-2 text-[9px] font-['JetBrains_Mono'] uppercase tracking-[0.2em] text-[#5d747c]">
+    <a
+      routerLink="overview"
+      routerLinkActive="text-[#10b981] border-[rgba(16,185,129,0.45)] bg-[rgba(16,185,129,0.12)]"
+      [routerLinkActiveOptions]="{ exact: true }"
+      class="rounded-[8px] border border-[rgba(255,255,255,0.08)] bg-[#101e24] px-3 py-[6px] transition-colors hover:text-[#e6f1f4]"
+    >
+      Overview
+    </a>
+    <a
+      routerLink="wallet"
+      routerLinkActive="text-[#10b981] border-[rgba(16,185,129,0.45)] bg-[rgba(16,185,129,0.12)]"
+      [routerLinkActiveOptions]="{ exact: true }"
+      class="rounded-[8px] border border-[rgba(255,255,255,0.08)] bg-[#101e24] px-3 py-[6px] transition-colors hover:text-[#e6f1f4]"
+    >
+      Wallet
+    </a>
+    <a
+      routerLink="bids"
+      routerLinkActive="text-[#10b981] border-[rgba(16,185,129,0.45)] bg-[rgba(16,185,129,0.12)]"
+      [routerLinkActiveOptions]="{ exact: true }"
+      class="rounded-[8px] border border-[rgba(255,255,255,0.08)] bg-[#101e24] px-3 py-[6px] transition-colors hover:text-[#e6f1f4]"
+    >
+      Bids &amp; Offers
+    </a>
+    <a
+      routerLink="labor"
+      routerLinkActive="text-[#10b981] border-[rgba(16,185,129,0.45)] bg-[rgba(16,185,129,0.12)]"
+      [routerLinkActiveOptions]="{ exact: true }"
+      class="rounded-[8px] border border-[rgba(255,255,255,0.08)] bg-[#101e24] px-3 py-[6px] transition-colors hover:text-[#e6f1f4]"
+    >
+      Labor Market
+    </a>
+    <a
+      routerLink="deal-room"
+      routerLinkActive="text-[#10b981] border-[rgba(16,185,129,0.45)] bg-[rgba(16,185,129,0.12)]"
+      [routerLinkActiveOptions]="{ exact: true }"
+      class="rounded-[8px] border border-[rgba(255,255,255,0.08)] bg-[#101e24] px-3 py-[6px] transition-colors hover:text-[#e6f1f4]"
+    >
+      Deal Rooms
+    </a>
+    <a
+      routerLink="capital"
+      routerLinkActive="text-[#10b981] border-[rgba(16,185,129,0.45)] bg-[rgba(16,185,129,0.12)]"
+      [routerLinkActiveOptions]="{ exact: true }"
+      class="rounded-[8px] border border-[rgba(255,255,255,0.08)] bg-[#101e24] px-3 py-[6px] transition-colors hover:text-[#e6f1f4]"
+    >
+      Capital
+    </a>
+    <a
+      routerLink="resources"
+      routerLinkActive="text-[#10b981] border-[rgba(16,185,129,0.45)] bg-[rgba(16,185,129,0.12)]"
+      [routerLinkActiveOptions]="{ exact: true }"
+      class="rounded-[8px] border border-[rgba(255,255,255,0.08)] bg-[#101e24] px-3 py-[6px] transition-colors hover:text-[#e6f1f4]"
+    >
+      Resources
+    </a>
+    <a
+      routerLink="commodities"
+      routerLinkActive="text-[#10b981] border-[rgba(16,185,129,0.45)] bg-[rgba(16,185,129,0.12)]"
+      [routerLinkActiveOptions]="{ exact: true }"
+      class="rounded-[8px] border border-[rgba(255,255,255,0.08)] bg-[#101e24] px-3 py-[6px] transition-colors hover:text-[#e6f1f4]"
+    >
+      Commodities
+    </a>
+    <a
+      routerLink="asset-transfer"
+      routerLinkActive="text-[#10b981] border-[rgba(16,185,129,0.45)] bg-[rgba(16,185,129,0.12)]"
+      [routerLinkActiveOptions]="{ exact: true }"
+      class="rounded-[8px] border border-[rgba(255,255,255,0.08)] bg-[#101e24] px-3 py-[6px] transition-colors hover:text-[#e6f1f4]"
+    >
+      Asset Transfer
+    </a>
+    <a
+      routerLink="barter"
+      routerLinkActive="text-[#10b981] border-[rgba(16,185,129,0.45)] bg-[rgba(16,185,129,0.12)]"
+      [routerLinkActiveOptions]="{ exact: true }"
+      class="rounded-[8px] border border-[rgba(255,255,255,0.08)] bg-[#101e24] px-3 py-[6px] transition-colors hover:text-[#e6f1f4]"
+    >
+      Barter
+    </a>
+  </div>
+</section>
+
+<div class="min-w-0">
+  <router-outlet></router-outlet>
+</div>

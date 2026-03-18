@@ -68,6 +68,20 @@ import { MarketplaceCampaignsDiscoverComponent } from './marketplace/marketplace
 import { MarketplaceCampaignsCollectiveComponent } from './marketplace/marketplace-campaigns/marketplace-campaigns-collective/marketplace-campaigns-collective.component';
 import { MarketplaceCampaignsCapitalComponent } from './marketplace/marketplace-campaigns/marketplace-campaigns-capital/marketplace-campaigns-capital.component';
 import { MarketplaceCampaignsPortfolioComponent } from './marketplace/marketplace-campaigns/marketplace-campaigns-portfolio/marketplace-campaigns-portfolio.component';
+import { MarketplaceExchangeComponent } from './marketplace/marketplace-exchange/marketplace-exchange.component';
+import { MarketplaceExchangeOverviewComponent } from './marketplace/marketplace-exchange/marketplace-exchange-overview/marketplace-exchange-overview.component';
+import { MarketplaceExchangeWalletComponent } from './marketplace/marketplace-exchange/marketplace-exchange-wallet/marketplace-exchange-wallet.component';
+import { MarketplaceExchangeBidsComponent } from './marketplace/marketplace-exchange/marketplace-exchange-bids/marketplace-exchange-bids.component';
+import { MarketplaceExchangeLaborComponent } from './marketplace/marketplace-exchange/marketplace-exchange-labor/marketplace-exchange-labor.component';
+import { MarketplaceExchangeDealRoomComponent } from './marketplace/marketplace-exchange/marketplace-exchange-deal-room/marketplace-exchange-deal-room.component';
+import { MarketplaceExchangeCapitalComponent } from './marketplace/marketplace-exchange/marketplace-exchange-capital/marketplace-exchange-capital.component';
+import { MarketplaceExchangeResourcesComponent } from './marketplace/marketplace-exchange/marketplace-exchange-resources/marketplace-exchange-resources.component';
+import { MarketplaceExchangeCommoditiesComponent } from './marketplace/marketplace-exchange/marketplace-exchange-commodities/marketplace-exchange-commodities.component';
+import { MarketplaceExchangeAssetTransferComponent } from './marketplace/marketplace-exchange/marketplace-exchange-asset-transfer/marketplace-exchange-asset-transfer.component';
+import { MarketplaceExchangeBarterComponent } from './marketplace/marketplace-exchange/marketplace-exchange-barter/marketplace-exchange-barter.component';
+import { MarketplaceEscrowComponent } from './marketplace/marketplace-escrow/marketplace-escrow.component';
+import { MarketplaceEscrowOverviewComponent } from './marketplace/marketplace-escrow/marketplace-escrow-overview/marketplace-escrow-overview.component';
+import { MarketplaceEscrowBankComponent } from './marketplace/marketplace-escrow/marketplace-escrow-bank/marketplace-escrow-bank.component';
 import { HubComponent } from './hub/hub.component';
 import { AssistantComponent } from './assistant/assistant.component';
 import { TestComponent } from './index/test/test';
@@ -177,6 +191,24 @@ export const routes: Routes = [
                 ]
             },
             {
+                path: 'exchange',
+                component: MarketplaceExchangeComponent,
+                children: [
+                    {path: '', redirectTo: 'overview', pathMatch: 'full'},
+                    {path: 'overview', component: MarketplaceExchangeOverviewComponent, title: 'Exchange Overview'},
+                    {path: 'wallet', component: MarketplaceExchangeWalletComponent, title: 'Exchange Wallet'},
+                    {path: 'bids', component: MarketplaceExchangeBidsComponent, title: 'Bids & Offers'},
+                    {path: 'labor', component: MarketplaceExchangeLaborComponent, title: 'Labor Market'},
+                    {path: 'deal-room', component: MarketplaceExchangeDealRoomComponent, title: 'Deal Room'},
+                    {path: 'capital', component: MarketplaceExchangeCapitalComponent, title: 'Capital Exchange'},
+                    {path: 'resources', component: MarketplaceExchangeResourcesComponent, title: 'Resource Exchange'},
+                    {path: 'commodities', component: MarketplaceExchangeCommoditiesComponent, title: 'Commodities'},
+                    {path: 'asset-transfer', component: MarketplaceExchangeAssetTransferComponent, title: 'Asset Transfer'},
+                    {path: 'barter', component: MarketplaceExchangeBarterComponent, title: 'Barter Exchange'},
+                    {path: '**', redirectTo: 'overview'}
+                ]
+            },
+            {
                 path: 'barter',
                 component: MarketplaceBarterComponent,
                 children: [
@@ -186,6 +218,16 @@ export const routes: Routes = [
                     {path: 'offers', component: MarketplaceBarterOffersComponent, title: 'Offers'},
                     {path: 'bids', component: MarketplaceBarterBidsComponent, title: 'Bids'},
                     {path: '**', redirectTo: 'exchange'}
+                ]
+            },
+            {
+                path: 'escrow',
+                component: MarketplaceEscrowComponent,
+                children: [
+                    {path: '', redirectTo: 'overview', pathMatch: 'full'},
+                    {path: 'overview', component: MarketplaceEscrowOverviewComponent, title: 'Escrow Overview'},
+                    {path: 'bank', component: MarketplaceEscrowBankComponent, title: 'Bank Escrow'},
+                    {path: '**', redirectTo: 'overview'}
                 ]
             },
             {
