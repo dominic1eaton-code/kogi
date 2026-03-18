@@ -957,6 +957,18 @@ using the uploaded image as a reference generate a set of html user screen pages
 
 a linkforest is a connected collection, a forest, of linktrees, where a linktree is a connected chain (linked list) of linked accounts, all forest+trees+accounts connected by a root datastructure substrate called a "linknetwork"
 
+implement the spaces/network subcomponent page, and also let it have three subcomponents+pages within it too, one one for linknetwork overview, one for linktree, and one for linkforest, with a subnavigation bar for navigating between these pages too. 
+
+make the linkforest page have the structure of: file:///C:/dev/ws/kogi_dev/kogi-docs/screen-pages/kogi-net-linkforest.html
+
+the linknetwork overview page is the overall picture of a users network, contacts, connections, friends, communications links and channels andcommunications+channels of other users, an overall picture of users that are linked to this user.
+
+the linktree page has the users linktree and also include another linktree editor page with a button for navigating to that page from the linktree page, that has the structure of: file:///C:/dev/ws/kogi_dev/kogi-docs/screen-pages/kogi-linktree-editor.html
+
+read C:\dev\ws\kogi_dev\kogi-docs\md\notes2.md and any other relevant docs of the C:\dev\ws\kogi_dev\kogi-docs\md for the structure of linknets, linkforests, linktrees, links
+
+
+
 ---
 
 read the uploaded documents and all previously uploaded documents and generate the a refined design document, that is as long as possible, for the kogi:
@@ -1410,10 +1422,16 @@ file:///C:/dev/ws/kogi_dev/kogi-docs/screen-pages/exchange-03-deal-room.html
 
 
 
-implement the feed and timeline subcompoennts for the spaces component
+implement the feed and timeline subcomponents for the spaces component. also add in support for posting/posts, attachments, reactions, emojis, external links
 
 
 add a top navigation menu to the dashboard page, similar to the one of the wallet/spaces component, and have the menu have: Overview, Inbox, Calendar, Contacts, Tools, Analytics
+
+
+synthesize these two pages into a single structure and implement the spaces channels subcomponent:
+
+file:///C:/dev/ws/kogi_dev/kogi-docs/screen-pages/kogi-comm-channels.html
+file:///C:/dev/ws/kogi_dev/kogi-docs/screen-pages/kogi-channels-hub.html
 
 
 
@@ -1440,4 +1458,3 @@ settings - options, parameters, configurations, profiles, personas, preferences
 independent workers/organizations achieve outcomes+resuls+solutions through the execution of programs+projects that utilize resources+assets and generate artifacts
 
 kogi is your personal work operating system
-

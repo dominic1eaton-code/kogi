@@ -1,8 +1,6 @@
 import { CommonModule } from '@angular/common';
-import { Component, DestroyRef, computed, inject, signal } from '@angular/core';
-import { NavigationEnd, Router, RouterLink, RouterLinkActive } from '@angular/router';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { filter } from 'rxjs';
+import { Component, computed, signal } from '@angular/core';
+import { RouterLink, RouterLinkActive } from '@angular/router';
 
 type NavKey = 'dashboard' | 'portfolio' | 'wallet' | 'office' | 'spaces' | 'hub' | 'assistant';
 
@@ -86,14 +84,26 @@ const NAV_ITEMS: NavItem[] = [
   },
   {
     key: 'hub',
-    label: 'Marketplace Hub',
+    label: 'Marketplace',
     icon: '&#9711;',
-    route: '/hub',
+    route: '/marketplace',
     secondary: [
       { label: 'Overview', route: '/hub' },
       { label: 'Marketplace', meta: 'Offers, listings, bids' },
       { label: 'Exchange', meta: 'Transactions & escrow' },
       { label: 'Broadcasts', meta: 'Announcements & drops' }
+    ]
+  },
+  {
+    key: 'hub',
+    label: 'Hub',
+    icon: '&#9711;',
+    route: '/hub',
+    secondary: [
+      { label: 'Overview', route: '/hub' },
+      { label: 'Governance', meta: 'Offers, listings, bids' },
+      { label: 'Teams', meta: 'Transactions & escrow' },
+      { label: 'Organizations', meta: 'Announcements & drops' }
     ]
   },
   {
@@ -118,9 +128,6 @@ const NAV_ITEMS: NavItem[] = [
   styleUrl: './navigation.component.css'
 })
 export class NavigationComponent {
-  private router = inject(Router);
-  private destroyRef = inject(DestroyRef);
-
   navItems = NAV_ITEMS;
   expandedSection = signal<NavKey | null>(null);
 
@@ -128,13 +135,6 @@ export class NavigationComponent {
     const key = this.expandedSection();
     return this.navItems.find((item) => item.key === key) ?? null;
   });
-
-  constructor() {
-    this.setExpandedFromUrl(this.router.url);
-    this.router.events
-      .pipe(filter((event): event is NavigationEnd => event instanceof NavigationEnd), takeUntilDestroyed(this.destroyRef))
-      .subscribe((event) => this.setExpandedFromUrl(event.urlAfterRedirects));
-  }
 
   openSection(key: NavKey): void {
     this.expandedSection.set(key);
@@ -154,12 +154,5 @@ export class NavigationComponent {
       event.preventDefault();
     }
     this.expandedSection.set(null);
-  }
-
-  private setExpandedFromUrl(url: string): void {
-    const matched = this.navItems.find((item) => url.startsWith(item.route));
-    if (matched) {
-      this.expandedSection.set(matched.key);
-    }
   }
 }

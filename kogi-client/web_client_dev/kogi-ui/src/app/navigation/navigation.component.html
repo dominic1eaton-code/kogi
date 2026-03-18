@@ -50,7 +50,7 @@
 
 <aside
   *ngIf="activeSection() as active"
-  class="fixed inset-y-0 left-[220px] hidden w-[220px] flex-col border-r border-[rgba(255,255,255,0.06)] bg-[#0f1f26] lg:flex"
+  class="fixed left-[220px] top-[76px] z-40 hidden w-max max-w-[260px] flex-col rounded-[12px] border border-[rgba(255,255,255,0.06)] bg-[#0f1f26] shadow-2xl lg:flex"
 >
   <div class="flex items-center justify-between border-b border-[rgba(255,255,255,0.06)] px-4 py-3">
     <div class="text-[10px] uppercase tracking-[0.3em] text-[#5d747c] font-['JetBrains_Mono']">
@@ -65,7 +65,7 @@
     </button>
   </div>
 
-  <div class="flex-1 space-y-2 px-4 py-3 text-[10px] text-[#8ea6ad]">
+  <div class="max-h-[70vh] space-y-2 overflow-y-auto px-4 py-3 text-[10px] text-[#8ea6ad]">
     <ng-container *ngFor="let sub of active.secondary">
       <a
         *ngIf="sub.route; else secondaryLabel"
@@ -82,9 +82,5 @@
         </div>
       </ng-template>
     </ng-container>
-  </div>
-
-  <div class="border-t border-[rgba(255,255,255,0.06)] px-4 py-3 text-[9px] text-[#5d747c]">
-    Click a channel to open its menu, or use the expand arrow to pin this panel.
   </div>
 </aside>
