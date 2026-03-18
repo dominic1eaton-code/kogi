@@ -6,6 +6,7 @@ import { DashboardComponent } from './dashboard/dashboard.component'
 import { CreatingWorkspaceComponent } from './creating-workspace/creating-workspace.component';
 import { PortfolioComponent } from './portfolio/portfolio.component';
 import { PortfolioCreateComponent } from './portfolio/portfolio-create/portfolio-create.component';
+import { OfficeComponent } from './office/office.component';
 import { WalletComponent } from './wallet/wallet.component';
 import { WalletDashboardComponent } from './wallet/wallet-dashboard/wallet-dashboard.component';
 import { WalletWalletsComponent } from './wallet/wallet-wallets/wallet-wallets.component';
@@ -46,6 +47,7 @@ export const routes: Routes = [
             }
         ]
     },
+    {path: 'office', component: OfficeComponent, title: "Office"},
     {
         path: 'spaces',
         component: SpacesComponent,

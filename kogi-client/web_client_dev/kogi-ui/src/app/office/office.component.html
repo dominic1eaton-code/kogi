@@ -1,0 +1,213 @@
+﻿<div
+  class="relative min-h-screen w-full font-['Space_Grotesk'] text-[#e6f1f4]"
+  style="
+    background-color: #0b1115;
+    background-image:
+      linear-gradient(rgba(255, 255, 255, 0.025) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255, 255, 255, 0.025) 1px, transparent 1px);
+    background-size: 42px 42px;
+  "
+>
+  <div
+    class="pointer-events-none fixed -left-[120px] -top-[150px] h-[500px] w-[500px]"
+    style="background: radial-gradient(circle, rgba(16, 185, 129, 0.08), transparent 70%);"
+  ></div>
+  <div
+    class="pointer-events-none fixed -bottom-[120px] -right-[120px] h-[450px] w-[450px]"
+    style="background: radial-gradient(circle, rgba(245, 158, 11, 0.08), transparent 70%);"
+  ></div>
+
+  <aside
+    class="fixed inset-y-0 left-0 flex w-[220px] flex-col border-r border-[rgba(255,255,255,0.06)] bg-gradient-to-b from-[#0f1b21] to-[#0c1419]"
+  >
+    <div class="flex items-center gap-2.5 border-b border-[rgba(255,255,255,0.06)] px-[18px] py-[18px]">
+      <div
+        class="flex h-[34px] w-[34px] items-center justify-center rounded-[9px] bg-gradient-to-br from-[#10b981] to-[#059669] text-sm font-extrabold text-white"
+      >
+        K
+      </div>
+      <span class="text-sm font-semibold">kogi</span>
+    </div>
+
+    <div class="flex-1 space-y-1 p-[10px]">
+      <a
+        routerLink="/dashboard"
+        class="flex items-center gap-2 rounded-[8px] px-3 py-2 text-[13px] text-[#8ea6ad] hover:bg-[#132830] hover:text-[#e6f1f4]"
+      >
+        <span class="text-[12px] opacity-70">&#9776;</span>
+        Dashboard
+      </a>
+      <a
+        routerLink="/portfolio"
+        class="flex items-center gap-2 rounded-[8px] px-3 py-2 text-[13px] text-[#8ea6ad] hover:bg-[#132830] hover:text-[#e6f1f4]"
+      >
+        <span class="text-[12px] opacity-70">&#9776;</span>
+        Portfolio
+      </a>
+      <!-- <div class="flex items-center gap-2 rounded-[8px] px-3 py-2 text-[13px] text-[#8ea6ad] hover:bg-[#132830] hover:text-[#e6f1f4]"> -->
+        <a
+          routerLink="/wallet"
+          class="flex items-center gap-2 rounded-[8px] px-3 py-2 text-[13px] text-[#8ea6ad] hover:bg-[#132830] hover:text-[#e6f1f4]"
+        >
+        <span class="text-[12px] opacity-70">&#8862;</span>
+        Wallet
+        </a>
+      <!-- </div> -->
+      <div
+        class="flex items-center gap-2 rounded-[8px] bg-[rgba(16,185,129,0.15)] px-3 py-2 text-[13px] text-[#10b981]"
+      >
+        <span class="text-[12px] opacity-80">&#9671;</span>
+        Office
+      </div>
+      <a
+        routerLink="/spaces"
+        class="flex items-center gap-2 rounded-[8px] px-3 py-2 text-[13px] text-[#8ea6ad] hover:bg-[#132830] hover:text-[#e6f1f4]"
+      >
+        <span class="text-[12px] opacity-70">&#9671;</span>
+        Spaces
+      </a>
+      <div class="flex items-center gap-2 rounded-[8px] px-3 py-2 text-[13px] text-[#8ea6ad] hover:bg-[#132830] hover:text-[#e6f1f4]">
+        <span class="text-[12px] opacity-70">&#9711;</span>
+        Marketplace
+      </div>
+      <div class="flex items-center gap-2 rounded-[8px] px-3 py-2 text-[13px] text-[#8ea6ad] hover:bg-[#132830] hover:text-[#e6f1f4]">
+        <span class="text-[12px] opacity-70">&#9673;</span>
+        Hub
+      </div>
+      <div class="flex items-center gap-2 rounded-[8px] px-3 py-2 text-[13px] text-[#8ea6ad] hover:bg-[#132830] hover:text-[#e6f1f4]">
+        <span class="text-[12px] opacity-70">&#10022;</span>
+        Assistant
+      </div>
+    </div>
+
+    <div class="flex items-center gap-2.5 border-t border-[rgba(255,255,255,0.06)] px-4 py-4">
+      <div
+        class="flex h-[30px] w-[30px] items-center justify-center rounded-full bg-gradient-to-br from-[#8b5cf6] to-[#10b981] text-[12px] font-bold"
+      >
+        JD
+      </div>
+      <div>
+        <div class="text-[12px] font-semibold">Jordan</div>
+        <div class="text-[11px] text-[#5d747c]">Pro Plan</div>
+      </div>
+    </div>
+  </aside>
+
+  <header
+    class="fixed left-[220px] right-0 top-0 flex h-[56px] items-center gap-3 border-b border-[rgba(255,255,255,0.06)] bg-gradient-to-b from-[#0e1b21] to-[#0b1418] px-5"
+  >
+    <h1 class="flex-1 text-[16px] font-bold">Dashboard</h1>
+    <div class="flex items-center gap-2 rounded-[8px] border border-[rgba(255,255,255,0.06)] bg-[#0f1f26] px-2.5 py-[7px] text-[12px] text-[#8ea6ad]">
+      &#8981; Search
+    </div>
+    <div class="hidden items-center text-[10px] text-[#5d747c] lg:flex">
+      <div class="flex items-center gap-1 border-r border-[rgba(255,255,255,0.06)] px-2">
+        <span class="font-semibold text-[#e6f1f4]">6</span>
+        <span>Projects</span>
+      </div>
+      <div class="flex items-center gap-1 border-r border-[rgba(255,255,255,0.06)] px-2">
+        <span class="font-semibold text-[#e6f1f4]">73%</span>
+        <span>Health</span>
+      </div>
+      <div class="flex items-center gap-1 border-r border-[rgba(255,255,255,0.06)] px-2">
+        <span class="font-semibold text-[#e6f1f4]">$4,820</span>
+        <span>Wallet</span>
+      </div>
+      <div class="flex items-center gap-1 px-2">
+        <span class="font-semibold text-[#e6f1f4]">62%</span>
+        <span>OKR</span>
+      </div>
+    </div>
+    <div class="flex items-center gap-2">
+      <button
+        class="flex h-[28px] w-[28px] items-center justify-center rounded-[6px] border border-[rgba(255,255,255,0.06)] bg-[#0f1f26] text-[12px] text-[#8ea6ad]"
+        type="button"
+      >
+        &#9681;
+      </button>
+      <button
+        class="flex h-[28px] w-[28px] items-center justify-center rounded-[6px] border border-[rgba(255,255,255,0.06)] bg-[#0f1f26] text-[12px] text-[#8ea6ad]"
+        type="button"
+      >
+        ?
+      </button>
+      <button
+        class="rounded-[8px] bg-gradient-to-br from-[#10b981] to-[#059669] px-[14px] py-[8px] text-[12px] font-semibold text-white"
+        type="button"
+      >
+        + New
+      </button>
+      <button
+        class="rounded-[8px] border border-[rgba(255,255,255,0.06)] bg-[#0f1f26] px-[12px] py-[8px] text-[12px] font-semibold text-[#e6f1f4]"
+        type="button"
+        (click)="logout()"
+      >
+        Sign out
+      </button>
+    </div>
+  </header>
+
+  <main class="ml-[220px] px-5 pb-8 pt-[76px]">
+    <div class="mb-4 h-[2px] w-full rounded bg-gradient-to-r from-[#3b82f6] via-[#a855f7] via-[#ec4899] via-[#f97316] via-[#eab308] via-[#22c55e] to-[#06b6d4]"></div>
+
+    
+        <div>
+          <div class="text-[16px] font-semibold">Office</div>
+          <div class="text-[9px] font-['JetBrains_Mono'] uppercase tracking-[0.3em] text-[#5d747c]">
+            <a
+              routerLink="/spaces/dashboard"
+              routerLinkActive="text-[#10b981]"
+              [routerLinkActiveOptions]="{ exact: true }"
+              class="cursor-pointer transition-colors hover:text-[#e6f1f4]"
+            >
+              Overview
+            </a>
+            <span>&middot;</span>
+            <a
+              routerLink="/spaces/spaces"
+              routerLinkActive="text-[#10b981]"
+              [routerLinkActiveOptions]="{ exact: true }"
+              class="cursor-pointer transition-colors hover:text-[#e6f1f4]"
+            >
+              Inbox
+            </a>
+            <span>&middot;</span>
+            <a
+              routerLink="/spaces/rooms"
+              routerLinkActive="text-[#10b981]"
+              [routerLinkActiveOptions]="{ exact: true }"
+              class="cursor-pointer transition-colors hover:text-[#e6f1f4]"
+            >
+              Schedule
+            </a>
+            <span>&middot;</span>
+            <span class="cursor-pointer transition-colors hover:text-[#e6f1f4]">Contacts</span>
+            <span>&middot;</span>
+            <span class="cursor-pointer transition-colors hover:text-[#e6f1f4]">Tools</span>
+            <span>&middot;</span>
+            <span class="cursor-pointer transition-colors hover:text-[#e6f1f4]">Strategy</span>
+            <span>&middot;</span>
+            <span class="cursor-pointer transition-colors hover:text-[#e6f1f4]">Analytics</span>
+            <span>&middot;</span>
+            <span class="cursor-pointer transition-colors hover:text-[#e6f1f4]">Apps</span>
+          </div>
+        </div>
+
+
+    <section
+      class="mb-4 flex items-center justify-between rounded-[12px] border border-[rgba(255,255,255,0.06)] bg-gradient-to-br from-[#0f2730] to-[#132830] p-[18px]"
+    >
+      <div>
+        <h2 class="text-[18px] font-semibold">Good morning, Jordan &#128075;</h2>
+        <p class="text-[12px] text-[#8ea6ad]">Your AI agent found 4 optimization opportunities.</p>
+      </div>
+      <button
+        class="rounded-[8px] bg-gradient-to-br from-[#10b981] to-[#059669] px-[14px] py-[8px] text-[12px] font-semibold text-white"
+        type="button"
+      >
+        Ask Assistant
+      </button>
+    </section>
+
+  </main>
+</div>

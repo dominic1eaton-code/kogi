@@ -2,16 +2,16 @@ import { Component, inject } from '@angular/core';
 import { Router, RouterLink, RouterLinkActive, RouterOutlet  } from '@angular/router'
 
 @Component({
-  selector: 'app-dashboard',
+  selector: 'app-office',
   standalone: true,
   imports: [RouterLink, RouterLinkActive, RouterOutlet],
-  templateUrl: './dashboard.component.html',
-  styleUrl: './dashboard.component.css',
+  templateUrl: './office.component.html',
+  styleUrl: './office.component.css',
   host: {
     class: 'block w-full min-h-screen'
   }
 })
-export class DashboardComponent {
+export class OfficeComponent {
   
 
   // Inject the Router service
