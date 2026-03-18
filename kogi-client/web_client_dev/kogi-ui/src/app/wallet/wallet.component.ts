@@ -1,5 +1,5 @@
-import { Component } from '@angular/core';
-import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
+import { Component, inject } from '@angular/core';
+import { RouterLink, RouterLinkActive, RouterOutlet, Router } from '@angular/router';
 
 @Component({
   selector: 'app-wallet',
@@ -11,4 +11,17 @@ import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
     class: 'block w-full min-h-screen'
   }
 })
-export class WalletComponent {}
+export class WalletComponent {
+
+  // Inject the Router service
+  private router = inject(Router);
+  
+  // Method to handle the navigation
+  logout(): void {
+    // Perform any necessary logic here
+    console.log('Logging out of client session...');
+
+    // Navigate to the specified route
+    this.router.navigate(['/login']);
+  }
+}
