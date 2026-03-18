@@ -1,0 +1,629 @@
+
+<section class="mb-4 flex flex-wrap items-center gap-3 rounded-[12px] border border-[rgba(255,255,255,0.06)] bg-[#0f1f26] p-4">
+  <div>
+    <div class="text-[10px] uppercase tracking-[0.3em] text-[#5d747c] font-['JetBrains_Mono']">Community / Channels</div>
+    <div class="text-[11px] text-[#8ea6ad]">Manage communication channels, routing policies, and community inboxes.</div>
+  </div>
+  <div class="ml-auto flex flex-wrap items-center gap-2">
+    <input
+      class="hidden w-[220px] rounded-[8px] border border-[rgba(255,255,255,0.08)] bg-[#101e24] px-3 py-[6px] text-[10px] text-[#8ea6ad] placeholder:text-[#5d747c] md:block"
+      placeholder="Search channels, contacts..."
+      type="text"
+    />
+    <button
+      class="rounded-[8px] border border-[rgba(255,255,255,0.08)] bg-[#101e24] px-3 py-[6px] text-[10px] font-['JetBrains_Mono'] text-[#8ea6ad]"
+      type="button"
+    >
+      Routing Rules
+    </button>
+    <button
+      class="rounded-[8px] bg-gradient-to-br from-[#10b981] to-[#059669] px-3 py-[6px] text-[10px] font-['JetBrains_Mono'] font-semibold text-white"
+      type="button"
+    >
+      + Add Channel
+    </button>
+  </div>
+</section>
+
+<section class="mb-4 grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-5">
+  <div class="rounded-[12px] border border-[rgba(255,255,255,0.06)] bg-[#0f1f26] p-4">
+    <div class="text-[9px] uppercase tracking-[0.3em] text-[#5d747c] font-['JetBrains_Mono']">Total Channels</div>
+    <div class="mt-2 text-[22px] font-semibold font-['JetBrains_Mono'] text-[#60a5fa]">9</div>
+    <div class="mt-1 text-[10px] text-[#8ea6ad]">profiles &middot; orgs &middot; spaces</div>
+  </div>
+  <div class="rounded-[12px] border border-[rgba(255,255,255,0.06)] bg-[#0f1f26] p-4">
+    <div class="text-[9px] uppercase tracking-[0.3em] text-[#5d747c] font-['JetBrains_Mono']">Enabled</div>
+    <div class="mt-2 text-[22px] font-semibold font-['JetBrains_Mono'] text-[#10b981]">7</div>
+    <div class="mt-1 text-[10px] text-[#10b981]">public &middot; connections</div>
+  </div>
+  <div class="rounded-[12px] border border-[rgba(255,255,255,0.06)] bg-[#0f1f26] p-4">
+    <div class="text-[9px] uppercase tracking-[0.3em] text-[#5d747c] font-['JetBrains_Mono']">Request Gate</div>
+    <div class="mt-2 text-[22px] font-semibold font-['JetBrains_Mono'] text-[#f59e0b]">3</div>
+    <div class="mt-1 text-[10px] text-[#8ea6ad]">approval required</div>
+  </div>
+  <div class="rounded-[12px] border border-[rgba(255,255,255,0.06)] bg-[#0f1f26] p-4">
+    <div class="text-[9px] uppercase tracking-[0.3em] text-[#5d747c] font-['JetBrains_Mono']">Disabled</div>
+    <div class="mt-2 text-[22px] font-semibold font-['JetBrains_Mono'] text-[#ef4444]">1</div>
+    <div class="mt-1 text-[10px] text-[#8ea6ad]">private only</div>
+  </div>
+  <div class="rounded-[12px] border border-[rgba(255,255,255,0.06)] bg-[#0f1f26] p-4">
+    <div class="text-[9px] uppercase tracking-[0.3em] text-[#5d747c] font-['JetBrains_Mono']">Quiet Hours</div>
+    <div class="mt-2 text-[18px] font-semibold font-['JetBrains_Mono'] text-[#e6f1f4]">22:00-08:00</div>
+    <div class="mt-1 text-[10px] text-[#8ea6ad]">America/Chicago</div>
+  </div>
+</section>
+
+<section class="grid grid-cols-1 gap-4 xl:grid-cols-[minmax(0,1.4fr)_minmax(0,0.9fr)]">
+  <div class="space-y-4">
+    <section class="rounded-[12px] border border-[rgba(255,255,255,0.06)] bg-[#0f1f26] p-4">
+      <div class="flex flex-wrap items-center gap-2">
+        <div>
+          <div class="text-[10px] uppercase tracking-[0.3em] text-[#5d747c] font-['JetBrains_Mono']">Channels Hub</div>
+          <div class="text-[11px] text-[#8ea6ad]">Unified view of inbound and outbound communication endpoints.</div>
+        </div>
+        <div class="ml-auto flex items-center gap-2 text-[9px] font-['JetBrains_Mono']">
+          <button class="rounded-[8px] border border-[rgba(16,185,129,0.35)] bg-[rgba(16,185,129,0.12)] px-3 py-[6px] text-[#10b981]" type="button">
+            All Channels
+          </button>
+          <button class="rounded-[8px] border border-[rgba(255,255,255,0.08)] bg-[#101e24] px-3 py-[6px] text-[#5d747c]" type="button">
+            Linked
+          </button>
+          <button class="rounded-[8px] border border-[rgba(255,255,255,0.08)] bg-[#101e24] px-3 py-[6px] text-[#5d747c]" type="button">
+            Disabled
+          </button>
+        </div>
+      </div>
+
+      <div class="mt-4 grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3">
+        <div class="rounded-[12px] border border-[rgba(16,185,129,0.35)] bg-[#0f1f26] p-4">
+          <div class="flex items-start gap-3">
+            <div class="flex h-[42px] w-[42px] items-center justify-center rounded-[10px] border border-[rgba(16,185,129,0.35)] bg-[rgba(16,185,129,0.12)] text-[18px] text-[#10b981]">
+              &#128172;
+            </div>
+            <div class="flex-1">
+              <div class="text-[12px] font-semibold">kogi DM</div>
+              <div class="text-[9px] font-['JetBrains_Mono'] text-[#5d747c]">UNICAST + MULTICAST &middot; NATIVE</div>
+            </div>
+          </div>
+          <div class="mt-3 rounded-[8px] border border-[rgba(16,185,129,0.3)] bg-[rgba(16,185,129,0.08)] px-2 py-[4px] text-[9px] text-[#10b981]">
+            Enabled &middot; Public access &middot; No request gate
+          </div>
+          <div class="mt-3 grid grid-cols-2 gap-2 text-[9px]">
+            <div class="rounded-[8px] border border-[rgba(255,255,255,0.06)] bg-[#101e24] px-2 py-2">
+              <div class="text-[12px] font-['JetBrains_Mono'] text-[#10b981]">284</div>
+              <div class="text-[8px] text-[#5d747c]">Messages (30d)</div>
+            </div>
+            <div class="rounded-[8px] border border-[rgba(255,255,255,0.06)] bg-[#101e24] px-2 py-2">
+              <div class="text-[12px] font-['JetBrains_Mono'] text-[#e6f1f4]">18</div>
+              <div class="text-[8px] text-[#5d747c]">Active threads</div>
+            </div>
+          </div>
+          <div class="mt-3 flex items-center gap-2 text-[9px]">
+            <button class="flex-1 rounded-[8px] border border-[rgba(16,185,129,0.35)] bg-[rgba(16,185,129,0.12)] px-2 py-[6px] text-[#10b981]" type="button">
+              Open Inbox
+            </button>
+            <button class="flex-1 rounded-[8px] border border-[rgba(255,255,255,0.08)] bg-[#101e24] px-2 py-[6px] text-[#5d747c]" type="button">
+              Configure
+            </button>
+          </div>
+        </div>
+
+        <div class="rounded-[12px] border border-[rgba(239,68,68,0.35)] bg-[#0f1f26] p-4">
+          <div class="flex items-start gap-3">
+            <div class="flex h-[42px] w-[42px] items-center justify-center rounded-[10px] border border-[rgba(239,68,68,0.3)] bg-[rgba(239,68,68,0.08)] text-[18px] text-[#ef4444]">
+              &#9993;
+            </div>
+            <div class="flex-1">
+              <div class="text-[12px] font-semibold">Email</div>
+              <div class="text-[9px] font-['JetBrains_Mono'] text-[#5d747c]">UNICAST &middot; SMTP &middot; 2 ACCOUNTS</div>
+            </div>
+          </div>
+          <div class="mt-3 flex flex-wrap gap-2 text-[8px] font-['JetBrains_Mono']">
+            <span class="rounded-[6px] border border-[rgba(239,68,68,0.3)] bg-[rgba(239,68,68,0.08)] px-2 py-[2px] text-[#f87171]">&#9993; work@meshstudio.dev</span>
+            <span class="rounded-[6px] border border-[rgba(255,255,255,0.08)] bg-[#101e24] px-2 py-[2px] text-[#8ea6ad]">&#9993; personal@gmail</span>
+          </div>
+          <div class="mt-3 grid grid-cols-2 gap-2 text-[9px]">
+            <div class="rounded-[8px] border border-[rgba(255,255,255,0.06)] bg-[#101e24] px-2 py-2">
+              <div class="text-[12px] font-['JetBrains_Mono'] text-[#e6f1f4]">142</div>
+              <div class="text-[8px] text-[#5d747c]">Emails (30d)</div>
+            </div>
+            <div class="rounded-[8px] border border-[rgba(245,158,11,0.35)] bg-[rgba(245,158,11,0.12)] px-2 py-2">
+              <div class="text-[12px] font-['JetBrains_Mono'] text-[#f59e0b]">8</div>
+              <div class="text-[8px] text-[#5d747c]">Pending reply</div>
+            </div>
+          </div>
+          <div class="mt-3 flex items-center gap-2 text-[9px]">
+            <button class="flex-1 rounded-[8px] border border-[rgba(239,68,68,0.35)] bg-[rgba(239,68,68,0.08)] px-2 py-[6px] text-[#f87171]" type="button">
+              Open Email
+            </button>
+            <button class="flex-1 rounded-[8px] border border-[rgba(255,255,255,0.08)] bg-[#101e24] px-2 py-[6px] text-[#5d747c]" type="button">
+              Configure
+            </button>
+          </div>
+        </div>
+
+        <div class="rounded-[12px] border border-[rgba(34,197,94,0.35)] bg-[#0f1f26] p-4">
+          <div class="flex items-start gap-3">
+            <div class="flex h-[42px] w-[42px] items-center justify-center rounded-[10px] border border-[rgba(34,197,94,0.35)] bg-[rgba(34,197,94,0.08)] text-[18px] text-[#22c55e]">
+              &#128222;
+            </div>
+            <div class="flex-1">
+              <div class="text-[12px] font-semibold">Phone &amp; SMS</div>
+              <div class="text-[9px] font-['JetBrains_Mono'] text-[#5d747c]">UNICAST &middot; 2 NUMBERS</div>
+            </div>
+          </div>
+          <div class="mt-3 rounded-[8px] border border-[rgba(255,255,255,0.06)] bg-[#101e24] px-2 py-[4px] text-[9px] text-[#8ea6ad]">
+            Private &middot; Trusted contacts &middot; Request required
+          </div>
+          <div class="mt-3 grid grid-cols-2 gap-2 text-[9px]">
+            <div class="rounded-[8px] border border-[rgba(255,255,255,0.06)] bg-[#101e24] px-2 py-2">
+              <div class="text-[12px] font-['JetBrains_Mono'] text-[#8ea6ad]">4</div>
+              <div class="text-[8px] text-[#5d747c]">Calls (30d)</div>
+            </div>
+            <div class="rounded-[8px] border border-[rgba(255,255,255,0.06)] bg-[#101e24] px-2 py-2">
+              <div class="text-[12px] font-['JetBrains_Mono'] text-[#8ea6ad]">12</div>
+              <div class="text-[8px] text-[#5d747c]">SMS (30d)</div>
+            </div>
+          </div>
+          <div class="mt-3 flex items-center gap-2 text-[9px]">
+            <button class="flex-1 rounded-[8px] border border-[rgba(34,197,94,0.35)] bg-[rgba(34,197,94,0.08)] px-2 py-[6px] text-[#22c55e]" type="button">
+              Call Log
+            </button>
+            <button class="flex-1 rounded-[8px] border border-[rgba(255,255,255,0.08)] bg-[#101e24] px-2 py-[6px] text-[#5d747c]" type="button">
+              Configure
+            </button>
+          </div>
+        </div>
+        <div class="rounded-[12px] border border-[rgba(59,130,246,0.35)] bg-[#0f1f26] p-4">
+          <div class="flex items-start gap-3">
+            <div class="flex h-[42px] w-[42px] items-center justify-center rounded-[10px] border border-[rgba(59,130,246,0.35)] bg-[rgba(59,130,246,0.08)] text-[18px] text-[#60a5fa]">
+              &#127897;
+            </div>
+            <div class="flex-1">
+              <div class="text-[12px] font-semibold">Voice Call</div>
+              <div class="text-[9px] font-['JetBrains_Mono'] text-[#5d747c]">UNICAST &middot; NATIVE + PROVIDERS</div>
+            </div>
+          </div>
+          <div class="mt-3 flex flex-wrap gap-2 text-[8px] font-['JetBrains_Mono']">
+            <span class="rounded-[6px] border border-[rgba(16,185,129,0.3)] bg-[rgba(16,185,129,0.08)] px-2 py-[2px] text-[#10b981]">&#128172; kogi-call</span>
+            <span class="rounded-[6px] border border-[rgba(59,130,246,0.3)] bg-[rgba(59,130,246,0.08)] px-2 py-[2px] text-[#60a5fa]">Sl Slack Huddle</span>
+          </div>
+          <div class="mt-3 grid grid-cols-2 gap-2 text-[9px]">
+            <div class="rounded-[8px] border border-[rgba(59,130,246,0.3)] bg-[rgba(59,130,246,0.08)] px-2 py-2">
+              <div class="text-[12px] font-['JetBrains_Mono'] text-[#60a5fa]">18</div>
+              <div class="text-[8px] text-[#5d747c]">Calls (30d)</div>
+            </div>
+            <div class="rounded-[8px] border border-[rgba(255,255,255,0.06)] bg-[#101e24] px-2 py-2">
+              <div class="text-[12px] font-['JetBrains_Mono'] text-[#e6f1f4]">4h 22m</div>
+              <div class="text-[8px] text-[#5d747c]">Total time</div>
+            </div>
+          </div>
+          <div class="mt-3 flex items-center gap-2 text-[9px]">
+            <button class="flex-1 rounded-[8px] border border-[rgba(59,130,246,0.35)] bg-[rgba(59,130,246,0.08)] px-2 py-[6px] text-[#60a5fa]" type="button">
+              Start Call
+            </button>
+            <button class="flex-1 rounded-[8px] border border-[rgba(255,255,255,0.08)] bg-[#101e24] px-2 py-[6px] text-[#5d747c]" type="button">
+              Configure
+            </button>
+          </div>
+        </div>
+
+        <div class="rounded-[12px] border border-[rgba(168,85,247,0.35)] bg-[#0f1f26] p-4">
+          <div class="flex items-start gap-3">
+            <div class="flex h-[42px] w-[42px] items-center justify-center rounded-[10px] border border-[rgba(168,85,247,0.35)] bg-[rgba(168,85,247,0.08)] text-[18px] text-[#a855f7]">
+              &#127909;
+            </div>
+            <div class="flex-1">
+              <div class="text-[12px] font-semibold">Video Call</div>
+              <div class="text-[9px] font-['JetBrains_Mono'] text-[#5d747c]">UNICAST &middot; MULTI-PROVIDER</div>
+            </div>
+          </div>
+          <div class="mt-3 flex flex-wrap gap-2 text-[8px] font-['JetBrains_Mono']">
+            <span class="rounded-[6px] border border-[rgba(168,85,247,0.35)] bg-[rgba(168,85,247,0.08)] px-2 py-[2px] text-[#a855f7]">&#127909; kogi Rooms</span>
+            <span class="rounded-[6px] border border-[rgba(59,130,246,0.3)] bg-[rgba(59,130,246,0.08)] px-2 py-[2px] text-[#60a5fa]">G Meet</span>
+            <span class="rounded-[6px] border border-[rgba(59,130,246,0.3)] bg-[rgba(59,130,246,0.08)] px-2 py-[2px] text-[#60a5fa]">Zm Zoom</span>
+          </div>
+          <div class="mt-3 grid grid-cols-2 gap-2 text-[9px]">
+            <div class="rounded-[8px] border border-[rgba(168,85,247,0.35)] bg-[rgba(168,85,247,0.08)] px-2 py-2">
+              <div class="text-[12px] font-['JetBrains_Mono'] text-[#a855f7]">12</div>
+              <div class="text-[8px] text-[#5d747c]">Calls (30d)</div>
+            </div>
+            <div class="rounded-[8px] border border-[rgba(255,255,255,0.06)] bg-[#101e24] px-2 py-2">
+              <div class="text-[12px] font-['JetBrains_Mono'] text-[#e6f1f4]">8h 14m</div>
+              <div class="text-[8px] text-[#5d747c]">Total time</div>
+            </div>
+          </div>
+          <div class="mt-3 flex items-center gap-2 text-[9px]">
+            <button class="flex-1 rounded-[8px] border border-[rgba(168,85,247,0.35)] bg-[rgba(168,85,247,0.08)] px-2 py-[6px] text-[#a855f7]" type="button">
+              Start Video
+            </button>
+            <button class="flex-1 rounded-[8px] border border-[rgba(255,255,255,0.08)] bg-[#101e24] px-2 py-[6px] text-[#5d747c]" type="button">
+              Configure
+            </button>
+          </div>
+        </div>
+
+        <div class="rounded-[12px] border border-[rgba(245,158,11,0.35)] bg-[#0f1f26] p-4">
+          <div class="flex items-start gap-3">
+            <div class="flex h-[42px] w-[42px] items-center justify-center rounded-[10px] border border-[rgba(245,158,11,0.35)] bg-[rgba(245,158,11,0.08)] text-[18px] text-[#f59e0b]">
+              &#128197;
+            </div>
+            <div class="flex-1">
+              <div class="text-[12px] font-semibold">Booking / Calendar</div>
+              <div class="text-[9px] font-['JetBrains_Mono'] text-[#5d747c]">INBOUND &middot; SCHEDULING</div>
+            </div>
+          </div>
+          <div class="mt-3 flex flex-wrap gap-2 text-[8px] font-['JetBrains_Mono']">
+            <span class="rounded-[6px] border border-[rgba(245,158,11,0.35)] bg-[rgba(245,158,11,0.08)] px-2 py-[2px] text-[#f59e0b]">&#128197; kogi Bookings</span>
+            <span class="rounded-[6px] border border-[rgba(59,130,246,0.3)] bg-[rgba(59,130,246,0.08)] px-2 py-[2px] text-[#60a5fa]">G Calendar</span>
+          </div>
+          <div class="mt-3 grid grid-cols-2 gap-2 text-[9px]">
+            <div class="rounded-[8px] border border-[rgba(245,158,11,0.35)] bg-[rgba(245,158,11,0.08)] px-2 py-2">
+              <div class="text-[12px] font-['JetBrains_Mono'] text-[#f59e0b]">6</div>
+              <div class="text-[8px] text-[#5d747c]">Booked (30d)</div>
+            </div>
+            <div class="rounded-[8px] border border-[rgba(255,255,255,0.06)] bg-[#101e24] px-2 py-2">
+              <div class="text-[12px] font-['JetBrains_Mono'] text-[#e6f1f4]">24h</div>
+              <div class="text-[8px] text-[#5d747c]">Buffer time</div>
+            </div>
+          </div>
+          <div class="mt-3 flex items-center gap-2 text-[9px]">
+            <button class="flex-1 rounded-[8px] border border-[rgba(245,158,11,0.35)] bg-[rgba(245,158,11,0.08)] px-2 py-[6px] text-[#f59e0b]" type="button">
+              View Calendar
+            </button>
+            <button class="flex-1 rounded-[8px] border border-[rgba(255,255,255,0.08)] bg-[#101e24] px-2 py-[6px] text-[#5d747c]" type="button">
+              Configure
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="rounded-[12px] border border-[rgba(255,255,255,0.06)] bg-[#0f1f26] p-4">
+      <div class="flex flex-wrap items-center gap-2">
+        <div>
+          <div class="text-[10px] uppercase tracking-[0.3em] text-[#5d747c] font-['JetBrains_Mono']">Channel Policies</div>
+          <div class="text-[11px] text-[#8ea6ad]">Configure permissions, request gates, and routing priorities.</div>
+        </div>
+        <button class="ml-auto rounded-[8px] border border-[rgba(255,255,255,0.08)] bg-[#101e24] px-3 py-[6px] text-[9px] font-['JetBrains_Mono'] text-[#8ea6ad]" type="button">
+          Test Routing
+        </button>
+      </div>
+
+      <div class="mt-4 space-y-3">
+        <div class="rounded-[12px] border border-[rgba(16,185,129,0.35)] bg-[#0f1f26]">
+          <div class="flex flex-wrap items-center gap-3 border-b border-[rgba(255,255,255,0.06)] px-4 py-3">
+            <div class="flex h-[36px] w-[36px] items-center justify-center rounded-[10px] border border-[rgba(16,185,129,0.35)] bg-[rgba(16,185,129,0.12)] text-[16px] text-[#10b981]">
+              &#128172;
+            </div>
+            <div class="flex-1">
+              <div class="text-[12px] font-semibold">kogi-dm &middot; Native Platform DM</div>
+              <div class="text-[9px] font-['JetBrains_Mono'] text-[#5d747c]">kogi.net/dm/@jordan.dev</div>
+              <div class="mt-2 flex flex-wrap gap-2 text-[9px] font-['JetBrains_Mono']">
+                <span class="rounded-[6px] border border-[rgba(34,197,94,0.35)] bg-[rgba(34,197,94,0.12)] px-2 py-[1px] text-[#22c55e]">Public</span>
+                <span class="rounded-[6px] border border-[rgba(16,185,129,0.35)] bg-[rgba(16,185,129,0.12)] px-2 py-[1px] text-[#10b981]">Bi-directional</span>
+                <span class="rounded-[6px] border border-[rgba(34,197,94,0.35)] bg-[rgba(34,197,94,0.12)] px-2 py-[1px] text-[#22c55e]">No request gate</span>
+              </div>
+            </div>
+            <div class="flex items-center gap-2">
+              <div class="h-[18px] w-[34px] rounded-full bg-[rgba(16,185,129,0.35)] p-[2px]">
+                <div class="h-[14px] w-[14px] rounded-full bg-white translate-x-[16px]"></div>
+              </div>
+              <button class="rounded-[6px] border border-[rgba(255,255,255,0.08)] bg-[#101e24] px-2 py-[4px] text-[10px] text-[#8ea6ad]" type="button">
+                Expand
+              </button>
+            </div>
+          </div>
+          <div class="space-y-3 px-4 py-3 text-[10px] text-[#8ea6ad]">
+            <div class="flex flex-wrap items-center justify-between gap-2 border-b border-[rgba(255,255,255,0.06)] pb-3">
+              <div>
+                <div class="text-[11px] text-[#e6f1f4]">Accept from</div>
+                <div class="text-[9px] text-[#5d747c]">Who can initiate DMs on this channel</div>
+              </div>
+              <span class="rounded-[8px] border border-[rgba(255,255,255,0.08)] bg-[#101e24] px-3 py-[5px] text-[9px] font-['JetBrains_Mono']">Any (Public)</span>
+            </div>
+            <div class="flex flex-wrap items-center justify-between gap-2 border-b border-[rgba(255,255,255,0.06)] pb-3">
+              <div>
+                <div class="text-[11px] text-[#e6f1f4]">Contact Request Gate</div>
+                <div class="text-[9px] text-[#5d747c]">Require approval before first message</div>
+              </div>
+              <div class="h-[18px] w-[34px] rounded-full bg-[#1f2a30] p-[2px]">
+                <div class="h-[14px] w-[14px] rounded-full bg-white"></div>
+              </div>
+            </div>
+            <div class="flex flex-wrap items-center justify-between gap-2 border-b border-[rgba(255,255,255,0.06)] pb-3">
+              <div>
+                <div class="text-[11px] text-[#e6f1f4]">Auto-reply</div>
+                <div class="text-[9px] text-[#5d747c]">Automated initial response</div>
+              </div>
+              <span class="rounded-[8px] border border-[rgba(255,255,255,0.08)] bg-[#101e24] px-3 py-[5px] text-[9px] font-['JetBrains_Mono']">Custom template</span>
+            </div>
+            <div class="flex flex-wrap items-center justify-between gap-2">
+              <div>
+                <div class="text-[11px] text-[#e6f1f4]">Priority</div>
+                <div class="text-[9px] text-[#5d747c]">Display order in contact card</div>
+              </div>
+              <span class="rounded-[8px] border border-[rgba(255,255,255,0.08)] bg-[#101e24] px-3 py-[5px] text-[9px] font-['JetBrains_Mono']">1 (Primary)</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="rounded-[12px] border border-[rgba(255,255,255,0.06)] bg-[#0f1f26] px-4 py-3">
+          <div class="flex flex-wrap items-center gap-3">
+            <div class="flex h-[36px] w-[36px] items-center justify-center rounded-[10px] border border-[rgba(239,68,68,0.35)] bg-[rgba(239,68,68,0.08)] text-[16px] text-[#ef4444]">
+              &#9993;
+            </div>
+            <div class="flex-1">
+              <div class="text-[12px] font-semibold">Email &middot; Work</div>
+              <div class="text-[9px] font-['JetBrains_Mono'] text-[#5d747c]">jordan@meshstudio.dev</div>
+              <div class="mt-2 flex flex-wrap gap-2 text-[9px] font-['JetBrains_Mono']">
+                <span class="rounded-[6px] border border-[rgba(59,130,246,0.35)] bg-[rgba(59,130,246,0.12)] px-2 py-[1px] text-[#60a5fa]">Connections</span>
+                <span class="rounded-[6px] border border-[rgba(16,185,129,0.35)] bg-[rgba(16,185,129,0.12)] px-2 py-[1px] text-[#10b981]">Bi-directional</span>
+                <span class="rounded-[6px] border border-[rgba(245,158,11,0.35)] bg-[rgba(245,158,11,0.12)] px-2 py-[1px] text-[#f59e0b]">Request gate</span>
+              </div>
+            </div>
+            <div class="h-[18px] w-[34px] rounded-full bg-[rgba(16,185,129,0.35)] p-[2px]">
+              <div class="h-[14px] w-[14px] rounded-full bg-white translate-x-[16px]"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="rounded-[12px] border border-[rgba(255,255,255,0.06)] bg-[#0f1f26] px-4 py-3">
+          <div class="flex flex-wrap items-center gap-3">
+            <div class="flex h-[36px] w-[36px] items-center justify-center rounded-[10px] border border-[rgba(59,130,246,0.35)] bg-[rgba(59,130,246,0.08)] text-[16px] text-[#60a5fa]">
+              Dc
+            </div>
+            <div class="flex-1">
+              <div class="text-[12px] font-semibold">Discord DM</div>
+              <div class="text-[9px] font-['JetBrains_Mono'] text-[#5d747c]">jordan#4721</div>
+              <div class="mt-2 flex flex-wrap gap-2 text-[9px] font-['JetBrains_Mono']">
+                <span class="rounded-[6px] border border-[rgba(59,130,246,0.35)] bg-[rgba(59,130,246,0.12)] px-2 py-[1px] text-[#60a5fa]">Connections</span>
+                <span class="rounded-[6px] border border-[rgba(16,185,129,0.35)] bg-[rgba(16,185,129,0.12)] px-2 py-[1px] text-[#10b981]">Bi-directional</span>
+              </div>
+            </div>
+            <div class="h-[18px] w-[34px] rounded-full bg-[rgba(16,185,129,0.35)] p-[2px]">
+              <div class="h-[14px] w-[14px] rounded-full bg-white translate-x-[16px]"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <aside class="space-y-4">
+    <section class="rounded-[12px] border border-[rgba(255,255,255,0.06)] bg-[#0f1f26]">
+      <div class="border-b border-[rgba(255,255,255,0.06)] px-4 py-3">
+        <div class="text-[10px] uppercase tracking-[0.3em] text-[#5d747c] font-['JetBrains_Mono']">Global Settings</div>
+      </div>
+      <div class="space-y-3 px-4 py-3 text-[10px] text-[#8ea6ad]">
+        <div class="flex items-center justify-between">
+          <div>
+            <div class="text-[11px] text-[#e6f1f4]">Quiet Hours</div>
+            <div class="text-[9px] text-[#5d747c]">No inbound notifications during window</div>
+          </div>
+          <div class="h-[18px] w-[34px] rounded-full bg-[rgba(16,185,129,0.35)] p-[2px]">
+            <div class="h-[14px] w-[14px] rounded-full bg-white translate-x-[16px]"></div>
+          </div>
+        </div>
+        <div class="rounded-[8px] border border-[rgba(255,255,255,0.06)] bg-[#101e24] px-3 py-2">
+          <div class="text-[9px] text-[#5d747c]">22:00 &rarr; 08:00 &middot; America/Chicago</div>
+          <div class="mt-2 grid grid-cols-12 overflow-hidden rounded-[6px] border border-[rgba(255,255,255,0.06)] text-[7px]">
+            <div class="bg-[rgba(239,68,68,0.12)] px-1 py-1 text-center text-[#ef4444]">22</div>
+            <div class="bg-[rgba(239,68,68,0.12)] px-1 py-1 text-center text-[#ef4444]">23</div>
+            <div class="bg-[rgba(239,68,68,0.12)] px-1 py-1 text-center text-[#ef4444]">00</div>
+            <div class="bg-[rgba(239,68,68,0.12)] px-1 py-1 text-center text-[#ef4444]">01</div>
+            <div class="bg-[rgba(239,68,68,0.12)] px-1 py-1 text-center text-[#ef4444]">02</div>
+            <div class="bg-[rgba(239,68,68,0.12)] px-1 py-1 text-center text-[#ef4444]">03</div>
+            <div class="bg-[rgba(239,68,68,0.12)] px-1 py-1 text-center text-[#ef4444]">04</div>
+            <div class="bg-[rgba(239,68,68,0.12)] px-1 py-1 text-center text-[#ef4444]">05</div>
+            <div class="bg-[rgba(239,68,68,0.12)] px-1 py-1 text-center text-[#ef4444]">06</div>
+            <div class="bg-[rgba(239,68,68,0.12)] px-1 py-1 text-center text-[#ef4444]">07</div>
+            <div class="bg-[rgba(34,197,94,0.12)] px-1 py-1 text-center text-[#22c55e]">08</div>
+            <div class="bg-[rgba(34,197,94,0.12)] px-1 py-1 text-center text-[#22c55e]">09</div>
+          </div>
+          <div class="mt-2 text-[9px] text-[#5d747c]">Messages queued and delivered after quiet hours.</div>
+        </div>
+        <div class="flex items-center justify-between">
+          <div>
+            <div class="text-[11px] text-[#e6f1f4]">Contact Request Cooldown</div>
+            <div class="text-[9px] text-[#5d747c]">Minimum time between requests</div>
+          </div>
+          <span class="text-[10px] font-['JetBrains_Mono'] text-[#10b981]">24h</span>
+        </div>
+        <div class="flex items-center justify-between">
+          <div>
+            <div class="text-[11px] text-[#e6f1f4]">Auto-routing</div>
+            <div class="text-[9px] text-[#5d747c]">High-priority senders bypass gates</div>
+          </div>
+          <div class="h-[18px] w-[34px] rounded-full bg-[rgba(16,185,129,0.35)] p-[2px]">
+            <div class="h-[14px] w-[14px] rounded-full bg-white translate-x-[16px]"></div>
+          </div>
+        </div>
+        <div class="flex items-center justify-between">
+          <div>
+            <div class="text-[11px] text-[#e6f1f4]">Cross-profile Isolation</div>
+            <div class="text-[9px] text-[#5d747c]">No bleed between profile inboxes</div>
+          </div>
+          <div class="h-[18px] w-[34px] rounded-full bg-[rgba(16,185,129,0.35)] p-[2px]">
+            <div class="h-[14px] w-[14px] rounded-full bg-white translate-x-[16px]"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="rounded-[12px] border border-[rgba(255,255,255,0.06)] bg-[#0f1f26]">
+      <div class="border-b border-[rgba(255,255,255,0.06)] px-4 py-3">
+        <div class="text-[10px] uppercase tracking-[0.3em] text-[#5d747c] font-['JetBrains_Mono']">Routing Rules</div>
+      </div>
+      <div class="space-y-3 px-4 py-3 text-[10px] text-[#8ea6ad]">
+        <div class="flex items-center justify-between rounded-[8px] border border-[rgba(255,255,255,0.06)] bg-[#101e24] px-3 py-2">
+          <span class="font-['JetBrains_Mono'] text-[#e6f1f4]">after 18:00</span>
+          <span class="text-[#10b981]">Delay</span>
+        </div>
+        <div class="flex items-center justify-between rounded-[8px] border border-[rgba(255,255,255,0.06)] bg-[#101e24] px-3 py-2">
+          <span class="font-['JetBrains_Mono'] text-[#e6f1f4]">Cooperative member</span>
+          <span class="text-[#10b981]">Redirect to Slack</span>
+        </div>
+        <div class="flex items-center justify-between rounded-[8px] border border-[rgba(255,255,255,0.06)] bg-[#101e24] px-3 py-2">
+          <span class="font-['JetBrains_Mono'] text-[#e6f1f4]">Match &gt; 90%</span>
+          <span class="text-[#10b981]">Allow DM</span>
+        </div>
+        <div class="flex items-center justify-between rounded-[8px] border border-[rgba(255,255,255,0.06)] bg-[#101e24] px-3 py-2">
+          <span class="font-['JetBrains_Mono'] text-[#e6f1f4]">Keyword: project inquiry</span>
+          <span class="text-[#10b981]">Route to calendar</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="rounded-[12px] border border-[rgba(255,255,255,0.06)] bg-[#0f1f26]">
+      <div class="border-b border-[rgba(255,255,255,0.06)] px-4 py-3">
+        <div class="text-[10px] uppercase tracking-[0.3em] text-[#5d747c] font-['JetBrains_Mono']">kogi-net Resolution</div>
+      </div>
+      <div class="space-y-3 px-4 py-3 text-[10px] text-[#8ea6ad]">
+        <div class="flex items-start gap-3">
+          <div class="flex h-[20px] w-[20px] items-center justify-center rounded-full border border-[rgba(255,255,255,0.08)] text-[9px] text-[#5d747c]">1</div>
+          <div>
+            <div class="text-[11px] text-[#e6f1f4]">Channel Resolution</div>
+            <div class="text-[9px] text-[#5d747c]">Enabled channels are resolved per profile context.</div>
+          </div>
+        </div>
+        <div class="flex items-start gap-3">
+          <div class="flex h-[20px] w-[20px] items-center justify-center rounded-full border border-[rgba(255,255,255,0.08)] text-[9px] text-[#5d747c]">2</div>
+          <div>
+            <div class="text-[11px] text-[#e6f1f4]">Access Policy Check</div>
+            <div class="text-[9px] text-[#5d747c]">Sender tier evaluated against accept-from policy.</div>
+          </div>
+        </div>
+        <div class="flex items-start gap-3">
+          <div class="flex h-[20px] w-[20px] items-center justify-center rounded-full border border-[rgba(255,255,255,0.08)] text-[9px] text-[#5d747c]">3</div>
+          <div>
+            <div class="text-[11px] text-[#e6f1f4]">Ranking</div>
+            <div class="text-[9px] text-[#5d747c]">Channels ranked by priority and sender class.</div>
+          </div>
+        </div>
+        <div class="flex items-start gap-3">
+          <div class="flex h-[20px] w-[20px] items-center justify-center rounded-full border border-[rgba(255,255,255,0.08)] text-[9px] text-[#5d747c]">4</div>
+          <div>
+            <div class="text-[11px] text-[#e6f1f4]">Contact Gate</div>
+            <div class="text-[9px] text-[#5d747c]">Request gate triggers approval workflow.</div>
+          </div>
+        </div>
+        <div class="flex items-start gap-3">
+          <div class="flex h-[20px] w-[20px] items-center justify-center rounded-full border border-[rgba(255,255,255,0.08)] text-[9px] text-[#5d747c]">5</div>
+          <div>
+            <div class="text-[11px] text-[#e6f1f4]">Delivery</div>
+            <div class="text-[9px] text-[#5d747c]">Message routed via ChannelService or provider relay.</div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </aside>
+</section>
+<section class="mt-4 space-y-3 rounded-[12px] border border-[rgba(255,255,255,0.06)] bg-[#0f1f26] p-4">
+  <div class="flex flex-wrap items-center gap-2">
+    <div class="text-[10px] uppercase tracking-[0.3em] text-[#5d747c] font-['JetBrains_Mono']">Recent Communication Activity</div>
+    <button class="ml-auto rounded-[8px] border border-[rgba(255,255,255,0.08)] bg-[#101e24] px-3 py-[6px] text-[9px] font-['JetBrains_Mono'] text-[#8ea6ad]" type="button">
+      Full Log
+    </button>
+  </div>
+  <div class="overflow-x-auto">
+    <div class="min-w-[860px] rounded-[10px] border border-[rgba(255,255,255,0.06)] bg-[#101e24]">
+      <div class="grid grid-cols-[28px_minmax(0,1.2fr)_minmax(0,0.9fr)_minmax(0,0.8fr)_minmax(0,0.9fr)_minmax(0,1.4fr)_minmax(0,0.6fr)] gap-4 border-b border-[rgba(255,255,255,0.06)] px-4 py-2 text-[9px] font-['JetBrains_Mono'] text-[#5d747c] uppercase tracking-[0.2em]">
+        <span></span>
+        <span>Contact</span>
+        <span>Channel</span>
+        <span>Direction</span>
+        <span>Duration</span>
+        <span>Subject / Preview</span>
+        <span>Time</span>
+      </div>
+      <div class="grid grid-cols-[28px_minmax(0,1.2fr)_minmax(0,0.9fr)_minmax(0,0.8fr)_minmax(0,0.9fr)_minmax(0,1.4fr)_minmax(0,0.6fr)] gap-4 border-b border-[rgba(255,255,255,0.06)] px-4 py-3 text-[10px] text-[#8ea6ad]">
+        <div class="flex h-[24px] w-[24px] items-center justify-center rounded-[6px] border border-[rgba(16,185,129,0.35)] bg-[rgba(16,185,129,0.12)] text-[#10b981]">
+          &#128172;
+        </div>
+        <div>
+          <div class="text-[11px] text-[#e6f1f4]">Amara Kofi</div>
+          <div class="text-[9px] font-['JetBrains_Mono'] text-[#5d747c]">@amara.dev</div>
+        </div>
+        <div class="text-[#8ea6ad]">kogi DM</div>
+        <div class="font-['JetBrains_Mono'] text-[#22c55e]">Inbound</div>
+        <div class="font-['JetBrains_Mono'] text-[#5d747c]">-</div>
+        <div class="truncate">CRDT diff pushed, checking your PR feedback</div>
+        <div class="font-['JetBrains_Mono'] text-[#5d747c]">2m ago</div>
+      </div>
+      <div class="grid grid-cols-[28px_minmax(0,1.2fr)_minmax(0,0.9fr)_minmax(0,0.8fr)_minmax(0,0.9fr)_minmax(0,1.4fr)_minmax(0,0.6fr)] gap-4 border-b border-[rgba(255,255,255,0.06)] px-4 py-3 text-[10px] text-[#8ea6ad]">
+        <div class="flex h-[24px] w-[24px] items-center justify-center rounded-[6px] border border-[rgba(168,85,247,0.35)] bg-[rgba(168,85,247,0.12)] text-[#a855f7]">
+          &#127909;
+        </div>
+        <div>
+          <div class="text-[11px] text-[#e6f1f4]">Marcus Park</div>
+          <div class="text-[9px] font-['JetBrains_Mono'] text-[#5d747c]">@marcus.systems</div>
+        </div>
+        <div class="text-[#8ea6ad]">Video &middot; kogi Rooms</div>
+        <div class="font-['JetBrains_Mono'] text-[#60a5fa]">Outbound</div>
+        <div class="font-['JetBrains_Mono'] text-[#5d747c]">42 min</div>
+        <div class="truncate">Architecture review: Redis pub-sub scaling</div>
+        <div class="font-['JetBrains_Mono'] text-[#5d747c]">Yesterday</div>
+      </div>
+      <div class="grid grid-cols-[28px_minmax(0,1.2fr)_minmax(0,0.9fr)_minmax(0,0.8fr)_minmax(0,0.9fr)_minmax(0,1.4fr)_minmax(0,0.6fr)] gap-4 px-4 py-3 text-[10px] text-[#8ea6ad]">
+        <div class="flex h-[24px] w-[24px] items-center justify-center rounded-[6px] border border-[rgba(239,68,68,0.35)] bg-[rgba(239,68,68,0.12)] text-[#ef4444]">
+          &#9993;
+        </div>
+        <div>
+          <div class="text-[11px] text-[#e6f1f4]">Aisha Patel</div>
+          <div class="text-[9px] font-['JetBrains_Mono'] text-[#5d747c]">Patel Ventures</div>
+        </div>
+        <div class="text-[#8ea6ad]">Email &middot; Work</div>
+        <div class="font-['JetBrains_Mono'] text-[#22c55e]">Inbound</div>
+        <div class="font-['JetBrains_Mono'] text-[#5d747c]">14 KB</div>
+        <div class="truncate">Invoice INV-2026-031 - payment confirmation</div>
+        <div class="font-['JetBrains_Mono'] text-[#5d747c]">2h ago</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="mt-4 grid grid-cols-1 gap-4 xl:grid-cols-2">
+  <div class="rounded-[12px] border border-[rgba(255,255,255,0.06)] bg-[#0f1f26] p-4">
+    <div class="text-[10px] uppercase tracking-[0.3em] text-[#5d747c] font-['JetBrains_Mono']">Inbound Routing</div>
+    <div class="mt-3 space-y-2 text-[10px] text-[#8ea6ad]">
+      <div class="flex items-center gap-2 border-b border-[rgba(255,255,255,0.06)] pb-2">
+        <span class="text-[#5d747c]">New DM from public visitor</span>
+        <span class="ml-auto text-[#10b981] font-['JetBrains_Mono']">Contact Form &rarr; DM queue</span>
+      </div>
+      <div class="flex items-center gap-2 border-b border-[rgba(255,255,255,0.06)] pb-2">
+        <span class="text-[#5d747c]">Match score &gt; 90%</span>
+        <span class="ml-auto text-[#10b981] font-['JetBrains_Mono']">Skip gate</span>
+      </div>
+      <div class="flex items-center gap-2 border-b border-[rgba(255,255,255,0.06)] pb-2">
+        <span class="text-[#5d747c]">Cooperative member sender</span>
+        <span class="ml-auto text-[#10b981] font-['JetBrains_Mono']">Route to Slack</span>
+      </div>
+      <div class="flex items-center gap-2">
+        <span class="text-[#5d747c]">After 22:00</span>
+        <span class="ml-auto text-[#10b981] font-['JetBrains_Mono']">Queue until 08:00</span>
+      </div>
+    </div>
+  </div>
+  <div class="rounded-[12px] border border-[rgba(255,255,255,0.06)] bg-[#0f1f26] p-4">
+    <div class="text-[10px] uppercase tracking-[0.3em] text-[#5d747c] font-['JetBrains_Mono']">Outbound Routing</div>
+    <div class="mt-3 space-y-2 text-[10px] text-[#8ea6ad]">
+      <div class="flex items-center gap-2 border-b border-[rgba(255,255,255,0.06)] pb-2">
+        <span class="text-[#5d747c]">Recipient prefers Slack</span>
+        <span class="ml-auto text-[#10b981] font-['JetBrains_Mono']">Auto-switch</span>
+      </div>
+      <div class="flex items-center gap-2 border-b border-[rgba(255,255,255,0.06)] pb-2">
+        <span class="text-[#5d747c]">Group message &gt; 10</span>
+        <span class="ml-auto text-[#10b981] font-['JetBrains_Mono']">Suggest broadcast</span>
+      </div>
+      <div class="flex items-center gap-2 border-b border-[rgba(255,255,255,0.06)] pb-2">
+        <span class="text-[#5d747c]">Video call scheduled</span>
+        <span class="ml-auto text-[#10b981] font-['JetBrains_Mono']">Send invite</span>
+      </div>
+      <div class="flex items-center gap-2">
+        <span class="text-[#5d747c]">Invoice attached</span>
+        <span class="ml-auto text-[#10b981] font-['JetBrains_Mono']">Email + DM</span>
+      </div>
+    </div>
+  </div>
+</section>

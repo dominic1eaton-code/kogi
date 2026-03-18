@@ -188,7 +188,14 @@
             <span>&middot;</span>
             <span class="cursor-pointer transition-colors hover:text-[#e6f1f4]">Messages</span>
             <span>&middot;</span>
-            <span class="cursor-pointer transition-colors hover:text-[#e6f1f4]">Channels</span>
+            <a
+              routerLink="/spaces/channels"
+              routerLinkActive="text-[#10b981]"
+              [routerLinkActiveOptions]="{ exact: true }"
+              class="cursor-pointer transition-colors hover:text-[#e6f1f4]"
+            >
+              Channels
+            </a>
             <span>&middot;</span>
             <a
               routerLink="/spaces/feed"

@@ -15,6 +15,7 @@ import { WalletsTaxesComponent } from './wallet/wallet-wallets/wallets-taxes/wal
 import { SpacesComponent } from './spaces/spaces.component';
 import { SpacesDashboardComponent } from './spaces/spaces-dashboard/spaces-dashboard.component';
 import { SpacesEventsComponent } from './spaces/spaces-events/spaces-events.component';
+import { SpacesChannelsComponent } from './spaces/spaces-channels/spaces-channels.component';
 import { SpacesSpacesComponent } from './spaces/spaces-spaces/spaces-spaces.component';
 import { SpacesRoomsComponent } from './spaces/spaces-rooms/spaces-rooms.component';
 import { SpacesFeedComponent } from './spaces/spaces-feed/spaces-feed.component';
@@ -63,7 +64,8 @@ export const routes: Routes = [
             {path: 'rooms', component: SpacesRoomsComponent, title: 'Rooms'},
             {path: 'feed', component: SpacesFeedComponent, title: 'Spaces Feed'},
             {path: 'timeline', component: SpacesTimelineComponent, title: 'Spaces Timeline'},
-            {path: 'events', component: SpacesEventsComponent, title: 'Spaces Events'}
+            {path: 'events', component: SpacesEventsComponent, title: 'Spaces Events'},
+            {path: 'channels', component: SpacesChannelsComponent, title: 'Spaces Channels'}
         ]
     },
     {path: 'test', component: TestComponent, title: "Testing Page"},
