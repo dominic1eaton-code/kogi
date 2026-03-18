@@ -1551,7 +1551,38 @@ file:///C:/dev/ws/kogi_dev/kogi-docs/screen-pages/02-listing-detail.html
 file:///C:/dev/ws/kogi_dev/kogi-docs/screen-pages/06-my-listings.html
 
 
+
+implement the market escrow and exchange subcomponents:
+
+implement the escrow subcomponents that implements all of the features on all of the following pages, and create a structure of subpages/subcomponents and subpages/subcomponents within those subpages, all within the escrow subcomponent, that best covers and structures all of the features+funcitonality of these pages and also has link buttons to appropriate subpages/subcomponents as well:
+
+file:///C:/dev/ws/kogi_dev/kogi-docs/screen-pages/kogi-escrow.html
+file:///C:/dev/ws/kogi_dev/kogi-docs/screen-pages/kogi-bank-03-escrow.html
+
+
+implement the exchange subcomponents that implements all of the features on all of the following pages, and create a structure of subpages/subcomponents and subpages/subcomponents within those subpages, all within the exchange subcomponent, that best covers and structures all of the features+funcitonality of these pages and also has link buttons to appropriate subpages/subcomponents as well:
+
+file:///C:/dev/ws/kogi_dev/kogi-docs/screen-pages/05-exchange.html
+file:///C:/dev/ws/kogi_dev/kogi-docs/screen-pages/screen08-exchange.html
+file:///C:/dev/ws/kogi_dev/kogi-docs/screen-pages/kogi-05-exchange.html
+file:///C:/dev/ws/kogi_dev/kogi-docs/screen-pages/kogi-barter-exchange.html
+file:///C:/dev/ws/kogi_dev/kogi-docs/screen-pages/exchange.html
+file:///C:/dev/ws/kogi_dev/kogi-docs/screen-pages/exchange-07-asset-transfer.html
+file:///C:/dev/ws/kogi_dev/kogi-docs/screen-pages/exchange-06-commodities.html
+file:///C:/dev/ws/kogi_dev/kogi-docs/screen-pages/exchange-05-resource-exchange.html
+file:///C:/dev/ws/kogi_dev/kogi-docs/screen-pages/exchange-04-capital-exchange.html
+file:///C:/dev/ws/kogi_dev/kogi-docs/screen-pages/exchange-03-deal-room.html
+file:///C:/dev/ws/kogi_dev/kogi-docs/screen-pages/exchange-02-labor-market.html
+file:///C:/dev/ws/kogi_dev/kogi-docs/screen-pages/exchange-01-overview.html
+
+
+
 funding, royalties, equity distribution/allocation/payouts, IPOs, ICOs, dividends, shares, securities, liquidity, estate, real estate
+
+
+strategy, tactics, operations, project management, plans, governance
+
+marketing domains: travel, pets, kids, love, food
 
 
 ---
