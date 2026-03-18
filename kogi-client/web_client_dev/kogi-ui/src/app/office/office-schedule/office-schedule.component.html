@@ -1,0 +1,166 @@
+<section class="mb-4 flex flex-wrap items-center gap-3 rounded-[12px] border border-[rgba(255,255,255,0.06)] bg-[#0f1f26] p-4">
+  <div>
+    <div class="text-[10px] uppercase tracking-[0.3em] text-[#5d747c] font-['JetBrains_Mono']">Office / Schedule</div>
+    <div class="text-[11px] text-[#8ea6ad]">Master schedule across timelines, timeboxes, and resource commitments.</div>
+  </div>
+  <div class="ml-auto flex flex-wrap items-center gap-2">
+    <button class="rounded-[8px] border border-[rgba(59,130,246,0.35)] bg-[rgba(59,130,246,0.12)] px-3 py-[6px] text-[10px] font-['JetBrains_Mono'] text-[#60a5fa]" type="button">
+      New Timebox
+    </button>
+    <button class="rounded-[8px] border border-[rgba(245,158,11,0.35)] bg-[rgba(245,158,11,0.12)] px-3 py-[6px] text-[10px] font-['JetBrains_Mono'] text-[#f59e0b]" type="button">
+      Reconcile
+    </button>
+    <button class="rounded-[8px] bg-gradient-to-br from-[#10b981] to-[#059669] px-3 py-[6px] text-[10px] font-['JetBrains_Mono'] font-semibold text-white" type="button">
+      Add Schedule
+    </button>
+  </div>
+</section>
+
+<section class="mb-4 grid grid-cols-2 gap-3 text-[10px] md:grid-cols-4">
+  <div class="rounded-[10px] border border-[rgba(255,255,255,0.06)] bg-[#0f1f26] p-3">
+    <div class="text-[16px] font-semibold text-[#10b981]">12</div>
+    <div class="text-[9px] uppercase tracking-[0.3em] text-[#5d747c] font-['JetBrains_Mono']">Active Timeboxes</div>
+  </div>
+  <div class="rounded-[10px] border border-[rgba(255,255,255,0.06)] bg-[#0f1f26] p-3">
+    <div class="text-[16px] font-semibold text-[#60a5fa]">4</div>
+    <div class="text-[9px] uppercase tracking-[0.3em] text-[#5d747c] font-['JetBrains_Mono']">Schedules Linked</div>
+  </div>
+  <div class="rounded-[10px] border border-[rgba(255,255,255,0.06)] bg-[#0f1f26] p-3">
+    <div class="text-[16px] font-semibold text-[#f59e0b]">3</div>
+    <div class="text-[9px] uppercase tracking-[0.3em] text-[#5d747c] font-['JetBrains_Mono']">Conflicts</div>
+  </div>
+  <div class="rounded-[10px] border border-[rgba(255,255,255,0.06)] bg-[#0f1f26] p-3">
+    <div class="text-[16px] font-semibold text-[#a855f7]">62%</div>
+    <div class="text-[9px] uppercase tracking-[0.3em] text-[#5d747c] font-['JetBrains_Mono']">Capacity</div>
+  </div>
+</section>
+
+<section class="grid grid-cols-1 gap-4 xl:grid-cols-[260px_minmax(0,1fr)_280px]">
+  <aside class="overflow-hidden rounded-[12px] border border-[rgba(255,255,255,0.06)] bg-[#0f1f26]">
+    <div class="border-b border-[rgba(255,255,255,0.06)] p-4">
+      <div class="text-[9px] uppercase tracking-[0.3em] text-[#5d747c] font-['JetBrains_Mono']">Schedulebooks</div>
+      <div class="mt-2 text-[10px] text-[#8ea6ad]">Aggregated timelines &amp; calendars.</div>
+    </div>
+    <div class="divide-y divide-[rgba(255,255,255,0.06)] text-[10px]">
+      <div class="px-4 py-3 bg-[rgba(16,185,129,0.08)]">
+        <div class="flex items-center justify-between">
+          <span class="font-semibold">Master Office Schedule</span>
+          <span class="text-[#10b981]">Primary</span>
+        </div>
+        <div class="mt-1 text-[9px] text-[#5d747c]">All commitments &middot; 14 days view</div>
+      </div>
+      <div class="px-4 py-3">
+        <div class="flex items-center justify-between">
+          <span class="font-semibold">Client Delivery Timeline</span>
+          <span class="text-[#60a5fa]">Linked</span>
+        </div>
+        <div class="mt-1 text-[9px] text-[#5d747c]">Sprints, milestones, checkpoints</div>
+      </div>
+      <div class="px-4 py-3">
+        <div class="flex items-center justify-between">
+          <span class="font-semibold">Community Governance</span>
+          <span class="text-[#f59e0b]">Synced</span>
+        </div>
+        <div class="mt-1 text-[9px] text-[#5d747c]">Votes, member calls, reporting</div>
+      </div>
+      <div class="px-4 py-3">
+        <div class="flex items-center justify-between">
+          <span class="font-semibold">Personal Timeboxes</span>
+          <span class="text-[#5d747c]">Local</span>
+        </div>
+        <div class="mt-1 text-[9px] text-[#5d747c]">Focus blocks &middot; deep work</div>
+      </div>
+    </div>
+  </aside>
+
+  <div class="space-y-4">
+    <section class="rounded-[12px] border border-[rgba(255,255,255,0.06)] bg-[#0f1f26] p-4">
+      <div class="flex items-center justify-between">
+        <div class="text-[10px] uppercase tracking-[0.3em] text-[#5d747c] font-['JetBrains_Mono']">Today Timeline</div>
+        <button class="text-[10px] font-['JetBrains_Mono'] text-[#60a5fa]" type="button">Switch View</button>
+      </div>
+      <div class="mt-4 space-y-4 border-l border-[rgba(255,255,255,0.08)] pl-4 text-[10px]">
+        <div class="relative">
+          <span class="absolute -left-[9px] top-[6px] h-[8px] w-[8px] rounded-full bg-[#10b981]"></span>
+          <div class="text-[9px] text-[#5d747c] font-['JetBrains_Mono']">09:00 AM &middot; 90m</div>
+          <div class="mt-2 rounded-[10px] border border-[rgba(255,255,255,0.06)] bg-[#101e24] p-3">
+            <div class="text-[11px] font-semibold">Sprint Planning</div>
+            <div class="text-[9px] text-[#5d747c]">Timebox: Delivery M4 &middot; Team sync</div>
+          </div>
+        </div>
+        <div class="relative">
+          <span class="absolute -left-[9px] top-[6px] h-[8px] w-[8px] rounded-full bg-[#60a5fa]"></span>
+          <div class="text-[9px] text-[#5d747c] font-['JetBrains_Mono']">11:30 AM &middot; 30m</div>
+          <div class="mt-2 rounded-[10px] border border-[rgba(255,255,255,0.06)] bg-[#101e24] p-3">
+            <div class="text-[11px] font-semibold">Client Review</div>
+            <div class="text-[9px] text-[#5d747c]">Calendar: Google Meet &middot; Milestone demo</div>
+          </div>
+        </div>
+        <div class="relative">
+          <span class="absolute -left-[9px] top-[6px] h-[8px] w-[8px] rounded-full bg-[#f59e0b]"></span>
+          <div class="text-[9px] text-[#5d747c] font-['JetBrains_Mono']">2:00 PM &middot; 2h</div>
+          <div class="mt-2 rounded-[10px] border border-[rgba(255,255,255,0.06)] bg-[#101e24] p-3">
+            <div class="text-[11px] font-semibold">Deep Work Block</div>
+            <div class="text-[9px] text-[#5d747c]">Personal timebox &middot; Prototype iteration</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="rounded-[12px] border border-[rgba(255,255,255,0.06)] bg-[#0f1f26] p-4">
+      <div class="text-[10px] uppercase tracking-[0.3em] text-[#5d747c] font-['JetBrains_Mono']">Timebox Inventory</div>
+      <div class="mt-3 grid gap-3 md:grid-cols-3">
+        <div class="rounded-[10px] border border-[rgba(255,255,255,0.06)] bg-[#101e24] p-3">
+          <div class="text-[11px] font-semibold">Sprint 14</div>
+          <div class="text-[9px] text-[#5d747c]">Mar 10 - Mar 21 &middot; 12 tasks</div>
+        </div>
+        <div class="rounded-[10px] border border-[rgba(255,255,255,0.06)] bg-[#101e24] p-3">
+          <div class="text-[11px] font-semibold">Design Testbed</div>
+          <div class="text-[9px] text-[#5d747c]">UX tests &middot; 4 sessions</div>
+        </div>
+        <div class="rounded-[10px] border border-[rgba(255,255,255,0.06)] bg-[#101e24] p-3">
+          <div class="text-[11px] font-semibold">Governance Cycle</div>
+          <div class="text-[9px] text-[#5d747c]">Proposal window open</div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <aside class="space-y-4">
+    <section class="rounded-[12px] border border-[rgba(255,255,255,0.06)] bg-[#0f1f26] p-4">
+      <div class="text-[10px] uppercase tracking-[0.3em] text-[#5d747c] font-['JetBrains_Mono']">Reconciliation</div>
+      <div class="mt-3 space-y-2 text-[10px]">
+        <div class="rounded-[8px] border border-[rgba(239,68,68,0.35)] bg-[rgba(239,68,68,0.12)] px-3 py-2">
+          <div class="font-semibold text-[#ef4444]">Overlap Detected</div>
+          <div class="text-[9px] text-[#fca5a5]">Client Review &middot; Studio Sync</div>
+        </div>
+        <div class="rounded-[8px] border border-[rgba(245,158,11,0.35)] bg-[rgba(245,158,11,0.12)] px-3 py-2">
+          <div class="font-semibold text-[#f59e0b]">Resource Conflict</div>
+          <div class="text-[9px] text-[#fcd34d]">Studio Room reserved by DAO call</div>
+        </div>
+        <div class="rounded-[8px] border border-[rgba(16,185,129,0.35)] bg-[rgba(16,185,129,0.12)] px-3 py-2">
+          <div class="font-semibold text-[#10b981]">Resolved</div>
+          <div class="text-[9px] text-[#6ee7b7]">Timebox moved to 3:00 PM</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="rounded-[12px] border border-[rgba(255,255,255,0.06)] bg-[#0f1f26] p-4">
+      <div class="text-[10px] uppercase tracking-[0.3em] text-[#5d747c] font-['JetBrains_Mono']">External Calendars</div>
+      <div class="mt-3 space-y-2 text-[10px]">
+        <div class="flex items-center justify-between rounded-[8px] border border-[rgba(255,255,255,0.06)] bg-[#101e24] px-3 py-2">
+          <span>Google Calendar</span>
+          <span class="text-[#10b981]">Synced</span>
+        </div>
+        <div class="flex items-center justify-between rounded-[8px] border border-[rgba(255,255,255,0.06)] bg-[#101e24] px-3 py-2">
+          <span>Meetup Events</span>
+          <span class="text-[#60a5fa]">Linked</span>
+        </div>
+        <div class="flex items-center justify-between rounded-[8px] border border-[rgba(255,255,255,0.06)] bg-[#101e24] px-3 py-2">
+          <span>Calendly</span>
+          <span class="text-[#5d747c]">Pending</span>
+        </div>
+      </div>
+    </section>
+  </aside>
+</section>

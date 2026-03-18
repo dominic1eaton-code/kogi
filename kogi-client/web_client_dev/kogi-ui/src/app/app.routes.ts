@@ -7,6 +7,23 @@ import { CreatingWorkspaceComponent } from './creating-workspace/creating-worksp
 import { PortfolioComponent } from './portfolio/portfolio.component';
 import { PortfolioCreateComponent } from './portfolio/portfolio-create/portfolio-create.component';
 import { OfficeComponent } from './office/office.component';
+import { OfficeOverviewComponent } from './office/office-overview/office-overview.component';
+import { OfficeInboxComponent } from './office/office-inbox/office-inbox.component';
+import { OfficeScheduleComponent } from './office/office-schedule/office-schedule.component';
+import { OfficeCalendarComponent } from './office/office-calendar/office-calendar.component';
+import { OfficeStudioComponent } from './office/office-studio/office-studio.component';
+import { OfficeStudioOverviewComponent } from './office/office-studio/studio-overview/studio-overview.component';
+import { OfficeStudioIdeasComponent } from './office/office-studio/studio-ideas/studio-ideas.component';
+import { OfficeStudioConceptsComponent } from './office/office-studio/studio-concepts/studio-concepts.component';
+import { OfficeStudioDesignsComponent } from './office/office-studio/studio-designs/studio-designs.component';
+import { OfficeStudioBlueprintsComponent } from './office/office-studio/studio-blueprints/studio-blueprints.component';
+import { OfficeStudioMockupsComponent } from './office/office-studio/studio-mockups/studio-mockups.component';
+import { OfficeStudioPrototypesComponent } from './office/office-studio/studio-prototypes/studio-prototypes.component';
+import { OfficeStudioTestingComponent } from './office/office-studio/studio-testing/studio-testing.component';
+import { OfficeStudioNotesComponent } from './office/office-studio/studio-notes/studio-notes.component';
+import { OfficeStudioDocsComponent } from './office/office-studio/studio-docs/studio-docs.component';
+import { OfficeStudioContentComponent } from './office/office-studio/studio-content/studio-content.component';
+import { OfficeContactsComponent } from './office/office-contacts/office-contacts.component';
 import { WalletComponent } from './wallet/wallet.component';
 import { WalletDashboardComponent } from './wallet/wallet-dashboard/wallet-dashboard.component';
 import { WalletWalletsComponent } from './wallet/wallet-wallets/wallet-wallets.component';
@@ -40,6 +57,40 @@ export const routes: Routes = [
     {path: 'portfolio/new', component: PortfolioCreateComponent, title: 'Create Portfolio'},
     {path: 'portfolio', component: PortfolioComponent, title: 'Portfolio'},
     {
+        path: 'office',
+        component: OfficeComponent,
+        title: 'Office',
+        children: [
+            {path: '', redirectTo: 'overview', pathMatch: 'full'},
+            {path: 'dashboard', redirectTo: 'overview', pathMatch: 'full'},
+            {path: 'overview', component: OfficeOverviewComponent, title: 'Office Overview'},
+            {path: 'inbox', component: OfficeInboxComponent, title: 'Office Inbox'},
+            {path: 'schedule', component: OfficeScheduleComponent, title: 'Office Schedule'},
+            {path: 'calendar', component: OfficeCalendarComponent, title: 'Office Calendar'},
+            {path: 'contacts', component: OfficeContactsComponent, title: 'Office Contacts'},
+            {
+                path: 'studio',
+                component: OfficeStudioComponent,
+                children: [
+                    {path: '', redirectTo: 'overview', pathMatch: 'full'},
+                    {path: 'overview', component: OfficeStudioOverviewComponent, title: 'Studio Overview'},
+                    {path: 'ideas', component: OfficeStudioIdeasComponent, title: 'Studio Ideas'},
+                    {path: 'concepts', component: OfficeStudioConceptsComponent, title: 'Studio Concepts'},
+                    {path: 'designs', component: OfficeStudioDesignsComponent, title: 'Studio Designs'},
+                    {path: 'blueprints', component: OfficeStudioBlueprintsComponent, title: 'Studio Blueprints'},
+                    {path: 'mockups', component: OfficeStudioMockupsComponent, title: 'Studio Mockups'},
+                    {path: 'prototypes', component: OfficeStudioPrototypesComponent, title: 'Studio Prototypes'},
+                    {path: 'testing', component: OfficeStudioTestingComponent, title: 'Studio Testing'},
+                    {path: 'notes', component: OfficeStudioNotesComponent, title: 'Studio Notes'},
+                    {path: 'docs', component: OfficeStudioDocsComponent, title: 'Studio Docs'},
+                    {path: 'content', component: OfficeStudioContentComponent, title: 'Studio Content'},
+                    {path: '**', redirectTo: 'overview'}
+                ]
+            },
+            {path: '**', redirectTo: 'overview'}
+        ]
+    },
+    {
         path: 'wallet',
         component: WalletComponent,
         title: 'Wallet',
@@ -59,10 +110,9 @@ export const routes: Routes = [
             }
         ]
     },
-    {path: 'office', component: OfficeComponent, title: "Office"},
-    {path: 'marketplace', component: MarketplaceComponent, title: "Marketplace"},
-    {path: 'hub', component: HubComponent, title: "Organization Hub"},
-    {path: 'assistant', component: AssistantComponent, title: "Assistant"},
+    {path: 'marketplace', component: MarketplaceComponent, title: 'Marketplace'},
+    {path: 'hub', component: HubComponent, title: 'Organization Hub'},
+    {path: 'assistant', component: AssistantComponent, title: 'Assistant'},
     {
         path: 'spaces',
         component: SpacesComponent,
@@ -91,6 +141,6 @@ export const routes: Routes = [
             {path: 'channels', component: SpacesChannelsComponent, title: 'Spaces Channels'}
         ]
     },
-    {path: 'test', component: TestComponent, title: "Testing Page"},
+    {path: 'test', component: TestComponent, title: 'Testing Page'},
     {path: '**', redirectTo: '' }
 ];

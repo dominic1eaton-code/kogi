@@ -1,0 +1,33 @@
+<section class="mb-4 flex flex-wrap items-center gap-3 rounded-[12px] border border-[rgba(255,255,255,0.06)] bg-[#0f1f26] p-4">
+  <div>
+    <div class="text-[10px] uppercase tracking-[0.3em] text-[#5d747c] font-['JetBrains_Mono']">Office / Studio</div>
+    <div class="text-[11px] text-[#8ea6ad]">Ideas, designs, prototypes, testing lifecycles, and creative assets.</div>
+  </div>
+  <div class="ml-auto flex flex-wrap items-center gap-2">
+    <button class="rounded-[8px] border border-[rgba(59,130,246,0.35)] bg-[rgba(59,130,246,0.12)] px-3 py-[6px] text-[10px] font-['JetBrains_Mono'] text-[#60a5fa]" type="button">
+      + New Idea
+    </button>
+    <button class="rounded-[8px] border border-[rgba(168,85,247,0.35)] bg-[rgba(168,85,247,0.12)] px-3 py-[6px] text-[10px] font-['JetBrains_Mono'] text-[#a855f7]" type="button">
+      + Prototype
+    </button>
+    <button class="rounded-[8px] bg-gradient-to-br from-[#10b981] to-[#059669] px-3 py-[6px] text-[10px] font-['JetBrains_Mono'] font-semibold text-white" type="button">
+      Publish Asset
+    </button>
+  </div>
+</section>
+
+<section class="mb-4 flex flex-wrap items-center gap-2 rounded-[12px] border border-[rgba(255,255,255,0.06)] bg-[#101e24] px-3 py-2 text-[10px] font-['JetBrains_Mono']">
+  <a routerLink="/office/studio/overview" routerLinkActive="border-[rgba(16,185,129,0.35)] bg-[rgba(16,185,129,0.12)] text-[#10b981]" [routerLinkActiveOptions]="{ exact: true }" class="rounded-[999px] border border-[rgba(255,255,255,0.08)] px-3 py-[4px] text-[#8ea6ad]">Overview</a>
+  <a routerLink="/office/studio/ideas" routerLinkActive="border-[rgba(96,165,250,0.35)] bg-[rgba(96,165,250,0.12)] text-[#60a5fa]" [routerLinkActiveOptions]="{ exact: true }" class="rounded-[999px] border border-[rgba(255,255,255,0.08)] px-3 py-[4px] text-[#8ea6ad]">Ideas</a>
+  <a routerLink="/office/studio/concepts" routerLinkActive="border-[rgba(168,85,247,0.35)] bg-[rgba(168,85,247,0.12)] text-[#a855f7]" [routerLinkActiveOptions]="{ exact: true }" class="rounded-[999px] border border-[rgba(255,255,255,0.08)] px-3 py-[4px] text-[#8ea6ad]">Concepts</a>
+  <a routerLink="/office/studio/designs" routerLinkActive="border-[rgba(245,158,11,0.35)] bg-[rgba(245,158,11,0.12)] text-[#f59e0b]" [routerLinkActiveOptions]="{ exact: true }" class="rounded-[999px] border border-[rgba(255,255,255,0.08)] px-3 py-[4px] text-[#8ea6ad]">Designs</a>
+  <a routerLink="/office/studio/blueprints" routerLinkActive="border-[rgba(59,130,246,0.35)] bg-[rgba(59,130,246,0.12)] text-[#60a5fa]" [routerLinkActiveOptions]="{ exact: true }" class="rounded-[999px] border border-[rgba(255,255,255,0.08)] px-3 py-[4px] text-[#8ea6ad]">Blueprints</a>
+  <a routerLink="/office/studio/mockups" routerLinkActive="border-[rgba(236,72,153,0.35)] bg-[rgba(236,72,153,0.12)] text-[#ec4899]" [routerLinkActiveOptions]="{ exact: true }" class="rounded-[999px] border border-[rgba(255,255,255,0.08)] px-3 py-[4px] text-[#8ea6ad]">Mockups</a>
+  <a routerLink="/office/studio/prototypes" routerLinkActive="border-[rgba(34,197,94,0.35)] bg-[rgba(34,197,94,0.12)] text-[#22c55e]" [routerLinkActiveOptions]="{ exact: true }" class="rounded-[999px] border border-[rgba(255,255,255,0.08)] px-3 py-[4px] text-[#8ea6ad]">Prototypes</a>
+  <a routerLink="/office/studio/testing" routerLinkActive="border-[rgba(14,165,233,0.35)] bg-[rgba(14,165,233,0.12)] text-[#0ea5e9]" [routerLinkActiveOptions]="{ exact: true }" class="rounded-[999px] border border-[rgba(255,255,255,0.08)] px-3 py-[4px] text-[#8ea6ad]">Testing</a>
+  <a routerLink="/office/studio/notes" routerLinkActive="border-[rgba(148,163,184,0.35)] bg-[rgba(148,163,184,0.12)] text-[#cbd5f5]" [routerLinkActiveOptions]="{ exact: true }" class="rounded-[999px] border border-[rgba(255,255,255,0.08)] px-3 py-[4px] text-[#8ea6ad]">Notes</a>
+  <a routerLink="/office/studio/docs" routerLinkActive="border-[rgba(59,130,246,0.35)] bg-[rgba(59,130,246,0.12)] text-[#60a5fa]" [routerLinkActiveOptions]="{ exact: true }" class="rounded-[999px] border border-[rgba(255,255,255,0.08)] px-3 py-[4px] text-[#8ea6ad]">Docs</a>
+  <a routerLink="/office/studio/content" routerLinkActive="border-[rgba(245,158,11,0.35)] bg-[rgba(245,158,11,0.12)] text-[#f59e0b]" [routerLinkActiveOptions]="{ exact: true }" class="rounded-[999px] border border-[rgba(255,255,255,0.08)] px-3 py-[4px] text-[#8ea6ad]">Content</a>
+</section>
+
+<router-outlet></router-outlet>

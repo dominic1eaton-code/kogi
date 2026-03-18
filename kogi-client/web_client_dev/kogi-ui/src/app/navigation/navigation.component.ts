@@ -61,10 +61,12 @@ const NAV_ITEMS: NavItem[] = [
     icon: '&#8862;',
     route: '/office',
     secondary: [
-      { label: 'Overview', route: '/office' },
-      { label: 'Workboard', meta: 'Stories, sprints, blockers' },
-      { label: 'Calendar', meta: 'Meetings & deadlines' },
-      { label: 'Team', meta: 'Collaborators & roles' }
+      { label: 'Overview', route: '/office/overview', meta: 'Office dashboard' },
+      { label: 'Inbox', route: '/office/inbox', meta: 'Messages & requests' },
+      { label: 'Schedule', route: '/office/schedule', meta: 'Timelines & timeboxes' },
+      { label: 'Calendar', route: '/office/calendar', meta: 'Meetings & deadlines' },
+      { label: 'Studio', route: '/office/studio', meta: 'Ideas, designs, assets' },
+      { label: 'Contacts', route: '/office/contacts', meta: 'Contactbook & network' }
     ]
   },
   {
