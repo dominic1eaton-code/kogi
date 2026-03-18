@@ -51,6 +51,13 @@ import { MarketplaceBarterExchangeComponent } from './marketplace/marketplace-ba
 import { MarketplaceBarterDealsComponent } from './marketplace/marketplace-barter/marketplace-barter-deals/marketplace-barter-deals.component';
 import { MarketplaceBarterOffersComponent } from './marketplace/marketplace-barter/marketplace-barter-offers/marketplace-barter-offers.component';
 import { MarketplaceBarterBidsComponent } from './marketplace/marketplace-barter/marketplace-barter-bids/marketplace-barter-bids.component';
+import { MarketplaceCampaignsComponent } from './marketplace/marketplace-campaigns/marketplace-campaigns.component';
+import { MarketplaceCampaignsOverviewComponent } from './marketplace/marketplace-campaigns/marketplace-campaigns-overview/marketplace-campaigns-overview.component';
+import { MarketplaceCampaignsBuilderComponent } from './marketplace/marketplace-campaigns/marketplace-campaigns-builder/marketplace-campaigns-builder.component';
+import { MarketplaceCampaignsDiscoverComponent } from './marketplace/marketplace-campaigns/marketplace-campaigns-discover/marketplace-campaigns-discover.component';
+import { MarketplaceCampaignsCollectiveComponent } from './marketplace/marketplace-campaigns/marketplace-campaigns-collective/marketplace-campaigns-collective.component';
+import { MarketplaceCampaignsCapitalComponent } from './marketplace/marketplace-campaigns/marketplace-campaigns-capital/marketplace-campaigns-capital.component';
+import { MarketplaceCampaignsPortfolioComponent } from './marketplace/marketplace-campaigns/marketplace-campaigns-portfolio/marketplace-campaigns-portfolio.component';
 import { HubComponent } from './hub/hub.component';
 import { AssistantComponent } from './assistant/assistant.component';
 import { TestComponent } from './index/test/test';
@@ -62,7 +69,7 @@ export const routes: Routes = [
     {path: 'onboarding', component: OnboardingComponent, title: 'Onboarding'},
     {path: 'creating-workspace', component: CreatingWorkspaceComponent, title: 'Creating Workspace'},
     {
-        path: 'dashboard', 
+        path: 'dashboard',
         component: DashboardComponent, 
         title: 'Dashboard',
         children: [
@@ -145,6 +152,20 @@ export const routes: Routes = [
                     {path: 'offers', component: MarketplaceBarterOffersComponent, title: 'Offers'},
                     {path: 'bids', component: MarketplaceBarterBidsComponent, title: 'Bids'},
                     {path: '**', redirectTo: 'exchange'}
+                ]
+            },
+            {
+                path: 'campaigns',
+                component: MarketplaceCampaignsComponent,
+                children: [
+                    {path: '', redirectTo: 'overview', pathMatch: 'full'},
+                    {path: 'overview', component: MarketplaceCampaignsOverviewComponent, title: 'Campaigns Overview'},
+                    {path: 'builder', component: MarketplaceCampaignsBuilderComponent, title: 'Campaign Builder'},
+                    {path: 'discover', component: MarketplaceCampaignsDiscoverComponent, title: 'Campaign Discover'},
+                    {path: 'collective', component: MarketplaceCampaignsCollectiveComponent, title: 'Collective Campaign'},
+                    {path: 'capital', component: MarketplaceCampaignsCapitalComponent, title: 'Campaigns & Capital'},
+                    {path: 'portfolio', component: MarketplaceCampaignsPortfolioComponent, title: 'Campaigns Portfolio'},
+                    {path: '**', redirectTo: 'overview'}
                 ]
             },
             {path: '**', redirectTo: 'dashboard'}
