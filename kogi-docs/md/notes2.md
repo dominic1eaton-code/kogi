@@ -1577,6 +1577,50 @@ file:///C:/dev/ws/kogi_dev/kogi-docs/screen-pages/exchange-01-overview.html
 
 
 
+C:\dev\ws\kogi_dev\kogi-docs\md\kogi-portfolio-master-spreadsheet-sdd.docx.md
+C:\dev\ws\kogi_dev\kogi-docs\md\kogi-portfolio-system-design-updated.docx.md
+C:\dev\ws\kogi_dev\kogi-docs\md\kogi-portfolio-system-design.md
+C:\dev\ws\kogi_dev\kogi-docs\md\kogi-unified-design.docx.md
+C:\dev\ws\kogi_dev\kogi-docs\md\notes2.md
+
+file:///C:/dev/ws/kogi_dev/kogi-docs/screen-pages/02-portfolio-list.html
+file:///C:/dev/ws/kogi_dev/kogi-docs/screen-pages/03-portfolio-tree.html
+file:///C:/dev/ws/kogi_dev/kogi-docs/screen-pages/04-component-detail.html
+file:///C:/dev/ws/kogi_dev/kogi-docs/screen-pages/04-portfolio.html
+file:///C:/dev/ws/kogi_dev/kogi-docs/screen-pages/05-itembook.html
+file:///C:/dev/ws/kogi_dev/kogi-docs/screen-pages/06-binder.html
+file:///C:/dev/ws/kogi_dev/kogi-docs/screen-pages/07-registry.html
+file:///C:/dev/ws/kogi_dev/kogi-docs/screen-pages/08-analytics.html
+file:///C:/dev/ws/kogi_dev/kogi-docs/screen-pages/11-search-pql.html
+file:///C:/dev/ws/kogi_dev/kogi-docs/screen-pages/12-portfolio-board.html
+file:///C:/dev/ws/kogi_dev/kogi-docs/screen-pages/13-program-detail.html
+file:///C:/dev/ws/kogi_dev/kogi-docs/screen-pages/14-itembook-charter.html
+file:///C:/dev/ws/kogi_dev/kogi-docs/screen-pages/15-itembook-workspace.html
+file:///C:/dev/ws/kogi_dev/kogi-docs/screen-pages/16-itembook-catalogue.html
+file:///C:/dev/ws/kogi_dev/kogi-docs/screen-pages/17-itembook-schedule.html
+file:///C:/dev/ws/kogi_dev/kogi-docs/screen-pages/18-itembook-metrics.html
+file:///C:/dev/ws/kogi_dev/kogi-docs/screen-pages/19-folder-view.html
+file:///C:/dev/ws/kogi_dev/kogi-docs/screen-pages/20-graph-view.html
+file:///C:/dev/ws/kogi_dev/kogi-docs/screen-pages/22-new-component-wizard.html
+file:///C:/dev/ws/kogi_dev/kogi-docs/screen-pages/23-itembook-library.html
+file:///C:/dev/ws/kogi_dev/kogi-docs/screen-pages/24-itembook-logs.html
+file:///C:/dev/ws/kogi_dev/kogi-docs/screen-pages/25-subportfolio.html
+file:///C:/dev/ws/kogi_dev/kogi-docs/screen-pages/26-resource-detail.html
+file:///C:/dev/ws/kogi_dev/kogi-docs/screen-pages/27-asset-detail.html
+file:///C:/dev/ws/kogi_dev/kogi-docs/screen-pages/28-artifact-detail.html
+file:///C:/dev/ws/kogi_dev/kogi-docs/screen-pages/29-notebook.html
+file:///C:/dev/ws/kogi_dev/kogi-docs/screen-pages/32-guidebook.html
+file:///C:/dev/ws/kogi_dev/kogi-docs/screen-pages/kogi-04-portfolio.html
+file:///C:/dev/ws/kogi_dev/kogi-docs/screen-pages/kogi-portfolio-collab.html
+file:///C:/dev/ws/kogi_dev/kogi-docs/screen-pages/portfolio.html
+file:///C:/dev/ws/kogi_dev/kogi-docs/screen-pages/screen-05-portfolio-collab.html
+file:///C:/dev/ws/kogi_dev/kogi-docs/screen-pages/screen07-portfolio.html
+file:///C:/dev/ws/kogi_dev/kogi-docs/screen-pages/workspace.html
+
+
+
+
+
 funding, royalties, equity distribution/allocation/payouts, IPOs, ICOs, dividends, shares, securities, liquidity, estate, real estate
 
 
