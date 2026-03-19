@@ -1,3 +1,3 @@
 #
 
-kogi platform developer UI client
+kogi platform developer, administration, control, manager UI client

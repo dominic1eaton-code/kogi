@@ -1550,7 +1550,7 @@ file:///C:/dev/ws/kogi_dev/kogi-docs/screen-pages/04-labor-market.html
 file:///C:/dev/ws/kogi_dev/kogi-docs/screen-pages/02-listing-detail.html
 file:///C:/dev/ws/kogi_dev/kogi-docs/screen-pages/06-my-listings.html
 
-
+---
 
 implement the market escrow and exchange subcomponents:
 
@@ -1575,14 +1575,29 @@ file:///C:/dev/ws/kogi_dev/kogi-docs/screen-pages/exchange-03-deal-room.html
 file:///C:/dev/ws/kogi_dev/kogi-docs/screen-pages/exchange-02-labor-market.html
 file:///C:/dev/ws/kogi_dev/kogi-docs/screen-pages/exchange-01-overview.html
 
+---
 
+create a fully+formally unified design+structure+feature/functionality set of the portfolio component:
 
+fully refactor and completely expand out the portfolio component and implement all its features+functionatlity+structures and pages/subpages/subcomponents unifying all these features+functionality+structures+designs+pages+views, keeping the style of the portfolio components/pages, subpages/subcomponents, subsubcomponents, subsubpages, consistent with the rest of the kogi platform:
+
+read the portfolio design docs and implement these functionality+features:
 C:\dev\ws\kogi_dev\kogi-docs\md\kogi-portfolio-master-spreadsheet-sdd.docx.md
 C:\dev\ws\kogi_dev\kogi-docs\md\kogi-portfolio-system-design-updated.docx.md
 C:\dev\ws\kogi_dev\kogi-docs\md\kogi-portfolio-system-design.md
 C:\dev\ws\kogi_dev\kogi-docs\md\kogi-unified-design.docx.md
 C:\dev\ws\kogi_dev\kogi-docs\md\notes2.md
+C:\dev\ws\kogi_dev\kogi-docs\md\KOGI-Platform-Complete-SDD.docx.md
+C:\dev\ws\kogi_dev\kogi-docs\md\KOGI-Platform-SDD-v2.docx.md
 
+implement all of the functionality+features+structures of these pages:
+C:\dev\ws\kogi_dev\kogi-client\web_client_dev\kogi-ui\src\app\portfolio\portfolio-create\portfolio-create.component.ts
+C:\dev\ws\kogi_dev\kogi-client\web_client_dev\kogi-ui\src\app\portfolio\portfolio-create\portfolio-create.component.spec.ts
+C:\dev\ws\kogi_dev\kogi-client\web_client_dev\kogi-ui\src\app\portfolio\portfolio-create\portfolio-create.component.html
+C:\dev\ws\kogi_dev\kogi-client\web_client_dev\kogi-ui\src\app\portfolio\portfolio.component.ts
+C:\dev\ws\kogi_dev\kogi-client\web_client_dev\kogi-ui\src\app\portfolio\portfolio.component.spec.ts
+C:\dev\ws\kogi_dev\kogi-client\web_client_dev\kogi-ui\src\app\portfolio\portfolio.component.html
+file:///C:/dev/ws/kogi_dev/kogi-docs/screen-pages/01-portfolio-grid.v2.html
 file:///C:/dev/ws/kogi_dev/kogi-docs/screen-pages/02-portfolio-list.html
 file:///C:/dev/ws/kogi_dev/kogi-docs/screen-pages/03-portfolio-tree.html
 file:///C:/dev/ws/kogi_dev/kogi-docs/screen-pages/04-component-detail.html
@@ -1617,12 +1632,76 @@ file:///C:/dev/ws/kogi_dev/kogi-docs/screen-pages/screen-05-portfolio-collab.htm
 file:///C:/dev/ws/kogi_dev/kogi-docs/screen-pages/screen07-portfolio.html
 file:///C:/dev/ws/kogi_dev/kogi-docs/screen-pages/workspace.html
 
+make the structure of subcomponents/subpages of the portfolio component and the subcomponents/subpages of the subcomponents/subpages of the portfolio component a structure that best captures all of the functionality+features of these html pages and design markdown docs.
+
+---
+
+eatondo000-afa9
+pg-2aea511f
+
+---
+
+office
+
+file:///C:/dev/ws/kogi_dev/kogi-docs/screen-pages/strategy.html
+
+---
+
+funding, royalties, equity distribution/allocation/payouts, IPOs, ICOs, dividends, shares, securities, liquidity, estates, real estate, trusts, financial resource management system
+
+investments, grants, donations, crowdfunding, equity crowdfunding
+
+file:///C:/dev/ws/kogi_dev/kogi-docs/screen-pages/kogi-invoices.html
+file:///C:/dev/ws/kogi_dev/kogi-docs/screen-pages/kogi-investments.html
+file:///C:/dev/ws/kogi_dev/kogi-docs/screen-pages/kogi-bank-04-invoices.html
+
+file:///C:/dev/ws/kogi_dev/kogi-docs/screen-pages/kogi-bank-02-accounts-ledger.html
+file:///C:/dev/ws/kogi_dev/kogi-docs/screen-pages/kogi-bank-03-escrow.html
+file:///C:/dev/ws/kogi_dev/kogi-docs/screen-pages/kogi-bank-06-campaigns.html
+file:///C:/dev/ws/kogi_dev/kogi-docs/screen-pages/kogi-bank-benefits.html
+file:///C:/dev/ws/kogi_dev/kogi-docs/screen-pages/kogi-bank-grants.html
+file:///C:/dev/ws/kogi_dev/kogi-docs/screen-pages/kogi-bank-group.html
+file:///C:/dev/ws/kogi_dev/kogi-docs/screen-pages/kogi-banking.html
+
+file:///C:/dev/ws/kogi_dev/kogi-docs/screen-pages/bank.html
+file:///C:/dev/ws/kogi_dev/kogi-docs/screen-pages/kogi-investments.html
+file:///C:/dev/ws/kogi_dev/kogi-docs/screen-pages/kogi-group-economics.html
+file:///C:/dev/ws/kogi_dev/kogi-docs/screen-pages/screen-06-group-economics.html
 
 
+---
+
+governance component
+
+file:///C:/dev/ws/kogi_dev/kogi-docs/screen-pages/screen-07-open-source.html
+file:///C:/dev/ws/kogi_dev/kogi-docs/screen-pages/screen-01-autonomous-org.html
+file:///C:/dev/ws/kogi_dev/kogi-docs/screen-pages/screen-02-collective.html
+file:///C:/dev/ws/kogi_dev/kogi-docs/screen-pages/screen-03-cooperative.html
+file:///C:/dev/ws/kogi_dev/kogi-docs/screen-pages/screen-04-governance.html
+file:///C:/dev/ws/kogi_dev/kogi-docs/screen-pages/screen10-governance.html
+file:///C:/dev/ws/kogi_dev/kogi-docs/screen-pages/07-governance.html
+
+file:///C:/dev/ws/kogi_dev/kogi-docs/screen-pages/kogi-resource-crowdfund.html
+file:///C:/dev/ws/kogi_dev/kogi-docs/screen-pages/kogi-organizations-governance.html
+file:///C:/dev/ws/kogi_dev/kogi-docs/screen-pages/screen-08-community-showcase.html
 
 
-funding, royalties, equity distribution/allocation/payouts, IPOs, ICOs, dividends, shares, securities, liquidity, estate, real estate
+---
 
+settings
+
+
+identities
+profiles
+accounts
+personas
+roles
+access control, priviliges, permissions
+options
+preferences
+developer
+
+---
 
 strategy, tactics, operations, project management, plans, governance
 
