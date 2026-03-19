@@ -528,10 +528,18 @@ solution model
     - blueprint
     - design
     - prototype
+solution pipelines
+    - building, development, sandbox, testing+QA, release/deployment pipeliens
 solution testbed
     - tests
 solution factory
 solution vendor
+solution supplychain
+    - logistics
+    - inventory
+    - warehouse, datahouse, datalake, data lakehouse, data center
+    - raw resource sourcing + resource management
+solution resource management system
 solution orchestration -> workflow -> task
 solution data
     - solution metadata
@@ -545,7 +553,7 @@ solution data
             - name
             - brief
             - feature
-solution tooling
+solution tooling, solution toolchains, toolsets, toolkkits, tools
 solution artifacts
     - solution outputs
     - solution warehouse
@@ -555,9 +563,25 @@ solution artifacts
     - solution supply chain
 solution value chain
 solution chain, solution set, solution kit, tool solution
+solution releases, deployments, distributions
+solution channels, communications, messaging, distribution channels, vendor channels, supply (chain) channels, logistic channels
 
 solution book
     - charter
+        - brief
+        - vision
+        - mission
+        - goals
+        - objectives
+        - outcomes
+        - milestones
+        - roadmap
+        - risk register
+            - risks
+        - assumptions
+        - outlines
+    - dossier
+    - budget
     - notes
     - parts
     - vendors
@@ -569,8 +593,13 @@ solution book
     - timelines
     - work packages
     - work breakdown structures WBSs
+    - resources
+    - communications+channels
+    - logistics, supplychain, inventory
+    - registries
+    - data, metadta
 
-solution package
+solution package(s)
 
 solution factory SF
     - solution development environment SDE
@@ -1650,6 +1679,8 @@ file:///C:/dev/ws/kogi_dev/kogi-docs/screen-pages/strategy.html
 funding, royalties, equity distribution/allocation/payouts, IPOs, ICOs, dividends, shares, securities, liquidity, estates, real estate, trusts, financial resource management system
 
 investments, grants, donations, crowdfunding, equity crowdfunding
+
+portable benefits, HSA, IRA, REITs real estate funds, investments+investment portfolio, stock+securities portfolio, equity portfolio, capitalization, funds
 
 file:///C:/dev/ws/kogi_dev/kogi-docs/screen-pages/kogi-invoices.html
 file:///C:/dev/ws/kogi_dev/kogi-docs/screen-pages/kogi-investments.html
