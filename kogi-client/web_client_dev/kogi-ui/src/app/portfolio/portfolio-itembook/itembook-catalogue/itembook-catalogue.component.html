@@ -1,0 +1,33 @@
+﻿<div class="grid grid-cols-1 gap-4 xl:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)]">
+  <section class="rounded-[12px] border border-[rgba(255,255,255,0.06)] bg-[#0f1f26] p-4">
+    <div class="text-[12px] font-semibold font-['JetBrains_Mono']">Catalogue</div>
+    <div class="text-[10px] text-[#5d747c]">Tagged entries linking to child items and resources.</div>
+    <div class="mt-4 space-y-2">
+      <div
+        *ngFor="let entry of catalogueEntries"
+        class="flex items-center justify-between rounded-[8px] border border-[rgba(255,255,255,0.06)] bg-[#101e24] px-3 py-2 text-[10px]"
+      >
+        <div>
+          <div class="text-[11px] font-semibold">{{ entry.title }}</div>
+          <div class="text-[9px] text-[#5d747c]">{{ entry.status }}</div>
+        </div>
+        <span class="rounded-[6px] border border-[rgba(59,130,246,0.35)] bg-[rgba(59,130,246,0.12)] px-2 py-[2px] text-[9px] text-[#60a5fa]">
+          {{ entry.tag }}
+        </span>
+      </div>
+    </div>
+  </section>
+
+  <aside class="rounded-[12px] border border-[rgba(255,255,255,0.06)] bg-[#0f1f26] p-4">
+    <div class="text-[12px] font-semibold font-['JetBrains_Mono']">Tags</div>
+    <div class="text-[10px] text-[#5d747c]">Filter catalogue entries by tag.</div>
+    <div class="mt-3 flex flex-wrap gap-2">
+      <span
+        *ngFor="let tag of tags"
+        class="rounded-[6px] border border-[rgba(255,255,255,0.06)] bg-[#101e24] px-2 py-[2px] text-[9px] text-[#8ea6ad]"
+      >
+        {{ tag }}
+      </span>
+    </div>
+  </aside>
+</div>

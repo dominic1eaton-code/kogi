@@ -1,0 +1,28 @@
+﻿<div class="grid grid-cols-1 gap-4 xl:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)]">
+  <section class="rounded-[12px] border border-[rgba(255,255,255,0.06)] bg-[#0f1f26] p-4">
+    <div class="text-[12px] font-semibold font-['JetBrains_Mono']">Guidebook</div>
+    <div class="text-[10px] text-[#5d747c]">Standard operating guidance for portfolio workflows.</div>
+    <div class="mt-4 space-y-3">
+      <div
+        *ngFor="let chapter of chapters"
+        class="rounded-[12px] border border-[rgba(255,255,255,0.06)] bg-[#101e24] p-3"
+      >
+        <div class="text-[11px] font-semibold">{{ chapter.title }}</div>
+        <div class="mt-1 text-[10px] text-[#8ea6ad]">{{ chapter.summary }}</div>
+      </div>
+    </div>
+  </section>
+
+  <aside class="rounded-[12px] border border-[rgba(255,255,255,0.06)] bg-[#0f1f26] p-4">
+    <div class="text-[12px] font-semibold font-['JetBrains_Mono']">Execution Steps</div>
+    <div class="text-[10px] text-[#5d747c]">Repeatable steps for portfolio setup.</div>
+    <div class="mt-3 space-y-2">
+      <div
+        *ngFor="let step of steps"
+        class="rounded-[8px] border border-[rgba(255,255,255,0.06)] bg-[#101e24] px-3 py-2 text-[10px] text-[#8ea6ad]"
+      >
+        {{ step }}
+      </div>
+    </div>
+  </aside>
+</div>

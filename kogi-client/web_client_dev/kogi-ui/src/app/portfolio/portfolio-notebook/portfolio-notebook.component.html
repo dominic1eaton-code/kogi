@@ -1,0 +1,28 @@
+﻿<div class="grid grid-cols-1 gap-4 xl:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)]">
+  <section class="rounded-[12px] border border-[rgba(255,255,255,0.06)] bg-[#0f1f26] p-4">
+    <div class="text-[12px] font-semibold font-['JetBrains_Mono']">Notebook</div>
+    <div class="text-[10px] text-[#5d747c]">Working notes tied to portfolio components.</div>
+    <div class="mt-4 space-y-3">
+      <div
+        *ngFor="let note of notes"
+        class="rounded-[12px] border border-[rgba(255,255,255,0.06)] bg-[#101e24] p-3"
+      >
+        <div class="text-[11px] font-semibold">{{ note.title }}</div>
+        <div class="mt-1 text-[10px] text-[#8ea6ad]">{{ note.body }}</div>
+      </div>
+    </div>
+  </section>
+
+  <aside class="rounded-[12px] border border-[rgba(255,255,255,0.06)] bg-[#0f1f26] p-4">
+    <div class="text-[12px] font-semibold font-['JetBrains_Mono']">Topics</div>
+    <div class="text-[10px] text-[#5d747c]">Tags for notebook filtering.</div>
+    <div class="mt-3 flex flex-wrap gap-2">
+      <span
+        *ngFor="let topic of topics"
+        class="rounded-[6px] border border-[rgba(255,255,255,0.06)] bg-[#101e24] px-2 py-[2px] text-[9px] text-[#8ea6ad]"
+      >
+        {{ topic }}
+      </span>
+    </div>
+  </aside>
+</div>

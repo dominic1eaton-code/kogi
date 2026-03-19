@@ -1,0 +1,13 @@
+﻿<div class="rounded-[12px] border border-[rgba(255,255,255,0.06)] bg-[#0f1f26] p-4">
+  <div class="text-[12px] font-semibold font-['JetBrains_Mono']">Activity Logs</div>
+  <div class="text-[10px] text-[#5d747c]">ItemBook history and audit trail.</div>
+  <div class="mt-4 space-y-2">
+    <div
+      *ngFor="let log of logs"
+      class="rounded-[8px] border border-[rgba(255,255,255,0.06)] bg-[#101e24] px-3 py-2 text-[10px]"
+    >
+      <div class="text-[9px] uppercase tracking-[0.2em] text-[#5d747c]">{{ log.time }}</div>
+      <div class="mt-1 text-[#8ea6ad]">{{ log.entry }}</div>
+    </div>
+  </div>
+</div>

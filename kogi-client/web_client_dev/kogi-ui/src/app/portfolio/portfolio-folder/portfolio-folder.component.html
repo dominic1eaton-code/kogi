@@ -1,0 +1,37 @@
+﻿<div class="grid grid-cols-1 gap-4 xl:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)]">
+  <section class="rounded-[12px] border border-[rgba(255,255,255,0.06)] bg-[#0f1f26] p-4">
+    <div class="text-[12px] font-semibold font-['JetBrains_Mono']">Folder View</div>
+    <div class="text-[10px] text-[#5d747c]">Directory-style organization of portfolio assets.</div>
+    <div class="mt-4 space-y-3">
+      <div
+        *ngFor="let folder of folderTree"
+        class="rounded-[10px] border border-[rgba(255,255,255,0.06)] bg-[#101e24]"
+      >
+        <div class="border-b border-[rgba(255,255,255,0.06)] px-3 py-2 text-[10px] font-semibold text-[#8ea6ad]">
+          {{ folder.name }}
+        </div>
+        <div class="space-y-2 p-3 text-[10px]">
+          <div
+            *ngFor="let child of folder.children"
+            class="rounded-[8px] border border-[rgba(255,255,255,0.06)] bg-[#0f1f26] px-2 py-1"
+          >
+            {{ child }}
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <aside class="rounded-[12px] border border-[rgba(255,255,255,0.06)] bg-[#0f1f26] p-4">
+    <div class="text-[12px] font-semibold font-['JetBrains_Mono']">Directory Stats</div>
+    <div class="mt-3 space-y-2">
+      <div
+        *ngFor="let meta of folderMeta"
+        class="rounded-[8px] border border-[rgba(255,255,255,0.06)] bg-[#101e24] px-3 py-2 text-[10px]"
+      >
+        <div class="text-[9px] uppercase tracking-[0.2em] text-[#5d747c]">{{ meta.label }}</div>
+        <div class="mt-1 text-[11px] font-semibold text-[#e6f1f4]">{{ meta.value }}</div>
+      </div>
+    </div>
+  </aside>
+</div>

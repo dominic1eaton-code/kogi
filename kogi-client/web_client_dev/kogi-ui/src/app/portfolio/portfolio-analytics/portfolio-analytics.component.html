@@ -1,0 +1,63 @@
+﻿<div class="space-y-4">
+  <section class="rounded-[12px] border border-[rgba(255,255,255,0.06)] bg-[#0f1f26] p-4">
+    <div class="text-[13px] font-semibold font-['JetBrains_Mono']">Portfolio Analytics</div>
+    <div class="text-[10px] text-[#5d747c]">Model-driven health, rollups, and predictive signals.</div>
+    <div class="mt-4 grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3">
+      <div
+        *ngFor="let model of modelScores"
+        class="rounded-[12px] border border-[rgba(255,255,255,0.06)] bg-[#101e24] p-3"
+      >
+        <div class="text-[9px] uppercase tracking-[0.2em] text-[#5d747c]">{{ model.label }}</div>
+        <div class="mt-2 text-[20px] font-semibold" [class]="model.tone">{{ model.value }}</div>
+        <div class="mt-1 text-[9px] text-[#8ea6ad]">Trend {{ model.trend }}</div>
+      </div>
+    </div>
+  </section>
+
+  <div class="grid grid-cols-1 gap-4 xl:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)]">
+    <section class="rounded-[12px] border border-[rgba(255,255,255,0.06)] bg-[#0f1f26] p-4">
+      <div class="text-[12px] font-semibold font-['JetBrains_Mono']">KPI Control Panel</div>
+      <div class="text-[10px] text-[#5d747c]">Operational KPIs derived from portfolio metrics.</div>
+      <div class="mt-3 space-y-2">
+        <div
+          *ngFor="let row of kpiRows"
+          class="flex items-center justify-between rounded-[10px] border border-[rgba(255,255,255,0.06)] bg-[#101e24] px-3 py-2 text-[10px]"
+        >
+          <div>
+            <div class="text-[11px] font-semibold">{{ row.name }}</div>
+            <div class="text-[9px] text-[#5d747c]">Target {{ row.target }}</div>
+          </div>
+          <div class="text-right">
+            <div class="text-[11px] font-semibold text-[#10b981]">{{ row.value }}</div>
+            <div class="text-[9px] text-[#8ea6ad]">{{ row.status }}</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <aside class="rounded-[12px] border border-[rgba(255,255,255,0.06)] bg-[#0f1f26] p-4">
+      <div class="text-[12px] font-semibold font-['JetBrains_Mono']">Model Catalog</div>
+      <div class="text-[10px] text-[#5d747c]">Analytics models available to Oba and portfolio agents.</div>
+      <div class="mt-3 flex flex-wrap gap-2">
+        <span
+          *ngFor="let model of modelCatalog"
+          class="rounded-[6px] border border-[rgba(255,255,255,0.06)] bg-[#101e24] px-2 py-[2px] text-[9px] text-[#8ea6ad]"
+        >
+          {{ model }}
+        </span>
+      </div>
+
+      <div class="mt-4">
+        <div class="text-[12px] font-semibold font-['JetBrains_Mono']">Insight Feed</div>
+        <div class="mt-2 space-y-2 text-[10px]">
+          <div
+            *ngFor="let insight of insightFeed"
+            class="rounded-[8px] border border-[rgba(255,255,255,0.06)] bg-[#101e24] px-3 py-2 text-[#8ea6ad]"
+          >
+            {{ insight }}
+          </div>
+        </div>
+      </div>
+    </aside>
+  </div>
+</div>

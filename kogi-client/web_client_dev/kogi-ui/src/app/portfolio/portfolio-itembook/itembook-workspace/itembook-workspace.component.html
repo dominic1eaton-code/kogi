@@ -1,0 +1,41 @@
+﻿<div class="grid grid-cols-1 gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
+  <section class="rounded-[12px] border border-[rgba(255,255,255,0.06)] bg-[#0f1f26] p-4">
+    <div class="text-[12px] font-semibold font-['JetBrains_Mono']">Workspace</div>
+    <div class="text-[10px] text-[#5d747c]">Active files, rooms, and collaboration context.</div>
+    <div class="mt-4 space-y-2">
+      <div
+        *ngFor="let file of activeFiles"
+        class="rounded-[8px] border border-[rgba(255,255,255,0.06)] bg-[#101e24] px-3 py-2 text-[10px] text-[#8ea6ad]"
+      >
+        {{ file }}
+      </div>
+    </div>
+  </section>
+
+  <section class="space-y-4">
+    <div class="rounded-[12px] border border-[rgba(255,255,255,0.06)] bg-[#0f1f26] p-4">
+      <div class="text-[12px] font-semibold font-['JetBrains_Mono']">Rooms</div>
+      <div class="mt-3 space-y-2">
+        <div
+          *ngFor="let room of rooms"
+          class="rounded-[8px] border border-[rgba(255,255,255,0.06)] bg-[#101e24] px-3 py-2 text-[10px] text-[#8ea6ad]"
+        >
+          {{ room }}
+        </div>
+      </div>
+    </div>
+
+    <div class="rounded-[12px] border border-[rgba(255,255,255,0.06)] bg-[#0f1f26] p-4">
+      <div class="text-[12px] font-semibold font-['JetBrains_Mono']">Connected Items</div>
+      <div class="mt-3 space-y-2">
+        <div
+          *ngFor="let item of connectedItems"
+          class="flex items-center justify-between rounded-[8px] border border-[rgba(255,255,255,0.06)] bg-[#101e24] px-3 py-2 text-[10px]"
+        >
+          <span>{{ item.name }}</span>
+          <span class="text-[9px] uppercase tracking-[0.2em] text-[#5d747c]">{{ item.type }}</span>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>

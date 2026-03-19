@@ -37,10 +37,13 @@ const NAV_ITEMS: NavItem[] = [
     icon: '&#9776;',
     route: '/portfolio',
     secondary: [
-      { label: 'Overview', route: '/portfolio' },
-      { label: 'Create Portfolio', route: '/portfolio/new' },
-      { label: 'Collections', meta: 'Case studies & showcases' },
-      { label: 'Analytics', meta: 'Views, leads, conversions' }
+      { label: 'Dashboard', route: '/portfolio/dashboard' },
+      { label: 'Items', route: '/portfolio/items' },
+      { label: 'Registry', route: '/portfolio/registry' },
+      { label: 'Analytics', route: '/portfolio/analytics' },
+      { label: 'ItemBook', route: '/portfolio/itembook/charter' },
+      { label: 'Collaboration', route: '/portfolio/collaboration' },
+      { label: 'Create Portfolio', route: '/portfolio/new' }
     ]
   },
   {

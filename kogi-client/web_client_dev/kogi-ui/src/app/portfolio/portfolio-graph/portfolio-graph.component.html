@@ -1,0 +1,28 @@
+﻿<div class="grid grid-cols-1 gap-4 xl:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)]">
+  <section class="rounded-[12px] border border-[rgba(255,255,255,0.06)] bg-[#0f1f26] p-4">
+    <div class="text-[12px] font-semibold font-['JetBrains_Mono']">Graph View</div>
+    <div class="text-[10px] text-[#5d747c]">GraphEdge relationships across portfolio components.</div>
+    <div class="mt-4 grid grid-cols-2 gap-2">
+      <div
+        *ngFor="let node of nodes"
+        class="rounded-[8px] border border-[rgba(255,255,255,0.06)] bg-[#101e24] px-3 py-2 text-[10px] text-[#8ea6ad]"
+      >
+        {{ node }}
+      </div>
+    </div>
+  </section>
+
+  <aside class="rounded-[12px] border border-[rgba(255,255,255,0.06)] bg-[#0f1f26] p-4">
+    <div class="text-[12px] font-semibold font-['JetBrains_Mono']">Edges</div>
+    <div class="text-[10px] text-[#5d747c]">Typed relationships with governance policies.</div>
+    <div class="mt-3 space-y-2">
+      <div
+        *ngFor="let edge of edges"
+        class="rounded-[8px] border border-[rgba(255,255,255,0.06)] bg-[#101e24] px-3 py-2 text-[10px]"
+      >
+        <div class="text-[#8ea6ad]">{{ edge.from }} -> {{ edge.to }}</div>
+        <div class="text-[9px] text-[#5d747c]">{{ edge.label }}</div>
+      </div>
+    </div>
+  </aside>
+</div>

@@ -1,0 +1,85 @@
+﻿<div *ngIf="detail" class="grid grid-cols-1 gap-4 xl:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)]">
+  <section class="space-y-4">
+    <div class="rounded-[12px] border border-[rgba(255,255,255,0.06)] bg-[#0f1f26] p-4">
+      <div class="flex items-center justify-between">
+        <div>
+          <div class="text-[14px] font-semibold font-['JetBrains_Mono']">{{ detail.name }}</div>
+          <div class="text-[10px] text-[#5d747c]">{{ detail.kindLabel }}</div>
+        </div>
+        <span class="rounded-[8px] border border-[rgba(16,185,129,0.4)] bg-[rgba(16,185,129,0.12)] px-3 py-1 text-[10px] font-semibold text-[#10b981]">
+          {{ detail.status }}
+        </span>
+      </div>
+      <div class="mt-3 text-[10px] text-[#8ea6ad]">{{ detail.summary }}</div>
+    </div>
+
+    <div class="grid grid-cols-2 gap-3">
+      <div
+        *ngFor="let metric of detail.metrics"
+        class="rounded-[12px] border border-[rgba(255,255,255,0.06)] bg-[#0f1f26] px-3 py-3"
+      >
+        <div class="text-[9px] uppercase tracking-[0.2em] text-[#5d747c]">{{ metric.label }}</div>
+        <div class="mt-2 text-[18px] font-semibold" [class]="metric.tone || 'text-[#e6f1f4]'">{{ metric.value }}</div>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 gap-3 md:grid-cols-2">
+      <div
+        *ngFor="let block of detail.blocks"
+        class="rounded-[12px] border border-[rgba(255,255,255,0.06)] bg-[#0f1f26] p-3"
+      >
+        <div class="text-[11px] font-semibold font-['JetBrains_Mono']">{{ block.title }}</div>
+        <div class="mt-2 space-y-2 text-[10px]">
+          <div *ngFor="let item of block.items" class="flex items-center justify-between">
+            <span class="text-[#5d747c]">{{ item.label }}</span>
+            <span class="text-[#8ea6ad]">{{ item.value }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <aside class="space-y-4">
+    <div class="rounded-[12px] border border-[rgba(255,255,255,0.06)] bg-[#0f1f26] p-4">
+      <div class="text-[12px] font-semibold font-['JetBrains_Mono']">ItemBook Snapshot</div>
+      <div class="mt-2 space-y-2 text-[10px] text-[#8ea6ad]">
+        <div class="rounded-[8px] border border-[rgba(255,255,255,0.06)] bg-[#101e24] px-3 py-2">Charter &middot; Scope, stakeholders, success criteria</div>
+        <div class="rounded-[8px] border border-[rgba(255,255,255,0.06)] bg-[#101e24] px-3 py-2">Workspace &middot; Linked docs, rooms, files</div>
+        <div class="rounded-[8px] border border-[rgba(255,255,255,0.06)] bg-[#101e24] px-3 py-2">Schedule &middot; Milestones, reminders, cadence</div>
+      </div>
+      <a
+        routerLink="/portfolio/itembook/charter"
+        class="mt-3 inline-flex items-center gap-2 text-[10px] font-semibold text-[#8ea6ad] hover:text-[#e6f1f4]"
+      >
+        Open full ItemBook &rarr;
+      </a>
+    </div>
+
+    <div class="rounded-[12px] border border-[rgba(255,255,255,0.06)] bg-[#0f1f26] p-4">
+      <div class="text-[12px] font-semibold font-['JetBrains_Mono']">Recent Activity</div>
+      <div class="mt-3 space-y-2">
+        <div
+          *ngFor="let entry of detail.activity"
+          class="rounded-[8px] border border-[rgba(255,255,255,0.06)] bg-[#101e24] px-3 py-2 text-[10px] text-[#8ea6ad]"
+        >
+          {{ entry }}
+        </div>
+      </div>
+    </div>
+
+    <div class="rounded-[12px] border border-[rgba(255,255,255,0.06)] bg-[#0f1f26] p-4">
+      <div class="text-[12px] font-semibold font-['JetBrains_Mono']">Actions</div>
+      <div class="mt-3 space-y-2">
+        <button class="w-full rounded-[8px] border border-[rgba(16,185,129,0.3)] bg-[rgba(16,185,129,0.12)] px-3 py-2 text-left text-[10px] font-semibold text-[#10b981]" type="button">
+          Share Component
+        </button>
+        <button class="w-full rounded-[8px] border border-[rgba(255,255,255,0.06)] bg-[#101e24] px-3 py-2 text-left text-[10px] text-[#8ea6ad]" type="button">
+          Open Governance Panel
+        </button>
+        <button class="w-full rounded-[8px] border border-[rgba(255,255,255,0.06)] bg-[#101e24] px-3 py-2 text-left text-[10px] text-[#8ea6ad]" type="button">
+          View Resource Shares
+        </button>
+      </div>
+    </div>
+  </aside>
+</div>

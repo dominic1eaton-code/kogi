@@ -1,0 +1,53 @@
+﻿<div class="grid grid-cols-1 gap-4 xl:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)]">
+  <section class="rounded-[12px] border border-[rgba(255,255,255,0.06)] bg-[#0f1f26] p-4">
+    <div class="text-[12px] font-semibold font-['JetBrains_Mono']">Charter</div>
+    <div class="text-[10px] text-[#5d747c]">Executive summary, objectives, scope, and governance commitments.</div>
+    <div class="mt-4 space-y-2">
+      <div
+        *ngFor="let objective of objectives"
+        class="rounded-[8px] border border-[rgba(255,255,255,0.06)] bg-[#101e24] px-3 py-2 text-[10px] text-[#8ea6ad]"
+      >
+        {{ objective }}
+      </div>
+    </div>
+
+    <div class="mt-4">
+      <div class="text-[11px] font-semibold font-['JetBrains_Mono']">Risks & Mitigation</div>
+      <div class="mt-2 space-y-2">
+        <div
+          *ngFor="let risk of risks"
+          class="rounded-[10px] border border-[rgba(255,255,255,0.06)] bg-[#101e24] px-3 py-2"
+        >
+          <div class="text-[10px] font-semibold">{{ risk.label }}</div>
+          <div class="text-[9px] text-[#5d747c]">{{ risk.mitigation }}</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <aside class="rounded-[12px] border border-[rgba(255,255,255,0.06)] bg-[#0f1f26] p-4">
+    <div class="text-[12px] font-semibold font-['JetBrains_Mono']">Stakeholders</div>
+    <div class="mt-3 space-y-2">
+      <div
+        *ngFor="let stakeholder of stakeholders"
+        class="rounded-[10px] border border-[rgba(255,255,255,0.06)] bg-[#101e24] px-3 py-2"
+      >
+        <div class="text-[9px] uppercase tracking-[0.2em] text-[#5d747c]">{{ stakeholder.role }}</div>
+        <div class="mt-1 text-[10px] text-[#8ea6ad]">{{ stakeholder.name }}</div>
+      </div>
+    </div>
+
+    <div class="mt-4">
+      <div class="text-[12px] font-semibold font-['JetBrains_Mono']">Approvals</div>
+      <div class="mt-2 space-y-2">
+        <div
+          *ngFor="let approval of approvals"
+          class="rounded-[8px] border border-[rgba(255,255,255,0.06)] bg-[#101e24] px-3 py-2 text-[10px] text-[#8ea6ad]"
+        >
+          <div class="text-[9px] uppercase tracking-[0.2em] text-[#5d747c]">{{ approval.label }}</div>
+          <div class="mt-1">{{ approval.value }}</div>
+        </div>
+      </div>
+    </div>
+  </aside>
+</div>

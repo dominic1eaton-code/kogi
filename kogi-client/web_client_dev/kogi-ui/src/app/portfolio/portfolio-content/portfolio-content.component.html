@@ -1,0 +1,55 @@
+﻿<div class="grid grid-cols-1 gap-4 xl:grid-cols-[minmax(0,1.2fr)_minmax(0,0.8fr)]">
+  <section class="rounded-[12px] border border-[rgba(255,255,255,0.06)] bg-[#0f1f26] p-4">
+    <div class="flex items-center justify-between">
+      <div>
+        <div class="text-[13px] font-semibold font-['JetBrains_Mono']">Content Library</div>
+        <div class="text-[10px] text-[#5d747c]">Artifacts, assets, and portfolio content management.</div>
+      </div>
+      <div class="flex items-center gap-2">
+        <a
+          routerLink="/portfolio/detail/artifact"
+          class="rounded-[8px] border border-[rgba(255,255,255,0.06)] bg-[#101e24] px-3 py-1 text-[10px] font-semibold text-[#8ea6ad]"
+        >
+          Artifact Detail
+        </a>
+        <a
+          routerLink="/portfolio/detail/asset"
+          class="rounded-[8px] border border-[rgba(255,255,255,0.06)] bg-[#101e24] px-3 py-1 text-[10px] font-semibold text-[#8ea6ad]"
+        >
+          Asset Detail
+        </a>
+      </div>
+    </div>
+
+    <div class="mt-4 grid grid-cols-1 gap-3 md:grid-cols-2">
+      <div
+        *ngFor="let item of contentItems"
+        class="rounded-[12px] border border-[rgba(255,255,255,0.06)] bg-[#101e24] p-3"
+      >
+        <div class="flex items-center justify-between">
+          <div class="text-[11px] font-semibold" [class]="item.tone">{{ item.name }}</div>
+          <span class="rounded-[6px] border border-[rgba(255,255,255,0.06)] bg-[#0f1f26] px-2 py-[1px] text-[8px] text-[#8ea6ad]">{{ item.type }}</span>
+        </div>
+        <div class="mt-1 text-[9px] text-[#5d747c]">{{ item.status }}</div>
+        <div class="mt-2 text-[10px] text-[#8ea6ad]">{{ item.meta }}</div>
+      </div>
+    </div>
+  </section>
+
+  <aside class="rounded-[12px] border border-[rgba(255,255,255,0.06)] bg-[#0f1f26] p-4">
+    <div class="text-[13px] font-semibold font-['JetBrains_Mono']">Content Operations</div>
+    <div class="text-[10px] text-[#5d747c]">Portfolio monetization, subscriptions, and publishing.</div>
+    <div class="mt-4 space-y-3">
+      <div
+        *ngFor="let pipeline of contentPipelines"
+        class="rounded-[10px] border border-[rgba(255,255,255,0.06)] bg-[#101e24] px-3 py-2"
+      >
+        <div class="text-[9px] uppercase tracking-[0.2em] text-[#5d747c]">{{ pipeline.label }}</div>
+        <div class="mt-1 text-[10px] text-[#8ea6ad]">{{ pipeline.value }}</div>
+      </div>
+    </div>
+    <div class="mt-4 rounded-[10px] border border-[rgba(255,255,255,0.06)] bg-[#101e24] px-3 py-3 text-[10px] text-[#8ea6ad]">
+      Content items can be offered through portfolio subscriptions, marketplace listings, and shared collections.
+    </div>
+  </aside>
+</div>

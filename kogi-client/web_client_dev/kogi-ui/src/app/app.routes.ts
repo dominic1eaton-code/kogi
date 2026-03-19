@@ -8,6 +8,30 @@ import { DashboardOverviewComponent } from './dashboard/dashboard-overview/dashb
 import { DashboardCalendarComponent } from './dashboard/dashboard-calendar/dashboard-calendar.component';
 import { PortfolioComponent } from './portfolio/portfolio.component';
 import { PortfolioCreateComponent } from './portfolio/portfolio-create/portfolio-create.component';
+import { PortfolioDashboardComponent } from './portfolio/portfolio-dashboard/portfolio-dashboard.component';
+import { PortfolioItemsComponent } from './portfolio/portfolio-items/portfolio-items.component';
+import { PortfolioResourcesComponent } from './portfolio/portfolio-resources/portfolio-resources.component';
+import { PortfolioContentComponent } from './portfolio/portfolio-content/portfolio-content.component';
+import { PortfolioRegistryComponent } from './portfolio/portfolio-registry/portfolio-registry.component';
+import { PortfolioAnalyticsComponent } from './portfolio/portfolio-analytics/portfolio-analytics.component';
+import { PortfolioQueryComponent } from './portfolio/portfolio-query/portfolio-query.component';
+import { PortfolioDetailComponent } from './portfolio/portfolio-detail/portfolio-detail.component';
+import { PortfolioBinderComponent } from './portfolio/portfolio-binder/portfolio-binder.component';
+import { PortfolioCollaborationComponent } from './portfolio/portfolio-collaboration/portfolio-collaboration.component';
+import { PortfolioItembookComponent } from './portfolio/portfolio-itembook/portfolio-itembook.component';
+import { ItembookCharterComponent } from './portfolio/portfolio-itembook/itembook-charter/itembook-charter.component';
+import { ItembookWorkspaceComponent } from './portfolio/portfolio-itembook/itembook-workspace/itembook-workspace.component';
+import { ItembookCatalogueComponent } from './portfolio/portfolio-itembook/itembook-catalogue/itembook-catalogue.component';
+import { ItembookScheduleComponent } from './portfolio/portfolio-itembook/itembook-schedule/itembook-schedule.component';
+import { ItembookMetricsComponent } from './portfolio/portfolio-itembook/itembook-metrics/itembook-metrics.component';
+import { ItembookLibraryComponent } from './portfolio/portfolio-itembook/itembook-library/itembook-library.component';
+import { ItembookLogsComponent } from './portfolio/portfolio-itembook/itembook-logs/itembook-logs.component';
+import { PortfolioFolderComponent } from './portfolio/portfolio-folder/portfolio-folder.component';
+import { PortfolioGraphComponent } from './portfolio/portfolio-graph/portfolio-graph.component';
+import { PortfolioNotebookComponent } from './portfolio/portfolio-notebook/portfolio-notebook.component';
+import { PortfolioGuidebookComponent } from './portfolio/portfolio-guidebook/portfolio-guidebook.component';
+import { PortfolioSubportfolioComponent } from './portfolio/portfolio-subportfolio/portfolio-subportfolio.component';
+import { PortfolioWorkspaceComponent } from './portfolio/portfolio-workspace/portfolio-workspace.component';
 import { OfficeComponent } from './office/office.component';
 import { OfficeOverviewComponent } from './office/office-overview/office-overview.component';
 import { OfficeInboxComponent } from './office/office-inbox/office-inbox.component';
@@ -104,7 +128,46 @@ export const routes: Routes = [
 
     },
     {path: 'portfolio/new', component: PortfolioCreateComponent, title: 'Create Portfolio'},
-    {path: 'portfolio', component: PortfolioComponent, title: 'Portfolio'},
+    {
+        path: 'portfolio',
+        component: PortfolioComponent,
+        title: 'Portfolio',
+        children: [
+            {path: '', redirectTo: 'dashboard', pathMatch: 'full'},
+            {path: 'dashboard', component: PortfolioDashboardComponent, title: 'Portfolio Dashboard'},
+            {path: 'items', component: PortfolioItemsComponent, title: 'Portfolio Items'},
+            {path: 'resources', component: PortfolioResourcesComponent, title: 'Portfolio Resources'},
+            {path: 'content', component: PortfolioContentComponent, title: 'Portfolio Content'},
+            {path: 'registry', component: PortfolioRegistryComponent, title: 'Portfolio Registry'},
+            {path: 'analytics', component: PortfolioAnalyticsComponent, title: 'Portfolio Analytics'},
+            {path: 'query', component: PortfolioQueryComponent, title: 'Portfolio Query'},
+            {path: 'detail/:kind', component: PortfolioDetailComponent, title: 'Portfolio Detail'},
+            {path: 'binder', component: PortfolioBinderComponent, title: 'Portfolio Binder'},
+            {path: 'collaboration', component: PortfolioCollaborationComponent, title: 'Portfolio Collaboration'},
+            {
+                path: 'itembook',
+                component: PortfolioItembookComponent,
+                children: [
+                    {path: '', redirectTo: 'charter', pathMatch: 'full'},
+                    {path: 'charter', component: ItembookCharterComponent, title: 'ItemBook Charter'},
+                    {path: 'workspace', component: ItembookWorkspaceComponent, title: 'ItemBook Workspace'},
+                    {path: 'catalogue', component: ItembookCatalogueComponent, title: 'ItemBook Catalogue'},
+                    {path: 'schedule', component: ItembookScheduleComponent, title: 'ItemBook Schedule'},
+                    {path: 'metrics', component: ItembookMetricsComponent, title: 'ItemBook Metrics'},
+                    {path: 'library', component: ItembookLibraryComponent, title: 'ItemBook Library'},
+                    {path: 'logs', component: ItembookLogsComponent, title: 'ItemBook Logs'},
+                    {path: '**', redirectTo: 'charter'}
+                ]
+            },
+            {path: 'folder', component: PortfolioFolderComponent, title: 'Folder View'},
+            {path: 'graph', component: PortfolioGraphComponent, title: 'Graph View'},
+            {path: 'notebook', component: PortfolioNotebookComponent, title: 'Notebook'},
+            {path: 'guidebook', component: PortfolioGuidebookComponent, title: 'Guidebook'},
+            {path: 'subportfolio', component: PortfolioSubportfolioComponent, title: 'Subportfolio'},
+            {path: 'workspace', component: PortfolioWorkspaceComponent, title: 'Portfolio Workspace'},
+            {path: '**', redirectTo: 'dashboard'}
+        ]
+    },
     {
         path: 'office',
         component: OfficeComponent,
