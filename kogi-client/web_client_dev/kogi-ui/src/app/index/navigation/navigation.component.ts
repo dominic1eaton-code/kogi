@@ -54,8 +54,16 @@ const NAV_ITEMS: NavItem[] = [
     secondary: [
       { label: 'Dashboard', route: '/wallet/dashboard' },
       { label: 'Wallets Overview', route: '/wallet/wallets/overview' },
-      { label: 'Taxes', route: '/wallet/wallets/taxes' },
-      { label: 'Auto-Split Rules', meta: 'Disbursements & rules' }
+      { label: 'Banking', route: '/wallet/banking' },
+      { label: 'Ledger', route: '/wallet/ledger' },
+      { label: 'Escrow', route: '/wallet/escrow' },
+      { label: 'Invoices', route: '/wallet/invoices' },
+      { label: 'Investments', route: '/wallet/investments' },
+      { label: 'Funding', route: '/wallet/funding' },
+      { label: 'Benefits', route: '/wallet/benefits' },
+      { label: 'Grants', route: '/wallet/grants' },
+      { label: 'Group Economics', route: '/wallet/group-economics' },
+      { label: 'Campaigns', route: '/wallet/campaigns' }
     ]
   },
   {
@@ -106,10 +114,19 @@ const NAV_ITEMS: NavItem[] = [
     icon: '&#9711;',
     route: '/hub',
     secondary: [
-      { label: 'Overview', route: '/hub' },
-      { label: 'Governance', meta: 'Offers, listings, bids' },
-      { label: 'Teams', meta: 'Transactions & escrow' },
-      { label: 'Organizations', meta: 'Announcements & drops' }
+      { label: 'Dashboard', route: '/hub/dashboard' },
+      { label: 'Governance', route: '/hub/governance' },
+      { label: 'Voting', route: '/hub/voting' },
+      { label: 'Allocation', route: '/hub/allocation' },
+      { label: 'Distribution', route: '/hub/distribution' },
+      { label: 'Collaboration', route: '/hub/collaboration' },
+      { label: 'Negotiations', route: '/hub/negotiations' },
+      { label: 'Teams', route: '/hub/teams' },
+      { label: 'Organizations', route: '/hub/organizations' },
+      { label: 'Collectives', route: '/hub/collectives' },
+      { label: 'Open Source', route: '/hub/open-source' },
+      { label: 'Group Economics', route: '/hub/group-economics' },
+      { label: 'Community Showcase', route: '/hub/community-showcase' }
     ]
   },
   {

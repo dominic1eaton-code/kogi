@@ -1,0 +1,58 @@
+﻿<section class="mb-4 grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
+  <div
+    *ngFor="let card of summaryCards"
+    class="rounded-[12px] border border-[rgba(255,255,255,0.06)] bg-[#0f1f26] p-4"
+  >
+    <div class="text-[9px] uppercase tracking-[0.3em] text-[#5d747c] font-['JetBrains_Mono']">{{ card.label }}</div>
+    <div class="mt-2 text-[22px] font-semibold font-['JetBrains_Mono']" [class]="card.tone">{{ card.value }}</div>
+    <div class="mt-1 text-[10px] text-[#8ea6ad]">{{ card.meta }}</div>
+  </div>
+</section>
+
+<section class="mb-4 grid grid-cols-1 gap-4 xl:grid-cols-[minmax(0,1.3fr)_minmax(0,0.7fr)]">
+  <div class="rounded-[12px] border border-[rgba(255,255,255,0.06)] bg-[#0f1f26]">
+    <div class="border-b border-[rgba(255,255,255,0.06)] px-4 py-3">
+      <div class="text-[10px] uppercase tracking-[0.3em] text-[#5d747c] font-['JetBrains_Mono']">Asset Allocation</div>
+    </div>
+    <div class="p-4">
+      <div class="space-y-3 text-[10px]">
+        <div *ngFor="let item of allocations">
+          <div class="mb-1 flex items-center justify-between text-[#8ea6ad]">
+            <span>{{ item.label }}</span>
+            <span class="font-['JetBrains_Mono']">{{ item.value }}</span>
+          </div>
+          <div class="h-[4px] rounded-[3px] bg-[#1e2f36]"><div class="h-full rounded-[3px]" [class]="item.tone" [style.width]="item.value"></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <aside class="rounded-[12px] border border-[rgba(255,255,255,0.06)] bg-[#0f1f26] p-4">
+    <div class="text-[10px] uppercase tracking-[0.3em] text-[#5d747c] font-['JetBrains_Mono']">Investment Watchlist</div>
+    <div class="mt-3 space-y-3">
+      <div *ngFor="let item of watchlist" class="rounded-[8px] border border-[rgba(255,255,255,0.06)] bg-[#101e24] px-3 py-2">
+        <div class="text-[12px] font-semibold text-[#e6f1f4]">{{ item.name }}</div>
+        <div class="text-[10px] text-[#5d747c]">{{ item.status }}</div>
+      </div>
+    </div>
+  </aside>
+</section>
+
+<section class="rounded-[12px] border border-[rgba(255,255,255,0.06)] bg-[#0f1f26]">
+  <div class="flex items-center justify-between border-b border-[rgba(255,255,255,0.06)] px-4 py-3">
+    <div class="text-[10px] uppercase tracking-[0.3em] text-[#5d747c] font-['JetBrains_Mono']">Top Holdings</div>
+    <button class="text-[10px] font-['JetBrains_Mono'] text-[#10b981]" type="button">View Portfolio</button>
+  </div>
+  <div class="divide-y divide-[rgba(255,255,255,0.06)] px-4">
+    <div *ngFor="let item of holdings" class="flex flex-wrap items-center justify-between gap-3 py-3">
+      <div>
+        <div class="text-[12px] font-semibold">{{ item.name }}</div>
+        <div class="text-[10px] text-[#5d747c]">{{ item.type }}</div>
+      </div>
+      <div class="text-right">
+        <div class="text-[12px] font-semibold font-['JetBrains_Mono']">{{ item.value }}</div>
+        <div class="text-[10px] text-[#8ea6ad]">{{ item.change }}</div>
+      </div>
+    </div>
+  </div>
+</section>

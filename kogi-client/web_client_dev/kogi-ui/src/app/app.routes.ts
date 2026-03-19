@@ -55,6 +55,16 @@ import { WalletDashboardComponent } from './wallet/wallet-dashboard/wallet-dashb
 import { WalletWalletsComponent } from './wallet/wallet-wallets/wallet-wallets.component';
 import { WalletsOverviewComponent } from './wallet/wallet-wallets/wallets-overview/wallets-overview.component';
 import { WalletsTaxesComponent } from './wallet/wallet-wallets/wallets-taxes/wallets-taxes.component';
+import { WalletBankingComponent } from './wallet/wallet-banking/wallet-banking.component';
+import { WalletLedgerComponent } from './wallet/wallet-ledger/wallet-ledger.component';
+import { WalletEscrowComponent } from './wallet/wallet-escrow/wallet-escrow.component';
+import { WalletInvoicesComponent } from './wallet/wallet-invoices/wallet-invoices.component';
+import { WalletInvestmentsComponent } from './wallet/wallet-investments/wallet-investments.component';
+import { WalletFundingComponent } from './wallet/wallet-funding/wallet-funding.component';
+import { WalletBenefitsComponent } from './wallet/wallet-benefits/wallet-benefits.component';
+import { WalletGrantsComponent } from './wallet/wallet-grants/wallet-grants.component';
+import { WalletGroupEconomicsComponent } from './wallet/wallet-group-economics/wallet-group-economics.component';
+import { WalletCampaignsComponent } from './wallet/wallet-campaigns/wallet-campaigns.component';
 import { SpacesComponent } from './spaces/spaces.component';
 import { SpacesDashboardComponent } from './spaces/spaces-dashboard/spaces-dashboard.component';
 import { SpacesEventsComponent } from './spaces/spaces-events/spaces-events.component';
@@ -107,6 +117,24 @@ import { MarketplaceEscrowComponent } from './marketplace/marketplace-escrow/mar
 import { MarketplaceEscrowOverviewComponent } from './marketplace/marketplace-escrow/marketplace-escrow-overview/marketplace-escrow-overview.component';
 import { MarketplaceEscrowBankComponent } from './marketplace/marketplace-escrow/marketplace-escrow-bank/marketplace-escrow-bank.component';
 import { HubComponent } from './hub/hub.component';
+import { HubDashboardComponent } from './hub/hub-dashboard/hub-dashboard.component';
+import { HubGovernanceComponent } from './hub/hub-governance/hub-governance.component';
+import { HubVotingComponent } from './hub/hub-voting/hub-voting.component';
+import { HubAllocationComponent } from './hub/hub-allocation/hub-allocation.component';
+import { HubDistributionComponent } from './hub/hub-distribution/hub-distribution.component';
+import { HubCollaborationComponent } from './hub/hub-collaboration/hub-collaboration.component';
+import { HubRestitutionComponent } from './hub/hub-restitution/hub-restitution.component';
+import { HubNegotiationsComponent } from './hub/hub-negotiations/hub-negotiations.component';
+import { HubTeamsComponent } from './hub/hub-teams/hub-teams.component';
+import { HubOrganizationsComponent } from './hub/hub-organizations/hub-organizations.component';
+import { HubCollectivesComponent } from './hub/hub-collectives/hub-collectives.component';
+import { HubCooperativesComponent } from './hub/hub-cooperatives/hub-cooperatives.component';
+import { HubFederationsComponent } from './hub/hub-federations/hub-federations.component';
+import { HubAutonomousComponent } from './hub/hub-autonomous/hub-autonomous.component';
+import { HubOpenSourceComponent } from './hub/hub-open-source/hub-open-source.component';
+import { HubGroupEconomicsComponent } from './hub/hub-group-economics/hub-group-economics.component';
+import { HubResourceCrowdfundComponent } from './hub/hub-resource-crowdfund/hub-resource-crowdfund.component';
+import { HubCommunityShowcaseComponent } from './hub/hub-community-showcase/hub-community-showcase.component';
 import { AssistantComponent } from './assistant/assistant.component';
 import { TestComponent } from './index/test/test';
 
@@ -209,6 +237,17 @@ export const routes: Routes = [
         children: [
             {path: '', redirectTo: 'dashboard', pathMatch: 'full'},
             {path: 'dashboard', component: WalletDashboardComponent, title: 'Wallet Dashboard'},
+            {path: 'banking', component: WalletBankingComponent, title: 'Wallet Banking'},
+            {path: 'ledger', component: WalletLedgerComponent, title: 'Wallet Ledger'},
+            {path: 'escrow', component: WalletEscrowComponent, title: 'Wallet Escrow'},
+            {path: 'invoices', component: WalletInvoicesComponent, title: 'Wallet Invoices'},
+            {path: 'investments', component: WalletInvestmentsComponent, title: 'Wallet Investments'},
+            {path: 'funding', component: WalletFundingComponent, title: 'Wallet Funding'},
+            {path: 'benefits', component: WalletBenefitsComponent, title: 'Wallet Benefits'},
+            {path: 'grants', component: WalletGrantsComponent, title: 'Wallet Grants'},
+            {path: 'group-economics', component: WalletGroupEconomicsComponent, title: 'Wallet Group Economics'},
+            {path: 'campaigns', component: WalletCampaignsComponent, title: 'Wallet Campaigns'},
+            {path: 'accounts', redirectTo: 'ledger', pathMatch: 'full'},
             {path: 'walelts', redirectTo: 'wallets', pathMatch: 'full'},
             {
                 path: 'wallets',
@@ -219,7 +258,8 @@ export const routes: Routes = [
                     {path: 'taxes', component: WalletsTaxesComponent, title: 'Wallet Taxes'},
                     {path: '**', redirectTo: 'overview'}
                 ]
-            }
+            },
+            {path: '**', redirectTo: 'dashboard'}
         ]
     },
     {
@@ -310,7 +350,33 @@ export const routes: Routes = [
             {path: '**', redirectTo: 'dashboard'}
         ]
     },
-    {path: 'hub', component: HubComponent, title: 'Organization Hub'},
+    {
+        path: 'hub',
+        component: HubComponent,
+        title: 'Organization Hub',
+        children: [
+            {path: '', redirectTo: 'dashboard', pathMatch: 'full'},
+            {path: 'dashboard', component: HubDashboardComponent, title: 'Hub Dashboard'},
+            {path: 'governance', component: HubGovernanceComponent, title: 'Hub Governance'},
+            {path: 'voting', component: HubVotingComponent, title: 'Hub Voting'},
+            {path: 'allocation', component: HubAllocationComponent, title: 'Hub Allocation'},
+            {path: 'distribution', component: HubDistributionComponent, title: 'Hub Distribution'},
+            {path: 'collaboration', component: HubCollaborationComponent, title: 'Hub Collaboration'},
+            {path: 'restitution', component: HubRestitutionComponent, title: 'Hub Restitution'},
+            {path: 'negotiations', component: HubNegotiationsComponent, title: 'Hub Negotiations'},
+            {path: 'teams', component: HubTeamsComponent, title: 'Hub Teams'},
+            {path: 'organizations', component: HubOrganizationsComponent, title: 'Hub Organizations'},
+            {path: 'collectives', component: HubCollectivesComponent, title: 'Hub Collectives'},
+            {path: 'cooperatives', component: HubCooperativesComponent, title: 'Hub Cooperatives'},
+            {path: 'federations', component: HubFederationsComponent, title: 'Hub Federations'},
+            {path: 'autonomous', component: HubAutonomousComponent, title: 'Hub Autonomous Cells'},
+            {path: 'open-source', component: HubOpenSourceComponent, title: 'Hub Open Source'},
+            {path: 'group-economics', component: HubGroupEconomicsComponent, title: 'Hub Group Economics'},
+            {path: 'resource-crowdfund', component: HubResourceCrowdfundComponent, title: 'Hub Resource Crowdfund'},
+            {path: 'community-showcase', component: HubCommunityShowcaseComponent, title: 'Hub Community Showcase'},
+            {path: '**', redirectTo: 'dashboard'}
+        ]
+    },
     {path: 'assistant', component: AssistantComponent, title: 'Assistant'},
     {
         path: 'spaces',

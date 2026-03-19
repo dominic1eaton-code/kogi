@@ -1,0 +1,41 @@
+﻿<section class="mb-4 grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
+  <div
+    *ngFor="let card of summaryCards"
+    class="rounded-[12px] border border-[rgba(255,255,255,0.06)] bg-[#0f1f26] p-4"
+  >
+    <div class="text-[9px] uppercase tracking-[0.3em] text-[#5d747c] font-['JetBrains_Mono']">{{ card.label }}</div>
+    <div class="mt-2 text-[22px] font-semibold font-['JetBrains_Mono']" [class]="card.tone">{{ card.value }}</div>
+    <div class="mt-1 text-[10px] text-[#8ea6ad]">{{ card.meta }}</div>
+  </div>
+</section>
+
+<section class="grid grid-cols-1 gap-4 xl:grid-cols-[minmax(0,1.4fr)_minmax(0,0.8fr)]">
+  <div class="rounded-[12px] border border-[rgba(255,255,255,0.06)] bg-[#0f1f26]">
+    <div class="flex items-center justify-between border-b border-[rgba(255,255,255,0.06)] px-4 py-3">
+      <div class="text-[10px] uppercase tracking-[0.3em] text-[#5d747c] font-['JetBrains_Mono']">Organization Directory</div>
+      <button class="text-[10px] font-['JetBrains_Mono'] text-[#10b981]" type="button">Add Organization</button>
+    </div>
+    <div class="divide-y divide-[rgba(255,255,255,0.06)] px-4">
+      <div *ngFor="let item of organizations" class="flex flex-wrap items-center justify-between gap-3 py-3">
+        <div>
+          <div class="text-[12px] font-semibold">{{ item.name }}</div>
+          <div class="text-[10px] text-[#5d747c]">{{ item.type }}</div>
+        </div>
+        <div class="text-[10px] text-[#8ea6ad]">{{ item.status }}</div>
+      </div>
+    </div>
+  </div>
+
+  <aside class="rounded-[12px] border border-[rgba(255,255,255,0.06)] bg-[#0f1f26] p-4">
+    <div class="text-[10px] uppercase tracking-[0.3em] text-[#5d747c] font-['JetBrains_Mono']">Compliance Tasks</div>
+    <div class="mt-3 space-y-3">
+      <div *ngFor="let item of compliance" class="rounded-[8px] border border-[rgba(255,255,255,0.06)] bg-[#101e24] px-3 py-2">
+        <div class="text-[12px] font-semibold text-[#e6f1f4]">{{ item.item }}</div>
+        <div class="text-[10px] text-[#5d747c]">{{ item.status }}</div>
+      </div>
+    </div>
+    <div class="mt-4 rounded-[8px] border border-[rgba(59,130,246,0.35)] bg-[rgba(59,130,246,0.08)] p-3 text-[11px] text-[#e6f1f4]">
+      Compliance checklists include governance vote history and ledger traces.
+    </div>
+  </aside>
+</section>
