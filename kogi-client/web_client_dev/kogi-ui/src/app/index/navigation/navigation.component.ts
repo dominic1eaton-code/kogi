@@ -61,6 +61,8 @@ const NAV_ITEMS: NavItem[] = [
       { label: 'Investments', route: '/wallet/investments' },
       { label: 'Funding', route: '/wallet/funding' },
       { label: 'Benefits', route: '/wallet/benefits' },
+      { label: 'Debts', route: '/wallet/debts' },
+      { label: 'Taxes', route: '/wallet/taxes' },
       { label: 'Grants', route: '/wallet/grants' },
       { label: 'Group Economics', route: '/wallet/group-economics' },
       { label: 'Campaigns', route: '/wallet/campaigns' }

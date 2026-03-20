@@ -38,7 +38,9 @@ export class WalletComponent {
     { label: 'Benefits', route: '/wallet/benefits' },
     { label: 'Grants', route: '/wallet/grants' },
     { label: 'Group Economics', route: '/wallet/group-economics' },
-    { label: 'Campaigns', route: '/wallet/campaigns' }
+    { label: 'Campaigns', route: '/wallet/campaigns' },
+    { label: 'Debts', route: '/wallet/debts' },
+    { label: 'Taxes', route: '/wallet/taxes' }
   ];
 
   secondaryNav: WalletNavSection[] = [
@@ -47,7 +49,8 @@ export class WalletComponent {
       items: [
         { label: 'Overview', route: '/wallet/dashboard', exact: true },
         { label: 'Wallets', route: '/wallet/wallets/overview' },
-        { label: 'Banking', route: '/wallet/banking' }
+        { label: 'Banking', route: '/wallet/banking' },
+        { label: 'Taxes', route: '/wallet/taxes' }
       ]
     },
     {
@@ -56,7 +59,8 @@ export class WalletComponent {
         { label: 'Accounts Ledger', route: '/wallet/ledger' },
         { label: 'Invoices', route: '/wallet/invoices' },
         { label: 'Escrow', route: '/wallet/escrow' },
-        { label: 'Campaigns', route: '/wallet/campaigns' }
+        { label: 'Campaigns', route: '/wallet/campaigns' },
+        { label: 'Debts', route: '/wallet/debts' }
       ]
     },
     {

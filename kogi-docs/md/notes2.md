@@ -501,8 +501,12 @@ solution
         - environment
         - system|entity
         - process
+solution automation
+    - orchestrations -> workflows -> tasks
 solution charter
-    - vision, mission, goals, objectives, outcomes, milestones, assumptions, risks, 
+    - vision, mission, goals, objectives, outcomes, milestones, assumptions, risks, purpose, values
+    - strategies, tactics, operations, plans
+    - frameworks, policies, procedures, processes
     - solution brief, overview
     - solution playbooks
         - strategies
@@ -510,6 +514,7 @@ solution charter
         - operations
     - solution guidebooks
         - documentation
+solution workbench
 solution content management system
     - files
     - documents
@@ -602,47 +607,53 @@ solution book
 solution package(s)
 
 solution factory SF
-    - solution development environment SDE
-        - solution configuration
-            - solution version
-            - solution component
-                - solution component version
-            - solution part
-                - solution part version
-        - solution model
-            - solution blueprint
-            - solution design
-            - solution archietcture
-            - solution mockup
-            - solution protoype
+    - solution environment SE
         - solution sandbox environment
-        - solution build environment ~ solution assembly environnment
-            - solution build
-                - solution build out, build design, build model
-                - solution build version
-                - solution build maturity
-                - solution build number
-            - solution assembly
+            - patches, audits, maintainence
         - solution test environment
         - solution release environment
-        - solution maturity
-        - solution toolbox
-    - solution network ~ chain+interconnected SDEs
-    - solution registry
-    - solution portoflio
+        - solution development environment SDE
+            - solution configuration
+                - solution version
+                - solution component
+                    - solution component version
+                - solution part
+                    - solution part version
+            - solution model
+                - solution blueprint
+                - solution design
+                - solution archietcture
+                - solution mockup
+                - solution protoype
+            - solution sandbox environment
+            - solution build environment ~ solution assembly environnment
+                - solution build
+                    - solution build out, build design, build model
+                    - solution build version
+                    - solution build maturity
+                    - solution build number
+                - solution assembly
+            - solution test environment
+            - solution release environment
+            - solution maturity
+            - solution toolbox
+        - solution network ~ chain+interconnected SDEs
+        - solution registry
+        - solution portoflio
 
-solutdion channels - communication channels, distribution channels
+solution channels - communication channels, distribution channels
 solution distribution, logistics, supplychain
 solution communications
 solution artifact management system - inventory mangaement, binary management, capital+asset management
 solution resource management system
+solution testing, testbeds, benchmarking, performance, QA
 
+solution requirements
 
 reusability, sustainability, renewability, recyclability, closed loop systems, eco-aware solution design
 
 platform energy/power consumption+management system
 platform network traffic management
-
 
 energy+power budget+resource management system
 link+network budget+resource management system
@@ -1159,6 +1170,8 @@ integrations+connections+vendors
 
 portfolio
 - google workspace+account
+- google sheets
+- excel sheets
 - notion
 - jira
 - monday
@@ -1322,6 +1335,7 @@ spaces|community
 - google hangouts+meets
 - zoom
 - skype
+- community.com
 
 
 assistant
@@ -1676,12 +1690,17 @@ file:///C:/dev/ws/kogi_dev/kogi-docs/screen-pages/strategy.html
 
 ---
 
+expand the wallet component and also implement the hub component:
+
+expanded wallet component features+functionalitties+pages+structure:
+
 funding, royalties, equity distribution/allocation/payouts, IPOs, ICOs, dividends, shares, securities, liquidity, estates, real estate, trusts, financial resource management system
 
 investments, grants, donations, crowdfunding, equity crowdfunding
 
 portable benefits, HSA, IRA, REITs real estate funds, investments+investment portfolio, stock+securities portfolio, equity portfolio, capitalization, funds
 
+implement all of structures+features+functionalities of these pages:
 file:///C:/dev/ws/kogi_dev/kogi-docs/screen-pages/kogi-invoices.html
 file:///C:/dev/ws/kogi_dev/kogi-docs/screen-pages/kogi-investments.html
 file:///C:/dev/ws/kogi_dev/kogi-docs/screen-pages/kogi-bank-04-invoices.html
@@ -1696,14 +1715,17 @@ file:///C:/dev/ws/kogi_dev/kogi-docs/screen-pages/kogi-banking.html
 
 file:///C:/dev/ws/kogi_dev/kogi-docs/screen-pages/bank.html
 file:///C:/dev/ws/kogi_dev/kogi-docs/screen-pages/kogi-investments.html
-file:///C:/dev/ws/kogi_dev/kogi-docs/screen-pages/kogi-group-economics.html
-file:///C:/dev/ws/kogi_dev/kogi-docs/screen-pages/screen-06-group-economics.html
 
 
 ---
 
-governance component
+hub component:
 
+governance, voting, distribution, allocation, collaboration, restitution, negotiations
+
+teams, organizations, collectives, cooperatives, federations, autonomous organizations, (autonomous/independent) cells, groups
+
+implement all of structures+features+functionalities of these pages:
 file:///C:/dev/ws/kogi_dev/kogi-docs/screen-pages/screen-07-open-source.html
 file:///C:/dev/ws/kogi_dev/kogi-docs/screen-pages/screen-01-autonomous-org.html
 file:///C:/dev/ws/kogi_dev/kogi-docs/screen-pages/screen-02-collective.html
@@ -1712,10 +1734,11 @@ file:///C:/dev/ws/kogi_dev/kogi-docs/screen-pages/screen-04-governance.html
 file:///C:/dev/ws/kogi_dev/kogi-docs/screen-pages/screen10-governance.html
 file:///C:/dev/ws/kogi_dev/kogi-docs/screen-pages/07-governance.html
 
+file:///C:/dev/ws/kogi_dev/kogi-docs/screen-pages/kogi-group-economics.html
+file:///C:/dev/ws/kogi_dev/kogi-docs/screen-pages/screen-06-group-economics.html
 file:///C:/dev/ws/kogi_dev/kogi-docs/screen-pages/kogi-resource-crowdfund.html
 file:///C:/dev/ws/kogi_dev/kogi-docs/screen-pages/kogi-organizations-governance.html
 file:///C:/dev/ws/kogi_dev/kogi-docs/screen-pages/screen-08-community-showcase.html
-
 
 ---
 
@@ -1754,7 +1777,7 @@ portfolio+spaces+marketplace+platform gameification system
     - audiences, fanbases, paywalls
     - biddings, listings, allocations
     - engagement
-    - offers, deals, bids, gigs, tasks, jobs, resources, assets, capital, contracts, bookings, consultations, campaigns+promotions|promotional-campaigns
+    - offers, deals, bids, gigs, tasks, jobs, resources, assets, capital, contracts, bookings, consultations, campaigns+promotions|promotional-campaigns, launches management
     - platform, audience, engagement
     - collaborations
 portfolio content creation+mangement+adminstration+control system
@@ -1770,6 +1793,12 @@ independent workers/organizations achieve outcomes+resuls+solutions through the 
 kogi is your personal work operating system
 
 user -> the user's work -> the portfolio organizing+maintaining++controlling+adminstering all the work -> everything else operating on top of and using that portfolio
+
+
+kogi financials:
+
+- financial sheets
+- expenses+investments+securities+liquidity+taxes+debts+equity+capitalization tracking, computations, calculations
 
 ---
 
@@ -1791,3 +1820,18 @@ shango pages
         - contact, get in touch, connect
         - pricing
         - solutions
+
+---
+
+So a user can design and simulate a physical product solution/service/good in oru, define and configure it in qala, manage the work in kogi, maintain the organizational infrastructure around the product in ume, use the Oba Assistant to help build AND assist with everything using sambara, and send this entire design package to an imewe autonomous factory which can build/print out the product and configure the physical factory for producing a large supply of the product
+
+imewe autnomous factories can print and configure its own custom manufacturing+fabrication+production machines, with the factory being like a 3D printer farm + giant FPGA for physical products (instead of just physical circuits). imewe builds its own infrastructure piece by piece, 
+    - supports reverse engineering of solutions/products/services
+    - configure machines (production nodes) used to create a solution, and using AI assistance to create and produce custom machines/devices (production nodes) if needed for the building of highly specialized solutions/products.
+    - self healing factory management system
+    - custom factory layouts, buildouts, builds - factory builds ~ version controlled, deployable, distributable, releases, tags, labels, categorizations, types, classes, launches
+
+
+The Shango System:
+
+- go from an idea to entire business buildout and solution delivery in as short of time as possible (1 week or less)

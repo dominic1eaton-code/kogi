@@ -65,6 +65,8 @@ import { WalletBenefitsComponent } from './wallet/wallet-benefits/wallet-benefit
 import { WalletGrantsComponent } from './wallet/wallet-grants/wallet-grants.component';
 import { WalletGroupEconomicsComponent } from './wallet/wallet-group-economics/wallet-group-economics.component';
 import { WalletCampaignsComponent } from './wallet/wallet-campaigns/wallet-campaigns.component';
+import { WalletDebtsComponent } from './wallet/wallet-debts/wallet-debts.component';
+import { WalletTaxesComponent } from './wallet/wallet-taxes/wallet-taxes.component';
 import { SpacesComponent } from './spaces/spaces.component';
 import { SpacesDashboardComponent } from './spaces/spaces-dashboard/spaces-dashboard.component';
 import { SpacesEventsComponent } from './spaces/spaces-events/spaces-events.component';
@@ -247,6 +249,8 @@ export const routes: Routes = [
             {path: 'grants', component: WalletGrantsComponent, title: 'Wallet Grants'},
             {path: 'group-economics', component: WalletGroupEconomicsComponent, title: 'Wallet Group Economics'},
             {path: 'campaigns', component: WalletCampaignsComponent, title: 'Wallet Campaigns'},
+            {path: 'debts', component: WalletDebtsComponent, title: 'Wallet Debts'},
+            {path: 'taxes', component: WalletTaxesComponent, title: 'Wallet Taxes'},
             {path: 'accounts', redirectTo: 'ledger', pathMatch: 'full'},
             {path: 'walelts', redirectTo: 'wallets', pathMatch: 'full'},
             {

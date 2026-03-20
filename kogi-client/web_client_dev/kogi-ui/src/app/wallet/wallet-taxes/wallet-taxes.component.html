@@ -1,0 +1,49 @@
+﻿<section class="mb-4 grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
+  <div
+    *ngFor="let card of summaryCards"
+    class="rounded-[12px] border border-[rgba(255,255,255,0.06)] bg-[#0f1f26] p-4"
+  >
+    <div class="text-[9px] uppercase tracking-[0.3em] text-[#5d747c] font-['JetBrains_Mono']">{{ card.label }}</div>
+    <div class="mt-2 text-[22px] font-semibold font-['JetBrains_Mono']" [class]="card.tone">{{ card.value }}</div>
+    <div class="mt-1 text-[10px] text-[#8ea6ad]">{{ card.meta }}</div>
+  </div>
+</section>
+
+<section class="mb-4 grid grid-cols-1 gap-4 xl:grid-cols-[minmax(0,1.5fr)_minmax(0,0.9fr)]">
+  <div class="rounded-[12px] border border-[rgba(255,255,255,0.06)] bg-[#0f1f26]">
+    <div class="flex items-center justify-between border-b border-[rgba(255,255,255,0.06)] px-4 py-3">
+      <div class="text-[10px] uppercase tracking-[0.3em] text-[#5d747c] font-['JetBrains_Mono']">Tax Calendar</div>
+      <button class="text-[10px] font-['JetBrains_Mono'] text-[#10b981]" type="button">Sync Deadlines</button>
+    </div>
+    <div class="divide-y divide-[rgba(255,255,255,0.06)] px-4">
+      <div *ngFor="let item of calendar" class="flex flex-wrap items-center justify-between gap-3 py-3">
+        <div>
+          <div class="text-[12px] font-semibold">{{ item.item }}</div>
+          <div class="text-[10px] text-[#5d747c]">{{ item.status }}</div>
+        </div>
+        <div class="text-[10px] text-[#8ea6ad]">{{ item.date }}</div>
+      </div>
+    </div>
+  </div>
+
+  <aside class="rounded-[12px] border border-[rgba(255,255,255,0.06)] bg-[#0f1f26] p-4">
+    <div class="text-[10px] uppercase tracking-[0.3em] text-[#5d747c] font-['JetBrains_Mono']">Filing Status</div>
+    <div class="mt-3 space-y-3">
+      <div *ngFor="let item of filings" class="rounded-[8px] border border-[rgba(255,255,255,0.06)] bg-[#101e24] px-3 py-2">
+        <div class="text-[12px] font-semibold text-[#e6f1f4]">{{ item.type }} &middot; {{ item.period }}</div>
+        <div class="text-[10px] text-[#5d747c]">{{ item.status }}</div>
+      </div>
+    </div>
+  </aside>
+</section>
+
+<section class="rounded-[12px] border border-[rgba(255,255,255,0.06)] bg-[#0f1f26] p-4">
+  <div class="text-[10px] uppercase tracking-[0.3em] text-[#5d747c] font-['JetBrains_Mono']">Tax Insights</div>
+  <div class="mt-3 grid gap-3 md:grid-cols-3">
+    <div *ngFor="let item of insights" class="rounded-[10px] border border-[rgba(255,255,255,0.06)] bg-[#101e24] p-3">
+      <div class="text-[12px] font-semibold text-[#e6f1f4]">{{ item.label }}</div>
+      <div class="text-[11px] font-['JetBrains_Mono'] text-[#10b981]">{{ item.value }}</div>
+      <div class="text-[10px] text-[#5d747c]">{{ item.note }}</div>
+    </div>
+  </div>
+</section>
