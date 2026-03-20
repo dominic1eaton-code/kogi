@@ -2,6 +2,11 @@ import { Routes } from '@angular/router';
 import { LoginComponent } from './index/login/login.component';
 import { RegistrationComponent } from './index/registration/registration.component';
 import { OnboardingComponent } from './index/onboarding/onboarding.component';
+import { HomeComponent } from './home/home.component';
+import { HomeLandingComponent } from './home/home-landing/home-landing.component';
+import { HomeAboutComponent } from './home/home-about/home-about.component';
+import { HomePlatformComponent } from './home/home-platform/home-platform.component';
+import { HomeEcosystemComponent } from './home/home-ecosystem/home-ecosystem.component';
 import { CreatingWorkspaceComponent } from './index/creating-workspace/creating-workspace.component';
 import { DashboardComponent } from './dashboard/dashboard.component'
 import { DashboardOverviewComponent } from './dashboard/dashboard-overview/dashboard-overview.component'
@@ -141,7 +146,19 @@ import { AssistantComponent } from './assistant/assistant.component';
 import { TestComponent } from './index/test/test';
 
 export const routes: Routes = [
-    {path: '', component: LoginComponent, title: 'Kogi \u2014 Create Account'},
+    {path: '', redirectTo: 'home', pathMatch: 'full'},
+    {
+        path: 'home',
+        component: HomeComponent,
+        title: 'Kogi \u2014 Home',
+        children: [
+            {path: '', component: HomeLandingComponent, title: 'Kogi \u2014 Home'},
+            {path: 'about', component: HomeAboutComponent, title: 'Kogi \u2014 About'},
+            {path: 'platform', component: HomePlatformComponent, title: 'Kogi \u2014 Platform'},
+            {path: 'ecosystem', component: HomeEcosystemComponent, title: 'Kogi \u2014 Ecosystem'},
+            {path: '**', redirectTo: ''}
+        ]
+    },
     {path: 'login', component: LoginComponent, title: 'Kogi \u2014 Create Account'},
     {path: 'registration', component: RegistrationComponent, title: 'Registration'},
     {path: 'onboarding', component: OnboardingComponent, title: 'Onboarding'},

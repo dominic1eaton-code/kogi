@@ -1,0 +1,120 @@
+﻿<div class="mx-auto flex w-full max-w-[1150px] flex-col gap-12" style="animation: fadeUp 0.8s ease-out both;">
+  <section class="rounded-[24px] border border-[rgba(255,255,255,0.08)] bg-[rgba(9,16,20,0.78)] p-8">
+    <div class="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
+      <div>
+        <div class="mb-3 inline-flex items-center gap-2 rounded-full border border-[rgba(255,255,255,0.12)] bg-[rgba(8,16,20,0.7)] px-3 py-1 text-[10px] uppercase tracking-[0.28em] text-[#9fb2b8]">
+          Platform Map
+        </div>
+        <h1 class="text-[36px] font-semibold leading-[1.1]">Every module, one connected system</h1>
+        <p class="mt-3 max-w-[560px] text-[13px] text-[#9fb2b8]">
+          Kogi replaces scattered tools with a unified platform. Each module shares data so work, finance, and
+          governance move together.
+        </p>
+      </div>
+      <div class="flex flex-wrap gap-3">
+        <a
+          routerLink="/registration"
+          class="rounded-[10px] bg-gradient-to-r from-[#10b981] to-[#059669] px-4 py-2 text-[12px] font-semibold text-white"
+        >
+          Create account
+        </a>
+        <a
+          routerLink="/login"
+          class="rounded-[10px] border border-[rgba(255,255,255,0.12)] px-4 py-2 text-[12px] font-semibold text-[#e8f2f4]"
+        >
+          Sign in
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <section class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+    <article
+      *ngFor="let module of modules"
+      class="rounded-[18px] border border-[rgba(255,255,255,0.08)] bg-[rgba(10,18,24,0.78)] p-5 shadow-[0_18px_40px_rgba(0,0,0,0.35)]"
+    >
+      <div class="mb-3 h-[3px] w-12 rounded-full" [class]="module.barClass"></div>
+      <div class="text-[12px] font-semibold" [class]="module.accent">{{ module.name }}</div>
+      <h3 class="mt-2 text-[18px] font-semibold">{{ module.title }}</h3>
+      <p class="mt-2 text-[12px] text-[#8ea6ad]">{{ module.description }}</p>
+      <div class="mt-4 space-y-2 text-[11px] text-[#cbd7db]">
+        <div *ngFor="let highlight of module.highlights" class="flex items-center gap-2">
+          <span class="h-1.5 w-1.5 rounded-full bg-[#10b981]"></span>
+          {{ highlight }}
+        </div>
+      </div>
+    </article>
+  </section>
+
+  <section class="grid gap-6 lg:grid-cols-[1.1fr,0.9fr]">
+    <div class="rounded-[20px] border border-[rgba(255,255,255,0.08)] bg-[rgba(9,16,20,0.8)] p-6">
+      <div class="text-[10px] uppercase tracking-[0.35em] text-[#5d747c]">Integrated Workflows</div>
+      <h3 class="mt-2 text-[20px] font-semibold">When modules connect, work compounds</h3>
+      <div class="mt-4 space-y-4">
+        <div class="rounded-[14px] border border-[rgba(255,255,255,0.08)] bg-[rgba(12,24,30,0.65)] p-4">
+          <div class="text-[12px] font-semibold">Milestone &rarr; Invoice &rarr; Allocation</div>
+          <p class="mt-2 text-[11px] text-[#8ea6ad]">
+            Closing a project milestone auto-generates invoices and routes funds into the right accounts.
+          </p>
+        </div>
+        <div class="rounded-[14px] border border-[rgba(255,255,255,0.08)] bg-[rgba(12,24,30,0.65)] p-4">
+          <div class="text-[12px] font-semibold">Marketplace &rarr; Contract &rarr; Escrow</div>
+          <p class="mt-2 text-[11px] text-[#8ea6ad]">
+            Find talent, sign agreements, and protect payments without leaving the platform.
+          </p>
+        </div>
+        <div class="rounded-[14px] border border-[rgba(255,255,255,0.08)] bg-[rgba(12,24,30,0.65)] p-4">
+          <div class="text-[12px] font-semibold">Governance &rarr; Treasury &rarr; Distribution</div>
+          <p class="mt-2 text-[11px] text-[#8ea6ad]">
+            Votes trigger treasury actions, so cooperative decisions become real outcomes fast.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <div class="rounded-[20px] border border-[rgba(255,255,255,0.08)] bg-[rgba(12,20,26,0.8)] p-6">
+      <div class="text-[10px] uppercase tracking-[0.35em] text-[#5d747c]">AI Layer</div>
+      <h3 class="mt-2 text-[20px] font-semibold">Oba AI connects every module</h3>
+      <p class="mt-3 text-[12px] text-[#8ea6ad]">
+        Oba reviews your portfolio, finances, and community activity daily. It suggests actions, drafts messages,
+        and highlights risk before it slows you down.
+      </p>
+      <div class="mt-4 space-y-3 text-[12px] text-[#cbd7db]">
+        <div class="flex items-center gap-2">
+          <span class="h-2 w-2 rounded-full bg-[#10b981]"></span>
+          Personalized daily briefing across every module.
+        </div>
+        <div class="flex items-center gap-2">
+          <span class="h-2 w-2 rounded-full bg-[#f59e0b]"></span>
+          Auto-drafted proposals, invoices, and outreach.
+        </div>
+        <div class="flex items-center gap-2">
+          <span class="h-2 w-2 rounded-full bg-[#8b5cf6]"></span>
+          Risk alerts, governance deadlines, and growth signals.
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="flex flex-col items-start justify-between gap-4 rounded-[20px] border border-[rgba(255,255,255,0.08)] bg-[rgba(8,14,18,0.8)] p-6 md:flex-row">
+    <div>
+      <div class="text-[10px] uppercase tracking-[0.4em] text-[#5d747c]">Next</div>
+      <h3 class="mt-2 text-[20px] font-semibold">See the ecosystem behind the platform</h3>
+      <p class="mt-2 text-[12px] text-[#8ea6ad]">Explore the governance, benefits, and community layer.</p>
+    </div>
+    <div class="flex flex-wrap items-center gap-3">
+      <a
+        routerLink="/home/ecosystem"
+        class="rounded-[10px] border border-[rgba(255,255,255,0.12)] px-4 py-2 text-[12px] font-semibold text-[#e8f2f4]"
+      >
+        View ecosystem
+      </a>
+      <a
+        routerLink="/registration"
+        class="rounded-[10px] bg-gradient-to-r from-[#10b981] to-[#059669] px-4 py-2 text-[12px] font-semibold text-white"
+      >
+        Create account
+      </a>
+    </div>
+  </section>
+</div>

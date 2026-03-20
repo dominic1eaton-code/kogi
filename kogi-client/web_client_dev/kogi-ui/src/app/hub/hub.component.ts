@@ -97,6 +97,6 @@ export class HubComponent {
 
   logout(): void {
     console.log('Logging out of client session...');
-    this.router.navigate(['/login']);
+    this.router.navigate(['/home']);
   }
 }

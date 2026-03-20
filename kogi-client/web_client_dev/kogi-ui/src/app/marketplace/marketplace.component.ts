@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+﻿import { Component, inject } from '@angular/core';
 import { RouterLink, RouterLinkActive, RouterOutlet, Router } from '@angular/router';
 import { NavigationComponent } from '../index/navigation/navigation.component';
 
@@ -22,6 +22,6 @@ export class MarketplaceComponent {
     console.log('Logging out of client session...');
 
     // Navigate to the specified route
-    this.router.navigate(['/login']);
+    this.router.navigate(['/home']);
   }
 }

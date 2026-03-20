@@ -1,0 +1,236 @@
+﻿<div class="mx-auto flex w-full max-w-[1200px] flex-col gap-12">
+  <section
+    class="relative overflow-hidden rounded-[28px] border border-[rgba(255,255,255,0.08)] bg-gradient-to-br from-[#0b1115] via-[#0f1a22] to-[#0a0f13] shadow-[0_35px_120px_rgba(0,0,0,0.55)]"
+    style="animation: fadeUp 0.8s ease-out both;"
+  >
+    <div
+      class="pointer-events-none absolute inset-0 opacity-70"
+      style="
+        background:
+          radial-gradient(circle at 20% 20%, rgba(16,185,129,0.18), transparent 55%),
+          radial-gradient(circle at 80% 30%, rgba(168,85,247,0.2), transparent 50%),
+          radial-gradient(circle at 65% 80%, rgba(245,158,11,0.16), transparent 55%);
+      "
+    ></div>
+    <div
+      class="pointer-events-none absolute -left-[20%] top-[40%] h-[420px] w-[420px] rounded-full opacity-70 blur-[45px]"
+      style="background: radial-gradient(circle, rgba(120, 91, 255, 0.2), transparent 70%); animation: drift 18s ease-in-out infinite;"
+    ></div>
+    <span
+      class="pointer-events-none absolute left-[35%] top-[12%] h-[1px] w-[420px] rotate-[34deg] bg-[rgba(255,255,255,0.45)]"
+    ></span>
+    <span
+      class="pointer-events-none absolute left-[18%] top-[55%] h-[1px] w-[520px] rotate-[-32deg] bg-[rgba(255,255,255,0.2)]"
+    ></span>
+
+    <div class="relative z-10 grid gap-10 px-8 py-12 lg:grid-cols-[1.1fr,0.9fr] lg:px-12">
+      <div>
+        <div class="mb-4 inline-flex items-center gap-2 rounded-full border border-[rgba(255,255,255,0.12)] bg-[rgba(8,16,20,0.7)] px-3 py-1 text-[10px] uppercase tracking-[0.28em] text-[#9fb2b8]">
+          Independent Work OS
+        </div>
+        <h1 class="text-[42px] font-semibold leading-[1.05] tracking-[-0.5px] md:text-[54px]">
+          Create. Coordinate.
+          <span class="block text-[#fbbf24]">Grow.</span>
+        </h1>
+        <p class="mt-4 max-w-[520px] text-[15px] leading-6 text-[#9fb2b8]">
+          Kogi is the operating system for independent work. It unifies portfolios, banking, governance,
+          marketplace, and community so every project, payment, and decision stays connected.
+        </p>
+
+        <div class="mt-6 flex flex-wrap items-center gap-3">
+          <a
+            routerLink="/login"
+            class="rounded-[999px] border border-[rgba(255,255,255,0.12)] px-5 py-2.5 text-[12px] font-semibold text-[#e6f1f4] transition hover:border-[#f59e0b]"
+          >
+            Sign in
+          </a>
+          <a
+            routerLink="/registration"
+            class="rounded-[999px] bg-gradient-to-r from-[#10b981] to-[#059669] px-5 py-2.5 text-[12px] font-semibold text-white shadow-[0_12px_30px_rgba(16,185,129,0.35)] transition hover:-translate-y-[1px]"
+          >
+            Create account
+          </a>
+          <a
+            routerLink="/home/platform"
+            class="rounded-[999px] border border-[rgba(255,255,255,0.12)] bg-[rgba(14,24,30,0.7)] px-5 py-2.5 text-[12px] font-semibold text-[#fbbf24]"
+          >
+            Explore platform
+          </a>
+        </div>
+
+        <div class="mt-6 flex flex-wrap gap-2 text-[11px] text-[#8ea6ad]">
+          <span class="rounded-full border border-[rgba(255,255,255,0.08)] px-3 py-1">Portfolio OS</span>
+          <span class="rounded-full border border-[rgba(255,255,255,0.08)] px-3 py-1">Kogi Bank</span>
+          <span class="rounded-full border border-[rgba(255,255,255,0.08)] px-3 py-1">Marketplace + Exchange</span>
+          <span class="rounded-full border border-[rgba(255,255,255,0.08)] px-3 py-1">Community + Governance</span>
+          <span class="rounded-full border border-[rgba(255,255,255,0.08)] px-3 py-1">Oba AI</span>
+        </div>
+      </div>
+
+      <div class="flex flex-col gap-4">
+        <div
+          class="rounded-[18px] border border-[rgba(255,255,255,0.08)] bg-[rgba(10,18,23,0.8)] p-5 shadow-[0_20px_50px_rgba(0,0,0,0.4)]"
+          style="animation: fadeUp 0.9s ease-out 0.15s both;"
+        >
+          <div class="mb-2 text-[10px] uppercase tracking-[0.3em] text-[#5d747c]">Daily Brief</div>
+          <div class="text-[18px] font-semibold">Oba AI at a glance</div>
+          <p class="mt-2 text-[12px] text-[#8ea6ad]">
+            Your projects, payments, and governance votes summarized in one sweep.
+          </p>
+          <div class="mt-4 space-y-3 text-[12px] text-[#cbd7db]">
+            <div class="flex items-start gap-2">
+              <span class="mt-1 h-2.5 w-2.5 rounded-full bg-[#10b981]"></span>
+              3 milestones are approaching next week with suggested allocations.
+            </div>
+            <div class="flex items-start gap-2">
+              <span class="mt-1 h-2.5 w-2.5 rounded-full bg-[#f59e0b]"></span>
+              2 invoices are ready to send with auto-tax reserves prepared.
+            </div>
+            <div class="flex items-start gap-2">
+              <span class="mt-1 h-2.5 w-2.5 rounded-full bg-[#8b5cf6]"></span>
+              1 collaborator match is ready for your marketplace request.
+            </div>
+          </div>
+        </div>
+
+        <div class="grid gap-3 md:grid-cols-2">
+          <div
+            class="rounded-[16px] border border-[rgba(255,255,255,0.08)] bg-[rgba(8,15,19,0.75)] p-4"
+            style="animation: fadeUp 0.9s ease-out 0.3s both;"
+          >
+            <div class="text-[10px] uppercase tracking-[0.3em] text-[#5d747c]">Workflow</div>
+            <div class="mt-2 text-[13px] font-semibold">Milestone &rarr; Invoice &rarr; Allocation</div>
+            <p class="mt-2 text-[11px] text-[#8ea6ad]">
+              Finish work once. Kogi handles billing, banking, and reporting automatically.
+            </p>
+          </div>
+          <div
+            class="rounded-[16px] border border-[rgba(255,255,255,0.08)] bg-[rgba(8,15,19,0.75)] p-4"
+            style="animation: fadeUp 0.9s ease-out 0.45s both;"
+          >
+            <div class="text-[10px] uppercase tracking-[0.3em] text-[#5d747c]">Connected</div>
+            <div class="mt-2 text-[13px] font-semibold">Projects + Finance + Governance</div>
+            <p class="mt-2 text-[11px] text-[#8ea6ad]">
+              Everything runs on one data graph, so tools never fall out of sync.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="grid gap-4 md:grid-cols-2 lg:grid-cols-3" style="animation: fadeUp 0.9s ease-out 0.2s both;">
+    <div class="rounded-[18px] border border-[rgba(255,255,255,0.08)] bg-[rgba(11,20,26,0.7)] p-5">
+      <div class="text-[12px] font-semibold text-[#10b981]">Portfolio OS</div>
+      <h3 class="mt-2 text-[18px] font-semibold">Own every project, asset, and deliverable</h3>
+      <p class="mt-2 text-[12px] text-[#8ea6ad]">
+        Programs, projects, resources, and artifacts tracked with living playbooks and analytics.
+      </p>
+    </div>
+    <div class="rounded-[18px] border border-[rgba(255,255,255,0.08)] bg-[rgba(11,20,26,0.7)] p-5">
+      <div class="text-[12px] font-semibold text-[#f59e0b]">Kogi Bank</div>
+      <h3 class="mt-2 text-[18px] font-semibold">Financial infrastructure for independent work</h3>
+      <p class="mt-2 text-[12px] text-[#8ea6ad]">
+        Automated accounts for taxes, benefits, income protection, and shared treasury pools.
+      </p>
+    </div>
+    <div class="rounded-[18px] border border-[rgba(255,255,255,0.08)] bg-[rgba(11,20,26,0.7)] p-5">
+      <div class="text-[12px] font-semibold text-[#8b5cf6]">Marketplace + Exchange</div>
+      <h3 class="mt-2 text-[18px] font-semibold">Find work, talent, and resources</h3>
+      <p class="mt-2 text-[12px] text-[#8ea6ad]">
+        Post gigs, trade assets, and crowdsource resources with escrow and smart matching.
+      </p>
+    </div>
+    <div class="rounded-[18px] border border-[rgba(255,255,255,0.08)] bg-[rgba(11,20,26,0.7)] p-5">
+      <div class="text-[12px] font-semibold text-[#38bdf8]">Community Spaces</div>
+      <h3 class="mt-2 text-[18px] font-semibold">Build communities that run on clear governance</h3>
+      <p class="mt-2 text-[12px] text-[#8ea6ad]">
+        Rooms, channels, and feeds designed for teams, cooperatives, and public audiences.
+      </p>
+    </div>
+    <div class="rounded-[18px] border border-[rgba(255,255,255,0.08)] bg-[rgba(11,20,26,0.7)] p-5">
+      <div class="text-[12px] font-semibold text-[#f97316]">Governance Hub</div>
+      <h3 class="mt-2 text-[18px] font-semibold">Decisions, votes, and shared ownership</h3>
+      <p class="mt-2 text-[12px] text-[#8ea6ad]">
+        Proposal workflows, transparent treasury, and distribution rules for member-led orgs.
+      </p>
+    </div>
+    <div class="rounded-[18px] border border-[rgba(255,255,255,0.08)] bg-[rgba(11,20,26,0.7)] p-5">
+      <div class="text-[12px] font-semibold text-[#10b981]">Oba AI</div>
+      <h3 class="mt-2 text-[18px] font-semibold">Your chief-of-staff for modern work</h3>
+      <p class="mt-2 text-[12px] text-[#8ea6ad]">
+        Daily briefings, smart alerts, and automated actions across every module.
+      </p>
+    </div>
+  </section>
+
+  <section class="grid gap-6 lg:grid-cols-[1.1fr,0.9fr]" style="animation: fadeUp 0.9s ease-out 0.35s both;">
+    <div class="rounded-[20px] border border-[rgba(255,255,255,0.08)] bg-[rgba(9,16,20,0.8)] p-6">
+      <h3 class="text-[20px] font-semibold">Built for every kind of independent worker</h3>
+      <p class="mt-2 text-[13px] text-[#8ea6ad]">
+        From solo freelancers to worker-owned cooperatives, Kogi adapts to the way you operate.
+      </p>
+      <div class="mt-5 grid gap-3 md:grid-cols-3">
+        <div class="rounded-[16px] border border-[rgba(255,255,255,0.06)] bg-[rgba(12,24,30,0.6)] p-4">
+          <div class="text-[12px] font-semibold">Freelancers</div>
+          <p class="mt-2 text-[11px] text-[#8ea6ad]">Track clients, invoices, and finances in one view.</p>
+        </div>
+        <div class="rounded-[16px] border border-[rgba(255,255,255,0.06)] bg-[rgba(12,24,30,0.6)] p-4">
+          <div class="text-[12px] font-semibold">Cooperatives</div>
+          <p class="mt-2 text-[11px] text-[#8ea6ad]">Run shared governance, treasury, and payouts.</p>
+        </div>
+        <div class="rounded-[16px] border border-[rgba(255,255,255,0.06)] bg-[rgba(12,24,30,0.6)] p-4">
+          <div class="text-[12px] font-semibold">Small Teams</div>
+          <p class="mt-2 text-[11px] text-[#8ea6ad]">Coordinate programs, resources, and collaborators.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="rounded-[20px] border border-[rgba(255,255,255,0.08)] bg-[rgba(12,18,24,0.75)] p-6">
+      <div class="text-[10px] uppercase tracking-[0.35em] text-[#5d747c]">Why Kogi</div>
+      <h3 class="mt-2 text-[20px] font-semibold">One data graph, many workflows</h3>
+      <p class="mt-3 text-[12px] text-[#8ea6ad]">
+        Kogi replaces scattered tools with a unified system. Every module shares data, so actions
+        flow instantly from work to finance to community.
+      </p>
+      <div class="mt-4 space-y-3 text-[12px] text-[#cbd7db]">
+        <div class="flex items-center gap-2">
+          <span class="h-2 w-2 rounded-full bg-[#10b981]"></span>
+          Project completion triggers invoicing and cash allocation.
+        </div>
+        <div class="flex items-center gap-2">
+          <span class="h-2 w-2 rounded-full bg-[#f59e0b]"></span>
+          Governance votes route resources automatically.
+        </div>
+        <div class="flex items-center gap-2">
+          <span class="h-2 w-2 rounded-full bg-[#8b5cf6]"></span>
+          Marketplace matches talent when a task is blocked.
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="flex flex-col items-start justify-between gap-4 rounded-[20px] border border-[rgba(255,255,255,0.08)] bg-[rgba(8,14,18,0.8)] p-6 md:flex-row">
+    <div>
+      <div class="text-[10px] uppercase tracking-[0.4em] text-[#5d747c]">Ready to start</div>
+      <h3 class="mt-2 text-[20px] font-semibold">Build your independent work stack today</h3>
+      <p class="mt-2 text-[12px] text-[#8ea6ad]">
+        Sign in to an existing workspace or create a new one in minutes.
+      </p>
+    </div>
+    <div class="flex flex-wrap items-center gap-3">
+      <a
+        routerLink="/login"
+        class="rounded-[10px] border border-[rgba(255,255,255,0.12)] px-4 py-2 text-[12px] font-semibold text-[#e8f2f4]"
+      >
+        Sign in
+      </a>
+      <a
+        routerLink="/registration"
+        class="rounded-[10px] bg-gradient-to-r from-[#10b981] to-[#059669] px-4 py-2 text-[12px] font-semibold text-white"
+      >
+        Create account
+      </a>
+    </div>
+  </section>
+</div>

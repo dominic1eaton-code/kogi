@@ -1,0 +1,119 @@
+﻿<div class="mx-auto flex w-full max-w-[1150px] flex-col gap-12" style="animation: fadeUp 0.8s ease-out both;">
+  <section class="rounded-[24px] border border-[rgba(255,255,255,0.08)] bg-[rgba(9,16,20,0.8)] p-8">
+    <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+      <div>
+        <div class="mb-3 inline-flex items-center gap-2 rounded-full border border-[rgba(255,255,255,0.12)] bg-[rgba(8,16,20,0.7)] px-3 py-1 text-[10px] uppercase tracking-[0.28em] text-[#9fb2b8]">
+          Ecosystem
+        </div>
+        <h1 class="text-[36px] font-semibold leading-[1.1]">A platform built for shared ownership</h1>
+        <p class="mt-3 max-w-[560px] text-[13px] text-[#9fb2b8]">
+          Kogi supports cooperative finance, portable benefits, and community-led governance so independent
+          workers can build lasting systems together.
+        </p>
+      </div>
+      <div class="flex flex-wrap gap-3">
+        <a
+          routerLink="/home/about"
+          class="rounded-[10px] border border-[rgba(255,255,255,0.12)] px-4 py-2 text-[12px] font-semibold text-[#e8f2f4]"
+        >
+          About Kogi
+        </a>
+        <a
+          routerLink="/registration"
+          class="rounded-[10px] bg-gradient-to-r from-[#10b981] to-[#059669] px-4 py-2 text-[12px] font-semibold text-white"
+        >
+          Create account
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="mb-4 text-[12px] uppercase tracking-[0.4em] text-[#5d747c]">Initiatives</div>
+    <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+      <article
+        *ngFor="let initiative of initiatives"
+        class="rounded-[18px] border border-[rgba(255,255,255,0.08)] bg-[rgba(10,18,24,0.78)] p-5"
+      >
+        <div class="mb-3 h-[3px] w-12 rounded-full" [class]="initiative.barClass"></div>
+        <div class="text-[13px] font-semibold" [class]="initiative.accent">{{ initiative.title }}</div>
+        <p class="mt-2 text-[12px] text-[#8ea6ad]">{{ initiative.description }}</p>
+      </article>
+    </div>
+  </section>
+
+  <section class="grid gap-6 lg:grid-cols-[1.1fr,0.9fr]">
+    <div class="rounded-[20px] border border-[rgba(255,255,255,0.08)] bg-[rgba(9,16,20,0.82)] p-6">
+      <div class="text-[10px] uppercase tracking-[0.35em] text-[#5d747c]">Organization Types</div>
+      <h3 class="mt-2 text-[20px] font-semibold">Designed for shared leadership</h3>
+      <p class="mt-3 text-[12px] text-[#8ea6ad]">
+        Kogi supports member-led structures with transparent roles, voting, and shared resources.
+      </p>
+      <div class="mt-4 flex flex-wrap gap-2 text-[11px] text-[#cbd7db]">
+        <span *ngFor="let org of orgTypes" class="rounded-full border border-[rgba(255,255,255,0.1)] px-3 py-1">
+          {{ org }}
+        </span>
+      </div>
+      <div class="mt-5 rounded-[16px] border border-[rgba(255,255,255,0.08)] bg-[rgba(12,24,30,0.65)] p-4 text-[12px] text-[#cbd7db]">
+        Proposals, votes, and treasury actions stay on the same system &mdash; so decisions translate into action quickly.
+      </div>
+    </div>
+
+    <div class="rounded-[20px] border border-[rgba(255,255,255,0.08)] bg-[rgba(12,20,26,0.82)] p-6">
+      <div class="text-[10px] uppercase tracking-[0.35em] text-[#5d747c]">Community Layer</div>
+      <h3 class="mt-2 text-[20px] font-semibold">Spaces for work, learning, and culture</h3>
+      <p class="mt-3 text-[12px] text-[#8ea6ad]">
+        Community spaces combine feeds, chats, and events with permissioned access and resource sharing.
+      </p>
+      <div class="mt-4 space-y-3 text-[12px] text-[#cbd7db]">
+        <div class="flex items-center gap-2">
+          <span class="h-2 w-2 rounded-full bg-[#10b981]"></span>
+          Structured spaces for teams, programs, and public showcases.
+        </div>
+        <div class="flex items-center gap-2">
+          <span class="h-2 w-2 rounded-full bg-[#f59e0b]"></span>
+          Timelines, posts, and community announcements in one feed.
+        </div>
+        <div class="flex items-center gap-2">
+          <span class="h-2 w-2 rounded-full bg-[#8b5cf6]"></span>
+          Resource sharing and collective initiatives tied to real portfolios.
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="mb-4 text-[12px] uppercase tracking-[0.4em] text-[#5d747c]">Finance Instruments</div>
+    <div class="grid gap-4 md:grid-cols-2">
+      <div
+        *ngFor="let instrument of instruments"
+        class="rounded-[16px] border border-[rgba(255,255,255,0.08)] bg-[rgba(9,17,22,0.8)] p-4"
+      >
+        <div class="text-[13px] font-semibold">{{ instrument.title }}</div>
+        <p class="mt-2 text-[11px] text-[#8ea6ad]">{{ instrument.description }}</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="flex flex-col items-start justify-between gap-4 rounded-[20px] border border-[rgba(255,255,255,0.08)] bg-[rgba(8,14,18,0.8)] p-6 md:flex-row">
+    <div>
+      <div class="text-[10px] uppercase tracking-[0.4em] text-[#5d747c]">Launch</div>
+      <h3 class="mt-2 text-[20px] font-semibold">Join the ecosystem</h3>
+      <p class="mt-2 text-[12px] text-[#8ea6ad]">Set up your workspace and connect your community today.</p>
+    </div>
+    <div class="flex flex-wrap items-center gap-3">
+      <a
+        routerLink="/registration"
+        class="rounded-[10px] bg-gradient-to-r from-[#10b981] to-[#059669] px-4 py-2 text-[12px] font-semibold text-white"
+      >
+        Create account
+      </a>
+      <a
+        routerLink="/login"
+        class="rounded-[10px] border border-[rgba(255,255,255,0.12)] px-4 py-2 text-[12px] font-semibold text-[#e8f2f4]"
+      >
+        Sign in
+      </a>
+    </div>
+  </section>
+</div>

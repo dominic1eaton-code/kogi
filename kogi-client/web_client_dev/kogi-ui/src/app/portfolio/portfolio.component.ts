@@ -104,7 +104,7 @@ export class PortfolioComponent {
     console.log('Logging out of client session...');
 
     // Navigate to the specified route
-    this.router.navigate(['/login']);
+    this.router.navigate(['/home']);
   }
 }
 
