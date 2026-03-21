@@ -1954,3 +1954,16 @@ imewe manufacturing system
         - machines
         - agents
         - people
+
+---
+
+sambara intelligence system
+
+- echuya LLM
+- Oba Assistant, Agent
+
+---
+
+osyse environmental management system
+
+---
