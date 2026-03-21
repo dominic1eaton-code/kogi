@@ -1848,14 +1848,24 @@ The Shango System:
 
 ume+kogi+qala are platforms that perform domain operations on top of a master data spreadsheet, so kogi is portfolio domain operations, qala is solution domain operations, and ume is organization domain operations, where shangoOS holds the root/baseline model of the master data spreadsheets
 
-obatala venture capital studios firm
+mungu corp
+    * parent company of obatala studios VC firm
+    - mungu board
+
+obatala venture capital studios firm - cooperative organization
     * investment funds management
     * organization domains based factory builds
-        * the obatala firm builds factories, domain/industry tailored+specific, so for example, a ciient wants a series of HVAC businesses, and restuaurant business that they rehab, purchase, or build from scratch, they come into the VC firm, the firm builds factories, using common factory baselines/templates and configues the studio factory, and the studio factory then builds businesses in that particular domain to satisfy the needs of the organization. studios are containers/infrastructure scaffolding for transforming+developing+analyzing+etc... an organization/enterprise/buseinss/entity from one state (orgDNA, master data management, master organization spreadhsheet) to another. the VC firm develops different funds that have different portfolios, where portfolios contain entities, grouped by class/type/category, known as portfolio companies PortCOs. 
+        * the obatala firm builds factories, domain/industry tailored+specific, so for example, a ciient wants a series of HVAC businesses, and restuaurant business that they rehab, purchase, or build from scratch, they come into the VC firm, the firm builds factories, using common factory baselines/templates and configues the studio factory, and the studio factory then builds businesses in that particular domain to satisfy the needs of the organization. studios are containers/infrastructure scaffolding for transforming+developing+analyzing+etc... an organization/enterprise/buseinss/entity from one state (orgDNA, master data management, master organization spreadhsheet) to another. the VC firm develops different funds that have different portfolios, where portfolios contain entities, grouped by class/type/category, known as portfolio companies PortCOs. The firm can be leased out to others, making it a franchise, where others who desire to start a local VC firm in their area can pay to use the naem, and have acesss to the resources of the main VC firm, use the VC's system, and they maintain their own local VC firms, in their local areas. The VC firm is cooperative owned and focuses on developing and maintaing cooperative member owned organizations and coop communes.
+
+        * contracting, agreements, licencising, IP management, entity management
+            * studio agreements, contracts, licencing, entity management
+            * organization agreements, contracts, licencing, entity management
+            * fund agreements, contracts, licencing, entity management
 
     - kumba metafactory firm
         - organization studios builds+buildouts to build organizations/businesss/enterprises/entities
         - portfolio organization funds builds
+        - serves as the operations company OpCo for the VC factory, its studios, and franhcised firms+studios+organizations
 
     - wolof.io solution platform development firm
         - kogi platform
@@ -1867,3 +1877,6 @@ obatala venture capital studios firm
         - nandi platform
         - osyse platform
         - shango platform - common/baselinse platform
+
+    - songhai-institute
+        * systemics and systemology institution
