@@ -1880,3 +1880,4 @@ obatala venture capital studios firm - cooperative organization
 
     - songhai-institute
         * systemics and systemology institution
+        * mungu, meridian, sankofa programs+projects
