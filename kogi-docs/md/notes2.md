@@ -533,6 +533,7 @@ solution model
     - blueprint
     - design
     - prototype
+    - minimal viable solutions
 solution pipelines
     - building, development, sandbox, testing+QA, release/deployment pipeliens
 solution testbed
@@ -1179,6 +1180,7 @@ portfolio
 - github
 - yahoo account
 - microsoft account
+- microsoft office
 - asana
 - calendly
 - clickup
@@ -1298,6 +1300,7 @@ marketplace
 - jobber
 - housecallpro
 - zendesk
+- app.cal.com
 
 spaces|community
 - slack
@@ -1881,3 +1884,10 @@ obatala venture capital studios firm - cooperative organization
     - songhai-institute
         * systemics and systemology institution
         * mungu, meridian, sankofa programs+projects
+
+---
+
+kogi-tag
+Help independent workers organize their work portfolios and projects.
+
+---
