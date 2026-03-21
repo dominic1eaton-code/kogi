@@ -1190,6 +1190,7 @@ portfolio
 - motion
 - airtable
 - figma
+- confluence
 - clickify
 - trello
 - dropbox
@@ -1197,6 +1198,7 @@ portfolio
 - zoho
 - odoo
 - salesforce
+- GA4
 - pipedrive
 - akiflow
 - obsidian
@@ -1295,7 +1297,7 @@ marketplace
 - mailchimp
 - jobber
 - housecallpro
-
+- zendesk
 
 spaces|community
 - slack
@@ -1839,3 +1841,29 @@ imewe autnomous factories can print and configure its own custom manufacturing+f
 The Shango System:
 
 - go from an idea to entire business buildout and solution delivery in as short of time as possible (1 week or less)
+
+- shango master workspace + environment + configuration
+
+---
+
+ume+kogi+qala are platforms that perform domain operations on top of a master data spreadsheet, so kogi is portfolio domain operations, qala is solution domain operations, and ume is organization domain operations, where shangoOS holds the root/baseline model of the master data spreadsheets
+
+obatala venture capital studios firm
+    * investment funds management
+    * organization domains based factory builds
+        * the obatala firm builds factories, domain/industry tailored+specific, so for example, a ciient wants a series of HVAC businesses, and restuaurant business that they rehab, purchase, or build from scratch, they come into the VC firm, the firm builds factories, using common factory baselines/templates and configues the studio factory, and the studio factory then builds businesses in that particular domain to satisfy the needs of the organization. studios are containers/infrastructure scaffolding for transforming+developing+analyzing+etc... an organization/enterprise/buseinss/entity from one state (orgDNA, master data management, master organization spreadhsheet) to another. the VC firm develops different funds that have different portfolios, where portfolios contain entities, grouped by class/type/category, known as portfolio companies PortCOs. 
+
+    - kumba metafactory firm
+        - organization studios builds+buildouts to build organizations/businesss/enterprises/entities
+        - portfolio organization funds builds
+
+    - wolof.io solution platform development firm
+        - kogi platform
+        - ume platform
+        - qala platform
+        - sambara platform
+        - oru platform
+        - imewe platform
+        - nandi platform
+        - osyse platform
+        - shango platform - common/baselinse platform
