@@ -1891,3 +1891,66 @@ kogi-tag
 Help independent workers organize their work portfolios and projects.
 
 ---
+
+oru simulation development kit platform
+
+- FEA simulation
+- 3d modelling
+- game simulation
+    - video game
+    - serious game
+- simulation development environment
+    - render engine
+        - vulkan engine
+    - physics engine
+    - audio engine
+    - entity engine
+    - scenario engine
+    - federation engine
+        - RTI, HLA, DSAC, NIS
+- BIM simulation
+- DES simulation
+- CAM, CAD, CNC simulation, modelling
+- custom simulation
+
+---
+
+nandi mobility platform
+
+- mobility network system
+    - V2V, V2I network, VANET
+    - autonomous vehicle network ~ passenger, commercial, public, production, etc...
+
+[ ] mobility infrastructure system
+    - RSU road side units
+
+[ ] EV passenger sedan build
+    [ ] physical system
+        - motor system
+        - battery system
+        - transmission system
+        - suspension system
+            - wheels
+            - shocks
+        - light system
+        - chassis system
+        - body system
+    [ ] digital system
+        - CAN system
+        - controller network
+    [ ] logical system
+        [ ] power system
+        [ ] sensor system
+        [ ] communications system
+        [ ] infotainment system
+
+---
+
+imewe manufacturing system
+
+- autonomous factory
+    - factory nodes+executors
+        - devices
+        - machines
+        - agents
+        - people
