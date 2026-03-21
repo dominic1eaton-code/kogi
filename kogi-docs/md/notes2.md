@@ -1821,6 +1821,10 @@ shango pages
         - pricing
         - solutions
 
+qala solutions
+solution projects|programs
+solution spaces, workspaces
+
 ---
 
 So a user can design and simulate a physical product solution/service/good in oru, define and configure it in qala, manage the work in kogi, maintain the organizational infrastructure around the product in ume, use the Oba Assistant to help build AND assist with everything using sambara, and send this entire design package to an imewe autonomous factory which can build/print out the product and configure the physical factory for producing a large supply of the product
