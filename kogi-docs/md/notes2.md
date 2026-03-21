@@ -1871,15 +1871,15 @@ obatala venture capital studios firm - cooperative organization
         - serves as the operations company OpCo for the VC factory, its studios, and franhcised firms+studios+organizations
 
     - wolof.io solution platform development firm
-        - kogi platform
-        - ume platform
-        - qala platform
-        - sambara platform
-        - oru platform
-        - imewe platform
-        - nandi platform
-        - osyse platform
-        - shango platform - common/baselinse platform
+        - kogi platform division
+        - ume platform division
+        - qala platform division
+        - sambara platform division
+        - oru platform division
+        - imewe platform division
+        - nandi platform division
+        - osyse platform division
+        - shango platform - common/baselinse platform division
 
     - songhai-institute
         * systemics and systemology institution
