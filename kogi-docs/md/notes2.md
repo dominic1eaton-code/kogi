@@ -2011,3 +2011,11 @@ profit account
 - baseline spreadsheet system, data layer
 - intermediary domain system, that operates on the common baseline spreadhsseet system, domain layer
 - top level user interface system, user layer
+
+
+---
+
+qala 
+
+physical, non digital, service/product/goods based solution environments+disrtibutions/releases could include things like SOP releases, tasks+todos that ume OrgExecs (employees, agents) can execute on in the physical world, work/job/task artifacts
+
