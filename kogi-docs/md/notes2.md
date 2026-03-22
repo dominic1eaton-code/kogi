@@ -1178,6 +1178,7 @@ portfolio
 - monday
 - gitlab
 - github
+- bitbucket
 - yahoo account
 - microsoft account
 - microsoft office
@@ -1967,3 +1968,25 @@ sambara intelligence system
 osyse environmental management system
 
 ---
+
+scoop install kubectl
+kubectl version --client
+scoop install minikube
+scoop install kind
+
+cd ~
+mkdir .kube
+minikube start
+kubectl config current-context
+
+
+Enable-WindowsOptionalFeature -Online -FeatureName Microsoft-Hyper-V-Tools-All -All
+Enable-WindowsOptionalFeature -Online -FeatureName Microsoft-Hyper-V -All
+
+DISM /Online /Enable-Feature /FeatureName:Microsoft-Hyper-V -All
+
+sfc /scannow
+DISM /Online /Cleanup-Image /RestoreHealth
+
+systeminfo.exe
+
