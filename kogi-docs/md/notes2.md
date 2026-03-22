@@ -1990,3 +1990,6 @@ DISM /Online /Cleanup-Image /RestoreHealth
 
 systeminfo.exe
 
+kind version
+kubectl version
+minikube version
