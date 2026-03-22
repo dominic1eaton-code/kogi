@@ -1,0 +1,3 @@
+[workspace]
+members = ["hypergrid", "kogi-portfolio"]
+resolver = "2"
