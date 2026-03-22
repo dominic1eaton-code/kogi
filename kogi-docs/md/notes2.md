@@ -1186,6 +1186,9 @@ portfolio
 - calendly
 - clickup
 - gohighlevel
+- soundcloud
+- infusionsoft; keap
+- clickfunnels
 - ontraport
 - servicenow
 - coda
@@ -1993,3 +1996,18 @@ systeminfo.exe
 kind version
 kubectl version
 minikube version
+
+---
+
+accounts:
+
+income account
+operating account
+tax account
+profit account
+
+---
+
+- baseline spreadsheet system, data layer
+- intermediary domain system, that operates on the common baseline spreadhsseet system, domain layer
+- top level user interface system, user layer

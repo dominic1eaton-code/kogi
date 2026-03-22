@@ -454,7 +454,9 @@ func main() {
 	// Snapshots — list / save / restore
 	mux.HandleFunc("/api/v1/office/portfolio/snapshots", func(w http.ResponseWriter, r *http.Request) {
 		if r.Method == http.MethodPost {
-			var req struct{ Label *string `json:"label,omitempty"` }
+			var req struct {
+				Label *string `json:"label,omitempty"`
+			}
 			_ = decodeOfficeBody(r, &req)
 			result, err := officeCallRust("kogi_portfolio_save_snapshot", req)
 			if err != nil {

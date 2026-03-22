@@ -573,3 +573,7 @@ kogi organizations
 - collectives, cooperatives, autonomous organizations, teams - management system
 
 
+---
+
+read as much of all of the documents as possible and generate a detailed design for the master distributed spreadsheet system for the kogi platform that is as long as possible, 100+ pages if possible. users (independent workers, autonomous orgniazations, collectives, groups, etc...) have their own master spreadsheets for all of their work, and they can connect to the portfolios of other users. Their root spreadsheets exist and can be split among multiple accounts, profiles, identities, and the linknetwork/forests/trees shows the connections/graphs of all interconnected portfolios/portfolio components+items+containers+resources
+
