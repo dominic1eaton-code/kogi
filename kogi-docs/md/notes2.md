@@ -2025,3 +2025,14 @@ physical, non digital, service/product/goods based solution environments+disrtib
 apapo
 
 side note: the portfolio is the core domain and root component and the portfolio system is the root hyperspreadsheet for kogi.  the organization is the core domain and root component and the organization system is the root hyperspreadsheet for ume. the solution is the core domain and root component and the solution system is the root hyperspreadsheet for qala, with the solution factory itself being a solution, along with ume and kogi also being solutions. Also, generate a software design document for the apapo platform, that is as long as possible  
+
+
+- client|user|UIUX layer
+- business logic, application layer
+- domain|data layer
+- storage|persistance|infrastructure layer
+
+
+exponential backoff
+fan in fan out
+dead letter queue
