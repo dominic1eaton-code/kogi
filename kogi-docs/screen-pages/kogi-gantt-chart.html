@@ -1,0 +1,2047 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gantt Chart — Kogi Platform</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+<style>
+/* ═══════════════════════════════════════════════════════
+   DESIGN TOKENS
+═══════════════════════════════════════════════════════ */
+:root {
+  --bg:        #080f14;
+  --bg1:       #0c1820;
+  --bg2:       #0f1f29;
+  --bg3:       #122535;
+  --bg4:       #17304a;
+  --border:    rgba(255,255,255,0.055);
+  --border2:   rgba(255,255,255,0.09);
+  --text1:     #dceef5;
+  --text2:     #7da8bc;
+  --text3:     #3d6878;
+  --text4:     #254455;
+
+  --green:  #12c78a;  --green-d: #0a7a55;  --green-bg: rgba(18,199,138,.1);
+  --blue:   #3b9eff;  --blue-d:  #1856a0;  --blue-bg:  rgba(59,158,255,.1);
+  --amber:  #f0a22a;  --amber-d: #8f5c0f;  --amber-bg: rgba(240,162,42,.1);
+  --red:    #f05050;  --red-d:   #8c1c1c;  --red-bg:   rgba(240,80,80,.1);
+  --purple: #9b6dff;  --purple-d:#4e2fa8;  --purple-bg:rgba(155,109,255,.1);
+  --cyan:   #22d8e8;  --cyan-d:  #0b7a87;  --cyan-bg:  rgba(34,216,232,.1);
+  --orange: #f97316;  --orange-d:#8b3b06;  --orange-bg:rgba(249,115,22,.1);
+
+  --bar-h: 20px;
+  --row-h: 40px;
+  --phase-h: 36px;
+  --header-h: 64px;
+  --topbar-h: 52px;
+  --statsbar-h: 56px;
+  --left-w: 400px;
+  --resizer-w: 4px;
+
+  --mono: 'DM Mono', monospace;
+  --sans: 'Syne', sans-serif;
+  --radius: 6px;
+  --radius-sm: 4px;
+}
+
+/* ── Reset ─────────────────────────────────────────── */
+*, *::before, *::after { box-sizing:border-box; margin:0; padding:0; }
+html, body { height:100%; overflow:hidden; }
+body {
+  background: var(--bg);
+  color: var(--text1);
+  font-family: var(--sans);
+  font-size: 13px;
+  -webkit-font-smoothing: antialiased;
+}
+button { cursor:pointer; font-family:var(--mono); border:none; background:none; color:inherit; }
+input, textarea, select {
+  font-family: var(--sans); background: var(--bg3); color: var(--text1);
+  border: 1px solid var(--border2); border-radius: var(--radius-sm);
+  padding: 5px 9px; font-size: 12px; outline: none;
+}
+input:focus, textarea:focus, select:focus {
+  border-color: var(--blue); box-shadow: 0 0 0 2px rgba(59,158,255,.18);
+}
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--bg4); border-radius: 99px; }
+
+/* ═══════════════════════════════════════════════════════
+   APP SHELL
+═══════════════════════════════════════════════════════ */
+#app { display:flex; flex-direction:column; height:100vh; overflow:hidden; }
+
+/* ── Top bar ─────────────────────────────────────────── */
+#topbar {
+  height: var(--topbar-h);
+  background: var(--bg1);
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; gap: 10px;
+  padding: 0 14px; flex-shrink: 0;
+}
+.topbar-brand {
+  font-size: 11px; font-family: var(--mono); letter-spacing: .35em;
+  text-transform: uppercase; color: var(--text3);
+}
+.topbar-title {
+  font-size: 14px; font-weight: 700; color: var(--text1);
+  padding: 2px 6px; border-radius: 4px; background: transparent;
+  border: 1px solid transparent; cursor: pointer;
+  font-family: var(--sans);
+}
+.topbar-title:focus { background: var(--bg3); border-color: var(--border2); outline:none; }
+.sep { width:1px; height:18px; background:var(--border2); flex-shrink:0; }
+.topbar-right { margin-left: auto; display:flex; gap:7px; align-items:center; }
+
+/* ── Buttons ─────────────────────────────────────────── */
+.btn {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 5px 11px; border-radius: var(--radius);
+  font-size: 10px; font-family: var(--mono); transition: all .12s;
+  white-space: nowrap; letter-spacing: .02em;
+}
+.btn-ghost { border:1px solid var(--border2); background:var(--bg2); color:var(--text2); }
+.btn-ghost:hover { background:var(--bg3); color:var(--text1); }
+.btn-blue  { border:1px solid rgba(59,158,255,.35); background:rgba(59,158,255,.12); color:var(--blue); }
+.btn-blue:hover  { background:rgba(59,158,255,.22); }
+.btn-green { background:linear-gradient(135deg,#12c78a,#0a7a55); color:#fff; font-weight:600; }
+.btn-green:hover { opacity:.9; }
+.btn-red   { border:1px solid rgba(240,80,80,.35); background:rgba(240,80,80,.1); color:var(--red); }
+.btn-red:hover   { background:rgba(240,80,80,.2); }
+.btn-amber { border:1px solid rgba(240,162,42,.35); background:rgba(240,162,42,.1); color:var(--amber); }
+.btn-amber:hover { background:rgba(240,162,42,.2); }
+.btn-sm  { padding:4px 8px; font-size:9px; }
+.btn-xs  { padding:3px 6px; font-size:8px; }
+.btn-icon{ padding:5px 8px; }
+.btn-active { border-color: var(--blue)!important; background: var(--blue-bg)!important; color: var(--blue)!important; }
+
+/* ── Stats bar ─────────────────────────────────────── */
+#statsbar {
+  height: var(--statsbar-h);
+  background: var(--bg1);
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: stretch; gap: 0;
+  flex-shrink: 0; overflow: hidden;
+}
+.stat-cell {
+  display: flex; flex-direction: column; justify-content: center;
+  padding: 0 18px; border-right: 1px solid var(--border);
+  cursor: default; transition: background .12s;
+  min-width: 90px;
+}
+.stat-cell:hover { background: var(--bg2); }
+.stat-val { font-size: 22px; font-weight: 800; line-height: 1; }
+.stat-lbl { font-family: var(--mono); font-size: 8px; letter-spacing: .28em; text-transform: uppercase; color: var(--text3); margin-top: 3px; }
+.stat-sep { flex: 1; }
+#overall-progress-wrap { display:flex; align-items:center; gap:12px; padding:0 18px; min-width:200px; }
+.overall-ring { position:relative; flex-shrink:0; }
+.overall-ring svg { transform: rotate(-90deg); }
+.ring-val { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:700; font-family:var(--mono); }
+
+/* ── Toolbar (gantt controls) ──────────────────────── */
+#toolbar {
+  height: 40px; background: var(--bg2);
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; gap: 7px; padding: 0 12px;
+  flex-shrink: 0; flex-wrap: nowrap; overflow-x:auto;
+}
+#toolbar::-webkit-scrollbar { height:0; }
+.toolbar-group { display:flex; align-items:center; gap:5px; }
+.tb-label { font-family:var(--mono); font-size:9px; text-transform:uppercase; letter-spacing:.2em; color:var(--text3); }
+.zoom-display { font-family:var(--mono); font-size:9px; color:var(--text3); min-width:34px; text-align:center; }
+.scale-btn { padding:4px 9px; border-radius:4px; font-size:9px; font-family:var(--mono); border:1px solid var(--border); background:var(--bg1); color:var(--text3); transition:all .1s; }
+.scale-btn:hover, .scale-btn.active { border-color:rgba(59,158,255,.4); background:rgba(59,158,255,.12); color:var(--blue); }
+.colorby-btn { padding:4px 8px; border-radius:4px; font-size:9px; font-family:var(--mono); border:1px solid var(--border); background:var(--bg1); color:var(--text3); transition:all .1s; }
+.colorby-btn.active { border-color:rgba(155,109,255,.4); background:rgba(155,109,255,.12); color:var(--purple); }
+
+/* ── Main body ─────────────────────────────────────── */
+#main { flex: 1; display:flex; overflow: hidden; position: relative; }
+
+/* ── Left panel (task list) ────────────────────────── */
+#left-panel {
+  width: var(--left-w); flex-shrink: 0;
+  display: flex; flex-direction: column;
+  border-right: 1px solid var(--border);
+  overflow: hidden; background: var(--bg1);
+  position: relative; z-index: 10;
+}
+#left-header {
+  height: var(--header-h); flex-shrink: 0;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg); display: flex; align-items: stretch;
+  position: sticky; top: 0; z-index: 5;
+}
+.lh-col {
+  display: flex; align-items: center; justify-content: center;
+  padding: 0 8px; font-family: var(--mono); font-size: 8px;
+  letter-spacing: .2em; text-transform: uppercase; color: var(--text3);
+  border-right: 1px solid var(--border); cursor: pointer; user-select: none;
+  transition: color .1s;
+}
+.lh-col:hover { color: var(--text2); }
+.lh-col.name-col { justify-content: flex-start; padding-left: 12px; flex: 1; }
+.lh-col.num-col  { width: 38px; flex-shrink: 0; }
+.lh-col.dur-col  { width: 54px; flex-shrink: 0; }
+.lh-col.pct-col  { width: 46px; flex-shrink: 0; }
+.lh-col.res-col  { width: 80px; flex-shrink: 0; }
+#left-body { flex: 1; overflow-y: auto; overflow-x: hidden; }
+#left-body::-webkit-scrollbar { width: 0; }
+
+/* ── Row / task line ────────────────────────────────── */
+.task-row {
+  display: flex; align-items: center;
+  border-bottom: 1px solid var(--border);
+  cursor: pointer; transition: background .08s;
+  position: relative;
+}
+.task-row:hover { background: rgba(255,255,255,.025); }
+.task-row.selected { background: rgba(59,158,255,.07)!important; }
+.task-row.phase-row { background: rgba(255,255,255,.02); }
+.task-row.phase-row:hover { background: rgba(255,255,255,.035); }
+.task-row.dimmed { opacity: .35; }
+.task-row.critical .task-name-text { color: var(--red)!important; }
+.row-num {
+  width: 38px; flex-shrink: 0; display:flex; align-items:center; justify-content:center;
+  font-family: var(--mono); font-size: 9px; color: var(--text3);
+  border-right: 1px solid var(--border); height: 100%;
+}
+.row-name-cell {
+  flex: 1; display:flex; align-items:center; gap:6px;
+  padding: 0 6px; overflow:hidden; border-right: 1px solid var(--border);
+  height: 100%;
+}
+.expand-btn {
+  width: 16px; height: 16px; flex-shrink: 0; display:flex; align-items:center; justify-content:center;
+  font-size: 10px; color: var(--text3); border-radius: 3px; transition: all .1s;
+}
+.expand-btn:hover { background: var(--bg4); color: var(--text2); }
+.expand-btn.leaf { pointer-events: none; opacity: 0; }
+.task-icon { font-size: 12px; flex-shrink: 0; width: 16px; text-align:center; }
+.task-name-cell-inner { display:flex; flex-direction:column; overflow:hidden; }
+.task-name-text { font-size: 12px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.task-name-text.phase-text { font-size: 12px; font-weight: 700; letter-spacing: .03em; }
+.task-meta { font-family: var(--mono); font-size: 9px; color: var(--text3); margin-top: 1px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.row-dur { width:54px; flex-shrink:0; display:flex; align-items:center; justify-content:center; font-family:var(--mono); font-size:10px; color:var(--text2); border-right:1px solid var(--border); height:100%; }
+.row-pct-cell { width:46px; flex-shrink:0; display:flex; align-items:center; justify-content:center; flex-direction:column; gap:3px; border-right:1px solid var(--border); height:100%; padding:0 5px; }
+.pct-text { font-family:var(--mono); font-size:9px; color:var(--text2); }
+.mini-progress { width:100%; height:3px; background:var(--bg4); border-radius:99px; overflow:hidden; }
+.mini-progress-fill { height:100%; border-radius:99px; transition:width .3s; }
+.row-res { width:80px; flex-shrink:0; display:flex; align-items:center; padding:0 7px; overflow:hidden; border-right:1px solid var(--border); height:100%; gap:3px; }
+.avatar-chip { width:20px; height:20px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:8px; font-weight:700; flex-shrink:0; border:1px solid var(--bg); color:#fff; }
+
+/* Phase row heights */
+.task-row[data-level="0"] { height: var(--phase-h); }
+.task-row[data-level="1"] { height: var(--row-h); }
+.task-row[data-level="2"] { height: var(--row-h); }
+.task-row[data-level="3"] { height: var(--row-h); }
+
+/* Indent levels */
+.task-row[data-level="1"] .row-name-cell { padding-left: 20px; }
+.task-row[data-level="2"] .row-name-cell { padding-left: 36px; }
+.task-row[data-level="3"] .row-name-cell { padding-left: 52px; }
+
+/* Status indicator dot */
+.status-dot {
+  width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0;
+  box-shadow: 0 0 5px currentColor;
+}
+
+/* ── Resizer handle ─────────────────────────────────── */
+#panel-resizer {
+  width: var(--resizer-w); background: var(--border); flex-shrink: 0;
+  cursor: col-resize; transition: background .15s; z-index: 20;
+  position: relative;
+}
+#panel-resizer:hover, #panel-resizer.dragging { background: var(--blue); }
+
+/* ── Right: timeline ────────────────────────────────── */
+#right-panel { flex: 1; display:flex; flex-direction:column; overflow:hidden; position:relative; }
+
+#time-header {
+  height: var(--header-h); flex-shrink: 0;
+  background: var(--bg); border-bottom: 2px solid var(--border2);
+  overflow: hidden; position: relative;
+}
+#time-header-inner { position: absolute; top: 0; left: 0; height: 100%; }
+.time-upper { height: 30px; display:flex; align-items:center; border-bottom:1px solid var(--border); }
+.time-lower { height: 34px; display:flex; align-items:center; }
+.t-upper-cell {
+  height: 100%; display:flex; align-items:center; justify-content:center;
+  font-family: var(--mono); font-size: 10px; letter-spacing: .12em; text-transform:uppercase;
+  color: var(--text2); border-right: 1px solid var(--border2); flex-shrink: 0;
+  font-weight: 500;
+}
+.t-lower-cell {
+  height: 100%; display:flex; align-items:center; justify-content:center;
+  font-family: var(--mono); font-size: 9px; color: var(--text3);
+  border-right: 1px solid var(--border); flex-shrink: 0;
+  transition: color .1s;
+}
+.t-lower-cell.today-col { background: rgba(59,158,255,.06); color: var(--blue)!important; }
+.t-lower-cell.weekend { background: rgba(0,0,0,.15); color: var(--text4)!important; }
+
+/* Viewport for bars */
+#timeline-viewport { flex:1; overflow: auto; position: relative; }
+#timeline-viewport::-webkit-scrollbar { width: 6px; height: 6px; }
+#timeline-viewport::-webkit-scrollbar-track { background: var(--bg); }
+#timeline-viewport::-webkit-scrollbar-thumb { background: var(--bg4); border-radius: 99px; }
+#timeline-canvas { position: relative; overflow: visible; }
+
+/* Timeline rows */
+.tl-row {
+  display: flex; align-items: center;
+  border-bottom: 1px solid var(--border);
+  position: relative;
+  transition: background .08s;
+}
+.tl-row:hover { background: rgba(255,255,255,.013); }
+.tl-row.selected { background: rgba(59,158,255,.05)!important; }
+.tl-row[data-level="0"] { height: var(--phase-h); background: rgba(255,255,255,.012); }
+.tl-row[data-level="1"] { height: var(--row-h); }
+.tl-row[data-level="2"] { height: var(--row-h); }
+.tl-row[data-level="3"] { height: var(--row-h); }
+
+/* Weekend column shading */
+.weekend-band {
+  position: absolute; top: 0; bottom: 0;
+  background: rgba(0,0,0,.12); pointer-events: none; z-index: 0;
+}
+
+/* Today line */
+#today-line {
+  position: absolute; top: 0; width: 2px;
+  background: var(--blue); z-index: 30; pointer-events: none;
+  box-shadow: 0 0 8px rgba(59,158,255,.5);
+}
+#today-label {
+  position: absolute; top: 4px; transform: translateX(-50%);
+  font-family: var(--mono); font-size: 9px; color: var(--blue);
+  background: var(--bg); border: 1px solid rgba(59,158,255,.4);
+  border-radius: 3px; padding: 1px 5px; z-index: 31; pointer-events: none;
+  white-space: nowrap;
+}
+
+/* Task bars */
+.bar-wrap {
+  position: absolute; z-index: 5;
+  transform: translateY(-50%);
+  display: flex; align-items: center;
+}
+.bar {
+  height: var(--bar-h); border-radius: 4px;
+  display: flex; align-items: center; overflow: hidden;
+  cursor: grab; user-select: none; position: relative;
+  transition: box-shadow .12s, filter .12s;
+  border: 1px solid rgba(255,255,255,.1);
+  min-width: 4px;
+}
+.bar:hover { box-shadow: 0 2px 12px rgba(0,0,0,.5); filter: brightness(1.1); }
+.bar.selected { box-shadow: 0 0 0 2px rgba(255,255,255,.3), 0 3px 16px rgba(0,0,0,.5)!important; filter: brightness(1.15); }
+.bar.dragging { cursor: grabbing; opacity: .88; box-shadow: 0 6px 24px rgba(0,0,0,.6); z-index: 50; }
+.bar-progress {
+  position: absolute; left: 0; top: 0; bottom: 0;
+  background: rgba(255,255,255,.18); pointer-events: none; transition: width .3s;
+}
+.bar-label {
+  position: relative; z-index: 1; padding: 0 8px;
+  font-family: var(--mono); font-size: 9px; color: rgba(255,255,255,.9);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex: 1;
+  pointer-events: none;
+}
+.bar-handle {
+  width: 7px; height: 100%; cursor: ew-resize; flex-shrink: 0;
+  background: rgba(0,0,0,.25); opacity: 0; transition: opacity .1s;
+  position: relative; z-index: 2;
+}
+.bar:hover .bar-handle { opacity: 1; }
+.bar-handle-left { position: absolute; left: 0; top: 0; width: 7px; height: 100%; cursor: w-resize; z-index: 3; opacity: 0; }
+.bar:hover .bar-handle-left { opacity: 1; }
+.bar-connector-dot {
+  position: absolute; right: -4px; top: 50%; transform: translateY(-50%);
+  width: 8px; height: 8px; border-radius: 50%;
+  background: var(--bg); border: 2px solid rgba(255,255,255,.4);
+  z-index: 6; cursor: crosshair; opacity: 0; transition: opacity .12s;
+}
+.bar:hover .bar-connector-dot { opacity: 1; }
+
+/* Phase bars */
+.phase-bar {
+  height: 12px; border-radius: 2px; position: absolute; z-index: 4;
+  cursor: grab; opacity: .7;
+  border-top: none; border-bottom: none;
+}
+.phase-bar::before {
+  content: ''; position: absolute; left: -1px; top: 0; bottom: 0; width: 6px;
+  clip-path: polygon(0 0, 100% 50%, 0 100%);
+  background: inherit;
+}
+.phase-bar::after {
+  content: ''; position: absolute; right: -1px; top: 0; bottom: 0; width: 6px;
+  clip-path: polygon(0 50%, 100% 0, 100% 100%);
+  background: inherit;
+}
+
+/* Milestone diamond */
+.milestone-diamond {
+  width: 18px; height: 18px; background: var(--amber);
+  transform: rotate(45deg); border-radius: 2px;
+  cursor: pointer; position: absolute; z-index: 6;
+  transition: transform .12s, box-shadow .12s;
+  box-shadow: 0 0 8px rgba(240,162,42,.4);
+}
+.milestone-diamond:hover { transform: rotate(45deg) scale(1.2); box-shadow: 0 0 14px rgba(240,162,42,.6); }
+.milestone-diamond.selected { box-shadow: 0 0 0 3px rgba(255,255,255,.3), 0 0 14px rgba(240,162,42,.6)!important; }
+.milestone-label {
+  position: absolute; white-space: nowrap;
+  font-family: var(--mono); font-size: 9px; color: var(--amber);
+  top: -16px; transform: translateX(-50%);
+  text-shadow: 0 1px 4px rgba(0,0,0,.8);
+}
+
+/* Baseline ghost bar */
+.bar-baseline {
+  height: 6px; border-radius: 2px; position: absolute; z-index: 3;
+  background: rgba(255,255,255,.12); border: 1px solid rgba(255,255,255,.15);
+  pointer-events: none;
+}
+
+/* Float bar (slack) */
+.float-bar {
+  height: 3px; border-radius: 99px; position: absolute; z-index: 4;
+  background: repeating-linear-gradient(90deg, var(--text3) 0, var(--text3) 3px, transparent 3px, transparent 7px);
+  pointer-events: none; opacity: .5;
+}
+
+/* ── Dependency arrows (SVG layer) ─────────────────── */
+#dep-svg {
+  position: absolute; top: 0; left: 0; overflow: visible;
+  pointer-events: none; z-index: 8;
+}
+.dep-path {
+  fill: none; stroke-width: 1.5; opacity: .7;
+  marker-end: url(#arrowhead);
+}
+.dep-path.critical-dep { stroke: var(--red); opacity: .9; }
+
+/* ── Selection + hover overlay ─────────────────────── */
+.row-overlay {
+  position: absolute; left: 0; right: 0; top: 0; bottom: 0;
+  z-index: 2; pointer-events: none;
+}
+.row-overlay.selected { background: rgba(59,158,255,.04); }
+
+/* ── Right-click context menu ───────────────────────── */
+#ctx-menu {
+  position: fixed; z-index: 1000;
+  background: var(--bg2); border: 1px solid var(--border2);
+  border-radius: 8px; padding: 5px; min-width: 170px;
+  box-shadow: 0 8px 32px rgba(0,0,0,.6);
+  display: none;
+}
+#ctx-menu.open { display: block; }
+.ctx-item {
+  display: flex; align-items: center; gap: 8px;
+  padding: 7px 10px; border-radius: 5px;
+  font-family: var(--mono); font-size: 10px; color: var(--text2);
+  cursor: pointer; transition: all .1s;
+}
+.ctx-item:hover { background: var(--bg3); color: var(--text1); }
+.ctx-item.danger:hover { background: var(--red-bg); color: var(--red); }
+.ctx-sep { height: 1px; background: var(--border); margin: 3px 5px; }
+.ctx-icon { width: 16px; text-align: center; font-size: 12px; }
+
+/* ── Detail panel (right drawer) ───────────────────── */
+#detail-panel {
+  position: fixed; right: 0; top: 0; bottom: 0; width: 300px;
+  background: var(--bg1); border-left: 1px solid var(--border2);
+  z-index: 100; transform: translateX(100%);
+  transition: transform .22s cubic-bezier(.2,.9,.4,1);
+  overflow-y: auto; display: flex; flex-direction: column;
+}
+#detail-panel.open { transform: translateX(0); }
+#detail-panel::-webkit-scrollbar { width: 4px; }
+.dp-header {
+  padding: 14px 16px; border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; gap: 10px; flex-shrink: 0;
+  background: var(--bg);
+}
+.dp-title { font-size: 13px; font-weight: 700; flex: 1; }
+.dp-close { font-size: 16px; color: var(--text3); padding: 4px 7px; border-radius: 5px; }
+.dp-close:hover { background: var(--bg3); color: var(--text1); }
+.dp-section { padding: 12px 16px; border-bottom: 1px solid var(--border); }
+.dp-section-title { font-family: var(--mono); font-size: 9px; letter-spacing: .25em; text-transform: uppercase; color: var(--text3); margin-bottom: 10px; }
+.dp-field { margin-bottom: 9px; }
+.dp-label { font-family: var(--mono); font-size: 9px; color: var(--text3); text-transform: uppercase; letter-spacing: .15em; margin-bottom: 3px; }
+.dp-field input, .dp-field select, .dp-field textarea { width: 100%; }
+.dp-field textarea { height: 60px; resize: none; }
+.dp-row { display: flex; gap: 8px; }
+.dp-row .dp-field { flex: 1; }
+
+/* Status selector */
+.status-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; }
+.status-opt {
+  padding: 5px 7px; border-radius: 5px; font-family: var(--mono); font-size: 9px;
+  text-align: center; border: 1px solid var(--border); background: var(--bg2);
+  color: var(--text3); cursor: pointer; transition: all .1s;
+}
+.status-opt:hover { border-color: var(--border2); }
+.status-opt.active-on-track { border-color: rgba(18,199,138,.4); background: rgba(18,199,138,.1); color: var(--green); }
+.status-opt.active-at-risk   { border-color: rgba(240,162,42,.4); background: rgba(240,162,42,.1); color: var(--amber); }
+.status-opt.active-blocked    { border-color: rgba(240,80,80,.4); background: rgba(240,80,80,.1); color: var(--red); }
+.status-opt.active-complete   { border-color: rgba(18,199,138,.4); background: rgba(18,199,138,.15); color: var(--green); }
+.status-opt.active-not-started{ border-color: rgba(125,168,188,.3); background: rgba(125,168,188,.07); color: var(--text2); }
+
+/* Priority */
+.priority-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 4px; }
+.priority-opt {
+  padding: 4px; border-radius: 4px; font-family: var(--mono); font-size: 9px;
+  text-align: center; border: 1px solid var(--border); background: var(--bg2);
+  color: var(--text3); cursor: pointer; transition: all .1s;
+}
+.priority-opt.active-high   { border-color: rgba(240,80,80,.4); background: rgba(240,80,80,.1); color: var(--red); }
+.priority-opt.active-medium { border-color: rgba(240,162,42,.4); background: rgba(240,162,42,.1); color: var(--amber); }
+.priority-opt.active-low    { border-color: rgba(18,199,138,.4); background: rgba(18,199,138,.1); color: var(--green); }
+.dp-action-row { display: flex; gap: 6px; flex-wrap: wrap; padding: 12px 16px; }
+
+/* ── Modals ─────────────────────────────────────────── */
+.modal-overlay {
+  display: none; position: fixed; inset: 0;
+  background: rgba(0,0,0,.7); z-index: 200;
+  align-items: center; justify-content: center;
+  backdrop-filter: blur(4px);
+}
+.modal-overlay.open { display: flex; }
+.modal-box {
+  background: var(--bg2); border: 1px solid var(--border2);
+  border-radius: 12px; padding: 20px; width: 360px; max-width: 95vw;
+  max-height: 90vh; overflow-y: auto; box-shadow: 0 20px 60px rgba(0,0,0,.6);
+}
+.modal-box::-webkit-scrollbar { width: 4px; }
+.modal-title { font-size: 14px; font-weight: 700; margin-bottom: 16px; }
+.modal-form { display: flex; flex-direction: column; gap: 10px; }
+.mf { display: flex; flex-direction: column; gap: 3px; }
+.mf-label { font-family: var(--mono); font-size: 9px; text-transform: uppercase; letter-spacing: .15em; color: var(--text3); }
+.mf input, .mf select, .mf textarea { width: 100%; }
+.mf-row { display: flex; gap: 8px; }
+.mf-row .mf { flex: 1; }
+.modal-actions { display: flex; gap: 7px; margin-top: 16px; justify-content: flex-end; }
+
+/* ── Tooltips ────────────────────────────────────────── */
+.tt { position: relative; }
+.tt::after {
+  content: attr(data-tip); position: absolute; bottom: calc(100% + 5px); left: 50%; transform: translateX(-50%);
+  background: var(--bg); border: 1px solid var(--border2); border-radius: 4px;
+  padding: 3px 8px; font-family: var(--mono); font-size: 9px; color: var(--text2);
+  white-space: nowrap; pointer-events: none; opacity: 0; transition: opacity .12s; z-index: 100;
+}
+.tt:hover::after { opacity: 1; }
+
+/* ── Search bar ──────────────────────────────────────── */
+#search-input {
+  background: var(--bg3); border: 1px solid var(--border2); border-radius: 6px;
+  color: var(--text1); font-size: 11px; font-family: var(--sans);
+  padding: 4px 10px 4px 28px; width: 160px; outline: none;
+  transition: all .15s;
+}
+#search-input:focus { border-color: var(--blue); width: 200px; }
+.search-wrap { position: relative; }
+.search-icon {
+  position: absolute; left: 8px; top: 50%; transform: translateY(-50%);
+  font-size: 11px; color: var(--text3); pointer-events: none;
+}
+
+/* ── Filter chips ────────────────────────────────────── */
+.filter-chip {
+  padding: 3px 8px; border-radius: 99px; font-family: var(--mono); font-size: 9px;
+  border: 1px solid var(--border); background: var(--bg2); color: var(--text3);
+  cursor: pointer; transition: all .1s;
+}
+.filter-chip.active { border-color: rgba(59,158,255,.4); background: rgba(59,158,255,.1); color: var(--blue); }
+.filter-chip:hover { border-color: var(--border2); color: var(--text2); }
+
+/* ── Legend ──────────────────────────────────────────── */
+#legend-panel {
+  position: absolute; bottom: 16px; left: 16px; z-index: 20;
+  background: var(--bg2); border: 1px solid var(--border2); border-radius: 8px;
+  padding: 10px 14px; display: none;
+}
+#legend-panel.open { display: block; }
+.legend-row { display: flex; align-items: center; gap: 8px; font-size: 10px; color: var(--text2); margin-bottom: 5px; }
+.legend-row:last-child { margin-bottom: 0; }
+.leg-swatch { width: 26px; height: 8px; border-radius: 2px; flex-shrink: 0; }
+
+/* ── Animations ──────────────────────────────────────── */
+@keyframes rowIn { from { opacity:0; transform:translateX(-6px); } to { opacity:1; transform:none; } }
+@keyframes barIn { from { opacity:0; transform:scaleX(0); transform-origin:left; } to { opacity:1; transform:scaleX(1); } }
+.task-row { animation: rowIn .18s both; }
+.bar { animation: barIn .22s both; }
+
+/* ── Misc ────────────────────────────────────────────── */
+.hidden { display: none!important; }
+.tag-chip { display: inline-flex; align-items: center; padding: 2px 6px; border-radius: 99px; font-family: var(--mono); font-size: 8px; border: 1px solid; }
+.divider { height: 1px; background: var(--border); margin: 6px 0; }
+.badge { display: inline-flex; align-items: center; justify-content: center; min-width: 18px; height: 14px; border-radius: 3px; font-family: var(--mono); font-size: 8px; font-weight: 600; padding: 0 4px; }
+</style>
+</head>
+<body>
+<div id="app">
+
+  <!-- ═══ TOP BAR ═══ -->
+  <div id="topbar">
+    <span class="topbar-brand">◈ Kogi</span>
+    <span class="sep"></span>
+    <input id="project-title" class="topbar-title" value="Platform v2.0 — Project Roadmap 2026" />
+    <span class="sep"></span>
+    <div style="font-family:var(--mono);font-size:9px;color:var(--text3)" id="date-range-display"></div>
+    <div class="topbar-right">
+      <div class="search-wrap">
+        <span class="search-icon">⌕</span>
+        <input id="search-input" type="text" placeholder="Search tasks..." oninput="handleSearch(this.value)" />
+      </div>
+      <span class="sep"></span>
+      <button class="btn btn-ghost btn-sm tt" data-tip="Undo (Ctrl+Z)" onclick="undo()">↩</button>
+      <button class="btn btn-ghost btn-sm tt" data-tip="Redo (Ctrl+Y)" onclick="redo()">↪</button>
+      <span class="sep"></span>
+      <button class="btn btn-ghost btn-sm tt" data-tip="Export JSON" onclick="exportJSON()">↓ Export</button>
+      <button class="btn btn-ghost btn-sm tt" data-tip="Print" onclick="window.print()">⎙ Print</button>
+      <button class="btn btn-green btn-sm" onclick="openAddModal('task', null)">+ Task</button>
+    </div>
+  </div>
+
+  <!-- ═══ STATS BAR ═══ -->
+  <div id="statsbar">
+    <div class="stat-cell"><div class="stat-val" id="stat-total" style="color:var(--blue)">0</div><div class="stat-lbl">Total Tasks</div></div>
+    <div class="stat-cell"><div class="stat-val" id="stat-complete" style="color:var(--green)">0</div><div class="stat-lbl">Complete</div></div>
+    <div class="stat-cell"><div class="stat-val" id="stat-inprog" style="color:var(--blue)">0</div><div class="stat-lbl">In Progress</div></div>
+    <div class="stat-cell"><div class="stat-val" id="stat-atrisk" style="color:var(--amber)">0</div><div class="stat-lbl">At Risk</div></div>
+    <div class="stat-cell"><div class="stat-val" id="stat-blocked" style="color:var(--red)">0</div><div class="stat-lbl">Blocked</div></div>
+    <div class="stat-cell"><div class="stat-val" id="stat-ms" style="color:var(--amber)">0</div><div class="stat-lbl">Milestones</div></div>
+    <div class="stat-cell"><div class="stat-val" id="stat-days" style="color:var(--text2)">0</div><div class="stat-lbl">Days Left</div></div>
+    <div class="stat-cell"><div class="stat-val" id="stat-crit" style="color:var(--red)">0</div><div class="stat-lbl">Critical Path</div></div>
+    <div class="stat-sep"></div>
+    <div id="overall-progress-wrap">
+      <div class="overall-ring">
+        <svg width="44" height="44" viewBox="0 0 44 44">
+          <circle cx="22" cy="22" r="17" fill="none" stroke="rgba(255,255,255,.08)" stroke-width="5"/>
+          <circle id="ring-progress" cx="22" cy="22" r="17" fill="none" stroke="var(--green)" stroke-width="5" stroke-linecap="round"
+                  stroke-dasharray="107" stroke-dashoffset="107"/>
+        </svg>
+        <div class="ring-val" id="ring-pct" style="color:var(--green)">0%</div>
+      </div>
+      <div>
+        <div style="font-size:12px;font-weight:700;color:var(--text1)" id="progress-label">0% Complete</div>
+        <div style="font-family:var(--mono);font-size:9px;color:var(--text3);margin-top:2px" id="progress-sub">Overall project progress</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ TOOLBAR ═══ -->
+  <div id="toolbar">
+    <!-- Add actions -->
+    <div class="toolbar-group">
+      <button class="btn btn-blue btn-sm" onclick="openAddModal('phase', null)">＋ Phase</button>
+      <button class="btn btn-ghost btn-sm" onclick="openAddModal('task', null)">＋ Task</button>
+      <button class="btn btn-ghost btn-sm" onclick="openAddModal('subtask', null)">＋ Subtask</button>
+      <button class="btn btn-amber btn-sm" onclick="openAddModal('milestone', null)">◆ Milestone</button>
+    </div>
+    <span class="sep"></span>
+    <!-- Scale -->
+    <div class="toolbar-group">
+      <span class="tb-label">Scale</span>
+      <button class="scale-btn" id="sc-day" onclick="setScale('day')">Day</button>
+      <button class="scale-btn" id="sc-week" onclick="setScale('week')">Week</button>
+      <button class="scale-btn active" id="sc-month" onclick="setScale('month')">Month</button>
+      <button class="scale-btn" id="sc-quarter" onclick="setScale('quarter')">Quarter</button>
+    </div>
+    <span class="sep"></span>
+    <!-- Zoom -->
+    <div class="toolbar-group">
+      <span class="tb-label">Zoom</span>
+      <button class="btn btn-ghost btn-sm btn-icon" onclick="adjustZoom(-0.2)">−</button>
+      <span class="zoom-display" id="zoom-display">100%</span>
+      <button class="btn btn-ghost btn-sm btn-icon" onclick="adjustZoom(0.2)">+</button>
+      <button class="btn btn-ghost btn-sm tt" data-tip="Fit to window" onclick="fitToWindow()">⊡</button>
+    </div>
+    <span class="sep"></span>
+    <!-- Navigate -->
+    <div class="toolbar-group">
+      <button class="btn btn-ghost btn-sm tt" data-tip="Scroll to Today" onclick="scrollToToday()">◎ Today</button>
+      <button class="btn btn-ghost btn-sm tt" data-tip="Scroll to Start" onclick="scrollToStart()">|◀</button>
+      <button class="btn btn-ghost btn-sm tt" data-tip="Scroll to End" onclick="scrollToEnd()">▶|</button>
+    </div>
+    <span class="sep"></span>
+    <!-- Color by -->
+    <div class="toolbar-group">
+      <span class="tb-label">Color by</span>
+      <button class="colorby-btn active" id="cb-status" onclick="setColorBy('status')">Status</button>
+      <button class="colorby-btn" id="cb-team" onclick="setColorBy('team')">Team</button>
+      <button class="colorby-btn" id="cb-priority" onclick="setColorBy('priority')">Priority</button>
+    </div>
+    <span class="sep"></span>
+    <!-- View toggles -->
+    <div class="toolbar-group">
+      <button class="btn btn-ghost btn-sm" id="btn-baseline" onclick="toggleBaseline()" data-tip="Show baseline">Baseline</button>
+      <button class="btn btn-ghost btn-sm" id="btn-critpath" onclick="toggleCritPath()">Critical Path</button>
+      <button class="btn btn-ghost btn-sm" id="btn-deps" onclick="toggleDeps()">Dependencies</button>
+      <button class="btn btn-ghost btn-sm" id="btn-float" onclick="toggleFloat()">Float</button>
+    </div>
+    <span class="sep"></span>
+    <!-- Filters -->
+    <div class="toolbar-group" id="filter-chips-wrap" style="flex-wrap:nowrap;overflow-x:auto">
+      <span class="tb-label">Filter</span>
+      <button class="filter-chip" data-filter="all" onclick="setFilter('all')">All</button>
+      <button class="filter-chip" data-filter="on-track" onclick="setFilter('on-track')">On Track</button>
+      <button class="filter-chip" data-filter="at-risk" onclick="setFilter('at-risk')">At Risk</button>
+      <button class="filter-chip" data-filter="blocked" onclick="setFilter('blocked')">Blocked</button>
+      <button class="filter-chip" data-filter="complete" onclick="setFilter('complete')">Complete</button>
+    </div>
+    <span class="sep"></span>
+    <!-- Expand / Collapse -->
+    <div class="toolbar-group">
+      <button class="btn btn-ghost btn-sm" onclick="collapseAll()">▶ Collapse</button>
+      <button class="btn btn-ghost btn-sm" onclick="expandAll()">▼ Expand</button>
+    </div>
+    <span class="sep"></span>
+    <div class="toolbar-group">
+      <button class="btn btn-ghost btn-sm" onclick="toggleLegend()">Legend</button>
+    </div>
+  </div>
+
+  <!-- ═══ MAIN ═══ -->
+  <div id="main">
+    <!-- Left panel: task list -->
+    <div id="left-panel">
+      <div id="left-header">
+        <div class="lh-col num-col" onclick="sortBy('wbs')">#</div>
+        <div class="lh-col name-col" onclick="sortBy('name')">Task Name ↕</div>
+        <div class="lh-col dur-col" onclick="sortBy('duration')">Dur.</div>
+        <div class="lh-col res-col">Assignee</div>
+        <div class="lh-col pct-col">%</div>
+      </div>
+      <div id="left-body"><!-- rows injected by JS --></div>
+    </div>
+
+    <!-- Resizer -->
+    <div id="panel-resizer" onmousedown="startPanelResize(event)"></div>
+
+    <!-- Right: timeline -->
+    <div id="right-panel">
+      <div id="time-header">
+        <div id="time-header-inner">
+          <div class="time-upper" id="time-upper-row"></div>
+          <div class="time-lower" id="time-lower-row"></div>
+        </div>
+      </div>
+      <div id="timeline-viewport" onscroll="syncScroll()" ondblclick="onTimelineDblClick(event)">
+        <div id="timeline-canvas">
+          <!-- SVG dependency layer -->
+          <svg id="dep-svg">
+            <defs>
+              <marker id="arrowhead" markerWidth="7" markerHeight="7" refX="5" refY="3.5" orient="auto">
+                <polygon points="0 0, 7 3.5, 0 7" fill="rgba(125,168,188,.6)"/>
+              </marker>
+              <marker id="arrowhead-crit" markerWidth="7" markerHeight="7" refX="5" refY="3.5" orient="auto">
+                <polygon points="0 0, 7 3.5, 0 7" fill="var(--red)"/>
+              </marker>
+            </defs>
+          </svg>
+          <!-- Today line -->
+          <div id="today-line"><div id="today-label"></div></div>
+          <!-- Timeline rows injected by JS -->
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ CONTEXT MENU ═══ -->
+<div id="ctx-menu">
+  <div class="ctx-item" onclick="ctxAction('add-task')"><span class="ctx-icon">＋</span>Add Task Below</div>
+  <div class="ctx-item" onclick="ctxAction('add-subtask')"><span class="ctx-icon">↳</span>Add Subtask</div>
+  <div class="ctx-item" onclick="ctxAction('add-milestone')"><span class="ctx-icon">◆</span>Add Milestone</div>
+  <div class="ctx-sep"></div>
+  <div class="ctx-item" onclick="ctxAction('edit')"><span class="ctx-icon">✎</span>Edit Task</div>
+  <div class="ctx-item" onclick="ctxAction('duplicate')"><span class="ctx-icon">⊕</span>Duplicate</div>
+  <div class="ctx-sep"></div>
+  <div class="ctx-item" onclick="ctxAction('collapse')"><span class="ctx-icon">▶</span>Collapse / Expand</div>
+  <div class="ctx-item" onclick="ctxAction('critpath')"><span class="ctx-icon">⊛</span>Toggle Critical</div>
+  <div class="ctx-item" onclick="ctxAction('set-baseline')"><span class="ctx-icon">◌</span>Set Baseline</div>
+  <div class="ctx-sep"></div>
+  <div class="ctx-item danger" onclick="ctxAction('delete')"><span class="ctx-icon">✕</span>Delete Task</div>
+</div>
+
+<!-- ═══ DETAIL PANEL ═══ -->
+<div id="detail-panel">
+  <div class="dp-header">
+    <div class="dp-title" id="dp-task-name">Task Details</div>
+    <button class="dp-close btn" onclick="closeDetailPanel()">✕</button>
+  </div>
+  <div id="dp-body"><!-- injected by JS --></div>
+  <div class="dp-action-row" id="dp-actions"></div>
+</div>
+
+<!-- ═══ LEGEND ═══ -->
+<div id="legend-panel">
+  <div style="font-family:var(--mono);font-size:9px;text-transform:uppercase;letter-spacing:.2em;color:var(--text3);margin-bottom:8px">Legend</div>
+  <div class="legend-row"><div class="leg-swatch" style="background:var(--green)"></div>On Track / Complete</div>
+  <div class="legend-row"><div class="leg-swatch" style="background:var(--amber)"></div>At Risk</div>
+  <div class="legend-row"><div class="leg-swatch" style="background:var(--red)"></div>Blocked</div>
+  <div class="legend-row"><div class="leg-swatch" style="background:var(--blue)"></div>In Progress</div>
+  <div class="legend-row"><div class="leg-swatch" style="background:var(--purple)"></div>Not Started</div>
+  <div class="divider"></div>
+  <div class="legend-row"><div style="width:18px;height:18px;background:var(--amber);transform:rotate(45deg);border-radius:2px;flex-shrink:0"></div>Milestone</div>
+  <div class="legend-row"><div style="width:26px;height:5px;background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.2);border-radius:2px"></div>Baseline</div>
+  <div class="legend-row"><svg width="26" height="8"><line x1="0" y1="4" x2="26" y2="4" stroke="var(--red)" stroke-width="2" marker-end="url(#arrowhead-crit)"/></svg>Critical Dependency</div>
+</div>
+
+<!-- ═══ ADD / EDIT MODAL ═══ -->
+<div class="modal-overlay" id="modal-add-edit">
+  <div class="modal-box">
+    <div class="modal-title" id="modal-title">Add Task</div>
+    <div class="modal-form" id="modal-form-inner"></div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-green" onclick="confirmModal()">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ DEPENDENCY MODAL ═══ -->
+<div class="modal-overlay" id="modal-dep">
+  <div class="modal-box">
+    <div class="modal-title">Add Dependency</div>
+    <div class="modal-form">
+      <div class="mf"><div class="mf-label">From Task</div><select id="dep-from"></select></div>
+      <div class="mf"><div class="mf-label">To Task</div><select id="dep-to"></select></div>
+      <div class="mf-row">
+        <div class="mf"><div class="mf-label">Type</div>
+          <select id="dep-type">
+            <option value="FS">Finish-to-Start (FS)</option>
+            <option value="SS">Start-to-Start (SS)</option>
+            <option value="FF">Finish-to-Finish (FF)</option>
+            <option value="SF">Start-to-Finish (SF)</option>
+          </select>
+        </div>
+        <div class="mf"><div class="mf-label">Lag (days)</div><input id="dep-lag" type="number" value="0" min="-30" max="30"/></div>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-green" onclick="confirmAddDep()">Add</button>
+    </div>
+  </div>
+</div>
+
+<script>
+'use strict';
+
+// ═══════════════════════════════════════════════════════════════
+// CONSTANTS & CONFIG
+// ═══════════════════════════════════════════════════════════════
+const BASE_DATE  = new Date('2026-01-01T00:00:00');
+const PROJECT_END = 365; // days from BASE_DATE
+const MS_PER_DAY = 86400000;
+
+let PPD = 3.8;  // pixels per day (zoom-adjustable)
+let scale = 'month'; // day | week | month | quarter
+let colorBy = 'status';
+let activeFilter = 'all';
+let searchQ = '';
+let showBaseline = false;
+let showCritPath = false;
+let showDeps = true;
+let showFloat = false;
+let selectedIds = new Set();
+let ctxTaskId = null;
+let modalMode = null; // {type:'add-task'|'edit', taskId:string}
+let undoStack = [];
+let redoStack = [];
+
+// ── Color helpers ─────────────────────────────────────────────
+const STATUS_COLOR = {
+  'complete':    '#12c78a',
+  'on-track':    '#3b9eff',
+  'in-progress': '#3b9eff',
+  'at-risk':     '#f0a22a',
+  'blocked':     '#f05050',
+  'not-started': '#7da8bc',
+};
+const TEAM_COLOR = {
+  'Platform':   '#3b9eff',
+  'Design':     '#9b6dff',
+  'QA':         '#22d8e8',
+  'Marketing':  '#f0a22a',
+  'Ops':        '#12c78a',
+  'Security':   '#f05050',
+};
+const PRIORITY_COLOR = { high: '#f05050', medium: '#f0a22a', low: '#12c78a' };
+
+function taskColor(t) {
+  if (colorBy === 'team')     return TEAM_COLOR[t.team]     || '#7da8bc';
+  if (colorBy === 'priority') return PRIORITY_COLOR[t.priority] || '#7da8bc';
+  return STATUS_COLOR[t.status] || '#7da8bc';
+}
+
+// ── Helpers ───────────────────────────────────────────────────
+let _uid = 1000;
+function uid() { return 'T' + (++_uid); }
+function d2px(d) { return d * PPD; }
+function px2d(px) { return px / PPD; }
+function dateToDay(dateStr) {
+  const d = new Date(dateStr);
+  return Math.round((d - BASE_DATE) / MS_PER_DAY);
+}
+function dayToDate(day) {
+  const d = new Date(BASE_DATE.getTime() + day * MS_PER_DAY);
+  return d.toISOString().slice(0, 10);
+}
+function formatDate(day) {
+  const d = new Date(BASE_DATE.getTime() + day * MS_PER_DAY);
+  return d.toLocaleDateString('en-US', { month:'short', day:'numeric' });
+}
+function formatDateFull(day) {
+  const d = new Date(BASE_DATE.getTime() + day * MS_PER_DAY);
+  return d.toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' });
+}
+function daysUntil(day) { return day - todayDay(); }
+function todayDay() { return Math.round((Date.now() - BASE_DATE.getTime()) / MS_PER_DAY); }
+function deepCopy(o) { return JSON.parse(JSON.stringify(o)); }
+
+// ═══════════════════════════════════════════════════════════════
+// DATA MODEL
+// ═══════════════════════════════════════════════════════════════
+// Task shape:
+// { id, wbs, parentId, level, type:'phase'|'task'|'subtask'|'milestone',
+//   name, start(day), end(day), duration, status, priority, team,
+//   resources:[], progress:0-100, predecessors:[{id, type:'FS'|'SS', lag}],
+//   baseline:{start,end}|null, notes, tags:[], collapsed:false, critical:false,
+//   estimatedHours, actualHours, risk:'low'|'medium'|'high', color:null }
+
+const tasks = [
+  // ── Phase 1 ──────────────────────────────────────────────────
+  { id:'p1', wbs:'1', parentId:null, level:0, type:'phase', name:'Discovery & Planning', start:0, end:42, duration:42, status:'complete', priority:'high', team:'Platform', resources:['Jordan','Alex'], progress:100, predecessors:[], baseline:{start:0,end:42}, notes:'Initial discovery and planning phase.', tags:['planning'], collapsed:false, critical:true, estimatedHours:240, actualHours:238, risk:'low', color:null },
+
+  { id:'t1', wbs:'1.1', parentId:'p1', level:1, type:'task', name:'Stakeholder interviews', start:0, end:14, duration:14, status:'complete', priority:'high', team:'Platform', resources:['Jordan'], progress:100, predecessors:[], baseline:{start:0,end:14}, notes:'Interview all key stakeholders.', tags:['research'], collapsed:false, critical:false, estimatedHours:40, actualHours:42, risk:'low', color:null },
+  { id:'t2', wbs:'1.2', parentId:'p1', level:1, type:'task', name:'Requirements gathering', start:7, end:28, duration:21, status:'complete', priority:'high', team:'Platform', resources:['Jordan','Alex'], progress:100, predecessors:[{id:'t1',type:'SS',lag:7}], baseline:{start:7,end:28}, notes:'Document all functional and non-functional requirements.', tags:['requirements'], collapsed:false, critical:true, estimatedHours:80, actualHours:82, risk:'low', color:null },
+  { id:'t3', wbs:'1.3', parentId:'p1', level:1, type:'task', name:'Market & competitive analysis', start:0, end:21, duration:21, status:'complete', priority:'medium', team:'Marketing', resources:['Diana'], progress:100, predecessors:[], baseline:{start:0,end:21}, notes:'', tags:['research'], collapsed:false, critical:false, estimatedHours:60, actualHours:55, risk:'low', color:null },
+  { id:'t4', wbs:'1.4', parentId:'p1', level:1, type:'task', name:'Technical architecture review', start:21, end:42, duration:21, status:'complete', priority:'high', team:'Platform', resources:['Jordan','Carly'], progress:100, predecessors:[{id:'t2',type:'FS',lag:0}], baseline:{start:21,end:42}, notes:'Review existing architecture and propose changes.', tags:['architecture'], collapsed:false, critical:true, estimatedHours:60, actualHours:58, risk:'low', color:null },
+  { id:'m1', wbs:'1.M', parentId:'p1', level:1, type:'milestone', name:'Discovery Complete', start:42, end:42, duration:0, status:'complete', priority:'high', team:'Platform', resources:[], progress:100, predecessors:[{id:'t4',type:'FS',lag:0}], baseline:{start:42,end:42}, notes:'All discovery work complete.', tags:['milestone'], collapsed:false, critical:true, estimatedHours:0, actualHours:0, risk:'low', color:null },
+
+  // ── Phase 2 ──────────────────────────────────────────────────
+  { id:'p2', wbs:'2', parentId:null, level:0, type:'phase', name:'Design System', start:35, end:98, duration:63, status:'complete', priority:'high', team:'Design', resources:['Farah','Omar'], progress:100, predecessors:[{id:'p1',type:'FS',lag:-7}], baseline:{start:35,end:98}, notes:'Build the complete design system.', tags:['design'], collapsed:false, critical:true, estimatedHours:320, actualHours:315, risk:'low', color:null },
+
+  { id:'t5', wbs:'2.1', parentId:'p2', level:1, type:'task', name:'UX research & user flows', start:35, end:56, duration:21, status:'complete', priority:'high', team:'Design', resources:['Farah'], progress:100, predecessors:[{id:'t1',type:'FS',lag:21}], baseline:{start:35,end:56}, notes:'', tags:['ux'], collapsed:false, critical:false, estimatedHours:60, actualHours:60, risk:'low', color:null },
+  { id:'t6', wbs:'2.2', parentId:'p2', level:1, type:'task', name:'Wireframing & prototyping', start:49, end:77, duration:28, status:'complete', priority:'high', team:'Design', resources:['Farah','Omar'], progress:100, predecessors:[{id:'t5',type:'FS',lag:-7}], baseline:{start:49,end:77}, notes:'', tags:['design','prototype'], collapsed:false, critical:true, estimatedHours:120, actualHours:118, risk:'low', color:null },
+  { id:'t7', wbs:'2.3', parentId:'p2', level:1, type:'task', name:'Component library build', start:63, end:98, duration:35, status:'complete', priority:'high', team:'Design', resources:['Omar'], progress:100, predecessors:[{id:'t6',type:'SS',lag:14}], baseline:{start:63,end:98}, notes:'', tags:['components'], collapsed:false, critical:true, estimatedHours:100, actualHours:105, risk:'low', color:null },
+  { id:'t8', wbs:'2.4', parentId:'p2', level:1, type:'task', name:'Design system documentation', start:84, end:98, duration:14, status:'complete', priority:'medium', team:'Design', resources:['Farah'], progress:100, predecessors:[{id:'t7',type:'SS',lag:21}], baseline:{start:84,end:98}, notes:'', tags:['docs'], collapsed:false, critical:false, estimatedHours:40, actualHours:32, risk:'low', color:null },
+  { id:'m2', wbs:'2.M', parentId:'p2', level:1, type:'milestone', name:'Design System Shipped', start:98, end:98, duration:0, status:'complete', priority:'high', team:'Design', resources:[], progress:100, predecessors:[{id:'t7',type:'FS',lag:0}], baseline:{start:98,end:98}, notes:'', tags:['milestone'], collapsed:false, critical:true, estimatedHours:0, actualHours:0, risk:'low', color:null },
+
+  // ── Phase 3 ──────────────────────────────────────────────────
+  { id:'p3', wbs:'3', parentId:null, level:0, type:'phase', name:'Core Development', start:91, end:245, duration:154, status:'in-progress', priority:'high', team:'Platform', resources:['Jordan','Carly','Alex'], progress:58, predecessors:[{id:'p2',type:'FS',lag:-7}], baseline:{start:91,end:238}, notes:'Main development phase.', tags:['development'], collapsed:false, critical:true, estimatedHours:800, actualHours:465, risk:'medium', color:null },
+
+  { id:'t9', wbs:'3.1', parentId:'p3', level:1, type:'task', name:'Authentication & auth service', start:91, end:119, duration:28, status:'complete', priority:'high', team:'Platform', resources:['Jordan'], progress:100, predecessors:[{id:'m2',type:'FS',lag:-7}], baseline:{start:91,end:119}, notes:'', tags:['auth','security'], collapsed:false, critical:true, estimatedHours:80, actualHours:82, risk:'low', color:null },
+  { id:'t9a', wbs:'3.1.1', parentId:'t9', level:2, type:'subtask', name:'OAuth 2.0 integration', start:91, end:105, duration:14, status:'complete', priority:'high', team:'Platform', resources:['Jordan'], progress:100, predecessors:[], baseline:{start:91,end:105}, notes:'', tags:['auth'], collapsed:false, critical:false, estimatedHours:40, actualHours:42, risk:'low', color:null },
+  { id:'t9b', wbs:'3.1.2', parentId:'t9', level:2, type:'subtask', name:'JWT + refresh token logic', start:98, end:112, duration:14, status:'complete', priority:'high', team:'Platform', resources:['Jordan'], progress:100, predecessors:[{id:'t9a',type:'SS',lag:7}], baseline:{start:98,end:112}, notes:'', tags:['auth'], collapsed:false, critical:false, estimatedHours:20, actualHours:20, risk:'low', color:null },
+  { id:'t9c', wbs:'3.1.3', parentId:'t9', level:2, type:'subtask', name:'Role-based access control', start:112, end:119, duration:7, status:'complete', priority:'medium', team:'Platform', resources:['Jordan'], progress:100, predecessors:[{id:'t9b',type:'FS',lag:0}], baseline:{start:112,end:119}, notes:'', tags:['security'], collapsed:false, critical:true, estimatedHours:20, actualHours:20, risk:'low', color:null },
+
+  { id:'t10', wbs:'3.2', parentId:'p3', level:1, type:'task', name:'Core API — REST & GraphQL', start:112, end:175, duration:63, status:'in-progress', priority:'high', team:'Platform', resources:['Carly','Jordan'], progress:72, predecessors:[{id:'t9',type:'FS',lag:-7}], baseline:{start:105,end:168}, notes:'Build all core endpoints.', tags:['api'], collapsed:false, critical:true, estimatedHours:200, actualHours:144, risk:'medium', color:null },
+  { id:'t10a', wbs:'3.2.1', parentId:'t10', level:2, type:'subtask', name:'User & profile endpoints', start:112, end:133, duration:21, status:'complete', priority:'high', team:'Platform', resources:['Carly'], progress:100, predecessors:[], baseline:null, notes:'', tags:['api'], collapsed:false, critical:false, estimatedHours:60, actualHours:62, risk:'low', color:null },
+  { id:'t10b', wbs:'3.2.2', parentId:'t10', level:2, type:'subtask', name:'Portfolio & project endpoints', start:126, end:154, duration:28, status:'in-progress', priority:'high', team:'Platform', resources:['Carly','Jordan'], progress:65, predecessors:[{id:'t10a',type:'SS',lag:14}], baseline:null, notes:'', tags:['api'], collapsed:false, critical:true, estimatedHours:80, actualHours:52, risk:'medium', color:null },
+  { id:'t10c', wbs:'3.2.3', parentId:'t10', level:2, type:'subtask', name:'Financial & payment endpoints', start:147, end:175, duration:28, status:'not-started', priority:'high', team:'Platform', resources:['Jordan'], progress:0, predecessors:[{id:'t10b',type:'FS',lag:-7}], baseline:null, notes:'', tags:['api','payments'], collapsed:false, critical:true, estimatedHours:60, actualHours:0, risk:'high', color:null },
+
+  { id:'t11', wbs:'3.3', parentId:'p3', level:1, type:'task', name:'Data layer & CRDT engine', start:119, end:175, duration:56, status:'in-progress', priority:'high', team:'Platform', resources:['Jordan','Alex'], progress:45, predecessors:[{id:'t9',type:'FS',lag:0}], baseline:{start:119,end:175}, notes:'Distributed CRDT data layer.', tags:['database','crdt'], collapsed:false, critical:true, estimatedHours:160, actualHours:72, risk:'high', color:null },
+  { id:'t12', wbs:'3.4', parentId:'p3', level:1, type:'task', name:'Front-end application shell', start:112, end:175, duration:63, status:'in-progress', priority:'high', team:'Design', resources:['Omar','Farah'], progress:50, predecessors:[{id:'m2',type:'FS',lag:14}], baseline:{start:112,end:175}, notes:'', tags:['frontend'], collapsed:false, critical:false, estimatedHours:200, actualHours:100, risk:'medium', color:null },
+  { id:'t13', wbs:'3.5', parentId:'p3', level:1, type:'task', name:'Real-time collaboration (WebSocket)', start:168, end:210, duration:42, status:'not-started', priority:'high', team:'Platform', resources:['Jordan','Carly'], progress:0, predecessors:[{id:'t10',type:'FS',lag:-7},{id:'t11',type:'FS',lag:-7}], baseline:{start:168,end:210}, notes:'CRDT + WebSocket layer.', tags:['realtime','collab'], collapsed:false, critical:true, estimatedHours:120, actualHours:0, risk:'high', color:null },
+  { id:'t14', wbs:'3.6', parentId:'p3', level:1, type:'task', name:'Link network & graph engine', start:175, end:217, duration:42, status:'not-started', priority:'medium', team:'Platform', resources:['Alex'], progress:0, predecessors:[{id:'t11',type:'FS',lag:0}], baseline:{start:175,end:217}, notes:'', tags:['graph','network'], collapsed:false, critical:false, estimatedHours:120, actualHours:0, risk:'medium', color:null },
+  { id:'t15', wbs:'3.7', parentId:'p3', level:1, type:'task', name:'Mobile applications (iOS + Android)', start:168, end:245, duration:77, status:'not-started', priority:'medium', team:'Design', resources:['Farah','Omar'], progress:0, predecessors:[{id:'t12',type:'SS',lag:56}], baseline:{start:168,end:245}, notes:'', tags:['mobile'], collapsed:false, critical:false, estimatedHours:120, actualHours:0, risk:'high', color:null },
+  { id:'m3', wbs:'3.M', parentId:'p3', level:1, type:'milestone', name:'Feature Freeze', start:210, end:210, duration:0, status:'not-started', priority:'high', team:'Platform', resources:[], progress:0, predecessors:[{id:'t13',type:'FS',lag:0},{id:'t14',type:'FS',lag:-7}], baseline:{start:210,end:210}, notes:'All features locked.', tags:['milestone'], collapsed:false, critical:true, estimatedHours:0, actualHours:0, risk:'medium', color:null },
+
+  // ── Phase 4 ──────────────────────────────────────────────────
+  { id:'p4', wbs:'4', parentId:null, level:0, type:'phase', name:'Quality Assurance', start:168, end:287, duration:119, status:'at-risk', priority:'high', team:'QA', resources:['Maria','Jamie'], progress:15, predecessors:[{id:'p3',type:'SS',lag:77}], baseline:{start:168,end:280}, notes:'QA and testing phase — running parallel to development.', tags:['qa','testing'], collapsed:false, critical:false, estimatedHours:400, actualHours:60, risk:'medium', color:null },
+
+  { id:'t16', wbs:'4.1', parentId:'p4', level:1, type:'task', name:'Unit & integration test suite', start:168, end:224, duration:56, status:'in-progress', priority:'high', team:'QA', resources:['Maria'], progress:35, predecessors:[{id:'t10',type:'SS',lag:56}], baseline:{start:168,end:224}, notes:'Automated test coverage target: 85%', tags:['testing','automation'], collapsed:false, critical:false, estimatedHours:120, actualHours:42, risk:'medium', color:null },
+  { id:'t17', wbs:'4.2', parentId:'p4', level:1, type:'task', name:'Performance & load testing', start:210, end:252, duration:42, status:'not-started', priority:'high', team:'QA', resources:['Maria','Carly'], progress:0, predecessors:[{id:'m3',type:'FS',lag:0}], baseline:{start:203,end:245}, notes:'Target: <200ms p95 API response.', tags:['performance'], collapsed:false, critical:false, estimatedHours:80, actualHours:0, risk:'high', color:null },
+  { id:'t18', wbs:'4.3', parentId:'p4', level:1, type:'task', name:'Security audit & penetration testing', start:217, end:259, duration:42, status:'blocked', priority:'high', team:'Security', resources:['Jamie'], progress:0, predecessors:[{id:'t9',type:'FS',lag:98}], baseline:{start:210,end:252}, notes:'External security firm engaged — blocked on contract.', tags:['security','audit'], collapsed:false, critical:false, estimatedHours:80, actualHours:0, risk:'high', color:null },
+  { id:'t19', wbs:'4.4', parentId:'p4', level:1, type:'task', name:'UAT — User acceptance testing', start:252, end:287, duration:35, status:'not-started', priority:'high', team:'QA', resources:['Maria','Jamie','Diana'], progress:0, predecessors:[{id:'t17',type:'FS',lag:0},{id:'t18',type:'FS',lag:-7}], baseline:{start:245,end:280}, notes:'', tags:['uat'], collapsed:false, critical:false, estimatedHours:120, actualHours:0, risk:'medium', color:null },
+  { id:'m4', wbs:'4.M', parentId:'p4', level:1, type:'milestone', name:'QA Sign-Off', start:287, end:287, duration:0, status:'not-started', priority:'high', team:'QA', resources:[], progress:0, predecessors:[{id:'t19',type:'FS',lag:0}], baseline:{start:280,end:280}, notes:'', tags:['milestone'], collapsed:false, critical:true, estimatedHours:0, actualHours:0, risk:'medium', color:null },
+
+  // ── Phase 5 ──────────────────────────────────────────────────
+  { id:'p5', wbs:'5', parentId:null, level:0, type:'phase', name:'Launch Preparation', start:259, end:350, duration:91, status:'not-started', priority:'high', team:'Marketing', resources:['Diana','Jordan'], progress:0, predecessors:[{id:'p4',type:'SS',lag:91}], baseline:{start:259,end:343}, notes:'Final launch preparation.', tags:['launch'], collapsed:false, critical:true, estimatedHours:300, actualHours:0, risk:'medium', color:null },
+
+  { id:'t20', wbs:'5.1', parentId:'p5', level:1, type:'task', name:'Go-to-market strategy execution', start:259, end:301, duration:42, status:'not-started', priority:'high', team:'Marketing', resources:['Diana'], progress:0, predecessors:[{id:'p4',type:'SS',lag:91}], baseline:{start:259,end:301}, notes:'', tags:['marketing','launch'], collapsed:false, critical:false, estimatedHours:60, actualHours:0, risk:'low', color:null },
+  { id:'t21', wbs:'5.2', parentId:'p5', level:1, type:'task', name:'Infrastructure & DevOps provisioning', start:280, end:315, duration:35, status:'not-started', priority:'high', team:'Ops', resources:['Carly','Alex'], progress:0, predecessors:[{id:'m4',type:'FS',lag:-7}], baseline:{start:280,end:315}, notes:'Prod environment setup and DR planning.', tags:['infra','devops'], collapsed:false, critical:true, estimatedHours:80, actualHours:0, risk:'medium', color:null },
+  { id:'t22', wbs:'5.3', parentId:'p5', level:1, type:'task', name:'Documentation & help center', start:266, end:315, duration:49, status:'not-started', priority:'medium', team:'Marketing', resources:['Diana','Jamie'], progress:0, predecessors:[{id:'m3',type:'FS',lag:56}], baseline:{start:266,end:315}, notes:'', tags:['docs'], collapsed:false, critical:false, estimatedHours:60, actualHours:0, risk:'low', color:null },
+  { id:'t23', wbs:'5.4', parentId:'p5', level:1, type:'task', name:'Onboarding flow & tutorial', start:273, end:322, duration:49, status:'not-started', priority:'medium', team:'Design', resources:['Farah','Omar'], progress:0, predecessors:[{id:'m3',type:'FS',lag:63}], baseline:{start:273,end:322}, notes:'', tags:['onboarding','ux'], collapsed:false, critical:false, estimatedHours:60, actualHours:0, risk:'medium', color:null },
+  { id:'t24', wbs:'5.5', parentId:'p5', level:1, type:'task', name:'Beta program & early access', start:308, end:336, duration:28, status:'not-started', priority:'high', team:'Marketing', resources:['Diana','Jordan'], progress:0, predecessors:[{id:'t21',type:'FS',lag:-7},{id:'t23',type:'FS',lag:-14}], baseline:{start:308,end:336}, notes:'Private beta with 50 selected users.', tags:['beta'], collapsed:false, critical:true, estimatedHours:40, actualHours:0, risk:'medium', color:null },
+  { id:'m5', wbs:'5.M1', parentId:'p5', level:1, type:'milestone', name:'Beta Launch', start:308, end:308, duration:0, status:'not-started', priority:'high', team:'Platform', resources:[], progress:0, predecessors:[{id:'t21',type:'FS',lag:-7}], baseline:{start:308,end:308}, notes:'', tags:['milestone'], collapsed:false, critical:true, estimatedHours:0, actualHours:0, risk:'medium', color:null },
+  { id:'t25', wbs:'5.6', parentId:'p5', level:1, type:'task', name:'Production deployment & monitoring', start:336, end:350, duration:14, status:'not-started', priority:'high', team:'Ops', resources:['Carly'], progress:0, predecessors:[{id:'t24',type:'FS',lag:0}], baseline:{start:329,end:343}, notes:'Blue-green deployment.', tags:['deploy'], collapsed:false, critical:true, estimatedHours:40, actualHours:0, risk:'medium', color:null },
+  { id:'m6', wbs:'5.M2', parentId:'p5', level:1, type:'milestone', name:'🚀 v2.0 Go Live!', start:350, end:350, duration:0, status:'not-started', priority:'high', team:'Platform', resources:[], progress:0, predecessors:[{id:'t25',type:'FS',lag:0}], baseline:{start:343,end:343}, notes:'Platform v2.0 public launch.', tags:['milestone','launch'], collapsed:false, critical:true, estimatedHours:0, actualHours:0, risk:'medium', color:null },
+];
+
+// ═══════════════════════════════════════════════════════════════
+// VISIBLE ROW COMPUTATION
+// ═══════════════════════════════════════════════════════════════
+function getVisibleTasks() {
+  // Track collapsed state
+  const collapsedIds = new Set(tasks.filter(t => t.collapsed && t.type !== 'milestone').map(t => t.id));
+  const hiddenIds = new Set();
+  function isAncestorCollapsed(t) {
+    let pid = t.parentId;
+    while (pid) {
+      if (collapsedIds.has(pid)) return true;
+      const p = tasks.find(x => x.id === pid);
+      pid = p?.parentId ?? null;
+    }
+    return false;
+  }
+  let visible = tasks.filter(t => {
+    if (isAncestorCollapsed(t)) return false;
+    if (activeFilter !== 'all' && t.type !== 'phase') {
+      const fs = t.status;
+      if (activeFilter === 'on-track' && fs !== 'on-track' && fs !== 'in-progress') return false;
+      if (activeFilter === 'at-risk'  && fs !== 'at-risk') return false;
+      if (activeFilter === 'blocked'  && fs !== 'blocked') return false;
+      if (activeFilter === 'complete' && fs !== 'complete') return false;
+    }
+    if (searchQ) {
+      const q = searchQ.toLowerCase();
+      if (!t.name.toLowerCase().includes(q) && !t.wbs.includes(q) && !t.tags.some(tg => tg.includes(q))) return false;
+    }
+    return true;
+  });
+  return visible;
+}
+
+// ═══════════════════════════════════════════════════════════════
+// TIMELINE DIMENSIONS
+// ═══════════════════════════════════════════════════════════════
+let timelineStart = -14; // day offset before project start
+let timelineEnd   = PROJECT_END + 14;
+function totalTimeW() { return d2px(timelineEnd - timelineStart); }
+function dayX(day) { return d2px(day - timelineStart); }
+
+// ═══════════════════════════════════════════════════════════════
+// RENDER HEADER
+// ═══════════════════════════════════════════════════════════════
+const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+function renderTimeHeader() {
+  const upper = document.getElementById('time-upper-row');
+  const lower = document.getElementById('time-lower-row');
+  const inner = document.getElementById('time-header-inner');
+  inner.style.width = totalTimeW() + 'px';
+  upper.innerHTML = ''; lower.innerHTML = '';
+
+  const today = todayDay();
+
+  if (scale === 'day' || (scale === 'week' && PPD > 10)) {
+    // Upper: months; Lower: days
+    let curMonth = -1, monthStart = timelineStart;
+    for (let d = timelineStart; d <= timelineEnd; d++) {
+      const date = new Date(BASE_DATE.getTime() + d * MS_PER_DAY);
+      const m = date.getMonth(), day = date.getDay();
+      if (m !== curMonth) {
+        if (curMonth >= 0) {
+          const w = d2px(d - monthStart);
+          const cell = document.createElement('div');
+          cell.className = 't-upper-cell'; cell.style.width = w + 'px'; cell.textContent = MONTHS[curMonth] + ' ' + date.getFullYear().toString().slice(2);
+          upper.appendChild(cell);
+        }
+        curMonth = m; monthStart = d;
+      }
+      const lc = document.createElement('div');
+      lc.className = 't-lower-cell' + (d === today ? ' today-col' : '') + ([0,6].includes(day) ? ' weekend' : '');
+      lc.style.width = d2px(1) + 'px';
+      lc.textContent = date.getDate();
+      lower.appendChild(lc);
+    }
+  } else if (scale === 'week') {
+    // Upper: months; Lower: week numbers
+    let curMonth = -1, monthStart = timelineStart;
+    // Weeks
+    for (let d = timelineStart; d <= timelineEnd; d += 7) {
+      const date = new Date(BASE_DATE.getTime() + d * MS_PER_DAY);
+      const m = date.getMonth();
+      if (m !== curMonth) {
+        if (curMonth >= 0) {
+          const w = d2px(d - monthStart);
+          const cell = document.createElement('div');
+          cell.className = 't-upper-cell'; cell.style.width = w + 'px';
+          cell.textContent = MONTHS[curMonth];
+          upper.appendChild(cell);
+        }
+        curMonth = m; monthStart = d;
+      }
+      const wkDate = new Date(BASE_DATE.getTime() + d * MS_PER_DAY);
+      const lc = document.createElement('div');
+      lc.className = 't-lower-cell' + (Math.abs(d - today) < 7 ? ' today-col' : '');
+      lc.style.width = d2px(7) + 'px';
+      const wn = getWeekNum(wkDate);
+      lc.textContent = 'W' + wn;
+      lower.appendChild(lc);
+    }
+  } else if (scale === 'month') {
+    // Upper: quarters; Lower: months
+    let curQ = -1, qStart = timelineStart;
+    for (let m = 0; m < 13; m++) {
+      const d = monthStartDay(m);
+      if (d > timelineEnd) break;
+      const date = new Date(BASE_DATE.getTime() + d * MS_PER_DAY);
+      const q = Math.floor(date.getMonth() / 3);
+      const yr = date.getFullYear();
+      if (q !== curQ) {
+        if (curQ >= 0) {
+          const w = d2px(d - qStart);
+          const cell = document.createElement('div');
+          cell.className = 't-upper-cell'; cell.style.width = w + 'px';
+          cell.textContent = 'Q' + (curQ+1) + ' ' + (yr - (q < curQ ? 0 : 0));
+          upper.appendChild(cell);
+        }
+        curQ = q; qStart = d;
+      }
+      const nextM = monthStartDay(m + 1);
+      const w = d2px(Math.min(nextM, timelineEnd+1) - d);
+      const isToday = d <= today && today < nextM;
+      const lc = document.createElement('div');
+      lc.className = 't-lower-cell' + (isToday ? ' today-col' : '');
+      lc.style.width = w + 'px';
+      lc.textContent = MONTHS[date.getMonth()];
+      lower.appendChild(lc);
+    }
+  } else { // quarter
+    // Upper: year; Lower: quarters
+    const yearCell = document.createElement('div');
+    yearCell.className = 't-upper-cell'; yearCell.style.width = totalTimeW() + 'px'; yearCell.textContent = '2026';
+    upper.appendChild(yearCell);
+    for (let q = 0; q < 4; q++) {
+      const d = q * 91;
+      const w = d2px(91);
+      const isToday = d <= today && today < d + 91;
+      const lc = document.createElement('div');
+      lc.className = 't-lower-cell' + (isToday ? ' today-col' : '');
+      lc.style.width = w + 'px';
+      lc.textContent = 'Q' + (q+1) + ' 2026';
+      lower.appendChild(lc);
+    }
+  }
+  // Last upper cell
+  const lastUp = upper.lastChild;
+  if (lastUp) lastUp.style.width = d2px(timelineEnd - monthStartDay(12) + 14) + 'px';
+}
+
+function monthStartDay(m) {
+  const d = new Date(2026, m, 1);
+  return Math.round((d - BASE_DATE) / MS_PER_DAY);
+}
+function getWeekNum(d) {
+  const onejan = new Date(d.getFullYear(), 0, 1);
+  return Math.ceil((((d - onejan) / 86400000) + onejan.getDay() + 1) / 7);
+}
+
+// ═══════════════════════════════════════════════════════════════
+// RENDER LEFT PANEL
+// ═══════════════════════════════════════════════════════════════
+const TEAM_INITIALS = { Jordan:'JO', Alex:'AL', Farah:'FA', Omar:'OM', Diana:'DI', Carly:'CA', Maria:'MA', Jamie:'JM' };
+const TEAM_BG = { Jordan:'#1856a0', Alex:'#4e2fa8', Farah:'#0b7a87', Omar:'#8b3b06', Diana:'#0a7a55', Carly:'#8c1f1f', Maria:'#7a6020', Jamie:'#254455' };
+
+function renderLeft() {
+  const body = document.getElementById('left-body');
+  const visible = getVisibleTasks();
+  let html = '';
+  visible.forEach((t, ri) => {
+    const isPhase = t.type === 'phase';
+    const isMilestone = t.type === 'milestone';
+    const hasChildren = tasks.some(x => x.parentId === t.id);
+    const color = taskColor(t);
+    const sDot = `<span class="status-dot" style="color:${color};background:${color}"></span>`;
+    const expIcon = hasChildren ? (t.collapsed ? '▶' : '▼') : '';
+    const typeIcon = isMilestone ? '◆' : isPhase ? '◉' : t.level === 2 ? '◦' : '◈';
+
+    // Avatars
+    let avatars = '';
+    t.resources.slice(0, 2).forEach(r => {
+      const bg = TEAM_BG[r] || '#254455';
+      avatars += `<div class="avatar-chip" style="background:${bg}">${TEAM_INITIALS[r] || r.slice(0,2).toUpperCase()}</div>`;
+    });
+    if (t.resources.length > 2) avatars += `<span style="font-family:var(--mono);font-size:8px;color:var(--text3)">+${t.resources.length-2}</span>`;
+
+    const pctColor = t.progress === 100 ? 'var(--green)' : t.progress >= 60 ? 'var(--blue)' : t.progress > 0 ? 'var(--amber)' : 'var(--text3)';
+
+    html += `<div class="task-row ${isPhase?'phase-row':''} ${selectedIds.has(t.id)?'selected':''} ${showCritPath&&t.critical?'critical':''}"
+      data-id="${t.id}" data-level="${t.level}" style="animation-delay:${ri*12}ms"
+      onclick="selectTask(event,'${t.id}')"
+      oncontextmenu="openCtxMenu(event,'${t.id}')">
+      <div class="row-num">${t.wbs}</div>
+      <div class="row-name-cell">
+        <span class="expand-btn ${hasChildren?'':'leaf'}" onclick="toggleCollapse(event,'${t.id}')">${expIcon}</span>
+        <span class="task-icon" style="color:${color}">${typeIcon}</span>
+        ${sDot}
+        <div class="task-name-cell-inner">
+          <span class="task-name-text ${isPhase?'phase-text':''}" style="color:${isPhase?color:'var(--text1)'}">${t.name}</span>
+          <span class="task-meta">${t.resources.slice(0,2).join(', ')}${t.risk==='high'?' · ⚠ High Risk':''}</span>
+        </div>
+      </div>
+      <div class="row-dur">${t.type==='milestone'?'–':t.duration+'d'}</div>
+      <div class="row-res">${avatars}</div>
+      <div class="row-pct-cell">
+        <span class="pct-text" style="color:${pctColor}">${t.progress}%</span>
+        <div class="mini-progress"><div class="mini-progress-fill" style="width:${t.progress}%;background:${pctColor}"></div></div>
+      </div>
+    </div>`;
+  });
+  body.innerHTML = html;
+}
+
+// ═══════════════════════════════════════════════════════════════
+// RENDER TIMELINE
+// ═══════════════════════════════════════════════════════════════
+function renderTimeline() {
+  const canvas = document.getElementById('timeline-canvas');
+  const visible = getVisibleTasks();
+  const today = todayDay();
+
+  canvas.style.width  = totalTimeW() + 'px';
+  canvas.style.height = (visible.length * 0 + 10) + 'px'; // height set by rows
+
+  // Remove old rows (keep SVG and today-line)
+  canvas.querySelectorAll('.tl-row').forEach(el => el.remove());
+
+  let totalH = 0;
+  visible.forEach((t, ri) => {
+    const rh = t.type === 'phase' ? parseInt(getComputedStyle(document.documentElement).getPropertyValue('--phase-h')) || 36
+                                  : parseInt(getComputedStyle(document.documentElement).getPropertyValue('--row-h')) || 40;
+    const row = document.createElement('div');
+    row.className = `tl-row ${selectedIds.has(t.id)?'selected':''}`;
+    row.dataset.id = t.id;
+    row.dataset.level = t.level;
+    row.style.height = rh + 'px';
+    row.style.width  = totalTimeW() + 'px';
+    row.style.top    = totalH + 'px';
+    row.style.position = 'absolute';
+
+    // Weekend bands
+    if (scale !== 'quarter') {
+      for (let d = timelineStart; d <= timelineEnd; d++) {
+        const date = new Date(BASE_DATE.getTime() + d * MS_PER_DAY);
+        const day = date.getDay();
+        if (day === 6) {
+          const band = document.createElement('div');
+          band.className = 'weekend-band';
+          band.style.left  = dayX(d) + 'px';
+          band.style.width = d2px(2) + 'px';
+          row.appendChild(band);
+          d++; // skip Sunday too
+        }
+      }
+    }
+
+    // Phase bracket bar
+    if (t.type === 'phase') {
+      const bar = document.createElement('div');
+      bar.className = 'phase-bar';
+      bar.style.left    = dayX(t.start) + 6 + 'px';
+      bar.style.width   = Math.max(12, d2px(t.duration) - 12) + 'px';
+      bar.style.top     = (rh / 2 - 6) + 'px';
+      bar.style.background = taskColor(t) + '88';
+      row.appendChild(bar);
+    }
+    // Milestone diamond
+    else if (t.type === 'milestone') {
+      const ms = document.createElement('div');
+      ms.className = `milestone-diamond ${selectedIds.has(t.id)?'selected':''}`;
+      ms.dataset.id = t.id;
+      ms.style.left = (dayX(t.start) - 9) + 'px';
+      ms.style.top  = (rh / 2 - 9) + 'px';
+      ms.style.background = taskColor(t);
+      ms.onclick = (e) => { e.stopPropagation(); selectTask(e, t.id); };
+      ms.oncontextmenu = (e) => openCtxMenu(e, t.id);
+      // Label
+      const lbl = document.createElement('div');
+      lbl.className = 'milestone-label';
+      lbl.style.left = dayX(t.start) + 'px';
+      lbl.style.color = taskColor(t);
+      lbl.textContent = t.name;
+      row.appendChild(ms);
+      row.appendChild(lbl);
+    }
+    // Task / subtask bar
+    else {
+      // Baseline ghost
+      if (showBaseline && t.baseline) {
+        const bl = document.createElement('div');
+        bl.className = 'bar-baseline';
+        bl.style.left = dayX(t.baseline.start) + 'px';
+        bl.style.width = Math.max(4, d2px(t.baseline.end - t.baseline.start)) + 'px';
+        bl.style.top   = (rh / 2 + 8) + 'px';
+        row.appendChild(bl);
+      }
+      // Float bar
+      if (showFloat && !t.critical) {
+        const slack = Math.max(0, t.slack || 0);
+        if (slack > 0) {
+          const fb = document.createElement('div');
+          fb.className = 'float-bar';
+          fb.style.left  = dayX(t.end) + 'px';
+          fb.style.width = d2px(slack) + 'px';
+          fb.style.top   = (rh / 2 - 1.5) + 'px';
+          row.appendChild(fb);
+        }
+      }
+      // Bar
+      const barW = Math.max(4, d2px(t.duration));
+      const bar  = document.createElement('div');
+      bar.className = `bar ${selectedIds.has(t.id)?'selected':''} ${showCritPath&&t.critical?'critical-bar':''}`;
+      bar.dataset.id = t.id;
+      bar.style.left = dayX(t.start) + 'px';
+      bar.style.width = barW + 'px';
+      bar.style.top   = (rh / 2) + 'px';
+      bar.style.background = taskColor(t) + (showCritPath && t.critical ? '' : 'cc');
+      if (showCritPath && t.critical) bar.style.boxShadow = `0 0 8px ${taskColor(t)}66`;
+      bar.style.animationDelay = (ri * 15) + 'ms';
+
+      // Progress fill
+      const prog = document.createElement('div');
+      prog.className = 'bar-progress';
+      prog.style.width = t.progress + '%';
+      bar.appendChild(prog);
+
+      // Left handle
+      const lh = document.createElement('div');
+      lh.className = 'bar-handle-left';
+      bar.appendChild(lh);
+
+      // Label
+      const lbl = document.createElement('div');
+      lbl.className = 'bar-label';
+      lbl.textContent = t.name;
+      bar.appendChild(lbl);
+
+      // Right handle
+      const rh2 = document.createElement('div');
+      rh2.className = 'bar-handle';
+      bar.appendChild(rh2);
+
+      // Connector dot
+      const conn = document.createElement('div');
+      conn.className = 'bar-connector-dot';
+      bar.appendChild(conn);
+
+      // Events
+      bar.addEventListener('mousedown',  e => startBarDrag(e, t.id, 'move'));
+      lh.addEventListener('mousedown',   e => { e.stopPropagation(); startBarDrag(e, t.id, 'start'); });
+      rh2.addEventListener('mousedown',  e => { e.stopPropagation(); startBarDrag(e, t.id, 'end'); });
+      conn.addEventListener('mousedown', e => { e.stopPropagation(); startConnectDrag(e, t.id); });
+      bar.addEventListener('click',      e => { e.stopPropagation(); selectTask(e, t.id); });
+      bar.addEventListener('contextmenu',e => openCtxMenu(e, t.id));
+      bar.addEventListener('dblclick',   e => { e.stopPropagation(); openDetailPanel(t.id); });
+
+      row.appendChild(bar);
+    }
+
+    row.onclick = (e) => { if (e.target === row) clearSelection(); };
+    canvas.appendChild(row);
+    totalH += rh;
+  });
+
+  canvas.style.height = (totalH + 40) + 'px';
+
+  // Today line
+  const todL = document.getElementById('today-line');
+  const todLbl = document.getElementById('today-label');
+  const tx = dayX(today);
+  todL.style.left   = tx + 'px';
+  todL.style.height = (totalH + 40) + 'px';
+  todLbl.textContent = 'Today';
+
+  // Dependencies SVG
+  if (showDeps) renderDeps(visible, totalH);
+
+  // Sync with left panel height
+  document.getElementById('left-body').style.minHeight = totalH + 'px';
+}
+
+// ═══════════════════════════════════════════════════════════════
+// DEPENDENCY ARROWS
+// ═══════════════════════════════════════════════════════════════
+function renderDeps(visible, totalH) {
+  const svg = document.getElementById('dep-svg');
+  svg.style.width  = totalTimeW() + 'px';
+  svg.style.height = totalH + 'px';
+  // Remove old paths
+  svg.querySelectorAll('.dep-path').forEach(el => el.remove());
+
+  const ROW_H = 40, PHASE_H = 36;
+  const rowIndexMap = {};
+  visible.forEach((t, i) => rowIndexMap[t.id] = i);
+
+  function rowMidY(idx, t) {
+    let y = 0;
+    for (let i = 0; i < idx; i++) {
+      y += (visible[i].type === 'phase' ? PHASE_H : ROW_H);
+    }
+    return y + (t.type === 'phase' ? PHASE_H : ROW_H) / 2;
+  }
+
+  tasks.forEach(t => {
+    if (!t.predecessors.length) return;
+    const toIdx = rowIndexMap[t.id];
+    if (toIdx === undefined) return;
+
+    t.predecessors.forEach(pred => {
+      const fromTask = tasks.find(x => x.id === pred.id);
+      if (!fromTask) return;
+      const fromIdx = rowIndexMap[fromTask.id];
+      if (fromIdx === undefined) return;
+
+      const depType = pred.type || 'FS';
+      let x1, y1, x2, y2;
+
+      if (depType === 'FS') {
+        x1 = dayX(fromTask.end);
+        y1 = rowMidY(fromIdx, fromTask);
+        x2 = dayX(t.start) - 3;
+        y2 = rowMidY(toIdx, t);
+      } else if (depType === 'SS') {
+        x1 = dayX(fromTask.start);
+        y1 = rowMidY(fromIdx, fromTask);
+        x2 = dayX(t.start) - 3;
+        y2 = rowMidY(toIdx, t);
+      } else if (depType === 'FF') {
+        x1 = dayX(fromTask.end);
+        y1 = rowMidY(fromIdx, fromTask);
+        x2 = dayX(t.end) + 3;
+        y2 = rowMidY(toIdx, t);
+      }
+
+      const isCrit = showCritPath && fromTask.critical && t.critical;
+      const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+      path.classList.add('dep-path');
+      if (isCrit) path.classList.add('critical-dep');
+
+      const dx = x2 - x1;
+      const dy = y2 - y1;
+      const cx = x1 + dx * 0.45;
+
+      const d = Math.abs(dy) < 5
+        ? `M ${x1} ${y1} L ${x2} ${y2}`
+        : `M ${x1} ${y1} C ${cx} ${y1}, ${cx} ${y2}, ${x2} ${y2}`;
+
+      path.setAttribute('d', d);
+      path.setAttribute('stroke', isCrit ? 'var(--red)' : 'rgba(125,168,188,0.45)');
+      path.setAttribute('marker-end', isCrit ? 'url(#arrowhead-crit)' : 'url(#arrowhead)');
+      svg.appendChild(path);
+    });
+  });
+}
+
+// ═══════════════════════════════════════════════════════════════
+// STATS
+// ═══════════════════════════════════════════════════════════════
+function updateStats() {
+  const all = tasks.filter(t => t.type !== 'phase');
+  const total = all.length;
+  const complete = all.filter(t => t.status === 'complete').length;
+  const inprog = all.filter(t => t.status === 'in-progress' || t.status === 'on-track').length;
+  const atRisk = all.filter(t => t.status === 'at-risk').length;
+  const blocked = all.filter(t => t.status === 'blocked').length;
+  const ms = all.filter(t => t.type === 'milestone').length;
+  const critCount = all.filter(t => t.critical).length;
+  const today = todayDay();
+  const lastTask = tasks.reduce((m, t) => Math.max(m, t.end), 0);
+  const daysLeft = lastTask - today;
+  const pct = total ? Math.round(complete / total * 100) : 0;
+
+  document.getElementById('stat-total').textContent   = total;
+  document.getElementById('stat-complete').textContent = complete;
+  document.getElementById('stat-inprog').textContent   = inprog;
+  document.getElementById('stat-atrisk').textContent   = atRisk;
+  document.getElementById('stat-blocked').textContent  = blocked;
+  document.getElementById('stat-ms').textContent       = ms;
+  document.getElementById('stat-days').textContent     = daysLeft > 0 ? daysLeft + 'd' : 'Overdue';
+  document.getElementById('stat-crit').textContent     = critCount;
+
+  const circumference = 2 * Math.PI * 17;
+  const offset = circumference - (pct / 100) * circumference;
+  document.getElementById('ring-progress').style.strokeDashoffset = offset;
+  document.getElementById('ring-pct').textContent = pct + '%';
+  document.getElementById('progress-label').textContent = pct + '% Complete';
+  document.getElementById('progress-sub').textContent = complete + ' of ' + total + ' tasks done';
+
+  const lastDay = tasks.reduce((m, t) => Math.max(m, t.end), 0);
+  const firstDay = tasks.reduce((m, t) => Math.min(m, t.start), 9999);
+  document.getElementById('date-range-display').textContent =
+    formatDate(firstDay) + ' — ' + formatDate(lastDay);
+}
+
+// ═══════════════════════════════════════════════════════════════
+// FULL RENDER
+// ═══════════════════════════════════════════════════════════════
+function render() {
+  updateStats();
+  renderTimeHeader();
+  renderLeft();
+  renderTimeline();
+  document.getElementById('zoom-display').textContent = Math.round(PPD / 3.8 * 100) + '%';
+}
+
+// ═══════════════════════════════════════════════════════════════
+// INTERACTIONS
+// ═══════════════════════════════════════════════════════════════
+
+// ── Selection ─────────────────────────────────────────────────
+function selectTask(e, id) {
+  if (e.shiftKey) {
+    if (selectedIds.has(id)) selectedIds.delete(id); else selectedIds.add(id);
+  } else {
+    selectedIds.clear(); selectedIds.add(id);
+  }
+  // Highlight rows without full re-render
+  document.querySelectorAll('.task-row, .tl-row').forEach(el => {
+    el.classList.toggle('selected', selectedIds.has(el.dataset.id));
+  });
+  document.querySelectorAll('.bar, .milestone-diamond').forEach(el => {
+    el.classList.toggle('selected', selectedIds.has(el.dataset.id));
+  });
+  if (!e.shiftKey && id) openDetailPanel(id);
+}
+function clearSelection() { selectedIds.clear(); document.querySelectorAll('.selected').forEach(el => el.classList.remove('selected')); closeDetailPanel(); }
+
+// ── Collapse / expand ─────────────────────────────────────────
+function toggleCollapse(e, id) {
+  e.stopPropagation();
+  const t = tasks.find(x => x.id === id);
+  if (t) { t.collapsed = !t.collapsed; render(); }
+}
+function collapseAll() { tasks.filter(t => t.type === 'phase').forEach(t => t.collapsed = true); render(); }
+function expandAll()   { tasks.forEach(t => t.collapsed = false); render(); }
+
+// ── Bar drag ──────────────────────────────────────────────────
+let barDrag = null;
+function startBarDrag(e, id, mode) {
+  e.preventDefault(); e.stopPropagation();
+  const t = tasks.find(x => x.id === id); if (!t) return;
+  pushUndo();
+  barDrag = { id, mode, startX: e.clientX, startStart: t.start, startEnd: t.end, startDur: t.duration };
+  selectTask(e, id);
+  document.addEventListener('mousemove', onBarDragMove);
+  document.addEventListener('mouseup',   onBarDragEnd);
+  document.querySelector(`[data-id="${id}"].bar`)?.classList.add('dragging');
+}
+function onBarDragMove(e) {
+  if (!barDrag) return;
+  const t = tasks.find(x => x.id === barDrag.id); if (!t) return;
+  const dx = e.clientX - barDrag.startX;
+  const dd = Math.round(px2d(dx));
+  if (barDrag.mode === 'move') {
+    t.start = Math.max(0, barDrag.startStart + dd);
+    t.end   = t.start + barDrag.startDur;
+    t.duration = barDrag.startDur;
+  } else if (barDrag.mode === 'end') {
+    t.end = Math.max(t.start + 1, barDrag.startEnd + dd);
+    t.duration = t.end - t.start;
+  } else if (barDrag.mode === 'start') {
+    t.start = Math.min(t.end - 1, barDrag.startStart + dd);
+    t.duration = t.end - t.start;
+  }
+  // Fast visual update
+  const bar = document.querySelector(`[data-id="${barDrag.id}"].bar`);
+  if (bar) { bar.style.left = dayX(t.start) + 'px'; bar.style.width = Math.max(4, d2px(t.duration)) + 'px'; }
+  // Redraw deps
+  const visible = getVisibleTasks();
+  const totalH = visible.reduce((s, v) => s + (v.type === 'phase' ? 36 : 40), 0);
+  if (showDeps) renderDeps(visible, totalH);
+}
+function onBarDragEnd() {
+  if (barDrag) document.querySelector(`[data-id="${barDrag.id}"].bar`)?.classList.remove('dragging');
+  barDrag = null;
+  document.removeEventListener('mousemove', onBarDragMove);
+  document.removeEventListener('mouseup',   onBarDragEnd);
+  render();
+}
+
+// ── Connect drag (create dependency) ──────────────────────────
+let connectDrag = null;
+function startConnectDrag(e, fromId) {
+  e.preventDefault();
+  connectDrag = { fromId };
+  document.addEventListener('mouseup', onConnectEnd);
+}
+function onConnectEnd(e) {
+  if (!connectDrag) return;
+  const target = e.target.closest('[data-id]');
+  if (target && target.dataset.id !== connectDrag.fromId) {
+    const toId = target.dataset.id;
+    const toTask = tasks.find(t => t.id === toId);
+    if (toTask && !toTask.predecessors.find(p => p.id === connectDrag.fromId)) {
+      pushUndo();
+      toTask.predecessors.push({ id: connectDrag.fromId, type: 'FS', lag: 0 });
+      render();
+    }
+  }
+  connectDrag = null;
+  document.removeEventListener('mouseup', onConnectEnd);
+}
+
+// ── Double-click on timeline (add task) ───────────────────────
+function onTimelineDblClick(e) {
+  if (e.target.closest('.bar, .milestone-diamond')) return;
+  openAddModal('task', null);
+}
+
+// ── Panel resize ──────────────────────────────────────────────
+let panelResizeDrag = null;
+function startPanelResize(e) {
+  panelResizeDrag = { startX: e.clientX, startW: parseInt(getComputedStyle(document.documentElement).getPropertyValue('--left-w')) || 400 };
+  document.getElementById('panel-resizer').classList.add('dragging');
+  document.addEventListener('mousemove', onPanelResizeMove);
+  document.addEventListener('mouseup',   onPanelResizeEnd);
+}
+function onPanelResizeMove(e) {
+  if (!panelResizeDrag) return;
+  const w = Math.max(220, Math.min(700, panelResizeDrag.startW + (e.clientX - panelResizeDrag.startX)));
+  document.documentElement.style.setProperty('--left-w', w + 'px');
+}
+function onPanelResizeEnd() {
+  panelResizeDrag = null;
+  document.getElementById('panel-resizer').classList.remove('dragging');
+  document.removeEventListener('mousemove', onPanelResizeMove);
+  document.removeEventListener('mouseup',   onPanelResizeEnd);
+}
+
+// ── Scroll sync (left ↔ right vertical) ───────────────────────
+function syncScroll() {
+  const vp = document.getElementById('timeline-viewport');
+  const lb = document.getElementById('left-body');
+  const th = document.getElementById('time-header-inner');
+  lb.scrollTop = vp.scrollTop;
+  th.style.transform = `translateX(-${vp.scrollLeft}px)`;
+}
+document.getElementById('left-body').addEventListener('scroll', e => {
+  document.getElementById('timeline-viewport').scrollTop = e.target.scrollTop;
+});
+
+// ── Zoom & scale ──────────────────────────────────────────────
+function adjustZoom(delta) {
+  PPD = Math.max(0.5, Math.min(60, PPD * (1 + delta)));
+  render();
+}
+function resetZoom() { PPD = 3.8; render(); }
+function fitToWindow() {
+  const vpW = document.getElementById('timeline-viewport').clientWidth;
+  PPD = vpW / (timelineEnd - timelineStart);
+  render();
+}
+function setScale(s) {
+  scale = s;
+  document.querySelectorAll('.scale-btn').forEach(el => el.classList.remove('active'));
+  document.getElementById('sc-' + s)?.classList.add('active');
+  if (s === 'day')     PPD = 24;
+  if (s === 'week')    PPD = 7;
+  if (s === 'month')   PPD = 3.8;
+  if (s === 'quarter') PPD = 1.2;
+  render();
+}
+
+// ── Navigate ──────────────────────────────────────────────────
+function scrollToToday() { document.getElementById('timeline-viewport').scrollLeft = dayX(todayDay()) - 200; }
+function scrollToStart()  { document.getElementById('timeline-viewport').scrollLeft = 0; }
+function scrollToEnd()    { document.getElementById('timeline-viewport').scrollLeft = dayX(PROJECT_END); }
+
+// ── Color by ──────────────────────────────────────────────────
+function setColorBy(mode) {
+  colorBy = mode;
+  document.querySelectorAll('.colorby-btn').forEach(el => el.classList.remove('active'));
+  document.getElementById('cb-' + mode)?.classList.add('active');
+  render();
+}
+
+// ── Toggles ───────────────────────────────────────────────────
+function toggleBaseline()  { showBaseline = !showBaseline; document.getElementById('btn-baseline').classList.toggle('btn-active', showBaseline); render(); }
+function toggleCritPath()  { showCritPath = !showCritPath; document.getElementById('btn-critpath').classList.toggle('btn-active', showCritPath); render(); }
+function toggleDeps()      { showDeps = !showDeps; document.getElementById('btn-deps').classList.toggle('btn-active', !showDeps); render(); }
+function toggleFloat()     { showFloat = !showFloat; document.getElementById('btn-float').classList.toggle('btn-active', showFloat); render(); }
+function toggleLegend()    { document.getElementById('legend-panel').classList.toggle('open'); }
+
+// ── Filter ────────────────────────────────────────────────────
+function setFilter(f) {
+  activeFilter = f;
+  document.querySelectorAll('.filter-chip').forEach(el => el.classList.toggle('active', el.dataset.filter === f));
+  render();
+}
+function handleSearch(q) { searchQ = q; render(); }
+
+// ── Sort ──────────────────────────────────────────────────────
+let sortKey = null, sortAsc = true;
+function sortBy(key) {
+  if (sortKey === key) sortAsc = !sortAsc; else { sortKey = key; sortAsc = true; }
+  // Only sort within groups
+  const phases = tasks.filter(t => t.type === 'phase');
+  phases.forEach(p => {
+    const children = tasks.filter(t => t.parentId === p.id);
+    children.sort((a, b) => {
+      let va = a[key], vb = b[key];
+      if (key === 'name') return sortAsc ? va.localeCompare(vb) : vb.localeCompare(va);
+      return sortAsc ? va - vb : vb - va;
+    });
+    // Re-order in place
+    const startIdx = tasks.indexOf(children[0]);
+    children.forEach((c, i) => { const idx = tasks.indexOf(c); tasks.splice(idx, 1); });
+    children.forEach((c, i) => tasks.splice(tasks.indexOf(p) + 1 + i, 0, c));
+  });
+  render();
+}
+
+// ═══════════════════════════════════════════════════════════════
+// CONTEXT MENU
+// ═══════════════════════════════════════════════════════════════
+function openCtxMenu(e, id) {
+  e.preventDefault(); e.stopPropagation();
+  ctxTaskId = id;
+  const menu = document.getElementById('ctx-menu');
+  menu.classList.add('open');
+  menu.style.left = Math.min(e.clientX, window.innerWidth - 180) + 'px';
+  menu.style.top  = Math.min(e.clientY, window.innerHeight - 250) + 'px';
+}
+document.addEventListener('click', () => document.getElementById('ctx-menu').classList.remove('open'));
+
+function ctxAction(action) {
+  const t = tasks.find(x => x.id === ctxTaskId);
+  if (!action || !ctxTaskId) return;
+  if (action === 'edit')        { openDetailPanel(ctxTaskId); }
+  else if (action === 'add-task')     { openAddModal('task', ctxTaskId); }
+  else if (action === 'add-subtask')  { openAddModal('subtask', ctxTaskId); }
+  else if (action === 'add-milestone'){ openAddModal('milestone', ctxTaskId); }
+  else if (action === 'duplicate')    { duplicateTask(ctxTaskId); }
+  else if (action === 'collapse')     { if (t) { t.collapsed = !t.collapsed; render(); } }
+  else if (action === 'critpath')     { if (t) { t.critical = !t.critical; render(); } }
+  else if (action === 'set-baseline') { if (t) { t.baseline = { start: t.start, end: t.end }; render(); } }
+  else if (action === 'delete')       { deleteTask(ctxTaskId); }
+}
+
+// ═══════════════════════════════════════════════════════════════
+// DETAIL PANEL
+// ═══════════════════════════════════════════════════════════════
+function openDetailPanel(id) {
+  const t = tasks.find(x => x.id === id); if (!t) return;
+  const color = taskColor(t);
+  document.getElementById('dp-task-name').textContent = t.name;
+  document.getElementById('dp-task-name').style.color = color;
+
+  const statusBtns = ['on-track','in-progress','at-risk','blocked','complete','not-started'].map(s =>
+    `<button class="status-opt ${t.status===s?'active-'+s:''}" onclick="setTaskPropAndRefresh('${id}','status','${s}')">${s.replace('-',' ')}</button>`
+  ).join('');
+  const prioBtns = ['high','medium','low'].map(p =>
+    `<button class="priority-opt ${t.priority===p?'active-'+p:''}" onclick="setTaskPropAndRefresh('${id}','priority','${p}')">${p}</button>`
+  ).join('');
+
+  const preds = t.predecessors.map((p, i) => {
+    const pt = tasks.find(x => x.id === p.id);
+    return `<div style="display:flex;align-items:center;justify-content:space-between;padding:5px 8px;border-radius:5px;background:var(--bg3);margin-bottom:3px;font-family:var(--mono);font-size:9px;color:var(--text2)">
+      <span>${pt?.wbs || '?'} · ${pt?.name?.slice(0,22) || '?'}</span>
+      <span style="color:var(--text3)">${p.type} ${p.lag!==0?(p.lag>0?'+':'')+ p.lag+'d':''}</span>
+      <button onclick="removeDepAndRefresh('${id}',${i})" style="color:var(--red);font-size:10px;padding:0 3px">✕</button>
+    </div>`;
+  }).join('') || '<div style="font-size:10px;color:var(--text3);padding:4px">No dependencies</div>';
+
+  document.getElementById('dp-body').innerHTML = `
+    <div class="dp-section">
+      <div class="dp-section-title">Details</div>
+      <div class="dp-row">
+        <div class="dp-field"><div class="dp-label">Name</div><input value="${t.name.replace(/"/g,'&quot;')}" oninput="setTaskPropLive('${id}','name',this.value)"/></div>
+      </div>
+      <div class="dp-row">
+        <div class="dp-field"><div class="dp-label">WBS</div><input value="${t.wbs}" readonly style="opacity:.5"/></div>
+        <div class="dp-field"><div class="dp-label">Team</div>
+          <select onchange="setTaskPropAndRefresh('${id}','team',this.value)">
+            ${['Platform','Design','QA','Marketing','Ops','Security'].map(tm=>`<option ${t.team===tm?'selected':''}>${tm}</option>`).join('')}
+          </select>
+        </div>
+      </div>
+      <div class="dp-row">
+        <div class="dp-field"><div class="dp-label">Start</div><input type="date" value="${dayToDate(t.start)}" onchange="setTaskPropAndRefresh('${id}','start',dateToDay(this.value))"/></div>
+        <div class="dp-field"><div class="dp-label">End</div><input type="date" value="${dayToDate(t.end)}" onchange="setTaskPropAndRefresh('${id}','end',dateToDay(this.value))"/></div>
+      </div>
+      <div class="dp-row">
+        <div class="dp-field"><div class="dp-label">Duration</div><input type="number" value="${t.duration}" min="1" oninput="setDuration('${id}',this.value)"/></div>
+        <div class="dp-field"><div class="dp-label">Progress %</div><input type="number" value="${t.progress}" min="0" max="100" oninput="setTaskPropAndRefresh('${id}','progress',parseInt(this.value))"/></div>
+      </div>
+      <div class="dp-row">
+        <div class="dp-field"><div class="dp-label">Est. Hours</div><input type="number" value="${t.estimatedHours}" oninput="setTaskPropLive('${id}','estimatedHours',parseInt(this.value))"/></div>
+        <div class="dp-field"><div class="dp-label">Actual Hours</div><input type="number" value="${t.actualHours}" oninput="setTaskPropLive('${id}','actualHours',parseInt(this.value))"/></div>
+      </div>
+    </div>
+    <div class="dp-section">
+      <div class="dp-section-title">Status</div>
+      <div class="status-grid">${statusBtns}</div>
+    </div>
+    <div class="dp-section">
+      <div class="dp-section-title">Priority</div>
+      <div class="priority-grid">${prioBtns}</div>
+    </div>
+    <div class="dp-section">
+      <div class="dp-section-title">Assignees</div>
+      <div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:7px">
+        ${(t.resources).map(r=>`<div class="avatar-chip tt" data-tip="${r}" style="background:${TEAM_BG[r]||'#254455'};width:28px;height:28px;font-size:10px">${TEAM_INITIALS[r]||r.slice(0,2).toUpperCase()}</div>`).join('')}
+      </div>
+      <input placeholder="Add assignee name..." onkeydown="addAssignee(event,'${id}',this)" style="width:100%"/>
+    </div>
+    <div class="dp-section">
+      <div class="dp-section-title">Risk</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px">
+        ${['low','medium','high'].map(r=>`<button class="priority-opt ${t.risk===r?'active-'+({low:'low',medium:'medium',high:'high'}[r]):''}" onclick="setTaskPropAndRefresh('${id}','risk','${r}')">${r}</button>`).join('')}
+      </div>
+    </div>
+    <div class="dp-section">
+      <div class="dp-section-title">Dependencies <button class="btn btn-ghost btn-xs" onclick="openDepModal('${id}')" style="float:right">+ Add</button></div>
+      <div id="dp-deps">${preds}</div>
+    </div>
+    <div class="dp-section">
+      <div class="dp-section-title">Tags</div>
+      <input value="${t.tags.join(', ')}" placeholder="tag1, tag2..." oninput="setTagsLive('${id}',this.value)" style="width:100%"/>
+    </div>
+    <div class="dp-section">
+      <div class="dp-section-title">Notes</div>
+      <textarea oninput="setTaskPropLive('${id}','notes',this.value)" style="height:72px;width:100%">${t.notes||''}</textarea>
+    </div>
+    <div class="dp-section">
+      <div class="dp-section-title">Flags</div>
+      <div style="display:flex;gap:7px;align-items:center;flex-wrap:wrap">
+        <label style="display:flex;align-items:center;gap:5px;font-family:var(--mono);font-size:9px;color:var(--text2);cursor:pointer">
+          <input type="checkbox" ${t.critical?'checked':''} onchange="setTaskPropAndRefresh('${id}','critical',this.checked)"/> Critical Path
+        </label>
+        <label style="display:flex;align-items:center;gap:5px;font-family:var(--mono);font-size:9px;color:var(--text2);cursor:pointer">
+          <input type="checkbox" ${t.collapsed?'checked':''} onchange="toggleCollapseById('${id}',this.checked)"/> Collapsed
+        </label>
+      </div>
+    </div>
+    <div style="padding:8px 16px;background:var(--bg);border-top:1px solid var(--border)">
+      <div style="font-family:var(--mono);font-size:9px;color:var(--text3)">
+        Created: ${formatDateFull(t.start)} &nbsp;·&nbsp; 
+        ${t.baseline?'Baseline: '+formatDate(t.baseline.start)+' – '+formatDate(t.baseline.end):'No baseline set'}
+      </div>
+    </div>`;
+
+  document.getElementById('dp-actions').innerHTML = `
+    <button class="btn btn-ghost btn-sm" onclick="setBaselineNow('${id}')">◌ Set Baseline</button>
+    <button class="btn btn-ghost btn-sm" onclick="duplicateTask('${id}')">⊕ Duplicate</button>
+    <button class="btn btn-red btn-sm" onclick="deleteTask('${id}')">✕ Delete</button>`;
+
+  document.getElementById('detail-panel').classList.add('open');
+}
+function closeDetailPanel() { document.getElementById('detail-panel').classList.remove('open'); }
+
+// Property setters
+function setTaskPropLive(id, key, val) { const t = tasks.find(x => x.id === id); if (t) t[key] = val; }
+function setTaskPropAndRefresh(id, key, val) { const t = tasks.find(x => x.id === id); if (t) { t[key] = val; render(); openDetailPanel(id); } }
+function setDuration(id, val) { const t = tasks.find(x => x.id === id); if (t && val > 0) { t.duration = parseInt(val); t.end = t.start + t.duration; render(); openDetailPanel(id); } }
+function setTagsLive(id, val) { const t = tasks.find(x => x.id === id); if (t) t.tags = val.split(',').map(s => s.trim()).filter(Boolean); }
+function addAssignee(e, id, input) { if (e.key === 'Enter' && input.value.trim()) { const t = tasks.find(x => x.id === id); if (t && !t.resources.includes(input.value.trim())) { t.resources.push(input.value.trim()); input.value = ''; openDetailPanel(id); render(); } } }
+function toggleCollapseById(id, val) { const t = tasks.find(x => x.id === id); if (t) { t.collapsed = val; render(); } }
+function removeDepAndRefresh(id, idx) { const t = tasks.find(x => x.id === id); if (t) { t.predecessors.splice(idx, 1); render(); openDetailPanel(id); } }
+function setBaselineNow(id) { const t = tasks.find(x => x.id === id); if (t) { t.baseline = { start: t.start, end: t.end }; openDetailPanel(id); } }
+
+// ═══════════════════════════════════════════════════════════════
+// ADD / EDIT MODAL
+// ═══════════════════════════════════════════════════════════════
+function openAddModal(type, afterId) {
+  const ctx = afterId ? tasks.find(t => t.id === afterId) : null;
+  const defaultStart = ctx ? ctx.end : 0;
+  const defaultEnd   = defaultStart + (type === 'milestone' ? 0 : 14);
+  const defaultParent = type === 'subtask' ? (afterId || '') : '';
+  const phases = tasks.filter(t => t.type === 'phase');
+
+  document.getElementById('modal-title').textContent = 'Add ' + type.charAt(0).toUpperCase() + type.slice(1);
+  document.getElementById('modal-form-inner').innerHTML = `
+    <div class="mf"><div class="mf-label">Name</div><input id="mf-name" placeholder="${type} name..." /></div>
+    ${type !== 'milestone' ? `
+    <div class="mf-row">
+      <div class="mf"><div class="mf-label">Start (day 0 = Jan 1)</div><input id="mf-start" type="number" value="${defaultStart}" min="0" max="400"/></div>
+      <div class="mf"><div class="mf-label">End (day)</div><input id="mf-end" type="number" value="${defaultEnd}" min="0" max="400"/></div>
+    </div>
+    <div class="mf-row">
+      <div class="mf"><div class="mf-label">Status</div><select id="mf-status"><option>not-started</option><option>on-track</option><option>in-progress</option><option>at-risk</option><option>blocked</option><option>complete</option></select></div>
+      <div class="mf"><div class="mf-label">Priority</div><select id="mf-priority"><option>high</option><option value="medium" selected>medium</option><option>low</option></select></div>
+    </div>` : `<div class="mf"><div class="mf-label">Month (day offset from Jan 1)</div><input id="mf-start" type="number" value="${defaultStart}" min="0" max="400"/></div>`}
+    <div class="mf-row">
+      <div class="mf"><div class="mf-label">Team</div><select id="mf-team"><option>Platform</option><option>Design</option><option>QA</option><option>Marketing</option><option>Ops</option><option>Security</option></select></div>
+      <div class="mf"><div class="mf-label">Assignees</div><input id="mf-resources" placeholder="Jordan, Alex..."/></div>
+    </div>
+    <div class="mf"><div class="mf-label">Parent Phase</div><select id="mf-parent">
+      <option value="">None (top level)</option>
+      ${tasks.filter(t=>t.type==='phase').map(p=>`<option value="${p.id}" ${defaultParent===p.id?'selected':''}>${p.wbs} ${p.name}</option>`).join('')}
+    </select></div>
+    <div class="mf"><div class="mf-label">Notes</div><textarea id="mf-notes" style="height:50px;width:100%"></textarea></div>`;
+
+  document.getElementById('modal-add-edit').classList.add('open');
+  document.getElementById('modal-title').dataset.type = type;
+  document.getElementById('modal-title').dataset.afterId = afterId || '';
+  setTimeout(() => document.getElementById('mf-name')?.focus(), 50);
+}
+
+function closeModal() {
+  document.getElementById('modal-add-edit').classList.remove('open');
+  document.getElementById('modal-dep').classList.remove('open');
+}
+document.getElementById('modal-add-edit').addEventListener('click', e => { if (e.target.id === 'modal-add-edit') closeModal(); });
+document.getElementById('modal-dep').addEventListener('click', e => { if (e.target.id === 'modal-dep') closeModal(); });
+
+function confirmModal() {
+  const name = document.getElementById('mf-name')?.value?.trim();
+  if (!name) return;
+  const type    = document.getElementById('modal-title').dataset.type;
+  const start   = parseInt(document.getElementById('mf-start')?.value || 0);
+  const end     = type === 'milestone' ? start : parseInt(document.getElementById('mf-end')?.value || start + 14);
+  const status  = document.getElementById('mf-status')?.value || 'not-started';
+  const priority= document.getElementById('mf-priority')?.value || 'medium';
+  const team    = document.getElementById('mf-team')?.value || 'Platform';
+  const resources = (document.getElementById('mf-resources')?.value || '').split(',').map(s=>s.trim()).filter(Boolean);
+  const parentId = document.getElementById('mf-parent')?.value || null;
+  const notes = document.getElementById('mf-notes')?.value || '';
+
+  const parent = parentId ? tasks.find(t => t.id === parentId) : null;
+  const level  = parent ? parent.level + 1 : 0;
+  const siblings = tasks.filter(t => t.parentId === parentId);
+  const sibWbs = parent ? parent.wbs + '.' + (siblings.length + 1) : String(tasks.filter(t=>!t.parentId&&t.type==='phase').length + 1);
+
+  pushUndo();
+  const newTask = {
+    id: uid(), wbs: sibWbs, parentId, level, type,
+    name, start, end: type==='milestone'?start:end, duration: type==='milestone'?0:end-start,
+    status, priority, team, resources, progress: status==='complete'?100:0,
+    predecessors: [], baseline: null, notes, tags: [],
+    collapsed: false, critical: false,
+    estimatedHours: 0, actualHours: 0, risk: 'medium', color: null
+  };
+
+  // Insert after parent's last child (or at end)
+  if (parent) {
+    const lastChildIdx = tasks.reduce((m, t, i) => t.parentId === parentId ? i : m, tasks.indexOf(parent));
+    tasks.splice(lastChildIdx + 1, 0, newTask);
+  } else {
+    tasks.push(newTask);
+  }
+
+  closeModal();
+  render();
+  openDetailPanel(newTask.id);
+}
+
+// ═══════════════════════════════════════════════════════════════
+// DEPENDENCY MODAL
+// ═══════════════════════════════════════════════════════════════
+function openDepModal(fromId) {
+  const sel1 = document.getElementById('dep-from');
+  const sel2 = document.getElementById('dep-to');
+  sel1.innerHTML = tasks.filter(t=>t.type!=='phase').map(t=>`<option value="${t.id}" ${t.id===fromId?'selected':''}>${t.wbs} · ${t.name.slice(0,30)}</option>`).join('');
+  sel2.innerHTML = tasks.filter(t=>t.type!=='phase').map(t=>`<option value="${t.id}">${t.wbs} · ${t.name.slice(0,30)}</option>`).join('');
+  document.getElementById('modal-dep').classList.add('open');
+}
+function confirmAddDep() {
+  const fromId = document.getElementById('dep-from').value;
+  const toId   = document.getElementById('dep-to').value;
+  const type   = document.getElementById('dep-type').value;
+  const lag    = parseInt(document.getElementById('dep-lag').value) || 0;
+  if (!fromId || !toId || fromId === toId) return;
+  const toTask = tasks.find(t => t.id === toId);
+  if (toTask && !toTask.predecessors.find(p => p.id === fromId)) {
+    pushUndo();
+    toTask.predecessors.push({ id: fromId, type, lag });
+    render();
+  }
+  closeModal();
+}
+
+// ═══════════════════════════════════════════════════════════════
+// TASK OPERATIONS
+// ═══════════════════════════════════════════════════════════════
+function deleteTask(id) {
+  if (!confirm('Delete this task and all its subtasks?')) return;
+  pushUndo();
+  function removeWithChildren(tid) {
+    tasks.filter(t => t.parentId === tid).forEach(child => removeWithChildren(child.id));
+    const idx = tasks.findIndex(t => t.id === tid);
+    if (idx >= 0) tasks.splice(idx, 1);
+  }
+  removeWithChildren(id);
+  tasks.forEach(t => { t.predecessors = t.predecessors.filter(p => p.id !== id); });
+  selectedIds.delete(id);
+  closeDetailPanel();
+  render();
+}
+
+function duplicateTask(id) {
+  const t = tasks.find(x => x.id === id); if (!t) return;
+  pushUndo();
+  const nt = { ...deepCopy(t), id: uid(), name: t.name + ' (copy)', start: t.start + 3, end: t.end + 3, predecessors: [], baseline: null };
+  const idx = tasks.findIndex(x => x.id === id);
+  tasks.splice(idx + 1, 0, nt);
+  render();
+}
+
+// ═══════════════════════════════════════════════════════════════
+// UNDO / REDO
+// ═══════════════════════════════════════════════════════════════
+function pushUndo() {
+  undoStack.push(deepCopy(tasks));
+  redoStack = [];
+  if (undoStack.length > 30) undoStack.shift();
+}
+function undo() {
+  if (!undoStack.length) return;
+  redoStack.push(deepCopy(tasks));
+  const prev = undoStack.pop();
+  tasks.length = 0; prev.forEach(t => tasks.push(t));
+  render();
+}
+function redo() {
+  if (!redoStack.length) return;
+  undoStack.push(deepCopy(tasks));
+  const next = redoStack.pop();
+  tasks.length = 0; next.forEach(t => tasks.push(t));
+  render();
+}
+
+// ═══════════════════════════════════════════════════════════════
+// EXPORT
+// ═══════════════════════════════════════════════════════════════
+function exportJSON() {
+  const data = { title: document.getElementById('project-title').value, exportDate: new Date().toISOString(), tasks };
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'gantt-export.json'; a.click();
+}
+
+// ═══════════════════════════════════════════════════════════════
+// KEYBOARD SHORTCUTS
+// ═══════════════════════════════════════════════════════════════
+document.addEventListener('keydown', e => {
+  const inInput = ['INPUT','TEXTAREA','SELECT'].includes(document.activeElement.tagName);
+  if (e.ctrlKey && e.key === 'z') { e.preventDefault(); undo(); return; }
+  if (e.ctrlKey && e.key === 'y') { e.preventDefault(); redo(); return; }
+  if (e.ctrlKey && e.key === 'f') { e.preventDefault(); document.getElementById('search-input').focus(); return; }
+  if (inInput) return;
+  if (e.key === 'Escape') { clearSelection(); closeDetailPanel(); closeModal(); document.getElementById('ctx-menu').classList.remove('open'); }
+  if (e.key === 'Delete' && selectedIds.size) { selectedIds.forEach(id => deleteTask(id)); }
+  if (e.key === 'n') { openAddModal('task', null); }
+  if (e.key === 't') { scrollToToday(); }
+  if (e.key === '+' || e.key === '=') adjustZoom(0.15);
+  if (e.key === '-') adjustZoom(-0.15);
+  if (e.key === 'd') { showDeps = !showDeps; render(); }
+  if (e.key === 'c') { showCritPath = !showCritPath; render(); }
+});
+
+// ═══════════════════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════════════════
+// Sync left panel horizontal scroll (none) with timeline
+document.getElementById('left-body').addEventListener('wheel', e => {
+  e.preventDefault();
+  const vp = document.getElementById('timeline-viewport');
+  vp.scrollTop += e.deltaY;
+}, { passive: false });
+
+render();
+scrollToToday();
+</script>
+</body>
+</html>

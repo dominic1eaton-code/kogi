@@ -1219,6 +1219,9 @@ portfolio
 - stride health
 - shiftmate
 - alia health
+- Linear
+- Mercury (banking)
+- Deel (contractor payments)
 
 wallet
 - wellsfargo
@@ -2040,3 +2043,52 @@ side note: the portfolio is the core domain and root component and the portfolio
 exponential backoff
 fan in fan out
 dead letter queue
+
+
+
+qala, ume, qala
+- hypergrid entity domain system identity card(s):
+  - name
+  - version
+  - domain
+  - prefix
+  - root component
+  - root hypergrid
+  - metadata
+  - configturation
+
+---
+
+
+
+* Mungu Inc.
+    * Obatala Venture Capital Studios
+        * Wolof.io
+            - shango platform
+              - codeforge
+                + software factory
+              - hypergrid
+                + data model (micro)kernel
+                + distributed hybrid N dimensional spreadsheet + database + graph
+                + baseline state machine
+                + hypergraph
+                + shared data|domain model layer
+                + root space+workspace+namespace system - root operational context model|container
+                + data layer on top of + interface between persistence+infrastructure layer (postgres, Meilisearch, kafka, redis, valkey, mongoDB, clickhouse, neo4j, etc...)
+              - apapo
+                + domain+data+model operating system
+                + DSL OS domain specific language
+                + bridge|interface between domain specific platform and hypergrid
+                + domain centric design system, domain driven design platform
+                + distributed+federated host platform - apapo hosts
+                + distributed orchestration + coordination system, talks to, orchestrates, mediates, coordinates domain hosts (e.g. kogi hosts, ume hosts, qala hosts, sambara hosts, oru hosts, etc...)
+            - kogi platform
+              + work portfolio management platform
+              + work portfolio is root domain+grid+element
+            - qala platform
+              + solution management platform 
+              + solution is root domain+grid+element
+            - ume platform
+              + organization management platform
+              + organization is root domain+grid+element
+

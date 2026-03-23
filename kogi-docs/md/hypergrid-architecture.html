@@ -1,0 +1,1391 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hypergrid — Simplified Architecture & Design</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500&display=swap');
+
+  :root {
+    --ink: #0e0e0d;
+    --ink-2: #3a3a38;
+    --ink-3: #6b6b68;
+    --ink-4: #9c9c99;
+    --paper: #f8f6f1;
+    --paper-2: #f0ede5;
+    --paper-3: #e6e2d8;
+    --accent: #2a5cff;
+    --accent-dim: #dde8ff;
+    --amber: #c06a00;
+    --amber-dim: #fff0d6;
+    --teal: #007a5e;
+    --teal-dim: #d6f0ea;
+    --red: #c0281a;
+    --red-dim: #fde8e6;
+    --green: #2d6a1a;
+    --green-dim: #e4f2de;
+    --rule: #d8d4cb;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 400;
+    background: var(--paper);
+    color: var(--ink);
+    font-size: 15px;
+    line-height: 1.65;
+  }
+
+  .page {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 3rem 2rem 6rem;
+  }
+
+  .masthead {
+    border-bottom: 1.5px solid var(--ink);
+    padding-bottom: 2rem;
+    margin-bottom: 3rem;
+  }
+
+  .eyebrow {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    margin-bottom: 0.75rem;
+  }
+
+  h1 {
+    font-family: 'DM Serif Display', serif;
+    font-size: 3.2rem;
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+    margin-bottom: 1rem;
+  }
+
+  .subtitle {
+    font-size: 1.05rem;
+    color: var(--ink-2);
+    max-width: 580px;
+    line-height: 1.55;
+  }
+
+  .meta-row {
+    display: flex;
+    gap: 1.5rem;
+    margin-top: 1.5rem;
+    flex-wrap: wrap;
+  }
+
+  .meta-pill {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    background: var(--paper-3);
+    border: 0.5px solid var(--rule);
+    border-radius: 20px;
+    padding: 4px 12px;
+    color: var(--ink-2);
+  }
+
+  h2 {
+    font-family: 'DM Serif Display', serif;
+    font-size: 1.75rem;
+    letter-spacing: -0.01em;
+    margin-bottom: 1rem;
+    margin-top: 3.5rem;
+    padding-top: 1.5rem;
+    border-top: 0.5px solid var(--rule);
+  }
+
+  h2:first-of-type { margin-top: 0; border-top: none; padding-top: 0; }
+
+  h3 {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.95rem;
+    font-weight: 500;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    margin-bottom: 0.75rem;
+    margin-top: 2rem;
+  }
+
+  p { margin-bottom: 1rem; color: var(--ink-2); }
+
+  .intro-block {
+    background: var(--accent-dim);
+    border-left: 3px solid var(--accent);
+    padding: 1.25rem 1.5rem;
+    border-radius: 0 8px 8px 0;
+    margin-bottom: 2rem;
+  }
+
+  .intro-block p { color: var(--ink); margin: 0; font-size: 0.98rem; }
+
+  code {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.83em;
+    background: var(--paper-3);
+    padding: 1px 5px;
+    border-radius: 3px;
+    color: var(--accent);
+  }
+
+  .layer-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    margin: 2rem 0;
+    border: 0.5px solid var(--rule);
+    border-radius: 12px;
+    overflow: hidden;
+  }
+
+  .layer {
+    padding: 1.25rem 1.5rem;
+    border-bottom: 0.5px solid var(--rule);
+    display: grid;
+    grid-template-columns: 180px 1fr;
+    gap: 1.5rem;
+    align-items: start;
+    transition: background 0.15s;
+  }
+
+  .layer:last-child { border-bottom: none; }
+  .layer:hover { background: var(--paper-2); }
+
+  .layer-name {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.82rem;
+    font-weight: 500;
+    color: var(--ink);
+    padding: 3px 10px;
+    border-radius: 4px;
+    display: inline-block;
+    white-space: nowrap;
+  }
+
+  .layer-a .layer-name { background: #e8edff; color: #1a3db5; }
+  .layer-b .layer-name { background: var(--teal-dim); color: #005440; }
+  .layer-c .layer-name { background: var(--amber-dim); color: #8a4c00; }
+  .layer-d .layer-name { background: var(--paper-3); color: var(--ink-2); }
+
+  .layer-desc { font-size: 0.9rem; color: var(--ink-2); line-height: 1.5; }
+  .layer-desc strong { color: var(--ink); font-weight: 500; }
+
+  .module-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 1rem;
+    margin: 1.5rem 0;
+  }
+
+  .module-card {
+    background: var(--paper);
+    border: 0.5px solid var(--rule);
+    border-radius: 10px;
+    padding: 1rem 1.125rem;
+    transition: border-color 0.15s, background 0.15s;
+    cursor: default;
+  }
+
+  .module-card:hover { border-color: var(--accent); background: var(--accent-dim); }
+
+  .module-code {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: var(--ink-4);
+    letter-spacing: 0.08em;
+    margin-bottom: 4px;
+  }
+
+  .module-name {
+    font-size: 0.88rem;
+    font-weight: 500;
+    color: var(--ink);
+    margin-bottom: 4px;
+  }
+
+  .module-desc {
+    font-size: 0.8rem;
+    color: var(--ink-3);
+    line-height: 1.4;
+  }
+
+  .crdt-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1.5rem 0;
+    font-size: 0.875rem;
+  }
+
+  .crdt-table th {
+    text-align: left;
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-4);
+    padding: 0 12px 8px;
+    border-bottom: 1px solid var(--rule);
+  }
+
+  .crdt-table td {
+    padding: 10px 12px;
+    border-bottom: 0.5px solid var(--rule);
+    vertical-align: top;
+    color: var(--ink-2);
+  }
+
+  .crdt-table tr:last-child td { border-bottom: none; }
+  .crdt-table tr:hover td { background: var(--paper-2); }
+
+  .crdt-type {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.78rem;
+    font-weight: 500;
+    color: var(--accent);
+    white-space: nowrap;
+  }
+
+  .concern-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1px;
+    background: var(--rule);
+    border: 0.5px solid var(--rule);
+    border-radius: 12px;
+    overflow: hidden;
+    margin: 1.5rem 0;
+  }
+
+  .concern-cell {
+    background: var(--paper);
+    padding: 1.25rem 1.375rem;
+  }
+
+  .concern-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 0.6rem;
+  }
+
+  .concern-icon {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: 500;
+  }
+
+  .concern-icon.warn { background: var(--amber-dim); color: var(--amber); }
+  .concern-icon.ok   { background: var(--green-dim); color: var(--green); }
+
+  .concern-title {
+    font-size: 0.88rem;
+    font-weight: 500;
+    color: var(--ink);
+  }
+
+  .concern-body { font-size: 0.83rem; color: var(--ink-3); line-height: 1.5; }
+
+  .remedy-block {
+    border: 0.5px solid var(--rule);
+    border-radius: 12px;
+    overflow: hidden;
+    margin: 1.5rem 0;
+  }
+
+  .remedy-header {
+    padding: 0.875rem 1.375rem;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border-bottom: 0.5px solid var(--rule);
+    cursor: pointer;
+    user-select: none;
+    background: var(--paper-2);
+    transition: background 0.12s;
+  }
+
+  .remedy-header:hover { background: var(--paper-3); }
+
+  .remedy-number {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    background: var(--ink);
+    color: var(--paper);
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .remedy-title {
+    font-weight: 500;
+    font-size: 0.93rem;
+    color: var(--ink);
+    flex: 1;
+  }
+
+  .remedy-badge {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    padding: 2px 8px;
+    border-radius: 10px;
+    flex-shrink: 0;
+  }
+
+  .badge-high { background: var(--red-dim); color: var(--red); }
+  .badge-med  { background: var(--amber-dim); color: var(--amber); }
+  .badge-low  { background: var(--green-dim); color: var(--green); }
+
+  .chevron {
+    width: 16px;
+    height: 16px;
+    flex-shrink: 0;
+    transition: transform 0.2s;
+  }
+
+  .chevron.open { transform: rotate(90deg); }
+
+  .remedy-body {
+    padding: 1.25rem 1.375rem;
+    display: none;
+    background: var(--paper);
+  }
+
+  .remedy-body.open { display: block; }
+
+  .remedy-body p { font-size: 0.875rem; margin-bottom: 0.75rem; }
+  .remedy-body p:last-child { margin-bottom: 0; }
+
+  .remedy-body .before-after {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1px;
+    background: var(--rule);
+    border-radius: 8px;
+    overflow: hidden;
+    margin: 1rem 0;
+    font-size: 0.82rem;
+  }
+
+  .before-after .ba-col { background: var(--paper); padding: 0.875rem 1rem; }
+  .before-after .ba-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+
+  .before-after .ba-label.before { color: var(--red); }
+  .before-after .ba-label.after  { color: var(--green); }
+
+  .before-after li { color: var(--ink-2); margin-left: 1rem; margin-bottom: 4px; }
+
+  .write-path {
+    background: var(--paper-2);
+    border: 0.5px solid var(--rule);
+    border-radius: 10px;
+    padding: 1.25rem 1.375rem;
+    margin: 1.5rem 0;
+    font-size: 0.875rem;
+  }
+
+  .write-step {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 8px 0;
+    border-bottom: 0.5px solid var(--rule);
+  }
+
+  .write-step:last-child { border-bottom: none; padding-bottom: 0; }
+
+  .step-num {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    font-weight: 500;
+    color: var(--ink-3);
+    min-width: 24px;
+    padding-top: 1px;
+  }
+
+  .step-content { flex: 1; }
+  .step-label { font-weight: 500; color: var(--ink); font-size: 0.875rem; }
+  .step-detail { color: var(--ink-3); font-size: 0.82rem; margin-top: 2px; }
+
+  .simplified-stack {
+    margin: 2rem 0;
+  }
+
+  .tier {
+    display: grid;
+    grid-template-columns: 140px 1fr;
+    align-items: stretch;
+    margin-bottom: 2px;
+  }
+
+  .tier-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: var(--ink-4);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    display: flex;
+    align-items: center;
+    padding-right: 16px;
+    text-align: right;
+    justify-content: flex-end;
+  }
+
+  .tier-boxes {
+    display: flex;
+    gap: 2px;
+    flex-wrap: wrap;
+  }
+
+  .tier-box {
+    padding: 10px 14px;
+    border-radius: 6px;
+    font-size: 0.82rem;
+    font-weight: 500;
+    flex: 1;
+    min-width: 100px;
+    text-align: center;
+  }
+
+  .tb-domain  { background: var(--paper-3); color: var(--ink-2); }
+  .tb-bridge  { background: #e8edff; color: #1a3db5; }
+  .tb-core    { background: var(--teal-dim); color: #004a38; }
+  .tb-storage { background: var(--amber-dim); color: #7a4000; }
+
+  .callout {
+    display: flex;
+    gap: 14px;
+    background: var(--paper-2);
+    border: 0.5px solid var(--rule);
+    border-radius: 10px;
+    padding: 1.125rem 1.25rem;
+    margin: 1.5rem 0;
+    align-items: flex-start;
+  }
+
+  .callout-icon {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    font-weight: 500;
+    padding: 3px 8px;
+    border-radius: 4px;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+
+  .callout-icon.info    { background: var(--accent-dim); color: var(--accent); }
+  .callout-icon.warn    { background: var(--amber-dim); color: var(--amber); }
+  .callout-icon.insight { background: var(--teal-dim); color: var(--teal); }
+
+  .callout-text { font-size: 0.88rem; color: var(--ink-2); }
+  .callout-text strong { color: var(--ink); font-weight: 500; }
+
+  .deploy-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1px;
+    background: var(--rule);
+    border: 0.5px solid var(--rule);
+    border-radius: 12px;
+    overflow: hidden;
+    margin: 1.5rem 0;
+  }
+
+  .deploy-tier {
+    background: var(--paper);
+    padding: 1.25rem 1.25rem;
+  }
+
+  .deploy-name {
+    font-weight: 500;
+    font-size: 0.88rem;
+    color: var(--ink);
+    margin-bottom: 4px;
+  }
+
+  .deploy-when {
+    font-size: 0.78rem;
+    color: var(--accent);
+    font-family: 'DM Mono', monospace;
+    margin-bottom: 10px;
+  }
+
+  .deploy-stack { font-size: 0.8rem; color: var(--ink-3); line-height: 1.55; }
+
+  .toc {
+    background: var(--paper-2);
+    border: 0.5px solid var(--rule);
+    border-radius: 12px;
+    padding: 1.5rem 1.75rem;
+    margin-bottom: 3rem;
+  }
+
+  .toc-title {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ink-4);
+    margin-bottom: 1rem;
+  }
+
+  .toc-list {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px 2rem;
+    list-style: none;
+  }
+
+  .toc-list li a {
+    font-size: 0.875rem;
+    color: var(--ink-2);
+    text-decoration: none;
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+  }
+
+  .toc-list li a:hover { color: var(--accent); }
+
+  .toc-list li a .toc-num {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: var(--ink-4);
+    min-width: 20px;
+  }
+
+  .dim-example {
+    border: 0.5px solid var(--rule);
+    border-radius: 10px;
+    overflow: hidden;
+    margin: 1.5rem 0;
+  }
+
+  .dim-row {
+    display: grid;
+    grid-template-columns: 36px 90px 130px 1fr;
+    padding: 9px 14px;
+    border-bottom: 0.5px solid var(--rule);
+    align-items: center;
+    gap: 16px;
+    font-size: 0.83rem;
+  }
+
+  .dim-row:last-child { border-bottom: none; }
+  .dim-row:hover { background: var(--paper-2); }
+  .dim-row.header { background: var(--paper-3); font-size: 0.78rem; color: var(--ink-4); }
+
+  .dim-n { font-family: 'DM Mono', monospace; font-weight: 500; color: var(--accent); }
+  .dim-type { color: var(--ink-3); }
+  .dim-key { font-family: 'DM Mono', monospace; font-size: 0.78rem; color: var(--teal); }
+  .dim-use { color: var(--ink-2); }
+
+  hr.section-rule {
+    border: none;
+    border-top: 0.5px solid var(--rule);
+    margin: 3rem 0;
+  }
+
+  @media (max-width: 640px) {
+    h1 { font-size: 2.2rem; }
+    .layer { grid-template-columns: 1fr; gap: 0.5rem; }
+    .concern-grid { grid-template-columns: 1fr; }
+    .deploy-grid { grid-template-columns: 1fr; }
+    .before-after { grid-template-columns: 1fr; }
+    .toc-list { grid-template-columns: 1fr; }
+    .dim-row { grid-template-columns: 36px 80px 1fr; }
+    .dim-row .dim-use { display: none; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="masthead">
+    <div class="eyebrow">Architecture Reference · March 2026 · v1.0</div>
+    <h1>Hypergrid</h1>
+    <p class="subtitle">A simplified architecture and design reference — covering what Hypergrid is, how it works, and practical remedies for its high infrastructure overhead.</p>
+    <div class="meta-row">
+      <span class="meta-pill">N-Dimensional Distributed Spreadsheet System</span>
+      <span class="meta-pill">NDSS · Substrate · Apapo Platform</span>
+      <span class="meta-pill">Rust · PostgreSQL · Kafka · Redis</span>
+    </div>
+  </div>
+
+  <div class="toc">
+    <div class="toc-title">Contents</div>
+    <ol class="toc-list">
+      <li><a href="#what"><span class="toc-num">1</span>What Hypergrid is</a></li>
+      <li><a href="#layers"><span class="toc-num">2</span>The four layers</a></li>
+      <li><a href="#model"><span class="toc-num">3</span>The data model</a></li>
+      <li><a href="#modules"><span class="toc-num">4</span>Core modules</a></li>
+      <li><a href="#crdt"><span class="toc-num">5</span>CRDT semantics</a></li>
+      <li><a href="#write"><span class="toc-num">6</span>The write path</a></li>
+      <li><a href="#concerns"><span class="toc-num">7</span>Technical concerns</a></li>
+      <li><a href="#remedies"><span class="toc-num">8</span>Overhead remedies</a></li>
+      <li><a href="#deploy"><span class="toc-num">9</span>Deployment tiers</a></li>
+      <li><a href="#verdict"><span class="toc-num">10</span>Summary verdict</a></li>
+    </ol>
+  </div>
+
+  <section id="what">
+    <h2>1. What Hypergrid is</h2>
+
+    <div class="intro-block">
+      <p>Hypergrid is the substrate — not an application. It provides the universal data layer that Kogi, Ume, and Qala are all built on top of. Its central claim: <strong>every domain entity is a row in an N-dimensional distributed spreadsheet</strong>, and building three different domain systems on the same substrate is better than building three separate storage stacks.</p>
+    </div>
+
+    <p>The conventional spreadsheet generalizes to N dimensions. Dimension 1 is the entity (rows). Dimension 2 is the field name (columns). Dimensions 3+ are domain-specific context axes — time periods, jurisdictions, audience segments, versions. Every cell at any coordinate carries a typed attribute map, not just a single value.</p>
+
+    <p>On top of this model, Hypergrid adds: per-attribute CRDT semantics for distributed consistency, an append-only EventLog for time-travel and audit, a typed property graph (Hypergraph) for entity relationships, an AI plugin interface for computed attributes, and a query language (HyperQL) that works across all dimensions.</p>
+  </section>
+
+  <hr class="section-rule">
+
+  <section id="layers">
+    <h2>2. The four layers</h2>
+    <p>Every domain system built on Hypergrid follows this four-layer structure. The substrate layer is shared across all three systems. The bridge layer is the only place domain types touch Hypergrid primitives.</p>
+
+    <div class="layer-stack">
+      <div class="layer layer-d">
+        <div><span class="layer-name">Presentation</span></div>
+        <div class="layer-desc">Domain-specific APIs, UIs, CLIs, SDKs. <strong>Never exposes HyperCell or DimCoordinate to callers.</strong> Users interact in domain vocabulary — portfolios, org modules, solutions. Not rows and coordinates.</div>
+      </div>
+      <div class="layer layer-c">
+        <div><span class="layer-name">Domain logic</span></div>
+        <div class="layer-desc">Business rules, lifecycle state machines, governance policies, domain workflows. <strong>Knows nothing about cells or dimensions.</strong> Operates on typed domain structs: <code>Component</code>, <code>OrgModule</code>, <code>Solution</code>.</div>
+      </div>
+      <div class="layer layer-b">
+        <div><span class="layer-name">Bridge (codec)</span></div>
+        <div class="layer-desc">The <code>DomainStore</code> trait. <strong>The only place domain types map to Hypergrid primitives.</strong> Implements four methods: <code>bootstrap()</code> registers cubes and schemas, <code>write()</code> serializes entities to cells, <code>read()</code> deserializes cells to entities, <code>exists()</code> checks presence.</div>
+      </div>
+      <div class="layer layer-a">
+        <div><span class="layer-name">Substrate</span></div>
+        <div class="layer-desc"><strong>Shared across all domain systems.</strong> Grid, Hypercube, UniversalCellStore, Hypergraph, EventLog, CrdtLog, VectorClock, HyperQL, AI plugin system, NamespaceRegistry, SpaceSystem, FederationManager.</div>
+      </div>
+    </div>
+
+    <div class="simplified-stack">
+      <h3>Simplified view: what lives where</h3>
+      <div style="margin-bottom: 8px;">
+        <div class="tier">
+          <div class="tier-label">applications</div>
+          <div class="tier-boxes">
+            <div class="tier-box tb-domain">Kogi UI</div>
+            <div class="tier-box tb-domain">Ume UI</div>
+            <div class="tier-box tb-domain">Qala UI</div>
+          </div>
+        </div>
+      </div>
+      <div style="margin-bottom: 8px;">
+        <div class="tier">
+          <div class="tier-label">domain logic</div>
+          <div class="tier-boxes">
+            <div class="tier-box tb-domain">PortfolioSystem</div>
+            <div class="tier-box tb-domain">UmeKernel</div>
+            <div class="tier-box tb-domain">QalaOS</div>
+          </div>
+        </div>
+      </div>
+      <div style="margin-bottom: 8px;">
+        <div class="tier">
+          <div class="tier-label">bridge</div>
+          <div class="tier-boxes">
+            <div class="tier-box tb-bridge">ComponentStore</div>
+            <div class="tier-box tb-bridge">OrgModuleStore</div>
+            <div class="tier-box tb-bridge">SolutionStore</div>
+          </div>
+        </div>
+      </div>
+      <div style="margin-bottom: 8px;">
+        <div class="tier">
+          <div class="tier-label">substrate</div>
+          <div class="tier-boxes">
+            <div class="tier-box tb-core">Grid runtime</div>
+            <div class="tier-box tb-core">Hypercubes</div>
+            <div class="tier-box tb-core">Hypergraph</div>
+            <div class="tier-box tb-core">EventLog</div>
+            <div class="tier-box tb-core">CRDT engine</div>
+            <div class="tier-box tb-core">HyperQL</div>
+            <div class="tier-box tb-core">AI plugins</div>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div class="tier">
+          <div class="tier-label">storage</div>
+          <div class="tier-boxes">
+            <div class="tier-box tb-storage">PostgreSQL</div>
+            <div class="tier-box tb-storage">Redis</div>
+            <div class="tier-box tb-storage">Kafka</div>
+            <div class="tier-box tb-storage">ClickHouse (large)</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <hr class="section-rule">
+
+  <section id="model">
+    <h2>3. The data model</h2>
+
+    <p>Every entity in every domain system maps to the same universal layout. D₁ is the entity ID, D₂ is the field name, and the cell at that coordinate holds the typed value. Higher dimensions extend the schema for time-series, jurisdictional, segmented, or multi-tenant data without schema changes.</p>
+
+    <div class="dim-example">
+      <div class="dim-row header">
+        <span>N</span>
+        <span>Axis type</span>
+        <span>Key type</span>
+        <span>What it encodes</span>
+      </div>
+      <div class="dim-row">
+        <span class="dim-n">D₁</span>
+        <span class="dim-type">EntityAxis</span>
+        <span class="dim-key">UUID</span>
+        <span class="dim-use">The entity — portfolio item, org module, SDE, legal entity</span>
+      </div>
+      <div class="dim-row">
+        <span class="dim-n">D₂</span>
+        <span class="dim-type">PropertyAxis</span>
+        <span class="dim-key">String</span>
+        <span class="dim-use">The field name — "name", "status", "budget_spent", "health_score"</span>
+      </div>
+      <div class="dim-row">
+        <span class="dim-n">D₃</span>
+        <span class="dim-type">TimeAxis</span>
+        <span class="dim-key">Timestamp</span>
+        <span class="dim-use">Time period — quarter, sprint, fiscal year (KPI cubes, SDE snapshots)</span>
+      </div>
+      <div class="dim-row">
+        <span class="dim-n">D₃</span>
+        <span class="dim-type">CategoryAxis</span>
+        <span class="dim-key">String</span>
+        <span class="dim-use">Jurisdiction, audience segment, risk tier (Chombo, Soko, Qala CCRs)</span>
+      </div>
+      <div class="dim-row">
+        <span class="dim-n">D₄</span>
+        <span class="dim-type">CategoryAxis</span>
+        <span class="dim-key">String</span>
+        <span class="dim-use">Second classification axis — metric category, environment tier, cohort</span>
+      </div>
+    </div>
+
+    <div class="callout">
+      <span class="callout-icon info">Rule</span>
+      <div class="callout-text">Always start with N=2. Add D₃+ only when a cross-sectional query pattern is <em>known and required</em> — never speculatively. Never use a new axis for filtering that can be expressed as a D₂ attribute value filter. Never exceed N=6 for cubes with user-facing views.</div>
+    </div>
+
+    <h3>Encoding strategies</h3>
+    <p>How cells are stored depends on axis density. The hybrid strategy is right for almost all domain entity cubes.</p>
+
+    <div class="concern-grid">
+      <div class="concern-cell">
+        <div class="concern-header">
+          <div class="concern-icon ok">D</div>
+          <span class="concern-title">Dense encoding</span>
+        </div>
+        <div class="concern-body">Full 2D array — every D₁×D₂ pair has a row. O(1) lookup. Use for small, fully-populated N=2 cubes. Fast but pre-allocates all combinations.</div>
+      </div>
+      <div class="concern-cell">
+        <div class="concern-header">
+          <div class="concern-icon ok">S</div>
+          <span class="concern-title">Sparse encoding</span>
+        </div>
+        <div class="concern-body">Key-value table — only non-null cells stored. O(log n) lookup via BTree index. Required for TimeAxis, GeoAxis, or any axis with &gt;100K keys.</div>
+      </div>
+      <div class="concern-cell" style="grid-column: 1 / -1;">
+        <div class="concern-header">
+          <div class="concern-icon ok">H</div>
+          <span class="concern-title">Hybrid encoding — recommended for all domain entity cubes</span>
+        </div>
+        <div class="concern-body">Dense base table for D₁×D₂ (entity × field, the hot path). Separate sparse extension table for D₃+ cells. O(1) for conventional 2D reads, O(log n) for higher-dimensional extension queries. Best of both worlds. Use this for <code>kogi.portfolio.components</code>, <code>ume.kernel.modules</code>, <code>qala.solutions</code>, and all primary entity cubes.</div>
+      </div>
+    </div>
+  </section>
+
+  <hr class="section-rule">
+
+  <section id="modules">
+    <h2>4. Core modules</h2>
+    <p>Hypergrid is composed of 15 modules, each independently implemented. Domain systems interact primarily with HG-CORE, HG-CRDT, HG-GRAPH, HG-QL, and HG-AI. The others are infrastructure or extension points.</p>
+
+    <div class="module-grid">
+      <div class="module-card">
+        <div class="module-code">HG-CORE</div>
+        <div class="module-name">Core substrate</div>
+        <div class="module-desc">Grid, Hypercube, DimensionAxis, HyperCell, HyperRow, EventLog, CrdtLog, VectorClock, PolicyEngine</div>
+      </div>
+      <div class="module-card">
+        <div class="module-code">HG-CRDT</div>
+        <div class="module-name">Distributed consistency</div>
+        <div class="module-desc">Per-attribute CRDT merge engine. LWW, OR-Set, PNCounter, MaxRegister, Lattice, GrowOnlyCounter, AppendLog</div>
+      </div>
+      <div class="module-card">
+        <div class="module-code">HG-GRAPH</div>
+        <div class="module-name">Hypergraph</div>
+        <div class="module-desc">Typed directed edges between any entities. CrossGridLink, ShadowCell protocol, BFS/DFS traversal, cycle detection</div>
+      </div>
+      <div class="module-card">
+        <div class="module-code">HG-QL</div>
+        <div class="module-name">Query language</div>
+        <div class="module-desc">HyperQL — N-dimensional SELECT, DimSlice WHERE, FOLD, EXPAND, TRAVERSE GRAPH, AS_OF time-travel</div>
+      </div>
+      <div class="module-card">
+        <div class="module-code">HG-AI</div>
+        <div class="module-name">AI intelligence layer</div>
+        <div class="module-desc">Pluggable AI engines via HypercubePlugin trait. Tier-1 formulas (sync), Tier-2 AI signals (async writeback)</div>
+      </div>
+      <div class="module-card">
+        <div class="module-code">HG-VIEW</div>
+        <div class="module-name">View engine</div>
+        <div class="module-desc">HypercubeView — saved DimSlice projections. Sort, group, pivot, DimFold, DimExpand, rendering adapters</div>
+      </div>
+      <div class="module-card">
+        <div class="module-code">HG-SPACE</div>
+        <div class="module-name">Spaces &amp; workspaces</div>
+        <div class="module-desc">Bounded operational contexts with governance, treasury, member management. Personal, Team, Org, Federation types</div>
+      </div>
+      <div class="module-card">
+        <div class="module-code">HG-ID</div>
+        <div class="module-name">Identity &amp; tenancy</div>
+        <div class="module-desc">Multi-tenant, multi-identity, multi-profile model. TenantPartition, VisibilityMask, SplitPolicy, CrossTenantMerge</div>
+      </div>
+      <div class="module-card">
+        <div class="module-code">HG-NS</div>
+        <div class="module-name">Namespace system</div>
+        <div class="module-desc">Hierarchical URI addressing — <code>kogi://worker/slug/entity/id/</code>. Federation-aware resolution protocol</div>
+      </div>
+      <div class="module-card">
+        <div class="module-code">HG-COMP</div>
+        <div class="module-name">Computation engine</div>
+        <div class="module-desc">Tier-1 synchronous formula evaluation. Tier-2 async AI/ML attribute computation. Rollup aggregation engine</div>
+      </div>
+      <div class="module-card">
+        <div class="module-code">HG-DIM</div>
+        <div class="module-name">Dimension system</div>
+        <div class="module-desc">Axis declaration, type registry, sparse/dense/hybrid encoding selection, cross-dim join planning</div>
+      </div>
+      <div class="module-card">
+        <div class="module-code">HG-PLUGIN</div>
+        <div class="module-name">Plugin system</div>
+        <div class="module-desc">HypercubePlugin trait for custom axis types, attribute types, AI engines, rendering adapters, data connectors</div>
+      </div>
+      <div class="module-card">
+        <div class="module-code">HG-EXPORT</div>
+        <div class="module-name">Export &amp; integration</div>
+        <div class="module-desc">CSV, XLSX, JSON, Parquet, Arrow, GraphQL, webhooks, streaming export of any N-dim view slice</div>
+      </div>
+      <div class="module-card">
+        <div class="module-code">HG-OPS</div>
+        <div class="module-name">Telemetry &amp; ops</div>
+        <div class="module-desc">OpenTelemetry tracing, Prometheus metrics, structured audit logs, health probes, federation sync dashboards</div>
+      </div>
+    </div>
+  </section>
+
+  <hr class="section-rule">
+
+  <section id="crdt">
+    <h2>5. CRDT semantics</h2>
+    <p>Every attribute key in every Hypercube must be assigned CRDT semantics at schema registration time. This is the most consequential design decision in the bridge layer — wrong semantics cause silent data loss in federated deployments. The rule: assign semantics based on what the field <em>means</em>, not how it's implemented.</p>
+
+    <table class="crdt-table">
+      <thead>
+        <tr>
+          <th style="width:140px">Type</th>
+          <th style="width:200px">Merge rule</th>
+          <th>Use when…</th>
+          <th>Examples</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="crdt-type">LastWriteWins</span></td>
+          <td>Higher VectorClock timestamp wins. ActorId tiebreak.</td>
+          <td>Single-valued field where the latest write is always correct</td>
+          <td>name, description, status (v1), config, JSON blobs, boolean flags, reference IDs</td>
+        </tr>
+        <tr>
+          <td><span class="crdt-type">OR-Set</span></td>
+          <td>All concurrent adds survive. Removes are tagged — only remove the exact element they reference.</td>
+          <td>Set-valued fields where concurrent additions from multiple users/nodes must both survive</td>
+          <td>tags, owners, children, dependencies, members, toolbox_ids, approver_ids</td>
+        </tr>
+        <tr>
+          <td><span class="crdt-type">GrowOnlyCounter</span></td>
+          <td>Sum of all increments across all nodes. Decrement rejected with error.</td>
+          <td>Monotonically increasing integers that can never decrease</td>
+          <td>view_count, follower_count, restart_count, contribution_count</td>
+        </tr>
+        <tr>
+          <td><span class="crdt-type">PNCounter</span></td>
+          <td>Sum of (positive ops − negative ops) per node, merged across all nodes.</td>
+          <td>Transactional accumulator that can go up and down</td>
+          <td>budget_spent, hours_logged, allocated_units, stock_count</td>
+        </tr>
+        <tr>
+          <td><span class="crdt-type">MaxRegister</span></td>
+          <td>Maximum value always wins regardless of causal ordering.</td>
+          <td>Version/sequence numbers that must never decrease</td>
+          <td>version, schema_version, sequence_number, sprint_number</td>
+        </tr>
+        <tr>
+          <td><span class="crdt-type">Lattice</span></td>
+          <td>Merge to the least upper bound in the configured partial order. No backward transitions.</td>
+          <td>Governed lifecycle states that must only advance (never regress without Admin override)</td>
+          <td>ComponentStatus, SolutionLifecycleState, ModuleState, CCRStatus</td>
+        </tr>
+        <tr>
+          <td><span class="crdt-type">AppendLog</span></td>
+          <td>All appends from all nodes survive, causally ordered by VectorClock.</td>
+          <td>Ordered audit trails and comment threads where every entry must be preserved</td>
+          <td>activity_log, comment_thread, decision_history, audit_notes</td>
+        </tr>
+        <tr>
+          <td><span class="crdt-type">LWW + System-only</span></td>
+          <td>LWW with PermissionTier::Admin — no human actor can write.</td>
+          <td>AI-computed signals that only AI engines should ever write</td>
+          <td>health_score, risk_score, anomaly_flag, drift_status, compliance_prediction</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="callout">
+      <span class="callout-icon warn">Warn</span>
+      <div class="callout-text"><strong>The v1 lifecycle state gap:</strong> In v1, <code>status</code> fields use LWW — safe but not governance-enforced. Under a network partition, two nodes could disagree about whether a solution is Active or InReview. The v2 Lattice CRDT resolves this by encoding the valid state machine as a partial order, making invalid transitions a mathematical property of the data structure — not application code.</div>
+    </div>
+  </section>
+
+  <hr class="section-rule">
+
+  <section id="write">
+    <h2>6. The write path</h2>
+    <p>Every write to any entity in any domain system flows through this exact sequence. Understanding it is essential for building correct domain systems and for diagnosing latency issues.</p>
+
+    <div class="write-path">
+      <div class="write-step">
+        <div class="step-num">01</div>
+        <div class="step-content">
+          <div class="step-label">Permission check</div>
+          <div class="step-detail">actor_tier &ge; attr.write_permission required. Logged as PermissionDenied event if rejected.</div>
+        </div>
+      </div>
+      <div class="write-step">
+        <div class="step-num">02</div>
+        <div class="step-content">
+          <div class="step-label">Policy engine evaluation</div>
+          <div class="step-detail">Allow / Deny / RequireApproval. Approval-pending writes are queued and return Pending status.</div>
+        </div>
+      </div>
+      <div class="write-step">
+        <div class="step-num">03</div>
+        <div class="step-content">
+          <div class="step-label">CRDT operation construction</div>
+          <div class="step-detail">VectorClock.tick(node_id) is called first. CrdtOperation::SetAttr (or AddToSet / IncrCounter / TransitionState) is constructed with the stamped clock.</div>
+        </div>
+      </div>
+      <div class="write-step">
+        <div class="step-num">04</div>
+        <div class="step-content">
+          <div class="step-label">Local merge (synchronous, in-memory)</div>
+          <div class="step-detail">Merge engine applies CRDT semantics for this attribute key. Losing LWW writes produce a ConflictRecord but don't fail.</div>
+        </div>
+      </div>
+      <div class="write-step">
+        <div class="step-num">05</div>
+        <div class="step-content">
+          <div class="step-label">Persistence (synchronous, PostgreSQL)</div>
+          <div class="step-detail">UPSERT on (grid_id, cube_id, dim_keys...). For batch writes: single transaction covering all fields — ~3× faster than individual writes.</div>
+        </div>
+      </div>
+      <div class="write-step">
+        <div class="step-num">06</div>
+        <div class="step-content">
+          <div class="step-label">EventLog append</div>
+          <div class="step-detail">Immutable entry: before_value, after_value, actor, vector_clock, timestamp. This is the audit trail and the AS_OF time-travel source.</div>
+        </div>
+      </div>
+      <div class="write-step">
+        <div class="step-num">07</div>
+        <div class="step-content">
+          <div class="step-label">CrdtLog append (federation delta)</div>
+          <div class="step-detail">Hot path: Redis LPUSH. Background flush to PostgreSQL. Used by peer nodes for delta sync.</div>
+        </div>
+      </div>
+      <div class="write-step">
+        <div class="step-num">08</div>
+        <div class="step-content">
+          <div class="step-label">Async fan-out (non-blocking)</div>
+          <div class="step-detail">AI invalidation (plugin queue), search index update, federation broadcast (Kafka), WebSocket push to collaborative editors. None of these block the response to the caller.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="callout">
+      <span class="callout-icon info">Opt</span>
+      <div class="callout-text"><strong>Batch write is the single most impactful optimization.</strong> <code>grid.write_cell_batch(cube_id, ops, actor)</code> executes all N field writes in one PostgreSQL transaction, one EventLog batch entry, and one Kafka message. For an entity with 30 fields, batch is ~3× faster than individual <code>write_cell()</code> calls. All bridge-layer <code>write()</code> implementations should use batch by default.</div>
+    </div>
+  </section>
+
+  <hr class="section-rule">
+
+  <section id="concerns">
+    <h2>7. Technical concerns</h2>
+    <p>Six meaningful technical concerns, graded by severity, with honest context for each.</p>
+
+    <div class="concern-grid">
+      <div class="concern-cell">
+        <div class="concern-header">
+          <div class="concern-icon warn">!</div>
+          <span class="concern-title">Infrastructure overhead is high</span>
+        </div>
+        <div class="concern-body">The full production stack requires PostgreSQL, Redis Cluster, Kafka, ClickHouse (for large analytics), Meilisearch, S3, plus 5+ custom services (crdt-service, writeback-service, federation-coordinator, namespace-service, space-service). Most applications do not need all of this simultaneously.</div>
+      </div>
+      <div class="concern-cell">
+        <div class="concern-header">
+          <div class="concern-icon warn">!</div>
+          <span class="concern-title">Lifecycle state is LWW in v1</span>
+        </div>
+        <div class="concern-body">Status fields use LastWriteWins until v2 delivers the Lattice CRDT. Under a network partition, two nodes could hold different lifecycle states for the same entity, resolved by recency — not governance invariant. For Qala's pharmaceutical use case, this is a regulatory risk, not a theoretical one.</div>
+      </div>
+      <div class="concern-cell">
+        <div class="concern-header">
+          <div class="concern-icon warn">!</div>
+          <span class="concern-title">255-node VectorClock ceiling</span>
+        </div>
+        <div class="concern-body">The VectorClock is a <code>HashMap&lt;NodeId, u64&gt;</code> capped at 255 entries — one per federation peer. For large deployments, this means a hard limit on the number of active federation nodes per Grid. Each cell carries a VectorClock snapshot, so high-cardinality cubes compound the storage pressure.</div>
+      </div>
+      <div class="concern-cell">
+        <div class="concern-header">
+          <div class="concern-icon warn">!</div>
+          <span class="concern-title">Serialization overhead per field</span>
+        </div>
+        <div class="concern-body">Writing an entity with 30 fields produces 30 individual HyperCell writes if not batched. Each cell carries coord, attribute map, vector clock, actor ID, and audit trail metadata. The cell model is richer than a simple column update, and the overhead is real for hot-path entities.</div>
+      </div>
+      <div class="concern-cell">
+        <div class="concern-header">
+          <div class="concern-icon warn">!</div>
+          <span class="concern-title">Qala over-applies the spreadsheet metaphor</span>
+        </div>
+        <div class="concern-body">Kogi and Ume have data that genuinely wants to be a spreadsheet substrate. Qala's CI/CD pipelines, hermetic build environments, and SDE provisioning workflows are infrastructure automation problems — where GitOps tools (ArgoCD, Flux) already provide continuous reconciliation faster than Hypergrid's 15-minute drift detection SLA.</div>
+      </div>
+      <div class="concern-cell">
+        <div class="concern-header">
+          <div class="concern-icon warn">!</div>
+          <span class="concern-title">HyperQL expertise required</span>
+        </div>
+        <div class="concern-body">Cross-system queries, DimFold aggregations, and graph traversal require HyperQL fluency. The NL-to-HyperQL bridge helps end users but doesn't replace the need for platform engineers to deeply understand N-dimensional query planning. The learning curve is real and proportional to dimensionality.</div>
+      </div>
+    </div>
+  </section>
+
+  <hr class="section-rule">
+
+  <section id="remedies">
+    <h2>8. Overhead remedies</h2>
+    <p>Five concrete approaches to reducing Hypergrid's infrastructure costs, ordered from highest to lowest impact. Each accordion expands to a before/after and implementation guidance.</p>
+
+    <div class="remedy-block">
+      <div class="remedy-header" onclick="toggleRemedy(this)">
+        <div class="remedy-number">1</div>
+        <div class="remedy-title">Tiered deployment: start SQLite, graduate to PostgreSQL</div>
+        <span class="remedy-badge badge-high">Highest impact</span>
+        <svg class="chevron" viewBox="0 0 16 16" fill="none"><path d="M6 4l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
+      <div class="remedy-body">
+        <p>The <code>CellStoreBackend</code> trait is pluggable. The full PostgreSQL + Redis + Kafka + ClickHouse stack is <em>one</em> implementation. A SQLite-backed single-process implementation is a fully valid alternative that requires zero additional infrastructure. The Kogi desktop/mobile app and any single-user deployment should use SQLite exclusively and only introduce PostgreSQL when multi-node collaboration is actually needed.</p>
+        <div class="before-after">
+          <div class="ba-col">
+            <div class="ba-label before">Current (always)</div>
+            <ul>
+              <li>PostgreSQL cluster</li>
+              <li>Redis Cluster</li>
+              <li>Kafka brokers</li>
+              <li>ClickHouse (analytics)</li>
+              <li>Meilisearch</li>
+              <li>5+ custom services</li>
+            </ul>
+          </div>
+          <div class="ba-col">
+            <div class="ba-label after">Tiered (proposed)</div>
+            <ul>
+              <li><strong>Solo/mobile:</strong> SQLite only — zero extra infra</li>
+              <li><strong>Team (2–10):</strong> PostgreSQL + Redis — no Kafka/ClickHouse</li>
+              <li><strong>Production:</strong> Full stack, only when scale demands it</li>
+            </ul>
+          </div>
+        </div>
+        <p>Implementation: formalize three <code>GridProfile</code> enum variants — <code>Embedded</code> (SQLite, no federation, in-process), <code>Collaborative</code> (PostgreSQL + Redis, Kafka optional), and <code>Enterprise</code> (full stack). <code>Grid::new(config)</code> selects the backend stack based on profile. Delta sync between Embedded nodes uses periodic file export rather than Kafka. This is already partially implied by the spec's <code>storage_backend: memory | sqlite | postgres</code> config field — it needs to be promoted to a first-class product decision.</p>
+      </div>
+    </div>
+
+    <div class="remedy-block">
+      <div class="remedy-header" onclick="toggleRemedy(this)">
+        <div class="remedy-number">2</div>
+        <div class="remedy-title">Lazy services: defer Kafka, ClickHouse, Meilisearch until needed</div>
+        <span class="remedy-badge badge-high">High impact</span>
+        <svg class="chevron" viewBox="0 0 16 16" fill="none"><path d="M6 4l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
+      <div class="remedy-body">
+        <p>Kafka is only needed for multi-node federation delta sync and AI writeback. If you have one node and no AI engines, you don't need Kafka. ClickHouse is only needed when analytics queries scan more than ~1M cells — irrelevant at small scale. Meilisearch is only needed for full-text search. These three components can be absent at startup and activated only when the feature that requires them is first exercised.</p>
+        <div class="before-after">
+          <div class="ba-col">
+            <div class="ba-label before">Current behavior</div>
+            <ul>
+              <li>All infrastructure required at boot</li>
+              <li>Kafka connection verified in step 2 of Grid init</li>
+              <li>Meilisearch synced at startup</li>
+              <li>ClickHouse connection initialized regardless of query volume</li>
+            </ul>
+          </div>
+          <div class="ba-col">
+            <div class="ba-label after">Lazy activation (proposed)</div>
+            <ul>
+              <li>Grid boots with PostgreSQL + Redis only</li>
+              <li>Kafka activated on first federation peer handshake</li>
+              <li>ClickHouse activated when scan_slice() receives &gt;1M row estimate</li>
+              <li>Meilisearch activated on first searchable cube registration</li>
+            </ul>
+          </div>
+        </div>
+        <p>Implementation: wrap each optional backend in a <code>LazyBackend&lt;T&gt;</code> that holds an <code>Option&lt;Arc&lt;T&gt;&gt;</code> and initializes on first use, logging a <code>BackendActivated</code> event to the EventLog. The <code>FederationManager</code> already has a concept of optional peers — extend this to the entire optional-service tier. This cuts the infrastructure requirement for a single-node Collaborative deployment from 6 services to 2 (PostgreSQL + Redis).</p>
+      </div>
+    </div>
+
+    <div class="remedy-block">
+      <div class="remedy-header" onclick="toggleRemedy(this)">
+        <div class="remedy-number">3</div>
+        <div class="remedy-title">Narrow the AI infrastructure: WritebackService via HTTP, not gRPC+Kafka</div>
+        <span class="remedy-badge badge-med">Medium impact</span>
+        <svg class="chevron" viewBox="0 0 16 16" fill="none"><path d="M6 4l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
+      <div class="remedy-body">
+        <p>The AI pipeline as specified requires: Kafka (for AI compute request routing), a WritebackService gRPC endpoint, separate AI engine processes (kogi-engine in Scala 3, ume-engine in Go+Python, qala AI Agent), and a Redis cache for AI signal results. This is a significant operational surface for what is conceptually just "compute a score and write it back to a cell".</p>
+        <div class="before-after">
+          <div class="ba-col">
+            <div class="ba-label before">Current AI pipeline</div>
+            <ul>
+              <li>Cell mutation → Kafka topic</li>
+              <li>AI engine (separate process) consumes Kafka</li>
+              <li>Engine computes signal</li>
+              <li>WritebackService gRPC call</li>
+              <li>Cell updated with AiSignal value</li>
+            </ul>
+          </div>
+          <div class="ba-col">
+            <div class="ba-label after">Simplified pipeline</div>
+            <ul>
+              <li>Cell mutation → in-process plugin queue</li>
+              <li>HypercubePlugin.compute() called in background thread</li>
+              <li>Result written via internal writeback</li>
+              <li>Kafka only for distributed deployments with remote engines</li>
+            </ul>
+          </div>
+        </div>
+        <p>Implementation: the <code>HypercubePlugin</code> trait already exists and is in-process. For simple signals (health score, risk score, anomaly detection), the compute function is fast enough to run in a background thread pool within the Grid process — no Kafka, no gRPC, no separate service. Kafka + WritebackService gRPC should be reserved for heavyweight AI models (LLM inference, NL-to-HyperQL translation) that genuinely need to run in a separate process. The Scala 3 kogi-engine, specifically, is the right candidate for a separate service — but only once the Kogi platform has real users who need real AI signals.</p>
+      </div>
+    </div>
+
+    <div class="remedy-block">
+      <div class="remedy-header" onclick="toggleRemedy(this)">
+        <div class="remedy-number">4</div>
+        <div class="remedy-title">Fix the VectorClock ceiling with Hybrid Logical Clocks</div>
+        <span class="remedy-badge badge-med">Medium impact</span>
+        <svg class="chevron" viewBox="0 0 16 16" fill="none"><path d="M6 4l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
+      <div class="remedy-body">
+        <p>The current <code>VectorClock = HashMap&lt;NodeId, u64&gt;</code> stores one counter per federation peer. This has a 255-node hard limit (the spec's explicit ceiling), and each HyperCell carries a VectorClock snapshot — meaning high-cardinality cubes compound the storage cost. The correct fix is Hybrid Logical Clocks (HLC), which encode causality into a single (physical_time, logical_counter) pair without a per-node entry.</p>
+        <div class="before-after">
+          <div class="ba-col">
+            <div class="ba-label before">VectorClock (current)</div>
+            <ul>
+              <li>O(N) bytes per cell per node</li>
+              <li>255-node hard ceiling</li>
+              <li>Full clock stored on every cell mutation</li>
+              <li>Precise causality but high storage cost</li>
+            </ul>
+          </div>
+          <div class="ba-col">
+            <div class="ba-label after">HLC (proposed)</div>
+            <ul>
+              <li>O(1) bytes per cell — always 16 bytes</li>
+              <li>No node count ceiling</li>
+              <li>Compatible with NTP-synchronized clocks</li>
+              <li>Preserves happens-before without per-node storage</li>
+            </ul>
+          </div>
+        </div>
+        <p>Implementation: replace <code>VectorClock</code> with an <code>HlcTimestamp { wall_clock_ms: u64, logical: u16, node_id: u32 }</code> (16 bytes). The <code>dominates()</code> and <code>happened_before()</code> operations translate directly. The <code>delta_since()</code> operation becomes a time-range scan rather than a per-node comparison — which is actually simpler to implement and index in PostgreSQL. The 255-node ceiling is eliminated. This is a well-understood technique (used by CockroachDB, MongoDB, and others) with no loss of causal correctness.</p>
+      </div>
+    </div>
+
+    <div class="remedy-block">
+      <div class="remedy-header" onclick="toggleRemedy(this)">
+        <div class="remedy-number">5</div>
+        <div class="remedy-title">Deliver the Lattice CRDT for lifecycle states in v1, not v2</div>
+        <span class="remedy-badge badge-low">Correctness</span>
+        <svg class="chevron" viewBox="0 0 16 16" fill="none"><path d="M6 4l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
+      <div class="remedy-body">
+        <p>The current design defers the Lattice CRDT for lifecycle states to v2. This is framed as a simplification but it's actually a correctness gap — not a performance gap. Under a network partition, two nodes can drive the same entity to different lifecycle states, and the merge resolves to "whoever wrote last". For pharmaceutical drug approval or CCR governance, this is not acceptable at any scale.</p>
+        <div class="before-after">
+          <div class="ba-col">
+            <div class="ba-label before">LWW status (v1)</div>
+            <ul>
+              <li>Node A: solution = "Approved"</li>
+              <li>Node B (partitioned): solution = "Draft"</li>
+              <li>Merge: whichever timestamp is higher wins</li>
+              <li>Governance invariant violated by network event</li>
+            </ul>
+          </div>
+          <div class="ba-col">
+            <div class="ba-label after">Lattice status (proposed)</div>
+            <ul>
+              <li>Node A: solution = "Approved"</li>
+              <li>Node B: solution = "Draft"</li>
+              <li>Merge: join("Approved", "Draft") = "Approved"</li>
+              <li>State never regresses — enforced by data structure</li>
+            </ul>
+          </div>
+        </div>
+        <p>Implementation: the Lattice merge engine is already fully designed and present in the v2 spec. The only implementation cost is: (a) a <code>LatticeOrder</code> struct defining the partial order for each lifecycle field, (b) a <code>TransitionState</code> variant in <code>CrdtOperation</code> (already specified), and (c) swapping <code>SetAttr</code> for <code>TransitionState</code> in the bridge layer's <code>write()</code> methods for status fields. The Lattice implementation is fully described — the gap is that it's been deferred rather than prioritized. For any domain system where lifecycle transitions have governance or regulatory meaning, the Lattice should ship in v1.</p>
+      </div>
+    </div>
+  </section>
+
+  <hr class="section-rule">
+
+  <section id="deploy">
+    <h2>9. Deployment tiers</h2>
+    <p>The proposed tiered deployment model maps each context to the minimum viable infrastructure. Moving up a tier adds capabilities but also operational cost.</p>
+
+    <div class="deploy-grid">
+      <div class="deploy-tier">
+        <div class="deploy-name">Embedded</div>
+        <div class="deploy-when">Solo · Mobile · Desktop · Offline-first</div>
+        <div class="deploy-stack">
+          SQLite (cell store + EventLog)<br>
+          In-process CRDT engine<br>
+          In-process AI plugin queue<br>
+          No external services<br>
+          Delta sync via file export on reconnect<br><br>
+          <strong>Examples:</strong> Kogi mobile app, Kogi desktop, solo developer Qala
+        </div>
+      </div>
+      <div class="deploy-tier">
+        <div class="deploy-name">Collaborative</div>
+        <div class="deploy-when">Team · Small org · Up to ~50 nodes</div>
+        <div class="deploy-stack">
+          PostgreSQL (cell store + EventLog)<br>
+          Redis (cell cache + CrdtLog hot path)<br>
+          Kafka <em>optional</em> — activate on first peer<br>
+          ClickHouse <em>optional</em> — activate at 1M+ rows<br>
+          Meilisearch <em>optional</em> — activate on search<br><br>
+          <strong>Examples:</strong> Kogi cooperative, Ume team, Qala factory team
+        </div>
+      </div>
+      <div class="deploy-tier">
+        <div class="deploy-name">Enterprise</div>
+        <div class="deploy-when">Large org · Federation · 50+ nodes</div>
+        <div class="deploy-stack">
+          Full stack: PostgreSQL + Redis + Kafka + ClickHouse + Meilisearch + S3<br>
+          Separate AI engine services (kogi-engine, ume-engine)<br>
+          WritebackService gRPC<br>
+          FederationCoordinator service<br>
+          HybridLogicalClock (replace VectorClock)<br><br>
+          <strong>Examples:</strong> Production Kogi platform, enterprise Ume, regulated-industry Qala
+        </div>
+      </div>
+    </div>
+
+    <div class="callout">
+      <span class="callout-icon insight">Key</span>
+      <div class="callout-text"><strong>The current design only specifies the Enterprise tier.</strong> Building Kogi first — at Embedded tier for mobile users and Collaborative tier for small cooperatives — removes the need to build and operate the full Enterprise stack before any users exist. The substrate upgrade path should be transparent: switching from SQLite to PostgreSQL requires no changes to the DomainStore codec or domain logic, only a config change in <code>Grid::new()</code>.</div>
+    </div>
+  </section>
+
+  <hr class="section-rule">
+
+  <section id="verdict">
+    <h2>10. Summary verdict</h2>
+
+    <p>Hypergrid is a well-designed substrate with a genuine synthesis. The combination of per-attribute CRDT semantics within an N-dimensional model, an append-only EventLog that serves audit + time-travel + AI feature store simultaneously, a typed property graph with OR-Set edge semantics, and a unified AI plugin interface is more than the sum of its parts. These components individually are prior art — the integration is coherent and novel.</p>
+
+    <p>The current weakness is that the architecture documents only describe the full Enterprise deployment topology. There is no specified path from zero to production that doesn't require standing up eight services before the first user sees any value. The five remedies above — especially tiered deployment and lazy service activation — would reduce the operational barrier for Embedded and Collaborative deployments from "significant infrastructure project" to "single binary."</p>
+
+    <p>The correctness gap around Lattice CRDT for lifecycle states should be addressed in v1, not v2. Everything else is a performance or cost optimization. The fundamental architecture is sound.</p>
+
+    <div class="concern-grid" style="margin-top: 2rem;">
+      <div class="concern-cell">
+        <div class="concern-header">
+          <div class="concern-icon ok">+</div>
+          <span class="concern-title">What is genuinely innovative</span>
+        </div>
+        <div class="concern-body">Per-attribute CRDT semantics. OR-Set edge semantics on the Hypergraph. Consent Lattice on CrossGridLink. Cell-level provenance via ComputedFrom edges. Lattice CRDT for governance invariants enforced at the data layer.</div>
+      </div>
+      <div class="concern-cell">
+        <div class="concern-header">
+          <div class="concern-icon ok">+</div>
+          <span class="concern-title">What is prior art, well-executed</span>
+        </div>
+        <div class="concern-body">N-dimensional model (OLAP cubes). EventLog as source of truth (Datomic, event sourcing). AI feature store writeback (standard MLOps). HyperQL time-travel (bitemporal SQL). Plugin architecture (standard since Eclipse).</div>
+      </div>
+      <div class="concern-cell">
+        <div class="concern-header">
+          <div class="concern-icon warn">!</div>
+          <span class="concern-title">What needs immediate remediation</span>
+        </div>
+        <div class="concern-body">Lattice CRDT for lifecycle states — correctness gap, not v2 feature. Tiered deployment model — removes infrastructure barrier. Lazy service activation — cuts Collaborative tier cost significantly.</div>
+      </div>
+      <div class="concern-cell">
+        <div class="concern-header">
+          <div class="concern-icon warn">!</div>
+          <span class="concern-title">What is medium-term work</span>
+        </div>
+        <div class="concern-body">Hybrid Logical Clocks to remove 255-node ceiling. In-process AI pipeline for simple signals. Formal documentation of the three deployment tiers with migration path between them.</div>
+      </div>
+    </div>
+  </section>
+
+  <div style="margin-top: 4rem; padding-top: 2rem; border-top: 0.5px solid var(--rule); font-size: 0.8rem; color: var(--ink-4); font-family: 'DM Mono', monospace; display: flex; gap: 2rem; justify-content: space-between; flex-wrap: wrap;">
+    <span>Hypergrid NDSS — Simplified Architecture & Design Reference</span>
+    <span>v1.0 · March 2026 · Based on: hypergrid-ndss-sdd-v1_0, hypergrid-execution-and-domain-os-spec, apapo-sdd-v1, apapo-sdd-part-ii, hypergrid-api-spec, hypergrid-domain-systems-design, apapo-platform-design, apapo-design-document</span>
+  </div>
+
+</div>
+
+<script>
+function toggleRemedy(header) {
+  const body = header.nextElementSibling;
+  const chevron = header.querySelector('.chevron');
+  const isOpen = body.classList.contains('open');
+  body.classList.toggle('open', !isOpen);
+  chevron.classList.toggle('open', !isOpen);
+}
+</script>
+</body>
+</html>
