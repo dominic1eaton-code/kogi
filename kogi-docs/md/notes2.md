@@ -1812,12 +1812,16 @@ kogi financials:
 
 ---
 
-shango platform
+shango platform, domain operating systems
+    - hypergrid+apapo baseline platform
     - kogi platform
     - ume platform
     - qala platform
     - sambara platform
     - oru platform
+    - imewe platform
+    - nandi platform
+    - osyse platform
 
 shango pages
     - home
