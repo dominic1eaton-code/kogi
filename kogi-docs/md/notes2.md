@@ -1226,6 +1226,7 @@ wallet
 - stripe
 - venmo
 - paypal
+- relayfi
 - coinbase
 - ethereum
 - mpesa
@@ -2019,3 +2020,8 @@ qala
 
 physical, non digital, service/product/goods based solution environments+disrtibutions/releases could include things like SOP releases, tasks+todos that ume OrgExecs (employees, agents) can execute on in the physical world, work/job/task artifacts
 
+---
+
+apapo
+
+side note: the portfolio is the core domain and root component and the portfolio system is the root hyperspreadsheet for kogi.  the organization is the core domain and root component and the organization system is the root hyperspreadsheet for ume. the solution is the core domain and root component and the solution system is the root hyperspreadsheet for qala, with the solution factory itself being a solution, along with ume and kogi also being solutions. Also, generate a software design document for the apapo platform, that is as long as possible  
