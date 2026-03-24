@@ -2139,9 +2139,7 @@ hypertree - L-system generation which generates hypercomponents
 hypercomponent - HG component
 hypermodules - HG module
 
-
-shango-link
-
+shango-link:
 kogi linktree
     - user's personal IP address / router, link to outside world + external tools + contacts
     - kogi master portfolio spreadsheet runs and links thourgh the linktree
