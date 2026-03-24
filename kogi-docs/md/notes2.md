@@ -2131,6 +2131,23 @@ Single-tenant:
 ---
 
 apapo:
-hypergrid - structural grid data layer
+HG - hypergrid
+hypergrid - structural grid data+application layer
 hypergraph - relationship/connection graph layer
 hypercube - computational matrix layer
+hypertree - L-system generation which generates hypercomponents
+hypercomponent - HG component
+hypermodules - HG module
+
+
+shango-link
+
+kogi linktree
+    - user's personal IP address / router, link to outside world + external tools + contacts
+    - kogi master portfolio spreadsheet runs and links thourgh the linktree
+    - linktrees connecting/connected through linknodes, form linkforests, which sets on top of a connected linknetwork
+
+ume L-system seed:
+    - ume organization bootstrapper serves as bootup/starting seed for generating rest of system (AI assisted hypergrid/tree L-system generation)
+
+---
