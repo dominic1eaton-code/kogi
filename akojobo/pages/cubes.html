@@ -1,0 +1,610 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Apapo · Hypercubes</title>
+<link rel="stylesheet" href="hg-shared.css">
+<style>
+/* ── Cube visualization ── */
+.cube-3d{display:inline-flex;align-items:center;justify-content:center;
+  width:40px;height:40px;flex-shrink:0}
+.cube-svg{overflow:visible}
+
+/* ── Cube card ── */
+.cube-card{background:var(--bg2);border:1px solid var(--border);border-radius:8px;
+  overflow:hidden;cursor:pointer;transition:all 0.12s}
+.cube-card:hover{border-color:var(--border3);transform:translateY(-1px)}
+.cube-card.selected{border-color:var(--cyan);box-shadow:0 0 0 1px var(--cyan),0 4px 16px rgba(0,216,176,0.1)}
+.cube-card-header{display:flex;align-items:center;gap:10px;padding:12px 14px;
+  border-bottom:1px solid var(--border)}
+.cube-card-name{font-family:var(--mono);font-size:10px;font-weight:600;color:var(--text);flex:1}
+.cube-card-body{padding:10px 14px}
+.cube-card-dims{display:flex;gap:4px;flex-wrap:wrap;margin-top:6px}
+
+/* ── Attribute schema table ── */
+.attr-schema-table{width:100%;border-collapse:collapse;font-size:10px}
+.attr-schema-table th{padding:5px 8px;background:var(--bg3);color:var(--text3);
+  font-family:var(--mono);font-size:7px;text-transform:uppercase;letter-spacing:0.1em;
+  border-bottom:1px solid var(--border);text-align:left;white-space:nowrap}
+.attr-schema-table td{padding:5px 8px;border-bottom:1px solid var(--border);color:var(--text2);font-family:var(--mono)}
+.attr-schema-table tr:hover td{background:var(--bg3);cursor:pointer}
+.attr-schema-table tr.ai-row td{background:rgba(232,168,50,0.04)}
+
+/* ── N-dim axis visual ── */
+.dim-axis-block{background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:10px 12px;margin-bottom:8px}
+.dim-axis-header{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+.dim-idx{font-family:var(--mono);font-size:9px;font-weight:700;color:var(--cyan)}
+.dim-name{font-family:var(--mono);font-size:10px;color:var(--text)}
+.dim-type{font-family:var(--mono);font-size:8px;color:var(--text3)}
+.dim-key-preview{display:flex;gap:3px;flex-wrap:wrap}
+.dim-key{font-family:var(--mono);font-size:8px;padding:1px 5px;border-radius:2px;
+  background:var(--bg5);border:1px solid var(--border2);color:var(--text3)}
+.dim-key.active{background:var(--cyan-dim);border-color:var(--cyan);color:var(--cyan)}
+
+/* ── Cell grid ── */
+.cell-grid-wrap{overflow:auto;max-height:320px;border:1px solid var(--border);border-radius:6px}
+.cell-grid{border-collapse:collapse;font-family:var(--mono);font-size:9px;white-space:nowrap}
+.cell-grid th{padding:4px 8px;background:var(--bg3);color:var(--text3);font-size:7px;
+  text-transform:uppercase;letter-spacing:0.1em;border-right:1px solid var(--border);
+  border-bottom:1px solid var(--border);position:sticky;top:0;z-index:2}
+.cell-grid .row-header{background:var(--bg3);color:var(--text3);font-size:8px;
+  border-right:1px solid var(--border);border-bottom:1px solid var(--border);
+  padding:4px 8px;position:sticky;left:0;z-index:1}
+.cell{padding:4px 8px;border-right:1px solid var(--border);border-bottom:1px solid var(--border);
+  color:var(--text2);cursor:pointer;transition:background 0.08s;min-width:80px}
+.cell:hover{background:var(--bg4)}
+.cell.selected{background:var(--cyan-dim);color:var(--cyan)}
+.cell.ai-cell{background:rgba(232,168,50,0.06);color:var(--gold)}
+.cell.empty{color:var(--text4);font-style:italic}
+.cell.or-set{color:var(--green)}
+</style>
+</head>
+<body>
+
+<nav class="topnav">
+  <span class="topnav-logo">APAPO</span>
+  <div class="topnav-sep"></div>
+  <div class="topnav-breadcrumb">
+    <a href="index.html">Dashboard</a><span class="sep">›</span>
+    <span class="cur">Hypercubes</span>
+  </div>
+  <div class="topnav-spacer"></div>
+  <div class="topnav-system">
+    <a class="sys-pill sp-kogi" href="kogi.html">Kogi</a>
+    <a class="sys-pill sp-ume" href="ume.html">Ume</a>
+    <a class="sys-pill sp-qala" href="qala.html">Qala</a>
+  </div>
+  <div class="topnav-actions" style="margin-left:10px">
+    <button class="btn btn-ghost btn-sm" onclick="openModal('modal-register-cube')">+ Register Cube</button>
+    <button class="btn btn-primary btn-sm" onclick="openModal('modal-add-attr')">+ Attribute Key</button>
+  </div>
+</nav>
+<nav class="iconav" id="hg-iconav"></nav>
+
+<div class="hg-main no-subnav" style="left:var(--nav-w)">
+  <div class="hg-toolbar">
+    <span class="hg-toolbar-title">Hypercubes</span>
+    <span class="hg-toolbar-sub">N-Dimensional Spreadsheet Cubes · Universal Cell Store</span>
+    <div class="hg-toolbar-sep"></div>
+    <div class="pill-group" id="grid-pills"></div>
+    <div class="ml-auto flex gap-2">
+      <input class="form-input" style="width:180px;font-size:9px;padding:3px 8px" placeholder="⌕ Search cubes…" oninput="filterCubes(this.value)">
+      <button class="btn btn-ghost btn-sm" onclick="showToast('Syncing schema registry…')">⟳ Sync</button>
+    </div>
+  </div>
+
+  <div class="hg-split">
+    <!-- LEFT: cube list -->
+    <div class="hg-panel-left" style="width:260px">
+      <div class="panel-hdr">
+        <span class="panel-hdr-title">Registered Cubes</span>
+        <span class="panel-hdr-action" onclick="openModal('modal-register-cube')">+ New</span>
+      </div>
+      <div class="panel-body" id="cube-list"></div>
+    </div>
+
+    <!-- CENTER: cube detail -->
+    <div style="flex:1;display:flex;flex-direction:column;overflow:hidden">
+      <div class="hg-tabs" id="cube-tabs">
+        <div class="hg-tab active" onclick="switchCubeTab('schema',this)">Schema</div>
+        <div class="hg-tab" onclick="switchCubeTab('cells',this)">Cell Grid</div>
+        <div class="hg-tab" onclick="switchCubeTab('dims',this)">Dimensions</div>
+        <div class="hg-tab" onclick="switchCubeTab('stats',this)">Stats</div>
+        <div class="hg-tab" onclick="switchCubeTab('crdt',this)">CRDT Config</div>
+      </div>
+      <div class="hg-content" id="cube-detail-body"></div>
+    </div>
+
+    <!-- RIGHT: attribute inspector -->
+    <div class="hg-panel-right" style="width:280px">
+      <div class="panel-hdr">
+        <span class="panel-hdr-title">Attribute Inspector</span>
+        <span class="panel-hdr-action" onclick="openModal('modal-add-attr')">+ Add</span>
+      </div>
+      <div style="flex:1;overflow-y:auto" id="attr-inspector">
+        <div style="padding:16px;color:var(--text3);font-family:var(--mono);font-size:9px;text-align:center">
+          Select a schema row to inspect
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- REGISTER CUBE MODAL -->
+<div class="modal-overlay" id="modal-register-cube">
+  <div class="modal">
+    <div class="modal-header"><div class="modal-title">Register Hypercube</div><div class="modal-close" onclick="closeModal('modal-register-cube')">✕</div></div>
+    <div class="modal-body">
+      <div class="form-row">
+        <div class="form-group"><div class="form-label">Cube Name</div><input class="form-input" id="rc-name" placeholder="domain.entity.type"/></div>
+        <div class="form-group"><div class="form-label">Grid</div><select class="form-select" id="rc-grid"></select></div>
+      </div>
+      <div class="form-group"><div class="form-label">Description</div><textarea class="form-textarea" id="rc-desc" placeholder="Purpose of this Hypercube"></textarea></div>
+      <div class="form-group"><div class="form-label">Dimensions (N)</div>
+        <div class="pill-group" id="rc-dim-pills" style="margin-top:4px">
+          <button class="pill active" data-n="2" onclick="setDimN(2,this)">N=2 (2D)</button>
+          <button class="pill" data-n="3" onclick="setDimN(3,this)">N=3 + TimeAxis</button>
+          <button class="pill" data-n="4" onclick="setDimN(4,this)">N=4 + TenantAxis</button>
+          <button class="pill" data-n="5" onclick="setDimN(5,this)">N=5 Custom</button>
+        </div>
+      </div>
+      <div id="rc-axes-config">
+        <div class="form-row">
+          <div class="form-group"><div class="form-label">D₁ Axis (Entity)</div><input class="form-input" value="EntityAxis(Uuid)" readonly/></div>
+          <div class="form-group"><div class="form-label">D₂ Axis (Property)</div><input class="form-input" value="PropertyAxis(String)" readonly/></div>
+        </div>
+        <div class="form-row" id="rc-d3-row" style="display:none">
+          <div class="form-group"><div class="form-label">D₃ Axis Type</div>
+            <select class="form-select" id="rc-d3-type">
+              <option>TimeAxis</option><option>CategoryAxis</option><option>ScenarioAxis</option><option>Custom</option>
+            </select>
+          </div>
+          <div class="form-group"><div class="form-label">D₃ Axis Name</div><input class="form-input" id="rc-d3-name" placeholder="e.g. period"/></div>
+        </div>
+        <div class="form-row" id="rc-d4-row" style="display:none">
+          <div class="form-group"><div class="form-label">D₄ Axis Type</div>
+            <select class="form-select" id="rc-d4-type">
+              <option>TenantAxis</option><option>GeoAxis</option><option>HierarchyAxis</option><option>Custom</option>
+            </select>
+          </div>
+          <div class="form-group"><div class="form-label">D₄ Axis Name</div><input class="form-input" id="rc-d4-name" placeholder="e.g. org_unit"/></div>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><div class="form-label">Encoding</div>
+          <select class="form-select" id="rc-encoding">
+            <option>Dense (N≤3)</option><option>Sparse (N≥4 or large key sets)</option><option>Hybrid</option>
+          </select>
+        </div>
+        <div class="form-group"><div class="form-label">Cube Type</div>
+          <select class="form-select" id="rc-type">
+            <option>Item</option><option>Container</option><option>Metrics</option><option>EventLog</option>
+            <option>Registry</option><option>Risk</option><option>Artifact</option><option>Data</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group"><div class="form-label">Color Tag</div><div id="rc-color-grid"></div></div>
+    </div>
+    <div class="modal-footer">
+      <div class="btn btn-ghost" onclick="closeModal('modal-register-cube')">Cancel</div>
+      <div class="btn btn-primary" onclick="registerCube()">Register Cube</div>
+    </div>
+  </div>
+</div>
+
+<!-- ADD ATTRIBUTE KEY MODAL -->
+<div class="modal-overlay" id="modal-add-attr">
+  <div class="modal">
+    <div class="modal-header"><div class="modal-title">Add Attribute Key</div><div class="modal-close" onclick="closeModal('modal-add-attr')">✕</div></div>
+    <div class="modal-body">
+      <div class="form-row">
+        <div class="form-group"><div class="form-label">Key Name (D₂)</div><input class="form-input" id="aa-key" placeholder="e.g. health_score"/></div>
+        <div class="form-group"><div class="form-label">Type</div>
+          <select class="form-select" id="aa-type">
+            <option>Text</option><option>Number</option><option>Bool</option><option>DateTime</option>
+            <option>Enum</option><option>Json</option><option>Tag</option><option>Relation</option>
+            <option>Computed</option><option>Ai</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><div class="form-label">CRDT Semantics</div>
+          <select class="form-select" id="aa-crdt" onchange="updateCRDTHint(this)">
+            <option value="LWW">LWW (LastWriteWins)</option>
+            <option value="OrSet">OR-Set (set valued)</option>
+            <option value="MaxRegister">MaxRegister (version/counter)</option>
+            <option value="GrowOnlyCounter">GrowOnlyCounter (views/impressions)</option>
+            <option value="PnCounter">P/N Counter (spend tracking)</option>
+            <option value="Lattice">Lattice (status state machine)</option>
+          </select>
+        </div>
+        <div class="form-group"><div class="form-label">Permission Tier</div>
+          <select class="form-select" id="aa-tier">
+            <option>Public</option><option>Viewer</option><option>Subscriber</option>
+            <option>Contributor</option><option selected>Editor</option>
+            <option>Manager</option><option>Owner</option><option>Admin</option><option>System</option>
+          </select>
+        </div>
+      </div>
+      <div id="aa-crdt-hint" style="font-family:var(--mono);font-size:9px;color:var(--text3);padding:6px;background:var(--bg3);border-radius:4px;margin-top:-4px"></div>
+      <div class="form-row">
+        <div class="form-group"><div class="form-label">AI Computed?</div>
+          <select class="form-select" id="aa-ai">
+            <option value="false">No</option><option value="true">Yes — AI Engine</option>
+          </select>
+        </div>
+        <div class="form-group"><div class="form-label">Required?</div>
+          <select class="form-select" id="aa-required">
+            <option>Yes</option><option>No</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group"><div class="form-label">Description</div><input class="form-input" id="aa-desc" placeholder="What does this attribute represent?"/></div>
+      <div id="aa-ai-config" style="display:none">
+        <div class="form-row">
+          <div class="form-group"><div class="form-label">AI Engine ID</div><input class="form-input" id="aa-engine" placeholder="e.g. KogiHealthEngine.v2"/></div>
+          <div class="form-group"><div class="form-label">Trigger Event</div><input class="form-input" id="aa-trigger" placeholder="e.g. ComponentUpdated"/></div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <div class="btn btn-ghost" onclick="closeModal('modal-add-attr')">Cancel</div>
+      <div class="btn btn-primary" onclick="addAttrKey()">Add Attribute Key</div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="hg-toast"></div>
+
+<script src="hg-nav.js"></script>
+<script src="hg-data.js"></script>
+<script>
+renderNav('cubes');
+const { cubes, attrKeys, grids } = HGData;
+
+let state = { selectedCube: cubes[0], selectedAttr: null, cubeTab:'schema', filterText:'', rcDimN:2, rcColor:HG_COLORS[0], selectedCell:null };
+
+// ── GRID PILLS ──
+document.getElementById('grid-pills').innerHTML = grids.map(g =>
+  `<button class="pill active" style="border-color:${g.color}40;color:${g.color}" onclick="showToast('Filtering: ${g.name}')">${g.domain.split(' ')[0]}</button>`
+).join('');
+
+// ── CUBE LIST ──
+function renderCubeList() {
+  const ft = state.filterText.toLowerCase();
+  document.getElementById('cube-list').innerHTML = cubes
+    .filter(c => !ft || c.name.toLowerCase().includes(ft))
+    .map(c => {
+      const g = grids.find(g=>g.id===c.grid);
+      const isSel = state.selectedCube?.id===c.id;
+      return `<div class="node-item${isSel?' selected':''}" onclick="selectCube('${c.id}')">
+        <div class="ni-dot" style="background:${c.color}"></div>
+        <div style="flex:1;min-width:0">
+          <div class="ni-label">${c.name.split('.').slice(-1)[0]}</div>
+          <div class="ni-type">N=${c.dims} · ${c.rows.toLocaleString()} rows</div>
+        </div>
+        <span class="dim-badge" style="border-color:${c.color}30;color:${c.color}">N=${c.dims}</span>
+      </div>`;
+    }).join('');
+}
+
+function selectCube(id) {
+  state.selectedCube = cubes.find(c=>c.id===id);
+  renderCubeList();
+  renderCubeDetail();
+}
+
+function filterCubes(text) { state.filterText=text; renderCubeList(); }
+
+// ── CUBE DETAIL ──
+function renderCubeDetail() {
+  const cube = state.selectedCube;
+  if (!cube) return;
+  const body = document.getElementById('cube-detail-body');
+  const tab = state.cubeTab;
+
+  if (tab==='schema') body.innerHTML = renderSchemaTab(cube);
+  else if (tab==='cells') body.innerHTML = renderCellGridTab(cube);
+  else if (tab==='dims') body.innerHTML = renderDimsTab(cube);
+  else if (tab==='stats') body.innerHTML = renderStatsTab(cube);
+  else if (tab==='crdt') body.innerHTML = renderCRDTTab(cube);
+
+  // Re-attach row click handlers for schema
+  if (tab==='schema') {
+    document.querySelectorAll('.attr-schema-table tr[data-key]').forEach(row => {
+      row.onclick = () => {
+        document.querySelectorAll('.attr-schema-table tr').forEach(r=>r.classList.remove('selected'));
+        row.classList.add('selected');
+        const ak = attrKeys.find(a=>a.key===row.dataset.key);
+        if (ak) renderAttrInspector(ak);
+      };
+    });
+  }
+  if (tab==='cells') {
+    document.querySelectorAll('.cell').forEach(cell => {
+      cell.onclick = () => {
+        document.querySelectorAll('.cell').forEach(c=>c.classList.remove('selected'));
+        cell.classList.add('selected');
+        showToast('Cell: '+cell.dataset.coord+' · CRDT: '+cell.dataset.crdt);
+      };
+    });
+  }
+}
+
+function switchCubeTab(tab, el) {
+  state.cubeTab = tab;
+  document.querySelectorAll('.hg-tab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+  renderCubeDetail();
+}
+
+function renderSchemaTab(cube) {
+  const cubeAttrs = attrKeys.filter(a=>a.cube===cube.id);
+  const allAttrs = cubeAttrs.length > 0 ? cubeAttrs : attrKeys; // fallback for display
+  return `
+    <div class="hg-card mb-3">
+      <div class="hg-card-header">
+        <div>
+          <div class="hg-card-title">${cube.name}</div>
+          <div class="hg-card-sub">Grid: ${cube.grid} · N=${cube.dims} · ${cube.rows.toLocaleString()} rows · ${cube.cols} columns · ${cube.description}</div>
+        </div>
+        <div style="display:flex;gap:6px">
+          <span class="badge badge-cyan">N=${cube.dims}</span>
+          <span class="badge" style="border-color:${cube.color}40;color:${cube.color}">${cube.cube_type}</span>
+        </div>
+      </div>
+    </div>
+    <div class="section-label">Attribute Key Registry — D₂ Keys</div>
+    <div class="cell-grid-wrap">
+      <table class="attr-schema-table">
+        <thead><tr>
+          <th>Key (D₂)</th><th>Type</th><th>CRDT</th><th>Tier</th><th>AI</th><th>Req</th><th>Description</th>
+        </tr></thead>
+        <tbody>
+          ${allAttrs.map(a => `
+            <tr data-key="${a.key}" class="${a.ai?'ai-row':''}">
+              <td class="mono" style="color:var(--cyan)">${a.key}</td>
+              <td><span class="badge badge-gray">${a.type}</span></td>
+              <td><span class="crdt crdt-${a.crdt.toLowerCase().replace('/','').replace(' ','')}">${a.crdt}</span></td>
+              <td><span class="badge badge-gray" style="font-size:7px">${a.tier}</span></td>
+              <td>${a.ai?`<span class="badge badge-gold">AI</span>`:'<span style="color:var(--text4)">—</span>'}</td>
+              <td>${a.required?'<span style="color:var(--green)">✓</span>':'<span style="color:var(--text4)">○</span>'}</td>
+              <td class="text-muted2" style="font-size:9px">${a.description}</td>
+            </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>
+    <div style="margin-top:10px;display:flex;gap:8px">
+      <button class="btn btn-ghost btn-sm" onclick="openModal('modal-add-attr')">+ Attribute Key</button>
+      <button class="btn btn-ghost btn-sm" onclick="showToast('Exporting schema as JSON…')">⤓ Export Schema</button>
+      <button class="btn btn-ghost btn-sm" onclick="showToast('Schema validation passed ✓')">✓ Validate</button>
+    </div>`;
+}
+
+function renderCellGridTab(cube) {
+  const cols = attrKeys.slice(0,8);
+  const rows = [
+    {id:'ent-0001',vals:{id:'uuid-0001',name:'Alpha Platform',status:'active',version:'2.1.3',tags:'[platform,core]',health_score:'87',budget:'45000',views:'1240'}},
+    {id:'ent-0002',vals:{id:'uuid-0002',name:'Brand Identity',status:'active',version:'1.8.3',tags:'[design,brand]',health_score:'91',budget:'18000',views:'880'}},
+    {id:'ent-0003',vals:{id:'uuid-0003',name:'Mobile App MVP',status:'active',version:'0.4.2',tags:'[mobile]',health_score:'72',budget:'32000',views:'640'}},
+    {id:'ent-0004',vals:{id:'uuid-0004',name:'Finance Infra',status:'paused',version:'0.3.4',tags:'[finance,legal]',health_score:'51',budget:'18300',views:'290'}},
+    {id:'ent-0005',vals:{id:'uuid-0005',name:'Legal Compliance',status:'active',version:'1.3.0',tags:'[legal,IP]',health_score:'94',budget:'8000',views:'410'}},
+  ];
+  const aiKeys = new Set(['health_score','risk_score','anomaly_flag']);
+  const orSetKeys = new Set(['tags','owners']);
+  return `
+    <div style="margin-bottom:8px;display:flex;align-items:center;gap:8px;padding:0 4px">
+      <span class="section-label" style="margin:0">Cell Grid — N=${cube.dims} · ${cube.rows.toLocaleString()} rows</span>
+      <span class="badge badge-cyan">${cube.dims === 2 ? 'D₁×D₂' : cube.dims === 3 ? 'D₁×D₂×D₃' : 'D₁×D₂×D₃×D₄'}</span>
+      ${cube.dims > 2 ? `<div class="pill-group">
+        <button class="pill active">All D₃</button>
+        <button class="pill" onclick="showToast('AS_OF: 2026-01-01')">2026-Q1</button>
+        <button class="pill" onclick="showToast('AS_OF: 2025-01-01')">2025-Q4</button>
+      </div>` : ''}
+    </div>
+    <div class="cell-grid-wrap">
+      <table class="cell-grid">
+        <thead><tr>
+          <th class="row-header">D₁ (Entity)</th>
+          ${cols.map(c=>`<th style="color:${aiKeys.has(c.key)?'var(--gold)':orSetKeys.has(c.key)?'var(--green)':'var(--text3)'}">${c.key}</th>`).join('')}
+        </tr></thead>
+        <tbody>
+          ${rows.map(r=>`<tr>
+            <td class="row-header" style="color:var(--cyan)">${r.id}</td>
+            ${cols.map(c=>{
+              const v=r.vals[c.key]||'';
+              const isEmpty=!v;
+              const isAI=aiKeys.has(c.key);
+              const isOrSet=orSetKeys.has(c.key);
+              const cls=isEmpty?'cell empty':isAI?'cell ai-cell':isOrSet?'cell or-set':'cell';
+              return `<td class="${cls}" data-coord="(${r.id},${c.key})" data-crdt="${c.crdt}">${v||'∅'}</td>`;
+            }).join('')}
+          </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>
+    <div style="margin-top:6px;font-family:var(--mono);font-size:8px;color:var(--text3)">
+      <span style="color:var(--gold)">■ AI-computed</span>&nbsp;&nbsp;
+      <span style="color:var(--green)">■ OR-Set</span>&nbsp;&nbsp;
+      <span style="color:var(--text4)">∅ empty cell</span>
+    </div>`;
+}
+
+function renderDimsTab(cube) {
+  const axes = cube.dim_axes || ['EntityAxis(Uuid)', 'PropertyAxis(String)'];
+  const dimTypes = ['EntityAxis','PropertyAxis','TimeAxis','CategoryAxis','TenantAxis'];
+  const dimColors = ['#00d8b0','#3d84e8','#8b5cf6','#e8a832','#e8526a'];
+  const exampleKeys = [
+    ['uuid-0001','uuid-0002','uuid-0003','uuid-0004','uuid-0005'],
+    ['id','name','status','version','tags','health_score','budget','views'],
+    ['2026-Q1','2026-Q2','2025-Q4','2025-Q3'],
+    ['tenant-A','tenant-B','tenant-C'],
+    ['geo-us','geo-eu','geo-ap'],
+  ];
+  return `
+    <div class="section-label">Dimension Axes — N=${cube.dims}</div>
+    <div style="display:flex;flex-direction:column;gap:8px">
+      ${axes.map((ax,i) => {
+        const color=dimColors[i]||'#888';
+        const keys=exampleKeys[i]||[];
+        return `<div class="dim-axis-block" style="border-left:3px solid ${color}">
+          <div class="dim-axis-header">
+            <span class="dim-idx">D${i+1}</span>
+            <span class="dim-name">${ax}</span>
+            <span class="badge" style="border-color:${color}40;color:${color};margin-left:auto">${dimTypes[i]||'CustomAxis'}</span>
+          </div>
+          <div class="kv"><span class="kv-key">Key type</span><span class="kv-val">${i===0?'Uuid':(i===1?'String':(i===2?'Date/String':'String'))}</span></div>
+          <div class="kv"><span class="kv-key">Ordering</span><span class="kv-val">${i===0?'Unordered':(i===1?'Alphabetical':(i===2?'Chronological':'Unordered'))}</span></div>
+          <div class="kv"><span class="kv-key">Cardinality</span><span class="kv-val">${i===0?cube.rows.toLocaleString():(i===1?cube.cols:(i===2?'Unbounded':'Low'))}</span></div>
+          <div class="kv" style="margin-bottom:6px"><span class="kv-key">Encoding</span><span class="kv-val">${i<2?'Dense':'Sparse'}</span></div>
+          <div class="dim-key-preview">
+            ${keys.slice(0,6).map((k,j)=>`<span class="dim-key${j===0?' active':''}">${k}</span>`).join('')}
+            ${keys.length>6?`<span class="dim-key">+${keys.length-6} more</span>`:''}
+          </div>
+        </div>`;
+      }).join('')}
+      <button class="btn btn-ghost btn-sm" style="align-self:flex-start" onclick="openModal('modal-register-cube')">+ Add Dimension</button>
+    </div>
+    <div class="section-label mt-3">DimSlice Filter (HyperQL WHERE)</div>
+    <div style="background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:10px;font-family:var(--mono);font-size:10px;color:var(--text2)">
+      SELECT * FROM <span style="color:var(--cyan)">${cube.name}</span><br>
+      WHERE D₁ IN (uuid-0001, uuid-0002)<br>
+      ${cube.dims>2?'AND D₃ = "2026-Q1"<br>':''}
+      LIMIT 50
+    </div>`;
+}
+
+function renderStatsTab(cube) {
+  const sparkVals = [42,68,71,85,88,92,87,84,91,88,94,89];
+  return `
+    <div class="stat-grid grid-4 mb-3">
+      ${[['Total Rows',cube.rows.toLocaleString(),'var(--cyan)'],['Columns',cube.cols,'var(--blue)'],['Dimensions','N='+cube.dims,'var(--violet)'],['Health',cube.dims>2?'91':'87','var(--green)']].map(([l,v,c])=>`
+        <div class="stat-cell"><div class="stat-label">${l}</div><div class="stat-val" style="color:${c}">${v}</div></div>`).join('')}
+    </div>
+    <div class="hg-card mb-3">
+      <div class="hg-card-header"><div class="hg-card-title">Write Volume (last 24h)</div></div>
+      <div class="hg-card-body">
+        <div style="display:flex;align-items:flex-end;gap:4px;height:60px">
+          ${sparkVals.map(v=>`<div style="flex:1;background:var(--cyan);border-radius:2px 2px 0 0;opacity:0.7;height:${v}%"></div>`).join('')}
+        </div>
+        <div style="font-family:var(--mono);font-size:8px;color:var(--text3);margin-top:4px;display:flex;justify-content:space-between">
+          <span>00:00</span><span>06:00</span><span>12:00</span><span>18:00</span><span>24:00</span>
+        </div>
+      </div>
+    </div>
+    <div class="hg-card">
+      <div class="hg-card-header"><div class="hg-card-title">CRDT Operation Distribution</div></div>
+      <div class="hg-card-body">
+        ${[['LWW (LastWriteWins)','62%','var(--blue)'],['OR-Set','24%','var(--green)'],['MaxRegister','8%','var(--violet)'],['GrowOnlyCounter','4%','var(--gold)'],['PnCounter','2%','var(--teal)']].map(([l,p,c])=>`
+          <div class="health-row">
+            <span class="health-label">${l}</span>
+            <div class="health-bar"><div class="health-fill" style="background:${c};width:${p}"></div></div>
+            <span class="health-val">${p}</span>
+          </div>`).join('')}
+      </div>
+    </div>`;
+}
+
+function renderCRDTTab(cube) {
+  const crdtDocs = {
+    LWW:'LastWriteWins — most recent timestamp wins. Used for text, description, status, config.',
+    OrSet:'OR-Set (Observed-Remove Set) — concurrent adds all survive. Used for tags, owners, children.',
+    MaxRegister:'MaxRegister — always keeps the highest value. Used for version numbers, counters.',
+    GrowOnlyCounter:'GrowOnlyCounter — only increments, never decrements. Used for views, impressions.',
+    PnCounter:'P/N Counter — positive and negative deltas commute. Used for budget_spent.',
+    Lattice:'Lattice CRDT — state transition order is a partial order. Used for lifecycle status.',
+  };
+  return `
+    <div class="section-label">CRDT Semantics Configuration — ${cube.name}</div>
+    ${Object.entries(crdtDocs).map(([crdt,doc]) => {
+      const matching = attrKeys.filter(a=>a.crdt===crdt.replace('OrSet','OrSet'));
+      return `<div class="hg-card mb-2">
+        <div class="hg-card-header">
+          <div class="hg-card-title" style="font-size:10px"><span class="crdt crdt-${crdt.toLowerCase()}">${crdt}</span></div>
+          <span class="badge badge-gray">${matching.length} keys</span>
+        </div>
+        <div class="hg-card-body">
+          <p style="font-family:var(--mono);font-size:9px;color:var(--text3);margin-bottom:6px">${doc}</p>
+          <div style="display:flex;flex-wrap:wrap;gap:4px">
+            ${matching.map(a=>`<span class="tag">${a.key}</span>`).join('')}
+            ${matching.length===0?'<span style="font-family:var(--mono);font-size:8px;color:var(--text4)">No keys with this CRDT in this cube</span>':''}
+          </div>
+        </div>
+      </div>`;
+    }).join('')}`;
+}
+
+// ── ATTRIBUTE INSPECTOR ──
+function renderAttrInspector(attr) {
+  const insp = document.getElementById('attr-inspector');
+  insp.innerHTML = `
+    <div class="insp-section">Attribute Key</div>
+    <div class="kv" style="padding:4px 12px"><span class="kv-key">Key (D₂)</span><span class="kv-val c-cyan">${attr.key}</span></div>
+    <div class="kv" style="padding:4px 12px"><span class="kv-key">Type</span><span class="kv-val">${attr.type}</span></div>
+    <div class="kv" style="padding:4px 12px"><span class="kv-key">CRDT</span><span class="kv-val"><span class="crdt crdt-${attr.crdt.toLowerCase()}">${attr.crdt}</span></span></div>
+    <div class="kv" style="padding:4px 12px"><span class="kv-key">Min Tier</span><span class="kv-val">${attr.tier}</span></div>
+    <div class="kv" style="padding:4px 12px"><span class="kv-key">Required</span><span class="kv-val ${attr.required?'c-green':''}">${attr.required?'Yes':'No'}</span></div>
+    <div class="kv" style="padding:4px 12px"><span class="kv-key">AI Computed</span><span class="kv-val ${attr.ai?'c-gold':''}">${attr.ai?'Yes':'No'}</span></div>
+    ${attr.computed_by?`<div class="kv" style="padding:4px 12px"><span class="kv-key">Engine</span><span class="kv-val" style="font-size:8px">${attr.computed_by}</span></div>`:''}
+    ${attr.confidence!=null?`<div class="kv" style="padding:4px 12px"><span class="kv-key">Confidence</span><span class="kv-val c-gold">${Math.round(attr.confidence*100)}%</span></div>`:''}
+    <div class="insp-section" style="margin-top:4px">Description</div>
+    <div style="padding:6px 12px;font-family:var(--mono);font-size:9px;color:var(--text3);line-height:1.5">${attr.description}</div>
+    <div class="insp-section" style="margin-top:4px">CRDT Reference</div>
+    <div style="padding:6px 12px;font-family:var(--mono);font-size:9px;color:var(--text3);line-height:1.5">${getCRDTDoc(attr.crdt)}</div>
+    <div style="padding:8px 12px;display:flex;flex-direction:column;gap:4px">
+      <button class="btn btn-ghost btn-sm" onclick="showToast('Editing ${attr.key}…')">Edit Attribute</button>
+      <button class="btn btn-danger btn-sm" onclick="showToast('Removing ${attr.key} from registry…')">Remove from Registry</button>
+    </div>`;
+}
+
+function getCRDTDoc(crdt) {
+  const docs = { LWW:'Last timestamp wins. Safe for single-authored fields.', OrSet:'Concurrent adds survive; removes tagged. Safe for sets.', MaxRegister:'Always keeps maximum. Safe for version numbers.', GrowOnlyCounter:'Monotonic increment only. Safe for impression counts.', PnCounter:'Both +/− deltas commute across nodes.', Lattice:'State must follow partial order. Safe for lifecycle status.' };
+  return docs[crdt]||crdt;
+}
+
+// ── REGISTER CUBE ──
+let rcDimN = 2;
+function setDimN(n, el) {
+  rcDimN = n;
+  document.querySelectorAll('#rc-dim-pills .pill').forEach(b=>b.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('rc-d3-row').style.display = n>=3?'':'none';
+  document.getElementById('rc-d4-row').style.display = n>=4?'':'none';
+}
+
+function registerCube() {
+  const name = document.getElementById('rc-name').value.trim();
+  if (!name) { showToast('Cube name required', 'error'); return; }
+  showToast('Cube "'+name+'" registered (N='+rcDimN+')', 'success');
+  closeModal('modal-register-cube');
+}
+
+// ── ADD ATTR ──
+function addAttrKey() {
+  const key = document.getElementById('aa-key').value.trim();
+  if (!key) { showToast('Key name required', 'error'); return; }
+  showToast('Attribute "'+key+'" added to registry', 'success');
+  closeModal('modal-add-attr');
+}
+
+function updateCRDTHint(sel) {
+  const docs = { LWW:'Use for: name, description, status, config, visibility', OrSet:'Use for: tags, owners, children, toolbox_ids, dependencies', MaxRegister:'Use for: version, monotonic counters', GrowOnlyCounter:'Use for: views, likes, impressions (never decrement)', PnCounter:'Use for: budget_spent, consumption (concurrent add/subtract)', Lattice:'Use for: lifecycle_status (state machine partial order)' };
+  document.getElementById('aa-crdt-hint').textContent = docs[sel.value]||'';
+}
+
+document.getElementById('aa-ai').onchange = function() {
+  document.getElementById('aa-ai-config').style.display = this.value==='true' ? '' : 'none';
+};
+
+// ── MODAL POPULATE ──
+document.getElementById('rc-grid').innerHTML = grids.map(g=>`<option value="${g.id}">${g.name}</option>`).join('');
+buildColorPicker('rc-color-grid', HG_COLORS[0], c=>{});
+
+// ── INIT ──
+renderCubeList();
+renderCubeDetail();
+updateCRDTHint(document.getElementById('aa-crdt'));
+</script>
+</body>
+</html>

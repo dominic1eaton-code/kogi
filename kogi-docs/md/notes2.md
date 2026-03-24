@@ -2127,3 +2127,10 @@ Example: In a CRM like Salesforce, Company A and Company B are separate tenants;
 Tenancy Models
 Multi-tenant: Multiple tenants share the same resources and application instance, maximizing efficiency.
 Single-tenant:
+
+---
+
+apapo:
+hypergrid - structural grid data layer
+hypergraph - relationship/connection graph layer
+hypercube - computational matrix layer
