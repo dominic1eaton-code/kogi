@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HyperQL Console — Hypergrid</title>
+<link rel="stylesheet" href="shared.css">
+<style>
+.console-layout {
+  display: grid;
+  grid-template-columns: 260px 1fr;
+  gap: 0;
+  height: calc(100vh - 48px);
+  overflow: hidden;
+}
+.query-sidebar {
+  background: var(--paper-2);
+  border-right: 0.5px solid var(--rule);
+  overflow-y: auto;
+  padding: 1rem;
+}
+.qs-section { margin-bottom: 1.5rem; }
+.qs-title { font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--ink-4); margin-bottom: 8px; font-weight: 600; }
+.qs-item {
+  padding: 5px 8px;
+  border-radius: 5px;
+  font-size: 12px;
+  color: var(--ink-2);
+  cursor: pointer;
+  transition: background 0.1s;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.qs-item:hover { background: var(--paper-3); }
+.qs-item .qs-icon { color: var(--ink-4); font-size: 10px; }
+.qs-saved {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  padding: 6px 8px;
+  border-radius: 5px;
+  border: 0.5px solid var(--rule);
+  background: var(--paper);
+  color: var(--ink-2);
+  cursor: pointer;
+  margin-bottom: 4px;
+  transition: border-color 0.1s;
+}
+.qs-saved:hover { border-color: var(--accent); color: var(--accent); }
+
+.query-main {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.editor-area {
+  border-bottom: 0.5px solid var(--rule);
+  display: flex;
+  flex-direction: column;
+}
+.editor-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 1rem;
+  background: var(--paper-2);
+  border-bottom: 0.5px solid var(--rule);
+  flex-shrink: 0;
+}
+.editor-grid-sel {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  background: var(--paper);
+  border: 0.5px solid var(--rule);
+  border-radius: 4px;
+  padding: 3px 8px;
+  color: var(--ink-2);
+  cursor: pointer;
+}
+#queryEditor {
+  width: 100%;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--ink);
+  background: var(--paper);
+  border: none;
+  outline: none;
+  resize: none;
+  padding: 1rem;
+  line-height: 1.7;
+  flex: 1;
+  min-height: 180px;
+}
+.results-area {
+  flex: 1;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+.results-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 1rem;
+  background: var(--paper-2);
+  border-bottom: 0.5px solid var(--rule);
+  flex-shrink: 0;
+}
+.results-count {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--ink-3);
+}
+.results-table-wrap {
+  flex: 1;
+  overflow: auto;
+}
+.execution-meta {
+  padding: 6px 1rem;
+  border-top: 0.5px solid var(--rule);
+  display: flex;
+  gap: 1.5rem;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--ink-4);
+  background: var(--paper-2);
+  flex-shrink: 0;
+}
+
+.explain-box {
+  background: var(--paper-2);
+  border: 0.5px solid var(--rule);
+  border-radius: 8px;
+  padding: 1rem;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--ink-3);
+  line-height: 1.7;
+}
+</style>
+</head>
+<body>
+<div id="sidebar" class="sidebar"></div>
+
+<div class="main">
+  <div class="topbar">
+    <div class="topbar-breadcrumb">
+      <span class="current">HyperQL Console</span>
+    </div>
+    <div class="topbar-spacer"></div>
+    <div class="topbar-actions">
+      <button class="btn btn-ghost btn-sm" onclick="showTab('explain')">Explain</button>
+      <button class="btn btn-ghost btn-sm" onclick="saveQuery()">Save Query</button>
+      <button class="btn btn-primary btn-sm" onclick="runQuery()">▶ Run  <kbd style="font-size:9px;opacity:0.7">⌘↵</kbd></button>
+    </div>
+  </div>
+
+  <div class="console-layout">
+    <!-- Left sidebar: cubes + saved queries -->
+    <div class="query-sidebar">
+      <div class="qs-section">
+        <div class="qs-title">Cubes</div>
+        <div class="qs-item" onclick="insertCube('kogi.portfolio.components')"><span class="qs-icon">⊞</span> kogi.portfolio.components</div>
+        <div class="qs-item" onclick="insertCube('kogi.portfolio.kpis')"><span class="qs-icon">⊞</span> kogi.portfolio.kpis</div>
+        <div class="qs-item" onclick="insertCube('kogi.portfolio.finances')"><span class="qs-icon">⊞</span> kogi.portfolio.finances</div>
+        <div class="qs-item" onclick="insertCube('ume.kernel.modules')"><span class="qs-icon">⊞</span> ume.kernel.modules</div>
+        <div class="qs-item" onclick="insertCube('ume.chombo.entities')"><span class="qs-icon">⊞</span> ume.chombo.entities</div>
+        <div class="qs-item" onclick="insertCube('qala.solutions')"><span class="qs-icon">⊞</span> qala.solutions</div>
+        <div class="qs-item" onclick="insertCube('qala.ccrs')"><span class="qs-icon">⊞</span> qala.ccrs</div>
+      </div>
+      <div class="qs-section">
+        <div class="qs-title">Templates</div>
+        <div class="qs-item" onclick="loadTemplate('basic')">📋 Basic SELECT</div>
+        <div class="qs-item" onclick="loadTemplate('asof')">⏪ AS_OF Time Travel</div>
+        <div class="qs-item" onclick="loadTemplate('fold')">📊 DimFold (N=3)</div>
+        <div class="qs-item" onclick="loadTemplate('graph')">◎ Graph Traversal</div>
+        <div class="qs-item" onclick="loadTemplate('crossgrid')">⟷ Cross-Grid Join</div>
+        <div class="qs-item" onclick="loadTemplate('nlquery')">✦ NL → HyperQL</div>
+      </div>
+      <div class="qs-section">
+        <div class="qs-title">Saved Queries</div>
+        <div class="qs-saved" onclick="loadSaved('hs1')">Active projects, over budget</div>
+        <div class="qs-saved" onclick="loadSaved('hs2')">Health score trend Q1→Q2</div>
+        <div class="qs-saved" onclick="loadSaved('hs3')">CCR approval chain</div>
+        <div class="qs-saved" onclick="loadSaved('hs4')">Worker capacity by org</div>
+        <div class="qs-saved" onclick="loadSaved('hs5')">Platform health union</div>
+      </div>
+    </div>
+
+    <!-- Main area -->
+    <div class="query-main">
+      <div class="editor-area">
+        <div class="editor-toolbar">
+          <span class="editor-grid-sel">Grid: kogi-production ▾</span>
+          <span class="badge badge-blue" id="queryMode">SELECT</span>
+          <span class="text-xs text-muted" id="queryInfo">— chars</span>
+          <div style="flex:1"></div>
+          <button class="btn btn-ghost btn-sm" onclick="showNLDialog()">✦ Natural Language</button>
+          <button class="btn btn-ghost btn-sm" onclick="formatQuery()">⊹ Format</button>
+        </div>
+        <textarea id="queryEditor" spellcheck="false"
+          placeholder="Enter HyperQL query…"
+          oninput="updateQueryMeta()"></textarea>
+      </div>
+
+      <div class="tabs" style="padding:0 1rem;margin-bottom:0;flex-shrink:0;border-bottom:0.5px solid var(--rule)">
+        <button class="tab-btn active" onclick="showTab('results',this)">Results</button>
+        <button class="tab-btn" onclick="showTab('explain',this)">Explain</button>
+        <button class="tab-btn" onclick="showTab('history',this)">History</button>
+      </div>
+
+      <div class="results-area">
+        <!-- Results tab -->
+        <div id="tab-results" class="tab-content active" style="display:flex;flex-direction:column;flex:1;overflow:hidden">
+          <div class="results-toolbar">
+            <span class="results-count" id="resCount">0 rows</span>
+            <div style="flex:1"></div>
+            <button class="btn btn-ghost btn-sm">↓ Export CSV</button>
+            <button class="btn btn-ghost btn-sm">↓ Export Parquet</button>
+          </div>
+          <div class="results-table-wrap">
+            <div id="resultsContent" style="padding:2rem;text-align:center;color:var(--ink-4)">
+              <div style="font-size:32px;margin-bottom:0.75rem">›_</div>
+              <div style="font-weight:600;color:var(--ink-2);margin-bottom:6px">Run a query to see results</div>
+              <div style="font-size:13px">Press ⌘↵ or click Run</div>
+            </div>
+          </div>
+          <div class="execution-meta" id="execMeta">
+            <span>EXECUTION TIME: —</span>
+            <span>SCAN: —</span>
+            <span>BACKEND: PostgreSQL</span>
+            <span>CURSOR: page 1 of 1</span>
+          </div>
+        </div>
+
+        <!-- Explain tab -->
+        <div id="tab-explain" class="tab-content" style="padding:1.5rem;overflow:auto;flex:1">
+          <div class="explain-box" id="explainContent">Run a query to see the execution plan.</div>
+        </div>
+
+        <!-- History tab -->
+        <div id="tab-history" class="tab-content" style="padding:1rem;overflow:auto;flex:1">
+          <table class="hg-table">
+            <thead><tr><th>Time</th><th>Query</th><th>Rows</th><th>Duration</th><th>Status</th></tr></thead>
+            <tbody>
+              <tr><td class="mono">14:32:01</td><td class="mono" style="max-width:300px;overflow:hidden;text-overflow:ellipsis">SELECT cell[D₁,"name"].value, cell[D₁,"health_score"].value...</td><td class="mono">50</td><td class="mono">82ms</td><td><span class="badge badge-green">OK</span></td></tr>
+              <tr><td class="mono">14:28:44</td><td class="mono" style="max-width:300px;overflow:hidden;text-overflow:ellipsis">SELECT * FROM kogi.portfolio.kpis FOLD D₃ WITH AVG...</td><td class="mono">842</td><td class="mono">340ms</td><td><span class="badge badge-green">OK</span></td></tr>
+              <tr><td class="mono">14:22:19</td><td class="mono" style="max-width:300px;overflow:hidden;text-overflow:ellipsis">TRAVERSE GRAPH FROM '3f4a1c...' EDGE_TYPE=Dependency...</td><td class="mono">18</td><td class="mono">204ms</td><td><span class="badge badge-green">OK</span></td></tr>
+              <tr><td class="mono">14:15:03</td><td class="mono" style="max-width:300px;overflow:hidden;text-overflow:ellipsis">SELECT * FROM qala.ccrs WHERE cell[D₁,"status"].value...</td><td class="mono">—</td><td class="mono">—</td><td><span class="badge badge-red">Error</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- NL Query Dialog -->
+<div class="modal-overlay" id="nlModal">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title">✦ Natural Language to HyperQL</span>
+      <button class="modal-close" onclick="document.getElementById('nlModal').classList.remove('open')">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="field">
+        <label>Ask a question about your data</label>
+        <textarea id="nlInput" placeholder="e.g. Which of my active projects are over budget this quarter?" style="min-height:80px"></textarea>
+      </div>
+      <div class="field">
+        <label>Cube context</label>
+        <select><option>kogi.portfolio.components</option><option>ume.kernel.modules</option><option>qala.solutions</option></select>
+      </div>
+      <div id="nlResult" style="display:none">
+        <div class="callout callout-ok"><span class="callout-icon">OK</span><div class="callout-text">Query generated with confidence 0.94</div></div>
+        <div class="code-block" id="nlGeneratedQuery"></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="document.getElementById('nlModal').classList.remove('open')">Cancel</button>
+      <button class="btn btn-ghost" onclick="generateNL()">Generate HyperQL</button>
+      <button class="btn btn-primary" id="useNLBtn" style="display:none" onclick="useNLQuery()">Use this Query</button>
+    </div>
+  </div>
+</div>
+
+<script src="shared-nav.js"></script>
+<script>
+buildSidebar('query');
+
+const templates = {
+  basic: `-- Basic SELECT from N=2 cube
+SELECT cell[D₁, "name"].value AS name,
+       cell[D₁, "status"].value AS status,
+       cell[D₁, "health_score"].value AS health_score,
+       cell[D₁, "budget"].value AS budget,
+       cell[D₁, "budget_spent"].value AS budget_spent
+FROM kogi.portfolio.components
+WHERE cell[D₁, "status"].value = '"Active"'
+  AND cell[D₁, "item_type"].value = '"Project"'
+ORDER BY cell[D₁, "health_score"].value DESC
+LIMIT 50;`,
+
+  asof: `-- AS_OF time travel — replay EventLog to 2026-03-01
+SELECT cell[D₁, "name"].value AS name,
+       cell[D₁, "status"].value AS status,
+       cell[D₁, "budget_spent"].value AS budget_spent
+FROM kogi.portfolio.components AS_OF '2026-03-01T00:00:00Z'
+WHERE cell[D₁, "item_type"].value = '"Project"'
+ORDER BY cell[D₁, "updated_at"].value DESC;`,
+
+  fold: `-- DimFold: collapse TimeAxis (D₃) into aggregate
+-- Shows average health score per component over last 3 quarters
+SELECT D₁.entity_id AS component_id,
+       cell[D₁, "name"].value AS name,
+       FOLD D₃ WITH AVG AS avg_health
+FROM kogi.portfolio.kpis
+WHERE D₂.metric_name = 'health_score'
+  AND D₃.period IN ('2025-Q3', '2025-Q4', '2026-Q1')
+ORDER BY avg_health DESC;`,
+
+  graph: `-- Graph traversal: find all transitive dependents
+TRAVERSE GRAPH FROM '3f4a1c-uuid-here'
+  EDGE_TYPE = Dependency
+  DIRECTION = Inbound
+  MAX_DEPTH = 10
+  FILTER WHERE cell[D₁, "status"].value != '"Archived"';`,
+
+  crossgrid: `-- Cross-system join via Employs edges (Ume → Kogi workers)
+SELECT ume_unit.org_unit_id,
+       cell[ume_unit.org_unit_id, "name"].value AS unit_name,
+       COUNT(kogi_worker.worker_id) AS contractor_count,
+       SUM(cell[kogi_worker.worker_id, "capacity"].value) AS total_capacity
+FROM ume.admin.org_units AS ume_unit
+TRAVERSE GRAPH FROM ume_unit
+  EDGE_TYPE = Employs
+  TARGET_GRID = 'kogi://'
+  AS kogi_worker
+GROUP BY ume_unit.org_unit_id
+ORDER BY total_capacity DESC;`,
+
+  nlquery: `-- Natural Language: "Which active projects are over budget?"
+-- (Auto-generated by NL→HyperQL bridge — confidence: 0.94)
+SELECT cell[D₁, "name"].value AS name,
+       cell[D₁, "status"].value AS status,
+       cell[D₁, "budget"].value AS budget,
+       cell[D₁, "budget_spent"].value AS budget_spent,
+       (cell[D₁, "budget_spent"].value /
+        cell[D₁, "budget"].value) AS utilization_pct
+FROM kogi.portfolio.components
+WHERE cell[D₁, "item_type"].value = '"Project"'
+  AND cell[D₁, "status"].value = '"Active"'
+  AND (cell[D₁, "budget_spent"].value /
+       cell[D₁, "budget"].value) > 1.0
+ORDER BY utilization_pct DESC;`,
+};
+
+const savedQueries = {
+  hs1: templates.basic,
+  hs2: templates.fold,
+  hs3: `SELECT cell[D₁, "ccr_id"].value, cell[D₁, "status"].value,
+       cell[D₁, "risk_tier"].value, cell[D₁, "resolution_time_hours"].value
+FROM qala.ccrs
+WHERE cell[D₁, "created_at"].value > '2026-03-01'
+ORDER BY cell[D₁, "risk_tier"].value DESC;`,
+  hs4: templates.crossgrid,
+  hs5: `-- Platform health across all three systems
+SELECT 'kogi' AS system,
+       AVG(cell[D₁, "health_score"].value) AS avg_health,
+       COUNT(D₁.entity_id) AS active_count
+FROM kogi.portfolio.components
+WHERE cell[D₁, "status"].value = '"Active"'
+UNION ALL
+SELECT 'ume',
+       AVG(cell[D₁, "health_score"].value),
+       COUNT(D₁.entity_id)
+FROM ume.kernel.modules
+WHERE cell[D₁, "lifecycle_state"].value = '"Running"'
+UNION ALL
+SELECT 'qala',
+       AVG(cell[D₁, "quality_score"].value),
+       COUNT(D₁.entity_id)
+FROM qala.solutions
+WHERE cell[D₁, "lifecycle_state"].value = '"Active"';`,
+};
+
+function loadTemplate(t) {
+  document.getElementById('queryEditor').value = templates[t];
+  updateQueryMeta();
+}
+function loadSaved(k) {
+  document.getElementById('queryEditor').value = savedQueries[k];
+  updateQueryMeta();
+}
+function insertCube(c) {
+  const el = document.getElementById('queryEditor');
+  el.value += `\nFROM ${c}`;
+  updateQueryMeta();
+}
+
+function updateQueryMeta() {
+  const val = document.getElementById('queryEditor').value;
+  document.getElementById('queryInfo').textContent = `${val.length} chars`;
+  const m = val.trim().match(/^(SELECT|TRAVERSE|WITH|FOLD)/i);
+  document.getElementById('queryMode').textContent = m ? m[1].toUpperCase() : 'QUERY';
+}
+
+const sampleResults = [
+  { name:'Brand Identity — Client A', status:'Active', health_score:87.4, budget:12000, budget_spent:8420 },
+  { name:'Annual Report Design', status:'Active', health_score:79.5, budget:9500, budget_spent:4100 },
+  { name:'Motion Graphics Pack', status:'Active', health_score:72.1, budget:8000, budget_spent:6100 },
+  { name:'Website Audit', status:'Active', health_score:68.9, budget:1200, budget_spent:480 },
+];
+
+function runQuery() {
+  const q = document.getElementById('queryEditor').value.trim();
+  if (!q) return;
+  document.getElementById('resultsContent').innerHTML = '<div style="padding:2rem;text-align:center;color:var(--ink-3)">Running query…</div>';
+  document.getElementById('execMeta').innerHTML = '<span>EXECUTION TIME: …</span>';
+  setTimeout(() => {
+    const cols = Object.keys(sampleResults[0]);
+    let html = `<table class="hg-table"><thead><tr>${cols.map(c=>`<th>${c}</th>`).join('')}</tr></thead><tbody>`;
+    sampleResults.forEach(r => {
+      html += `<tr>${cols.map(c => {
+        const v = r[c];
+        if (c === 'status') return `<td><span class="badge badge-green">${v}</span></td>`;
+        if (c === 'health_score') return `<td><span style="font-family:var(--font-mono);color:${v>=80?'var(--green)':v>=60?'var(--amber)':'var(--red)'}">${v}</span></td>`;
+        if (typeof v === 'number') return `<td><span class="text-mono">${v.toLocaleString()}</span></td>`;
+        return `<td>${v}</td>`;
+      }).join('')}</tr>`;
+    });
+    html += '</tbody></table>';
+    document.getElementById('resultsContent').innerHTML = html;
+    document.getElementById('resCount').textContent = `${sampleResults.length} rows`;
+    document.getElementById('execMeta').innerHTML = `<span>EXECUTION TIME: 82ms</span><span>SCAN: 84,241 rows</span><span>BACKEND: PostgreSQL</span><span>CURSOR: page 1 of 1</span>`;
+  }, 600);
+}
+
+function showTab(name, btn) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  ['results','explain','history'].forEach(t => {
+    const el = document.getElementById(`tab-${t}`);
+    if (el) el.style.display = t === name ? 'flex' : 'none';
+  });
+  const expEl = document.getElementById('tab-explain');
+  if (expEl) expEl.style.display = name === 'explain' ? 'block' : 'none';
+  const histEl = document.getElementById('tab-history');
+  if (histEl) histEl.style.display = name === 'history' ? 'block' : 'none';
+}
+
+function formatQuery() {
+  const el = document.getElementById('queryEditor');
+  el.value = el.value.replace(/\s+/g, ' ').replace(/ (FROM|WHERE|ORDER BY|GROUP BY|JOIN|UNION ALL|AND|OR|LIMIT) /gi, '\n$1 ').trim();
+}
+
+function showNLDialog() {
+  document.getElementById('nlModal').classList.add('open');
+  document.getElementById('nlResult').style.display = 'none';
+  document.getElementById('useNLBtn').style.display = 'none';
+}
+
+function generateNL() {
+  const q = document.getElementById('nlInput').value;
+  if (!q) return;
+  setTimeout(() => {
+    document.getElementById('nlGeneratedQuery').textContent = templates.nlquery;
+    document.getElementById('nlResult').style.display = 'block';
+    document.getElementById('useNLBtn').style.display = '';
+  }, 800);
+}
+
+function useNLQuery() {
+  document.getElementById('queryEditor').value = templates.nlquery;
+  document.getElementById('nlModal').classList.remove('open');
+  updateQueryMeta();
+}
+
+function saveQuery() {
+  alert('Query saved to history.');
+}
+
+document.addEventListener('keydown', e => {
+  if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') { runQuery(); e.preventDefault(); }
+});
+
+// Load basic template by default
+loadTemplate('basic');
+</script>
+</body>
+</html>

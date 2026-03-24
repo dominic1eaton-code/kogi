@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KOGI · Portfolio · Benefits</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;600;700&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap');
+:root{--bg:#0a0b0f;--bg1:#0f1117;--bg2:#13151e;--bg3:#181c28;--border:rgba(255,255,255,0.06);--border2:rgba(255,255,255,0.1);--text:#c8ccdb;--text2:#7a8099;--text3:#4a5068;--cyan:#00d4aa;--gold:#c8a84b;--violet:#7c5cbf;--rose:#c45c7a;--orange:#c87c3a;--blue:#3a7cc8;--green:#4aab6d;--pink:#bf5ca0;--nav-w:158px;--mono:'IBM Plex Mono',monospace;--sans:'IBM Plex Sans',sans-serif}
+*{box-sizing:border-box;margin:0;padding:0}html,body{width:100%;height:100%;background:var(--bg);font-family:var(--sans);color:var(--text);font-size:10px;overflow:hidden}a{text-decoration:none;color:inherit}
+.screen{display:flex;flex-direction:column;width:100%;height:100vh;overflow:hidden}
+.body-layout{display:flex;flex:1;min-height:0;overflow:hidden}
+.main{flex:1;display:flex;flex-direction:column;min-width:0;overflow:hidden}
+.content{flex:1;overflow:auto;padding:14px;display:flex;flex-direction:column;gap:12px}
+.g-hdr{height:36px;background:var(--bg1);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 12px;gap:10px;flex-shrink:0}
+.g-logo{font-family:var(--mono);font-size:11px;font-weight:700;color:var(--cyan);letter-spacing:.1em}
+.g-bc{display:flex;align-items:center;gap:4px;font-family:var(--mono);font-size:9px;color:var(--text3)}
+.g-bc span{color:var(--text2)}.g-bc .sep{color:var(--text3)}.g-bc .cur{color:var(--text)}
+.g-dot{width:8px;height:8px;border-radius:50%;background:var(--cyan);margin-left:auto;animation:pulse 2s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+.sub-nav{height:30px;background:var(--bg2);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 10px;gap:1px;flex-shrink:0;overflow-x:auto}
+.sub-nav::-webkit-scrollbar{display:none}
+.sn-item{display:flex;align-items:center;padding:4px 10px;font-family:var(--mono);font-size:8px;color:var(--text3);cursor:pointer;border-radius:3px;white-space:nowrap;transition:all .1s;border:1px solid transparent}
+.sn-item:hover{color:var(--text2);background:var(--bg3)}.sn-item.active{color:var(--text);background:var(--bg3);border-color:var(--border2)}
+.sn-sep{width:1px;height:14px;background:var(--border);margin:0 4px;flex-shrink:0}
+.l-nav{width:var(--nav-w);background:var(--bg1);border-right:1px solid var(--border);flex-shrink:0;display:flex;flex-direction:column;padding:10px 0;gap:1px;overflow-y:auto}
+.nav-sec{font-family:var(--mono);font-size:7px;letter-spacing:.14em;text-transform:uppercase;color:var(--text3);padding:8px 12px 3px}
+.nav-it{display:flex;align-items:center;gap:6px;padding:5px 12px;font-family:var(--mono);font-size:9px;color:var(--text3);cursor:pointer;border-left:2px solid transparent;white-space:nowrap;overflow:hidden;transition:all .1s}
+.nav-it:hover{background:var(--bg2);color:var(--text2)}.nav-it.active{background:var(--bg2);color:var(--text);border-left-color:var(--cyan)}
+.nav-it .badge{margin-left:auto;background:var(--bg3);border-radius:2px;padding:1px 4px;font-size:7px;color:var(--text3)}
+.toolbar{height:32px;background:var(--bg1);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 12px;gap:8px;flex-shrink:0}
+.tb-title{font-family:var(--mono);font-size:10px;font-weight:600;color:var(--text)}
+.g-btn{background:var(--bg2);border:1px solid var(--border2);border-radius:3px;padding:3px 8px;font-family:var(--mono);font-size:9px;color:var(--text2);cursor:pointer;transition:all .12s}
+.g-btn:hover{border-color:var(--cyan);color:var(--cyan)}.g-btn.pri{background:var(--cyan);border-color:var(--cyan);color:#000;font-weight:600}
+/* stat strip */
+.stat-strip{display:flex;background:var(--bg2);border:1px solid var(--border);border-radius:4px;overflow:hidden}
+.ss-c{flex:1;padding:10px 14px;border-right:1px solid var(--border)}.ss-c:last-child{border-right:none}
+.ss-l{font-family:var(--mono);font-size:7px;letter-spacing:.1em;text-transform:uppercase;color:var(--text3);margin-bottom:3px}
+.ss-v{font-family:var(--mono);font-size:18px;font-weight:600;line-height:1}
+.ss-s{font-family:var(--mono);font-size:7px;color:var(--text3);margin-top:2px}
+/* benefit cards */
+.ben-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:10px}
+.ben-card{background:var(--bg1);border:1px solid var(--border);border-radius:4px;overflow:hidden}
+.bc-hdr{display:flex;align-items:center;gap:8px;padding:10px 12px;border-bottom:1px solid var(--border)}
+.bc-icon{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;border:1px solid}
+.bc-info{flex:1}
+.bc-name{font-family:var(--mono);font-size:10px;font-weight:600;color:var(--text)}
+.bc-type{font-family:var(--mono);font-size:7px;color:var(--text3);margin-top:1px}
+.bc-tax{font-family:var(--mono);font-size:7px;padding:1px 5px;border-radius:2px;border:1px solid;flex-shrink:0}
+.bc-body{padding:10px 12px;display:flex;flex-direction:column;gap:6px}
+.bc-bal{font-family:var(--mono);font-size:22px;font-weight:700;line-height:1}
+.bc-bal-lbl{font-family:var(--mono);font-size:7px;color:var(--text3);margin-bottom:2px}
+.bc-kv{display:flex;justify-content:space-between;align-items:center;padding:2px 0;border-bottom:1px solid var(--border)}
+.bc-kv:last-child{border-bottom:none}
+.bc-k{font-family:var(--mono);font-size:8px;color:var(--text3)}
+.bc-v{font-family:var(--mono);font-size:8px;color:var(--text2);font-weight:500}
+.bc-bar-wrap{display:flex;flex-direction:column;gap:2px;margin-top:4px}
+.bc-bar-lbl{display:flex;justify-content:space-between}
+.bc-bar-lbl span{font-family:var(--mono);font-size:7px;color:var(--text3)}
+.bc-bar{height:4px;background:var(--bg3);border-radius:2px;overflow:hidden}
+.bc-bar-fill{height:100%;border-radius:2px}
+.bc-ftr{display:flex;align-items:center;gap:6px;padding:7px 12px;border-top:1px solid var(--border)}
+.bc-sources{display:flex;gap:3px;flex:1;flex-wrap:wrap}
+.src-tag{font-family:var(--mono);font-size:7px;padding:1px 5px;border-radius:2px;border:1px solid var(--border);color:var(--text3)}
+.bc-action{font-family:var(--mono);font-size:7px;padding:2px 8px;border-radius:2px;border:1px solid var(--border2);color:var(--text2);cursor:pointer}
+.bc-action:hover{border-color:var(--cyan);color:var(--cyan)}
+/* portable benefits model info */
+.model-info{background:var(--bg1);border:1px solid var(--border);border-radius:4px;padding:12px 14px}
+.mi-hdr{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.mi-types{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:6px}
+.mi-row{background:var(--bg2);border:1px solid var(--border);border-radius:3px;padding:8px 10px}
+.mr-type{font-family:var(--mono);font-size:8px;font-weight:600;color:var(--text);margin-bottom:3px}
+.mr-tax{font-family:var(--mono);font-size:7px;color:var(--text3);margin-bottom:2px}
+.mr-analytics{font-family:var(--sans);font-size:7px;color:var(--text3);line-height:1.4}
+/* initiative list */
+.init-row{display:flex;align-items:flex-start;gap:10px;padding:8px 0;border-bottom:1px solid var(--border)}
+.init-row:last-child{border-bottom:none}
+.init-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;margin-top:2px}
+.init-name{font-family:var(--mono);font-size:9px;font-weight:600;color:var(--text);margin-bottom:2px}
+.init-desc{font-family:var(--sans);font-size:8px;color:var(--text3);line-height:1.4}
+</style>
+</head>
+<body>
+<div class="screen">
+  <div class="g-hdr">
+    <span class="g-logo">KOGI</span>
+    <div class="g-bc"><span>OS</span><span class="sep"> / </span><span>Portfolio</span><span class="sep"> / </span><span class="cur">Benefits</span></div>
+    <div class="g-dot"></div>
+  </div>
+  <div class="sub-nav" id="sub-nav"></div>
+  <div class="body-layout">
+    <div class="l-nav">
+      <div class="nav-sec">Navigation</div>
+      <a href="#" class="nav-it">🏠 Home</a>
+      <a href="portfolio-grid.html" class="nav-it">📁 Portfolio</a>
+      <a href="portfolio-programs.html" class="nav-it">📋 Programs</a>
+      <a href="portfolio-resources.html" class="nav-it">👤 Resources</a>
+      <div class="nav-sec">Workspace</div>
+      <a href="#" class="nav-it">🗂 Collections</a>
+      <a href="#" class="nav-it">📌 Pinned</a>
+      <a href="#" class="nav-it">🏷 Tags</a>
+      <div class="nav-sec">Tools</div>
+      <a href="portfolio-analytics.html" class="nav-it">📊 Analytics</a>
+      <a href="portfolio-governance.html" class="nav-it">⚙ Governance</a>
+      <a href="portfolio-graph.html" class="nav-it">🔗 Graph</a>
+      <div class="nav-sec">Platform</div>
+      <a href="portfolio-benefits.html" class="nav-it active">⊕ Benefits</a>
+      <a href="portfolio-collaboration.html" class="nav-it">⊗ Collab</a>
+    </div>
+    <div class="main">
+      <div class="toolbar">
+        <span class="tb-title">Portable Benefits</span>
+        <span style="font-family:var(--mono);font-size:8px;color:var(--text3);margin-left:6px">BenefitAccount Portfolio Items · SHT-015 · v2.2</span>
+        <div style="margin-left:auto;display:flex;gap:6px">
+          <span class="g-btn">Providers</span>
+          <span class="g-btn pri">+ Add Benefit</span>
+        </div>
+      </div>
+      <div class="content">
+        <!-- STAT STRIP -->
+        <div class="stat-strip">
+          <div class="ss-c"><div class="ss-l">Total Balance</div><div class="ss-v" style="color:var(--cyan)">$14,840</div><div class="ss-s">Across 5 accounts</div></div>
+          <div class="ss-c"><div class="ss-l">Monthly Contributions</div><div class="ss-v" style="color:var(--green)">$1,240</div><div class="ss-s">From 3 sources</div></div>
+          <div class="ss-c"><div class="ss-l">Tax Savings (est.)</div><div class="ss-v" style="color:var(--gold)">$3,100</div><div class="ss-s">YTD pre-tax benefits</div></div>
+          <div class="ss-c"><div class="ss-l">Coverage Gaps</div><div class="ss-v" style="color:var(--rose)">2</div><div class="ss-s">Disability, Workers' Comp</div></div>
+          <div class="ss-c"><div class="ss-l">Oba Alert</div><div class="ss-v" style="color:var(--cyan)">1</div><div class="ss-s">HSA contribution limit near</div></div>
+        </div>
+
+        <!-- BENEFIT ACCOUNT CARDS -->
+        <div class="ben-grid">
+
+          <!-- HSA -->
+          <div class="ben-card" style="border-left:3px solid var(--blue)">
+            <div class="bc-hdr">
+              <div class="bc-icon" style="background:rgba(58,124,200,.1);border-color:rgba(58,124,200,.3);color:var(--blue)">🏥</div>
+              <div class="bc-info"><div class="bc-name">HSA Account 2026</div><div class="bc-type">BenefitAccount · Health Savings Account · Stride LLC</div></div>
+              <span class="bc-tax" style="color:var(--cyan);border-color:rgba(0,212,170,.3)">Pre-Tax</span>
+            </div>
+            <div class="bc-body">
+              <div><div class="bc-bal-lbl">Balance</div><div class="bc-bal" style="color:var(--blue)">$2,840</div></div>
+              <div class="bc-bar-wrap">
+                <div class="bc-bar-lbl"><span>Annual contribution limit</span><span style="color:var(--blue)">72%</span></div>
+                <div class="bc-bar"><div class="bc-bar-fill" style="background:var(--blue);width:72%"></div></div>
+                <div class="bc-bar-lbl"><span>$2,840 of $4,150 limit</span><span>$1,310 remaining</span></div>
+              </div>
+              <div class="bc-kv"><span class="bc-k">Coverage gap analysis</span><span class="bc-v" style="color:var(--green)">✓ No gaps</span></div>
+              <div class="bc-kv"><span class="bc-k">Monthly contribution</span><span class="bc-v">$346/mo (self)</span></div>
+              <div class="bc-kv"><span class="bc-k">Claim history (YTD)</span><span class="bc-v">3 claims · $412</span></div>
+              <div class="bc-kv"><span class="bc-k">Invested portion</span><span class="bc-v" style="color:var(--green)">$1,200 @ Fidelity HSA</span></div>
+            </div>
+            <div class="bc-ftr">
+              <div class="bc-sources"><span class="src-tag">self</span><span class="src-tag">pre-tax</span></div>
+              <span class="bc-action">Claim →</span>
+            </div>
+          </div>
+
+          <!-- SEP-IRA -->
+          <div class="ben-card" style="border-left:3px solid var(--violet)">
+            <div class="bc-hdr">
+              <div class="bc-icon" style="background:rgba(124,92,191,.1);border-color:rgba(124,92,191,.3);color:var(--violet)">🏦</div>
+              <div class="bc-info"><div class="bc-name">SEP-IRA 2026</div><div class="bc-type">BenefitAccount · Retirement · Vanguard</div></div>
+              <span class="bc-tax" style="color:var(--gold);border-color:rgba(200,168,75,.3)">Pre-Tax</span>
+            </div>
+            <div class="bc-body">
+              <div><div class="bc-bal-lbl">Balance</div><div class="bc-bal" style="color:var(--violet)">$8,400</div></div>
+              <div class="bc-bar-wrap">
+                <div class="bc-bar-lbl"><span>Vesting progress</span><span style="color:var(--violet)">100%</span></div>
+                <div class="bc-bar"><div class="bc-bar-fill" style="background:var(--violet);width:100%"></div></div>
+                <div class="bc-bar-lbl"><span>Fully vested</span><span>25% annual contribution limit</span></div>
+              </div>
+              <div class="bc-kv"><span class="bc-k">Projected balance (10yr)</span><span class="bc-v" style="color:var(--violet)">$142,000</span></div>
+              <div class="bc-kv"><span class="bc-k">Contribution rate</span><span class="bc-v">25% of net self-employment</span></div>
+              <div class="bc-kv"><span class="bc-k">Annual limit (2026)</span><span class="bc-v">$69,000</span></div>
+              <div class="bc-kv"><span class="bc-k">YTD contributions</span><span class="bc-v" style="color:var(--green)">$8,400</span></div>
+            </div>
+            <div class="bc-ftr">
+              <div class="bc-sources"><span class="src-tag">self</span><span class="src-tag">tax-deferred</span></div>
+              <span class="bc-action">Optimize →</span>
+            </div>
+          </div>
+
+          <!-- PTO -->
+          <div class="ben-card" style="border-left:3px solid var(--green)">
+            <div class="bc-hdr">
+              <div class="bc-icon" style="background:rgba(74,171,109,.1);border-color:rgba(74,171,109,.3);color:var(--green)">🌴</div>
+              <div class="bc-info"><div class="bc-name">Paid Time Off Account</div><div class="bc-type">BenefitAccount · PTO · Self-Managed</div></div>
+              <span class="bc-tax" style="color:var(--text3);border-color:var(--border)">N/A</span>
+            </div>
+            <div class="bc-body">
+              <div><div class="bc-bal-lbl">Accrued days</div><div class="bc-bal" style="color:var(--green)">18 days</div></div>
+              <div class="bc-bar-wrap">
+                <div class="bc-bar-lbl"><span>Target coverage</span><span style="color:var(--green)">60%</span></div>
+                <div class="bc-bar"><div class="bc-bar-fill" style="background:var(--green);width:60%"></div></div>
+                <div class="bc-bar-lbl"><span>18 of 30 target days</span><span>Accrual: 1.5 days/mo</span></div>
+              </div>
+              <div class="bc-kv"><span class="bc-k">Income replacement</span><span class="bc-v" style="color:var(--gold)">62% covered</span></div>
+              <div class="bc-kv"><span class="bc-k">Usage YTD</span><span class="bc-v">4 days used</span></div>
+              <div class="bc-kv"><span class="bc-k">Linked bank account</span><span class="bc-v">kogi-bank · PTO Reserve</span></div>
+            </div>
+            <div class="bc-ftr">
+              <div class="bc-sources"><span class="src-tag">self-funded</span><span class="src-tag">reserve</span></div>
+              <span class="bc-action">Log Time →</span>
+            </div>
+          </div>
+
+          <!-- PROFESSIONAL DEV -->
+          <div class="ben-card" style="border-left:3px solid var(--orange)">
+            <div class="bc-hdr">
+              <div class="bc-icon" style="background:rgba(200,124,58,.1);border-color:rgba(200,124,58,.3);color:var(--orange)">📚</div>
+              <div class="bc-info"><div class="bc-name">Professional Development</div><div class="bc-type">BenefitAccount · ProfDev · Self-Managed</div></div>
+              <span class="bc-tax" style="color:var(--text3);border-color:var(--border)">Post-Tax</span>
+            </div>
+            <div class="bc-body">
+              <div><div class="bc-bal-lbl">Fund balance</div><div class="bc-bal" style="color:var(--orange)">$1,800</div></div>
+              <div class="bc-bar-wrap">
+                <div class="bc-bar-lbl"><span>Skill development ROI</span><span style="color:var(--orange)">310%</span></div>
+                <div class="bc-bar"><div class="bc-bar-fill" style="background:var(--orange);width:85%"></div></div>
+                <div class="bc-bar-lbl"><span>Est. income impact</span><span>$5,580/yr</span></div>
+              </div>
+              <div class="bc-kv"><span class="bc-k">Certifications tracked</span><span class="bc-v">3 active</span></div>
+              <div class="bc-kv"><span class="bc-k">Fund utilization YTD</span><span class="bc-v" style="color:var(--orange)">$600 spent</span></div>
+              <div class="bc-kv"><span class="bc-k">Monthly accrual</span><span class="bc-v">$150/mo</span></div>
+            </div>
+            <div class="bc-ftr">
+              <div class="bc-sources"><span class="src-tag">self</span><span class="src-tag">post-tax</span></div>
+              <span class="bc-action">Track Cert →</span>
+            </div>
+          </div>
+
+          <!-- PORTABLE SAVINGS -->
+          <div class="ben-card" style="border-left:3px solid var(--cyan)">
+            <div class="bc-hdr">
+              <div class="bc-icon" style="background:rgba(0,212,170,.1);border-color:rgba(0,212,170,.3);color:var(--cyan)">⚡</div>
+              <div class="bc-info"><div class="bc-name">Portable Savings Account</div><div class="bc-type">BenefitAccount · PortableSavings · Stride LLC</div></div>
+              <span class="bc-tax" style="color:var(--text3);border-color:var(--border)">Varies</span>
+            </div>
+            <div class="bc-body">
+              <div><div class="bc-bal-lbl">Balance</div><div class="bc-bal" style="color:var(--cyan)">$1,800</div></div>
+              <div class="bc-bar-wrap">
+                <div class="bc-bar-lbl"><span>Balance projection (1yr)</span><span style="color:var(--cyan)">+$3,200</span></div>
+                <div class="bc-bar"><div class="bc-bar-fill" style="background:var(--cyan);width:45%"></div></div>
+                <div class="bc-bar-lbl"><span>Gig platform: 4% of earnings</span><span>Employer match equiv.</span></div>
+              </div>
+              <div class="bc-kv"><span class="bc-k">DoorDash contribution</span><span class="bc-v" style="color:var(--cyan)">4% pre-tip</span></div>
+              <div class="bc-kv"><span class="bc-k">Uber contribution</span><span class="bc-v" style="color:var(--cyan)">3.5% earnings</span></div>
+              <div class="bc-kv"><span class="bc-k">YTD platform contributions</span><span class="bc-v">$744</span></div>
+              <div class="bc-kv"><span class="bc-k">Provider</span><span class="bc-v">Stride Benefits LLC</span></div>
+            </div>
+            <div class="bc-ftr">
+              <div class="bc-sources"><span class="src-tag">DoorDash</span><span class="src-tag">Uber</span><span class="src-tag">platform</span></div>
+              <span class="bc-action">Statements →</span>
+            </div>
+          </div>
+
+          <!-- ADD BENEFIT -->
+          <div style="background:var(--bg1);border:1px dashed rgba(0,212,170,.2);border-radius:4px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;min-height:200px;cursor:pointer;transition:all .12s" onmouseover="this.style.borderColor='var(--cyan)'" onmouseout="this.style.borderColor='rgba(0,212,170,.2)'">
+            <div style="font-size:22px;color:var(--border2)">⊕</div>
+            <div style="font-family:var(--mono);font-size:9px;color:var(--text3)">Add Benefit Account</div>
+            <div style="font-family:var(--mono);font-size:7px;color:var(--text3)">HSA · IRA · PTO · Disability · ProfDev</div>
+          </div>
+        </div>
+
+        <!-- BENEFIT TYPE MODEL -->
+        <div class="model-info">
+          <div class="mi-hdr">
+            <span style="font-family:var(--mono);font-size:9px;font-weight:600;color:var(--cyan)">⊕ BenefitAccount — Portfolio Item Model (v2.2)</span>
+            <div style="flex:1;height:1px;background:var(--border)"></div>
+            <span style="font-family:var(--mono);font-size:7px;color:var(--text3)">SHT-015 · Portable Benefits Sheet</span>
+          </div>
+          <div class="mi-types">
+            <div class="mi-row"><div class="mr-type" style="color:var(--blue)">Health (HSA)</div><div class="mr-tax">Pre-tax · IRS §223</div><div class="mr-analytics">Coverage gap analysis, premium tracking, claim history, investment sub-account tracking</div></div>
+            <div class="mi-row"><div class="mr-type" style="color:var(--violet)">Retirement (SEP-IRA / 401k / PEP)</div><div class="mr-tax">Pre-tax / Tax-deferred</div><div class="mr-analytics">Vesting progress, projected balance, contribution rate optimization, employer match equivalent</div></div>
+            <div class="mi-row"><div class="mr-type" style="color:var(--green)">Paid Time Off</div><div class="mr-tax">N/A</div><div class="mr-analytics">Accrual rate, usage tracking, income replacement coverage ratio, reserve fund linkage</div></div>
+            <div class="mi-row"><div class="mr-type" style="color:var(--rose)">Disability / Workers' Comp</div><div class="mr-tax">Post-tax premiums</div><div class="mr-analytics">Coverage adequacy vs. income, claim probability score, premium vs. exposure analysis</div></div>
+            <div class="mi-row"><div class="mr-type" style="color:var(--orange)">Professional Development</div><div class="mr-tax">Post-tax</div><div class="mr-analytics">Skill development ROI, certification tracking, fund utilization rate, income impact estimate</div></div>
+            <div class="mi-row"><div class="mr-type" style="color:var(--cyan)">Portable Savings</div><div class="mr-tax">Varies</div><div class="mr-analytics">Gig platform contribution tracking (4% model), balance projections, employer match equivalent</div></div>
+          </div>
+        </div>
+
+        <!-- INITIATIVES -->
+        <div style="background:var(--bg1);border:1px solid var(--border);border-radius:4px;padding:12px 14px">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+            <span style="font-family:var(--mono);font-size:9px;font-weight:600;color:var(--text)">Home Module Initiatives</span>
+            <div style="flex:1;height:1px;background:var(--border)"></div>
+          </div>
+          <div class="init-row"><div class="init-dot" style="background:var(--cyan)"></div><div><div class="init-name">Portable Benefits</div><div class="init-desc">Coordinate worker groups for pooled benefits purchasing power and Pooled Employer Plan (PEP) enrollment. Stride LLC integration for gig platform contribution tracking.</div></div></div>
+          <div class="init-row"><div class="init-dot" style="background:var(--gold)"></div><div><div class="init-name">Grants & Microfinancing</div><div class="init-desc">Grant discovery, application tracking, community lending pools, and microloan origination through the kogi-bank and kogi-exchange modules.</div></div></div>
+          <div class="init-row"><div class="init-dot" style="background:var(--violet)"></div><div><div class="init-name">Group Economics</div><div class="init-desc">Cooperative treasury management, revenue sharing pools, group investment vehicles, and mutual aid fund coordination via shared portfolio governance.</div></div></div>
+          <div class="init-row"><div class="init-dot" style="background:var(--green)"></div><div><div class="init-name">Equity Crowdfunding</div><div class="init-desc">Reg CF/A+ campaign management, revenue share instruments, SAFE notes, and cap table tracking through the kogi-exchange Crowdfunding module.</div></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<script src="kogi-shared.js"></script>
+<script>buildSubNav('benefits');</script>
+</body>
+</html>

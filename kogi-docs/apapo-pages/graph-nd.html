@@ -1,0 +1,986 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Apapo · N-Dimensional Graph Explorer</title>
+<link rel="stylesheet" href="hg-shared.css">
+<style>
+/* ── Canvas container ── */
+.graph-workspace{display:flex;flex:1;min-height:0;overflow:hidden;position:relative}
+.graph-canvas-wrap{flex:1;position:relative;overflow:hidden;background:var(--bg);cursor:grab}
+.graph-canvas-wrap:active{cursor:grabbing}
+#graph-svg{width:100%;height:100%;display:block}
+
+/* ── Left panel: node/edge list ── */
+.graph-left{width:220px;border-right:1px solid var(--border);background:var(--bg1);
+  display:flex;flex-direction:column;overflow:hidden;flex-shrink:0}
+
+/* ── Right panel: inspector ── */
+.graph-right{width:300px;border-left:1px solid var(--border);background:var(--bg1);
+  display:flex;flex-direction:column;overflow:hidden;flex-shrink:0}
+
+/* ── Node items in list ── */
+.node-item{display:flex;align-items:center;gap:7px;padding:5px 10px;cursor:pointer;
+  border-bottom:1px solid var(--border);transition:background 0.08s}
+.node-item:hover{background:var(--bg3)}
+.node-item.selected{background:var(--bg4)}
+.ni-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.ni-label{font-family:var(--mono);font-size:9px;color:var(--text2);flex:1;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ni-type{font-family:var(--mono);font-size:7px;color:var(--text3)}
+
+/* ── SVG node styles ── */
+.graph-node{cursor:pointer;transition:all 0.12s}
+.graph-node:hover circle{filter:brightness(1.3)}
+.graph-node.selected circle{filter:brightness(1.4)}
+.node-label{font-family:'IBM Plex Mono',monospace;font-size:9px;fill:var(--text2);
+  text-anchor:middle;pointer-events:none}
+.edge-line{stroke-width:1.5;opacity:0.6;cursor:pointer;transition:stroke-width 0.1s}
+.edge-line:hover{stroke-width:3;opacity:1}
+.edge-line.selected{stroke-width:3;opacity:1}
+
+/* ── Toolbar controls ── */
+.graph-controls{display:flex;gap:4px;align-items:center}
+
+/* ── Dim selector (N-dimensional view) ── */
+.dim-selector{display:flex;gap:4px;align-items:center;flex-wrap:wrap}
+.dim-toggle{font-family:var(--mono);font-size:8px;padding:3px 8px;border-radius:4px;
+  border:1px solid var(--border2);color:var(--text3);cursor:pointer;transition:all 0.1s}
+.dim-toggle:hover{border-color:var(--border3);color:var(--text2)}
+.dim-toggle.active{border-color:var(--cyan);color:var(--cyan);background:var(--cyan-dim)}
+.dim-toggle.d3{border-color:var(--violet);color:var(--violet);background:var(--violet-dim)}
+.dim-toggle.d4{border-color:var(--gold);color:var(--gold);background:var(--gold-dim)}
+
+/* ── Edge type filter ── */
+.edge-filter{display:flex;gap:3px;flex-wrap:wrap}
+.ef-btn{font-family:var(--mono);font-size:7px;padding:2px 6px;border-radius:3px;
+  border:1px solid;cursor:pointer;transition:all 0.1s}
+
+/* ── Cluster hull ── */
+.cluster-hull{opacity:0.12;transition:opacity 0.2s}
+.cluster-hull:hover{opacity:0.25}
+
+/* ── D3 / higher dim projection lines ── */
+.dim3-line{stroke-dasharray:4,3;opacity:0.35}
+.dim4-arc{fill:none;opacity:0.25}
+
+/* ── Inspector sections ── */
+.insp-section{font-family:var(--mono);font-size:7px;letter-spacing:0.12em;
+  text-transform:uppercase;color:var(--text3);padding:10px 12px 4px}
+
+/* ── Attribute editor in inspector ── */
+.attr-row{display:flex;align-items:center;gap:6px;padding:4px 12px;
+  border-bottom:1px solid var(--border);cursor:pointer}
+.attr-row:hover{background:var(--bg3)}
+.attr-key{font-family:var(--mono);font-size:9px;color:var(--text3);width:90px;flex-shrink:0}
+.attr-val{font-family:var(--mono);font-size:9px;color:var(--text2);flex:1;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.attr-crdt{flex-shrink:0}
+.attr-edit-btn{font-family:var(--mono);font-size:7px;color:var(--text3);
+  border:1px solid var(--border);border-radius:2px;padding:1px 4px;
+  cursor:pointer;opacity:0}
+.attr-row:hover .attr-edit-btn{opacity:1}
+
+/* ── Hypercube projection panel ── */
+.hc-projection{background:var(--bg3);border:1px solid var(--border);border-radius:6px;
+  overflow:hidden;margin:8px 12px}
+.hc-proj-header{padding:6px 10px;border-bottom:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between}
+.hc-proj-title{font-family:var(--mono);font-size:9px;color:var(--text2)}
+.hc-grid{display:grid;gap:2px;padding:8px}
+.hc-cell{border-radius:3px;display:flex;align-items:center;justify-content:center;
+  font-family:var(--mono);font-size:7px;cursor:pointer;transition:all 0.1s;min-height:22px}
+.hc-cell.filled{background:var(--bg5)}
+.hc-cell.filled:hover{background:var(--bg6);color:var(--text)}
+.hc-cell.empty{background:var(--bg2);color:var(--text4)}
+.hc-cell.selected{background:var(--cyan-dim);border:1px solid var(--cyan);color:var(--cyan)}
+.hc-cell.ai-computed{background:rgba(232,168,50,0.1);border:1px solid rgba(232,168,50,0.2);color:var(--gold)}
+
+/* ── Mini sparkline ── */
+.sparkline{display:flex;align-items:flex-end;gap:2px;height:22px}
+.spark-bar{flex:1;border-radius:1px 1px 0 0;opacity:0.7;min-height:2px}
+
+/* ── N-dim legend ── */
+.ndim-legend{display:flex;flex-wrap:wrap;gap:6px;padding:8px 12px}
+.ndim-item{display:flex;align-items:center;gap:5px;font-family:var(--mono);font-size:8px;color:var(--text3)}
+.ndim-sym{width:14px;height:14px;border-radius:3px;display:flex;align-items:center;justify-content:center;font-size:8px}
+
+/* ── Context menu ── */
+.ctx-menu{position:fixed;background:var(--bg4);border:1px solid var(--border3);
+  border-radius:6px;padding:4px 0;min-width:160px;z-index:150;
+  box-shadow:0 8px 24px rgba(0,0,0,0.6);display:none}
+.ctx-menu.open{display:block}
+.ctx-item{padding:6px 14px;font-family:var(--mono);font-size:9px;color:var(--text2);
+  cursor:pointer;transition:background 0.08s}
+.ctx-item:hover{background:var(--bg5);color:var(--text)}
+.ctx-item.danger{color:var(--rose)}.ctx-item.danger:hover{background:var(--rose-dim)}
+.ctx-sep{height:1px;background:var(--border);margin:3px 0}
+</style>
+</head>
+<body>
+
+<nav class="topnav">
+  <span class="topnav-logo">APAPO</span>
+  <div class="topnav-sep"></div>
+  <div class="topnav-breadcrumb">
+    <a href="index.html">Dashboard</a><span class="sep">›</span>
+    <span class="cur">N-Dim Graph Explorer</span>
+  </div>
+  <div class="topnav-spacer"></div>
+  <div class="topnav-system">
+    <a class="sys-pill sp-apapo" href="index.html">Apapo</a>
+    <a class="sys-pill sp-kogi" href="kogi.html">Kogi</a>
+    <a class="sys-pill sp-ume" href="ume.html">Ume</a>
+    <a class="sys-pill sp-qala" href="qala.html">Qala</a>
+  </div>
+  <div class="topnav-actions" style="margin-left:10px">
+    <button class="btn btn-ghost btn-sm" onclick="window.location='graph.html'">Classic Graph</button>
+    <button class="btn btn-ghost btn-sm" onclick="window.location='query.html'">HyperQL ›_</button>
+    <button class="btn btn-primary btn-sm" onclick="openModal('modal-add-node')">+ Node</button>
+  </div>
+</nav>
+<nav class="iconav" id="hg-iconav"></nav>
+
+<div class="hg-main no-subnav" style="left:var(--nav-w)">
+
+  <!-- TOOLBAR -->
+  <div class="hg-toolbar" style="gap:10px">
+    <span class="hg-toolbar-title">N-Dimensional Graph Explorer</span>
+    <div class="hg-toolbar-sep"></div>
+    <span class="hg-toolbar-sub">Hypergraph + N>2 Hypercube Projections</span>
+    <div class="hg-toolbar-sep"></div>
+
+    <!-- Dimension toggles -->
+    <div class="dim-selector">
+      <span class="text-2xs text-muted">Dims:</span>
+      <button class="dim-toggle active" onclick="toggleDim(2,this)">D₁×D₂</button>
+      <button class="dim-toggle" id="d3-toggle" onclick="toggleDim(3,this)">+D₃</button>
+      <button class="dim-toggle" id="d4-toggle" onclick="toggleDim(4,this)">+D₄</button>
+      <button class="dim-toggle" id="d5-toggle" onclick="toggleDim(5,this)">+D₅</button>
+    </div>
+
+    <div class="hg-toolbar-sep"></div>
+    <!-- Grid filter -->
+    <div class="edge-filter" id="grid-filter"></div>
+
+    <div class="ml-auto flex gap-2">
+      <button class="btn btn-ghost btn-sm" onclick="resetLayout()">↺ Layout</button>
+      <button class="btn btn-ghost btn-sm" onclick="toggleClusters()">⊙ Clusters</button>
+      <button class="btn btn-ghost btn-sm" onclick="togglePhysics()" id="physics-btn">⊛ Physics ON</button>
+      <button class="btn btn-ghost btn-sm" onclick="exportGraph()">⤓ Export</button>
+    </div>
+  </div>
+
+  <!-- EDGE TYPE FILTER BAR -->
+  <div style="background:var(--bg2);border-bottom:1px solid var(--border);padding:6px 14px;display:flex;align-items:center;gap:8px;flex-shrink:0">
+    <span class="text-2xs text-muted">Edge types:</span>
+    <div class="edge-filter" id="edge-type-filter"></div>
+    <div class="hg-toolbar-sep"></div>
+    <span class="text-2xs text-muted">View:</span>
+    <div class="pill-group" id="view-mode-btns">
+      <button class="pill active" onclick="setViewMode('force',this)">Force</button>
+      <button class="pill" onclick="setViewMode('hierarchical',this)">Hierarchical</button>
+      <button class="pill" onclick="setViewMode('radial',this)">Radial</button>
+      <button class="pill" onclick="setViewMode('cube-projection',this)">Cube Projection</button>
+    </div>
+    <div class="ml-auto">
+      <input type="text" class="form-input" style="width:180px;font-size:9px;padding:3px 8px" placeholder="⌕ Filter nodes…" oninput="filterNodes(this.value)">
+    </div>
+  </div>
+
+  <!-- MAIN SPLIT LAYOUT -->
+  <div class="graph-workspace">
+
+    <!-- LEFT: Node/Edge List -->
+    <div class="graph-left">
+      <div class="panel-hdr">
+        <span class="panel-hdr-title">Nodes</span>
+        <span class="panel-hdr-action" onclick="openModal('modal-add-node')">+ Add</span>
+      </div>
+      <div class="panel-body" id="node-list"></div>
+      <div class="panel-hdr" style="border-top:1px solid var(--border)">
+        <span class="panel-hdr-title">Edges</span>
+        <span class="panel-hdr-action" onclick="openModal('modal-add-edge')">+ Add</span>
+      </div>
+      <div class="panel-body" style="max-height:200px;overflow-y:auto" id="edge-list"></div>
+    </div>
+
+    <!-- CENTER: Graph Canvas -->
+    <div class="graph-canvas-wrap" id="canvas-wrap" oncontextmenu="return false">
+      <svg id="graph-svg" viewBox="0 0 900 600" preserveAspectRatio="xMidYMid meet">
+        <defs>
+          <!-- Arrow markers per edge type -->
+          <marker id="arr-hier"  markerWidth="8" markerHeight="8" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#3d84e8" opacity="0.7"/></marker>
+          <marker id="arr-dep"   markerWidth="8" markerHeight="8" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#e8a832" opacity="0.7"/></marker>
+          <marker id="arr-cross" markerWidth="8" markerHeight="8" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#8b5cf6" opacity="0.7"/></marker>
+          <marker id="arr-collab"markerWidth="8" markerHeight="8" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#00d8b0" opacity="0.7"/></marker>
+          <marker id="arr-contains"markerWidth="8"markerHeight="8"refX="8"refY="3"orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#e87032" opacity="0.7"/></marker>
+          <!-- Radial gradient for cluster hulls -->
+          <radialGradient id="rg-kogi" cx="50%" cy="50%"><stop offset="0%" stop-color="#00d8b0" stop-opacity="0.18"/><stop offset="100%" stop-color="#00d8b0" stop-opacity="0.03"/></radialGradient>
+          <radialGradient id="rg-ume"  cx="50%" cy="50%"><stop offset="0%" stop-color="#3d84e8" stop-opacity="0.18"/><stop offset="100%" stop-color="#3d84e8" stop-opacity="0.03"/></radialGradient>
+          <radialGradient id="rg-qala" cx="50%" cy="50%"><stop offset="0%" stop-color="#8b5cf6" stop-opacity="0.18"/><stop offset="100%" stop-color="#8b5cf6" stop-opacity="0.03"/></radialGradient>
+          <!-- Glow filters -->
+          <filter id="glow"><feGaussianBlur stdDeviation="3" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+          <filter id="glow-strong"><feGaussianBlur stdDeviation="5" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+        </defs>
+        <!-- Cluster hulls (togglable) -->
+        <g id="cluster-group"></g>
+        <!-- D3 extra-dim lines -->
+        <g id="dim3-group"></g>
+        <!-- D4 extra-dim arcs -->
+        <g id="dim4-group"></g>
+        <!-- Edges -->
+        <g id="edge-group"></g>
+        <!-- Nodes -->
+        <g id="node-group"></g>
+        <!-- Labels -->
+        <g id="label-group"></g>
+        <!-- Selection ring -->
+        <g id="selection-group"></g>
+      </svg>
+
+      <!-- Mini map -->
+      <div style="position:absolute;bottom:12px;right:12px;background:var(--bg2);
+        border:1px solid var(--border2);border-radius:6px;padding:6px;opacity:0.8">
+        <div style="font-family:var(--mono);font-size:7px;color:var(--text3);margin-bottom:4px">MINIMAP</div>
+        <svg width="80" height="60" id="minimap-svg" style="display:block">
+          <rect width="80" height="60" fill="var(--bg3)" rx="3"/>
+        </svg>
+      </div>
+
+      <!-- Zoom controls -->
+      <div style="position:absolute;top:12px;right:12px;display:flex;flex-direction:column;gap:3px">
+        <button class="btn btn-ghost btn-xs" onclick="zoom(1.2)">+</button>
+        <button class="btn btn-ghost btn-xs" onclick="zoom(1/1.2)">−</button>
+        <button class="btn btn-ghost btn-xs" onclick="resetZoom()">⊡</button>
+      </div>
+
+      <!-- N-dim legend -->
+      <div class="ndim-legend" style="position:absolute;bottom:12px;left:12px;background:var(--bg2);
+        border:1px solid var(--border);border-radius:6px;padding:6px 10px">
+        <div class="ndim-item">
+          <div class="ndim-sym" style="background:var(--bg4)">◉</div>
+          <span>D₁×D₂ nodes</span>
+        </div>
+        <div class="ndim-item" id="d3-legend" style="display:none">
+          <div class="ndim-sym" style="background:var(--violet-dim);color:var(--violet)">⋯</div>
+          <span>D₃ time/category</span>
+        </div>
+        <div class="ndim-item" id="d4-legend" style="display:none">
+          <div class="ndim-sym" style="background:var(--gold-dim);color:var(--gold)">⌒</div>
+          <span>D₄ tenant/geo</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT: Inspector -->
+    <div class="graph-right">
+      <div class="panel-hdr">
+        <span class="panel-hdr-title" id="insp-title">Inspector</span>
+        <span class="panel-hdr-action" id="insp-edit-btn" style="display:none" onclick="editSelectedNode()">Edit</span>
+      </div>
+      <div style="flex:1;overflow-y:auto" id="inspector-body">
+        <div style="padding:20px 12px;text-align:center;color:var(--text3);font-family:var(--mono);font-size:9px">
+          <div style="font-size:22px;margin-bottom:8px;opacity:0.3">◎</div>
+          Click a node or edge to inspect
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- CONTEXT MENU -->
+<div class="ctx-menu" id="ctx-menu">
+  <div class="ctx-item" onclick="ctxAction('inspect')">◎ Inspect</div>
+  <div class="ctx-item" onclick="ctxAction('edit')">✎ Edit Attributes</div>
+  <div class="ctx-item" onclick="ctxAction('connect')">⊕ Add Edge From Here</div>
+  <div class="ctx-item" onclick="ctxAction('expand')">⊞ Expand Neighbors</div>
+  <div class="ctx-item" onclick="ctxAction('ego')">◎ Ego Network</div>
+  <div class="ctx-sep"></div>
+  <div class="ctx-item" onclick="ctxAction('shortest-path')">⊣→⊢ Shortest Path To…</div>
+  <div class="ctx-item" onclick="ctxAction('hyperql')">≡ Run HyperQL From Here</div>
+  <div class="ctx-sep"></div>
+  <div class="ctx-item danger" onclick="ctxAction('delete')">✕ Delete Node</div>
+</div>
+
+<!-- ADD NODE MODAL -->
+<div class="modal-overlay" id="modal-add-node">
+  <div class="modal">
+    <div class="modal-header"><div class="modal-title">Add Node</div><div class="modal-close" onclick="closeModal('modal-add-node')">✕</div></div>
+    <div class="modal-body">
+      <div class="form-group"><div class="form-label">Label</div><input class="form-input" id="nn-label" placeholder="@identity, ProjectName, etc."/></div>
+      <div class="form-row">
+        <div class="form-group"><div class="form-label">Node Type</div>
+          <select class="form-select" id="nn-type">
+            <option>Identity</option><option>Project</option><option>Organization</option>
+            <option>Asset</option><option>OrgModule</option><option>Solution</option>
+            <option>Factory</option><option>Collective</option><option>Artifact</option>
+          </select>
+        </div>
+        <div class="form-group"><div class="form-label">Domain</div>
+          <select class="form-select" id="nn-domain">
+            <option>Kogi</option><option>Ume</option><option>Qala</option><option>Apapo</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group"><div class="form-label">Namespace Path</div>
+        <input class="form-input" id="nn-ns" placeholder="kogi://alice-dev/portfolio/ or ume://acme-corp/"/>
+      </div>
+      <div class="form-group"><div class="form-label">Hypercube</div>
+        <select class="form-select" id="nn-cube" onchange="updateCubeInfo(this)"></select>
+      </div>
+      <div id="nn-cube-info" style="font-family:var(--mono);font-size:9px;color:var(--text3);padding:6px;background:var(--bg3);border-radius:4px;display:none"></div>
+      <div class="form-group"><div class="form-label">Color</div><div id="nn-color-grid"></div></div>
+    </div>
+    <div class="modal-footer">
+      <div class="btn btn-ghost" onclick="closeModal('modal-add-node')">Cancel</div>
+      <div class="btn btn-primary" onclick="addNode()">Add Node</div>
+    </div>
+  </div>
+</div>
+
+<!-- ADD EDGE MODAL -->
+<div class="modal-overlay" id="modal-add-edge">
+  <div class="modal">
+    <div class="modal-header"><div class="modal-title">Add Edge</div><div class="modal-close" onclick="closeModal('modal-add-edge')">✕</div></div>
+    <div class="modal-body">
+      <div class="form-row">
+        <div class="form-group"><div class="form-label">Source Node</div><select class="form-select" id="ne-source"></select></div>
+        <div class="form-group"><div class="form-label">Target Node</div><select class="form-select" id="ne-target"></select></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><div class="form-label">Edge Type</div>
+          <select class="form-select" id="ne-type">
+            <option>Hierarchy</option><option>Dependency</option><option>Association</option>
+            <option>Contains</option><option>CrossGridLink</option><option>Collaborates</option>
+            <option>OrgMembership</option><option>ShadowOf</option><option>FederationPeer</option>
+            <option>Custom</option>
+          </select>
+        </div>
+        <div class="form-group"><div class="form-label">Weight (0–1)</div>
+          <input class="form-input" id="ne-weight" type="number" min="0" max="1" step="0.1" value="1.0"/>
+        </div>
+      </div>
+      <div class="form-group"><div class="form-label">Directed?</div>
+        <select class="form-select" id="ne-directed"><option value="true">Yes (directed)</option><option value="false">No (undirected)</option></select>
+      </div>
+      <div class="form-group"><div class="form-label">Consent Required?</div>
+        <select class="form-select" id="ne-consent"><option>N/A</option><option>Required (pending)</option><option>Accepted</option></select>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <div class="btn btn-ghost" onclick="closeModal('modal-add-edge')">Cancel</div>
+      <div class="btn btn-primary" onclick="addEdge()">Add Edge</div>
+    </div>
+  </div>
+</div>
+
+<!-- EDIT ATTRIBUTE MODAL -->
+<div class="modal-overlay" id="modal-edit-attr">
+  <div class="modal" style="width:420px">
+    <div class="modal-header"><div class="modal-title">Edit Attribute</div><div class="modal-close" onclick="closeModal('modal-edit-attr')">✕</div></div>
+    <div class="modal-body">
+      <div class="form-row">
+        <div class="form-group"><div class="form-label">Attribute Key</div><input class="form-input" id="ea-key" readonly/></div>
+        <div class="form-group"><div class="form-label">CRDT Semantics</div><input class="form-input" id="ea-crdt" readonly/></div>
+      </div>
+      <div class="form-group"><div class="form-label">Value</div><textarea class="form-textarea" id="ea-val"></textarea></div>
+      <div id="ea-meta" style="font-family:var(--mono);font-size:8px;color:var(--text3);padding:6px;background:var(--bg3);border-radius:4px"></div>
+    </div>
+    <div class="modal-footer">
+      <div class="btn btn-ghost" onclick="closeModal('modal-edit-attr')">Cancel</div>
+      <div class="btn btn-primary" onclick="saveAttr()">Save · Commit to EventLog</div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="hg-toast"></div>
+
+<script src="hg-nav.js"></script>
+<script src="hg-data.js"></script>
+<script>
+renderNav('graph-nd');
+
+const { nodes: initNodes, edges: initEdges, cubes, attrKeys } = HGData;
+
+// ── STATE ──
+let state = {
+  nodes: initNodes.map(n => ({ ...n })),
+  edges: initEdges.map(e => ({ ...e })),
+  selectedNode: null,
+  selectedEdge: null,
+  activeDims: new Set([2]),
+  viewMode: 'force',
+  showClusters: true,
+  physics: true,
+  edgeTypeFilters: new Set(['Hierarchy','Dependency','Association','Contains','CrossGridLink','Collaborates','OrgMembership','ShadowOf']),
+  gridFilters: new Set(['grid-kogi','grid-ume','grid-qala','grid-dev']),
+  transform: { x: 0, y: 0, scale: 1 },
+  filterText: '',
+  currentColor: HG_COLORS[0],
+  ctxNode: null,
+};
+
+// ── SVG SETUP ──
+const svg = document.getElementById('graph-svg');
+const nodeGroup = document.getElementById('node-group');
+const edgeGroup = document.getElementById('edge-group');
+const labelGroup = document.getElementById('label-group');
+const clusterGroup = document.getElementById('cluster-group');
+const dim3Group = document.getElementById('dim3-group');
+const dim4Group = document.getElementById('dim4-group');
+const selGroup = document.getElementById('selection-group');
+
+const EDGE_TYPE_COLORS = {
+  Hierarchy:'#3d84e8', Dependency:'#e8a832', Association:'#e054a8',
+  Contains:'#e87032', CrossGridLink:'#8b5cf6', Collaborates:'#00d8b0',
+  OrgMembership:'#3cb878', ShadowOf:'#2dd4bf', FederationPeer:'#c8a84b', Custom:'#8890b0',
+};
+const EDGE_MARKERS = {
+  Hierarchy:'arr-hier', Dependency:'arr-dep', CrossGridLink:'arr-cross',
+  Collaborates:'arr-collab', Contains:'arr-contains',
+};
+
+// ── PHYSICS / LAYOUT ──
+let physicsActive = true;
+let animFrame = null;
+const W = 900, H = 600;
+
+function initLayout() {
+  // Place nodes in a force-spread layout
+  state.nodes.forEach((n, i) => {
+    if (!n.vx) n.vx = (Math.random() - 0.5) * 2;
+    if (!n.vy) n.vy = (Math.random() - 0.5) * 2;
+  });
+  if (physicsActive) startPhysics();
+  else render();
+}
+
+function startPhysics() {
+  if (animFrame) cancelAnimationFrame(animFrame);
+  let iter = 0;
+  function tick() {
+    if (!physicsActive || iter > 300) { physicsActive = false; render(); return; }
+    iter++;
+    applyForces();
+    render();
+    animFrame = requestAnimationFrame(tick);
+  }
+  tick();
+}
+
+function applyForces() {
+  const alpha = 0.03, repulsion = 8000, attraction = 0.04, damping = 0.85;
+  const vNodes = state.nodes.filter(n => !n.hidden);
+  // Repulsion
+  for (let i = 0; i < vNodes.length; i++) {
+    for (let j = i+1; j < vNodes.length; j++) {
+      const a = vNodes[i], b = vNodes[j];
+      const dx = b.x - a.x, dy = b.y - a.y;
+      const d = Math.max(Math.sqrt(dx*dx+dy*dy), 1);
+      const f = repulsion / (d*d);
+      const fx = (dx/d)*f, fy = (dy/d)*f;
+      a.vx -= fx; a.vy -= fy; b.vx += fx; b.vy += fy;
+    }
+  }
+  // Attraction
+  state.edges.filter(e => state.edgeTypeFilters.has(e.edge_type)).forEach(e => {
+    const a = state.nodes.find(n=>n.id===e.source), b = state.nodes.find(n=>n.id===e.target);
+    if (!a||!b) return;
+    const dx=b.x-a.x, dy=b.y-a.y, d=Math.max(Math.sqrt(dx*dx+dy*dy),1);
+    const f = (d - 120) * attraction * (e.weight||1);
+    a.vx += dx/d*f; a.vy += dy/d*f; b.vx -= dx/d*f; b.vy -= dy/d*f;
+  });
+  // Center gravity
+  vNodes.forEach(n => {
+    n.vx += (W/2 - n.x) * 0.002;
+    n.vy += (H/2 - n.y) * 0.002;
+    n.vx *= damping; n.vy *= damping;
+    n.x = Math.max(30, Math.min(W-30, n.x + n.vx));
+    n.y = Math.max(30, Math.min(H-30, n.y + n.vy));
+  });
+}
+
+// ── RENDER ──
+function render() {
+  renderClusters();
+  renderDimProjections();
+  renderEdges();
+  renderNodes();
+  renderLabels();
+  renderNodeList();
+  renderEdgeList();
+  renderMinimap();
+}
+
+function renderClusters() {
+  if (!state.showClusters) { clusterGroup.innerHTML=''; return; }
+  const clusters = {
+    kogi: { nodes: state.nodes.filter(n=>n.domain==='Kogi'&&!n.hidden), color:'#00d8b0', label:'Kogi Domain', grad:'rg-kogi' },
+    ume:  { nodes: state.nodes.filter(n=>n.domain==='Ume'&&!n.hidden),  color:'#3d84e8', label:'Ume Domain',  grad:'rg-ume' },
+    qala: { nodes: state.nodes.filter(n=>n.domain==='Qala'&&!n.hidden), color:'#8b5cf6', label:'Qala Domain', grad:'rg-qala' },
+  };
+  let html = '';
+  Object.entries(clusters).forEach(([k, cl]) => {
+    if (cl.nodes.length < 2) return;
+    const xs = cl.nodes.map(n=>n.x), ys = cl.nodes.map(n=>n.y);
+    const minX=Math.min(...xs)-40, maxX=Math.max(...xs)+40;
+    const minY=Math.min(...ys)-40, maxY=Math.max(...ys)+40;
+    const cx=(minX+maxX)/2, cy=(minY+maxY)/2;
+    const rx=(maxX-minX)/2, ry=(maxY-minY)/2;
+    html += `<ellipse class="cluster-hull" cx="${cx}" cy="${cy}" rx="${rx}" ry="${ry}"
+      fill="url(#${cl.grad})" stroke="${cl.color}" stroke-width="1" stroke-dasharray="5,4"/>
+      <text x="${cx}" y="${minY-6}" fill="${cl.color}" 
+        style="font-family:IBM Plex Mono;font-size:9px;text-anchor:middle;opacity:0.7"
+        >${cl.label}</text>`;
+  });
+  clusterGroup.innerHTML = html;
+}
+
+function renderDimProjections() {
+  let d3html = '', d4html = '';
+  if (state.activeDims.has(3)) {
+    // D3 = time axis: draw dashed shadow lines slightly offset
+    state.nodes.filter(n=>!n.hidden).forEach(n => {
+      const ox = n.x + 18, oy = n.y - 18;
+      d3html += `<circle cx="${ox}" cy="${oy}" r="${(n.size||10)*0.6}" fill="${n.color}" opacity="0.2"/>
+        <line class="dim3-line" x1="${n.x}" y1="${n.y}" x2="${ox}" y2="${oy}" stroke="${n.color}" stroke-width="1"/>`;
+    });
+  }
+  if (state.activeDims.has(4)) {
+    // D4 = tenant axis: draw connecting arc between same-domain nodes
+    const domains = [...new Set(state.nodes.map(n=>n.domain))];
+    domains.forEach(dom => {
+      const dns = state.nodes.filter(n=>n.domain===dom&&!n.hidden);
+      if (dns.length < 2) return;
+      for (let i = 0; i < Math.min(dns.length-1, 3); i++) {
+        const a=dns[i], b=dns[i+1];
+        const mx=(a.x+b.x)/2, my=(a.y+b.y)/2 - 40;
+        d4html += `<path class="dim4-arc" d="M${a.x},${a.y} Q${mx},${my} ${b.x},${b.y}"
+          stroke="${a.color}" stroke-width="2" stroke-dasharray="8,4"/>`;
+      }
+    });
+  }
+  dim3Group.innerHTML = d3html;
+  dim4Group.innerHTML = d4html;
+}
+
+function renderEdges() {
+  const vis = state.edges.filter(e => state.edgeTypeFilters.has(e.edge_type));
+  edgeGroup.innerHTML = vis.map(e => {
+    const src = state.nodes.find(n=>n.id===e.source);
+    const tgt = state.nodes.find(n=>n.id===e.target);
+    if (!src||!tgt||src.hidden||tgt.hidden) return '';
+    const color = EDGE_TYPE_COLORS[e.edge_type]||'#8890b0';
+    const marker = EDGE_MARKERS[e.edge_type] ? `marker-end="url(#${EDGE_MARKERS[e.edge_type]})"` : '';
+    const isSel = state.selectedEdge===e.id;
+    const dx=tgt.x-src.x, dy=tgt.y-src.y, d=Math.sqrt(dx*dx+dy*dy);
+    const mx=src.x+dx/2-dy*0.15, my=src.y+dy/2+dx*0.15;
+    // offset endpoints to node radius
+    const r=(src.size||10);
+    const ex1=src.x+dx/d*r, ey1=src.y+dy/d*r;
+    const ex2=tgt.x-dx/d*(tgt.size||10), ey2=tgt.y-dy/d*(tgt.size||10);
+    return `<path class="edge-line${isSel?' selected':''}" data-id="${e.id}"
+      d="M${ex1},${ey1} Q${mx},${my} ${ex2},${ey2}"
+      fill="none" stroke="${color}" ${marker}
+      style="cursor:pointer" onclick="selectEdge('${e.id}')"/>`;
+  }).join('');
+}
+
+function renderNodes() {
+  nodeGroup.innerHTML = state.nodes.filter(n=>!n.hidden).map(n => {
+    const isSel = state.selectedNode===n.id;
+    const r = n.size || 10;
+    const glowId = isSel ? 'glow-strong' : '';
+    return `<g class="graph-node${isSel?' selected':''}" data-id="${n.id}"
+      transform="translate(${n.x},${n.y})"
+      onclick="selectNode('${n.id}')"
+      oncontextmenu="showCtxMenu(event,'${n.id}')">
+      ${isSel?`<circle r="${r+6}" fill="${n.color}" opacity="0.15"/>
+               <circle r="${r+3}" fill="none" stroke="${n.color}" stroke-width="1.5" stroke-dasharray="4,3" opacity="0.6"/>`:
+               `<circle r="${r+2}" fill="${n.color}" opacity="0.08"/>`}
+      <circle r="${r}" fill="${n.color}" ${glowId?`filter="url(#${glowId})"`:''} opacity="0.9"/>
+      <text y="1" style="font-family:IBM Plex Mono;font-size:8px;fill:#07080d;font-weight:700;text-anchor:middle">${n.type.charAt(0)}</text>
+    </g>`;
+  }).join('');
+}
+
+function renderLabels() {
+  labelGroup.innerHTML = state.nodes.filter(n=>!n.hidden).map(n => {
+    const r = n.size || 10;
+    return `<text class="node-label" x="${n.x}" y="${n.y+r+12}" style="font-size:9px;fill:var(--text2)">${n.label}</text>`;
+  }).join('');
+}
+
+function renderNodeList() {
+  const ft = state.filterText.toLowerCase();
+  document.getElementById('node-list').innerHTML = state.nodes
+    .filter(n => !ft || n.label.toLowerCase().includes(ft) || n.type.toLowerCase().includes(ft))
+    .map(n => `<div class="node-item${n.id===state.selectedNode?' selected':''}" onclick="selectNode('${n.id}')">
+      <div class="ni-dot" style="background:${n.color}"></div>
+      <div style="flex:1;min-width:0">
+        <div class="ni-label">${n.label}</div>
+        <div class="ni-type">${n.type} · ${n.domain}</div>
+      </div>
+    </div>`).join('');
+}
+
+function renderEdgeList() {
+  document.getElementById('edge-list').innerHTML = state.edges.map(e => {
+    const color = EDGE_TYPE_COLORS[e.edge_type]||'#888';
+    const src = state.nodes.find(n=>n.id===e.source), tgt=state.nodes.find(n=>n.id===e.target);
+    return `<div class="node-item${e.id===state.selectedEdge?' selected':''}" onclick="selectEdge('${e.id}')">
+      <div class="ni-dot" style="background:${color}"></div>
+      <div style="flex:1;min-width:0">
+        <div class="ni-label" style="font-size:8px">${src?.label||e.source} → ${tgt?.label||e.target}</div>
+        <div class="ni-type">${e.edge_type} · w:${e.weight}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function renderMinimap() {
+  const mm = document.getElementById('minimap-svg');
+  const sx = 80/W, sy = 60/H;
+  mm.innerHTML = `<rect width="80" height="60" fill="var(--bg3)" rx="3"/>` +
+    state.edges.filter(e=>state.edgeTypeFilters.has(e.edge_type)).map(e => {
+      const src=state.nodes.find(n=>n.id===e.source), tgt=state.nodes.find(n=>n.id===e.target);
+      if(!src||!tgt) return '';
+      return `<line x1="${src.x*sx}" y1="${src.y*sy}" x2="${tgt.x*sx}" y2="${tgt.y*sy}" stroke="${EDGE_TYPE_COLORS[e.edge_type]||'#888'}" stroke-width="0.5" opacity="0.5"/>`;
+    }).join('') +
+    state.nodes.filter(n=>!n.hidden).map(n =>
+      `<circle cx="${n.x*sx}" cy="${n.y*sy}" r="${Math.max(2,(n.size||10)*0.3)}" fill="${n.color}" opacity="0.8"/>`
+    ).join('');
+}
+
+// ── INSPECTOR ──
+function renderInspector(node) {
+  if (!node) { resetInspector(); return; }
+  document.getElementById('insp-title').textContent = node.label;
+  document.getElementById('insp-edit-btn').style.display = '';
+
+  const nodeAttrs = attrKeys.slice(0, 8);
+  const nodeEdges = state.edges.filter(e=>e.source===node.id||e.target===node.id);
+  const dims = ['D₁', 'D₂', ...state.activeDims.has(3)?['D₃']:[], ...state.activeDims.has(4)?['D₄']:[]];
+
+  document.getElementById('inspector-body').innerHTML = `
+    <!-- Overview -->
+    <div class="insp-section">Node</div>
+    <div class="kv" style="padding:4px 12px"><span class="kv-key">Label</span><span class="kv-val">${node.label}</span></div>
+    <div class="kv" style="padding:4px 12px"><span class="kv-key">Type</span><span class="kv-val c-cyan">${node.type}</span></div>
+    <div class="kv" style="padding:4px 12px"><span class="kv-key">Domain</span><span class="kv-val">${node.domain}</span></div>
+    <div class="kv" style="padding:4px 12px"><span class="kv-key">Cube</span><span class="kv-val" style="font-size:8px">${node.cube||'—'}</span></div>
+    <div class="kv" style="padding:4px 12px"><span class="kv-key">Edges</span><span class="kv-val">${nodeEdges.length}</span></div>
+
+    <!-- Dimension coordinates -->
+    <div class="insp-section">Hypercell Coordinates</div>
+    <div style="padding:6px 12px;display:flex;flex-wrap:wrap;gap:4px">
+      ${dims.map((d,i) => `<span class="dim-badge">${d}<span class="sub">${i===0?node.id.slice(-8):i===1?node.type:i===2?'2026-03':'tenant-A'}</span></span>`).join('')}
+    </div>
+
+    <!-- Attribute grid (mini hypercube view) -->
+    <div class="hc-projection">
+      <div class="hc-proj-header">
+        <span class="hc-proj-title">Attribute Cells</span>
+        <span class="badge badge-gray">${nodeAttrs.length} keys</span>
+      </div>
+      <div class="hc-grid" style="grid-template-columns:repeat(4,1fr)">
+        ${nodeAttrs.map(a => {
+          const isAI = a.ai;
+          const cls = isAI ? 'hc-cell ai-computed' : 'hc-cell filled';
+          return `<div class="${cls}" onclick="openAttrEditor('${a.key}','${a.crdt}')" title="${a.key}: ${a.description}">
+            <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:50px">${a.key}</span>
+          </div>`;
+        }).join('')}
+        <div class="hc-cell empty" onclick="openAttrEditor('','')">+ attr</div>
+      </div>
+    </div>
+
+    <!-- Connected edges -->
+    <div class="insp-section">Edges (${nodeEdges.length})</div>
+    ${nodeEdges.map(e => {
+      const other = e.source===node.id ? state.nodes.find(n=>n.id===e.target) : state.nodes.find(n=>n.id===e.source);
+      const dir = e.source===node.id ? '→' : '←';
+      return `<div class="kv" style="padding:4px 12px;cursor:pointer" onclick="selectEdge('${e.id}')">
+        <span class="kv-key" style="font-size:8px">${dir} ${other?.label||'?'}</span>
+        <span class="badge" style="border-color:${EDGE_TYPE_COLORS[e.edge_type]||'#888'}30;color:${EDGE_TYPE_COLORS[e.edge_type]||'#888'};font-size:7px">${e.edge_type}</span>
+      </div>`;
+    }).join('')}
+
+    <!-- Quick actions -->
+    <div class="insp-section">Actions</div>
+    <div style="padding:6px 12px;display:flex;flex-direction:column;gap:4px">
+      <button class="btn btn-ghost btn-sm w-full" onclick="showToast('Expanding ego network…')">Expand Ego Network</button>
+      <button class="btn btn-ghost btn-sm w-full" onclick="showToast('Opening HyperQL with node pre-selected…')">HyperQL From Node</button>
+      <button class="btn btn-violet btn-sm w-full" onclick="openAttrEditor('health_score','LWW')">Edit health_score</button>
+      <button class="btn btn-danger btn-sm w-full" onclick="deleteNode('${node.id}')">Delete Node</button>
+    </div>
+  `;
+}
+
+function renderEdgeInspector(edge) {
+  if (!edge) return;
+  const src = state.nodes.find(n=>n.id===edge.source), tgt=state.nodes.find(n=>n.id===edge.target);
+  const color = EDGE_TYPE_COLORS[edge.edge_type]||'#888';
+  document.getElementById('insp-title').textContent = edge.edge_type;
+  document.getElementById('insp-edit-btn').style.display = '';
+  document.getElementById('inspector-body').innerHTML = `
+    <div class="insp-section">Edge</div>
+    <div class="kv" style="padding:4px 12px"><span class="kv-key">Type</span><span class="kv-val" style="color:${color}">${edge.edge_type}</span></div>
+    <div class="kv" style="padding:4px 12px"><span class="kv-key">Source</span><span class="kv-val">${src?.label||edge.source}</span></div>
+    <div class="kv" style="padding:4px 12px"><span class="kv-key">Target</span><span class="kv-val">${tgt?.label||edge.target}</span></div>
+    <div class="kv" style="padding:4px 12px"><span class="kv-key">Weight</span><span class="kv-val c-gold">${edge.weight}</span></div>
+    <div class="kv" style="padding:4px 12px"><span class="kv-key">Directed</span><span class="kv-val">${edge.directed?'Yes':'No'}</span></div>
+    <div class="kv" style="padding:4px 12px"><span class="kv-key">Consent</span>
+      <span class="badge ${edge.consent==='Accepted'?'badge-green':edge.consent==='N/A'?'badge-gray':'badge-gold'}">${edge.consent}</span>
+    </div>
+    ${edge.grid2?`<div class="kv" style="padding:4px 12px"><span class="kv-key">CrossGrid</span><span class="kv-val" style="color:var(--violet)">${edge.grid} ↔ ${edge.grid2}</span></div>`:''}
+    <div class="insp-section" style="margin-top:4px">Actions</div>
+    <div style="padding:6px 12px;display:flex;flex-direction:column;gap:4px">
+      <button class="btn btn-ghost btn-sm" onclick="editEdgeWeight('${edge.id}')">Edit Weight</button>
+      <button class="btn btn-ghost btn-sm" onclick="showToast('Edge consent toggled')">Toggle Consent</button>
+      <button class="btn btn-danger btn-sm" onclick="deleteEdge('${edge.id}')">Delete Edge</button>
+    </div>
+  `;
+}
+
+function resetInspector() {
+  document.getElementById('insp-title').textContent = 'Inspector';
+  document.getElementById('insp-edit-btn').style.display = 'none';
+  document.getElementById('inspector-body').innerHTML = `<div style="padding:20px 12px;text-align:center;color:var(--text3);font-family:var(--mono);font-size:9px"><div style="font-size:22px;margin-bottom:8px;opacity:0.3">◎</div>Click a node or edge to inspect</div>`;
+}
+
+// ── SELECTION ──
+function selectNode(id) {
+  state.selectedNode = state.selectedNode===id ? null : id;
+  state.selectedEdge = null;
+  const node = state.nodes.find(n=>n.id===id);
+  renderInspector(state.selectedNode ? node : null);
+  render();
+}
+
+function selectEdge(id) {
+  state.selectedEdge = state.selectedEdge===id ? null : id;
+  state.selectedNode = null;
+  const edge = state.edges.find(e=>e.id===id);
+  renderEdgeInspector(state.selectedEdge ? edge : null);
+  render();
+}
+
+// ── CONTROLS ──
+function toggleDim(n, el) {
+  const wasActive = state.activeDims.has(n);
+  if (n===2) return; // always on
+  if (wasActive) state.activeDims.delete(n);
+  else state.activeDims.add(n);
+  el.classList.toggle('active', !wasActive);
+  document.getElementById('d3-legend').style.display = state.activeDims.has(3)?'':'none';
+  document.getElementById('d4-legend').style.display = state.activeDims.has(4)?'':'none';
+  render();
+  showToast('D'+n+' '+(state.activeDims.has(n)?'enabled':'disabled'));
+}
+
+function toggleClusters() { state.showClusters=!state.showClusters; render(); showToast('Clusters '+(state.showClusters?'on':'off')); }
+function togglePhysics() {
+  physicsActive = !physicsActive;
+  document.getElementById('physics-btn').textContent = '⊛ Physics '+(physicsActive?'ON':'OFF');
+  if (physicsActive) startPhysics(); else showToast('Physics disabled');
+}
+function setViewMode(m, el) {
+  state.viewMode = m;
+  document.querySelectorAll('#view-mode-btns .pill').forEach(p=>p.classList.remove('active'));
+  el.classList.add('active');
+  if (m==='cube-projection') { showCubeProjection(); return; }
+  resetLayout();
+  showToast('View: '+m);
+}
+
+function resetLayout() {
+  if (state.viewMode==='hierarchical') {
+    const levels = { Identity:0, Project:1, Asset:2, Artifact:3, OrgModule:1, Organization:0, Factory:0, Solution:1 };
+    state.nodes.forEach((n,i) => {
+      const lv = levels[n.type]||2;
+      n.x = 150 + (i%4)*180;
+      n.y = 80 + lv*130;
+      n.vx=n.vy=0;
+    });
+  } else if (state.viewMode==='radial') {
+    const cx=W/2, cy=H/2, r=220;
+    state.nodes.forEach((n,i)=>{
+      const ang = (i/state.nodes.length)*Math.PI*2;
+      n.x=cx+r*Math.cos(ang); n.y=cy+r*Math.sin(ang); n.vx=n.vy=0;
+    });
+  } else {
+    state.nodes.forEach((n,i)=>{n.x=100+Math.random()*(W-200);n.y=80+Math.random()*(H-160);n.vx=n.vy=0;});
+    physicsActive=true; startPhysics(); return;
+  }
+  physicsActive=false; render();
+}
+
+function showCubeProjection() {
+  physicsActive=false;
+  // Arrange as N-dim cube projection
+  const cube = [[0,0],[1,0],[1,1],[0,1],[0.5,0.5],[1.5,0.5],[1.5,1.5],[0.5,1.5],[0.25,0.25]];
+  state.nodes.forEach((n,i)=>{
+    const pt = cube[i%cube.length];
+    n.x = 160 + pt[0]*280; n.y = 120 + pt[1]*280; n.vx=n.vy=0;
+  });
+  render();
+  showToast('Cube projection view — visualizing N-dim coordinates');
+}
+
+function filterNodes(text) { state.filterText=text; state.nodes.forEach(n=>n.hidden=text&&!n.label.toLowerCase().includes(text.toLowerCase())&&!n.type.toLowerCase().includes(text.toLowerCase())); render(); }
+function resetZoom() { state.transform={x:0,y:0,scale:1}; }
+function zoom(f) { state.transform.scale *= f; }
+
+function exportGraph() {
+  const data = { nodes: state.nodes.map(({id,label,type,domain,color,x,y})=>({id,label,type,domain,color,x,y})), edges: state.edges.map(({id,source,target,edge_type,weight})=>({id,source,target,edge_type,weight})) };
+  copyText(JSON.stringify(data, null, 2));
+  showToast('Graph exported to clipboard (JSON)', 'success');
+}
+
+// ── ADD NODE / EDGE ──
+function addNode() {
+  const label = document.getElementById('nn-label').value.trim();
+  if (!label) { showToast('Label required', 'error'); return; }
+  const color = state.currentColor;
+  const nn = { id:'node-'+Date.now(), label, type:document.getElementById('nn-type').value,
+    domain:document.getElementById('nn-domain').value, color, x:W/2+(Math.random()-0.5)*100,
+    y:H/2+(Math.random()-0.5)*100, size:11, vx:0, vy:0,
+    cube:document.getElementById('nn-cube').value };
+  state.nodes.push(nn);
+  closeModal('modal-add-node');
+  render(); showToast('Node "'+label+'" added', 'success');
+}
+
+function addEdge() {
+  const src=document.getElementById('ne-source').value, tgt=document.getElementById('ne-target').value;
+  if (src===tgt) { showToast('Source and target must differ', 'error'); return; }
+  const type=document.getElementById('ne-type').value;
+  const ne = { id:'edge-'+Date.now(), source:src, target:tgt, edge_type:type,
+    weight:parseFloat(document.getElementById('ne-weight').value)||1,
+    directed:document.getElementById('ne-directed').value==='true',
+    consent:document.getElementById('ne-consent').value,
+    grid:'grid-kogi', color:EDGE_TYPE_COLORS[type]||'#888' };
+  state.edges.push(ne);
+  closeModal('modal-add-edge');
+  render(); showToast('Edge ('+type+') added', 'success');
+}
+
+function deleteNode(id) {
+  if (!confirm('Delete node and all its edges?')) return;
+  state.nodes = state.nodes.filter(n=>n.id!==id);
+  state.edges = state.edges.filter(e=>e.source!==id&&e.target!==id);
+  state.selectedNode=null; resetInspector(); render();
+  showToast('Node deleted');
+}
+
+function deleteEdge(id) {
+  state.edges = state.edges.filter(e=>e.id!==id);
+  state.selectedEdge=null; resetInspector(); render();
+  showToast('Edge deleted');
+}
+
+function editEdgeWeight(id) {
+  const edge=state.edges.find(e=>e.id===id);
+  if(!edge) return;
+  const w = prompt('New weight (0–1):', edge.weight);
+  if(w!=null) { edge.weight=parseFloat(w)||edge.weight; render(); showToast('Weight updated'); }
+}
+
+function editSelectedNode() {
+  if (state.selectedNode) openAttrEditor('name','LWW');
+}
+
+// ── ATTRIBUTE EDITOR ──
+function openAttrEditor(key, crdt) {
+  document.getElementById('ea-key').value = key || 'new_attr';
+  document.getElementById('ea-crdt').value = crdt || 'LWW';
+  document.getElementById('ea-val').value = '';
+  document.getElementById('ea-meta').textContent = key ? `CRDT: ${crdt} · Min tier: Editor · Committed to EventLog on save` : 'New attribute — will be registered in AttributeKeyRegistry';
+  openModal('modal-edit-attr');
+}
+
+function saveAttr() {
+  closeModal('modal-edit-attr');
+  showToast('Attribute saved · EventLog entry appended · CRDT op queued', 'success');
+}
+
+// ── CONTEXT MENU ──
+function showCtxMenu(e, nodeId) {
+  e.preventDefault();
+  state.ctxNode = nodeId;
+  const menu = document.getElementById('ctx-menu');
+  menu.style.left = e.clientX+'px'; menu.style.top = e.clientY+'px';
+  menu.classList.add('open');
+  document.addEventListener('click', ()=>menu.classList.remove('open'), {once:true});
+}
+
+function ctxAction(action) {
+  const node = state.nodes.find(n=>n.id===state.ctxNode);
+  if (!node) return;
+  const labels = { inspect:'Inspecting node…', edit:'Opening attribute editor…', connect:'Select target node for edge…',
+    expand:'Expanding neighborhood…', ego:'Building ego network…', 'shortest-path':'Select target node for path query…',
+    hyperql:'Opening HyperQL with node context…', delete:'Confirm deletion?' };
+  if (action==='delete') { if(confirm('Delete "'+node.label+'"?')) deleteNode(state.ctxNode); }
+  else { selectNode(state.ctxNode); showToast(labels[action]||action); }
+}
+
+// ── FILTER TOOLBAR RENDERING ──
+function renderFilterBars() {
+  // Edge types
+  const et = document.getElementById('edge-type-filter');
+  Object.entries(EDGE_TYPE_COLORS).forEach(([type,color])=>{
+    const btn=document.createElement('button');
+    btn.className='ef-btn';
+    btn.style.borderColor=color+'50';btn.style.color=color;
+    if(state.edgeTypeFilters.has(type)) btn.style.background=color+'20';
+    btn.textContent=type;
+    btn.onclick=()=>{
+      if(state.edgeTypeFilters.has(type)) state.edgeTypeFilters.delete(type);
+      else state.edgeTypeFilters.add(type);
+      btn.style.background=state.edgeTypeFilters.has(type)?color+'20':'';
+      render();
+    };
+    et.appendChild(btn);
+  });
+
+  // Grids
+  const gf = document.getElementById('grid-filter');
+  HGData.grids.forEach(g=>{
+    const btn=document.createElement('button');
+    btn.className='btn btn-ghost btn-xs';
+    btn.style.borderColor=g.color+'50';btn.style.color=g.color;
+    btn.textContent=g.domain.split(' ')[0];
+    btn.onclick=()=>showToast('Grid filter: '+g.name);
+    gf.appendChild(btn);
+  });
+}
+
+// ── POPULATE MODALS ──
+function populateModals() {
+  buildColorPicker('nn-color-grid', state.currentColor, c=>state.currentColor=c);
+  // Cubes
+  const cubeSel=document.getElementById('nn-cube');
+  cubeSel.innerHTML=cubes.map(c=>`<option value="${c.id}">${c.name}</option>`).join('');
+  // Node selects for edge modal
+  ['ne-source','ne-target'].forEach(id=>{
+    document.getElementById(id).innerHTML=state.nodes.map(n=>`<option value="${n.id}">${n.label}</option>`).join('');
+  });
+}
+
+function updateCubeInfo(sel) {
+  const c=cubes.find(x=>x.id===sel.value);
+  const el=document.getElementById('nn-cube-info');
+  if(c){el.style.display='';el.textContent=`${c.name} · N=${c.dims} dims · ${c.rows} rows · [${c.dim_axes.join(', ')}]`;}
+}
+
+// ── INIT ──
+renderFilterBars();
+populateModals();
+initLayout();
+</script>
+</body>
+</html>

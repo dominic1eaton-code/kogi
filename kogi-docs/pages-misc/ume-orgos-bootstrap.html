@@ -1,0 +1,1080 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>UME — Bootstrap your OrgOS</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=DM+Mono:wght@300;400&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#08080b;
+  --s1:#0f0f14;
+  --s2:#16161c;
+  --s3:#1d1d26;
+  --border:rgba(255,255,255,0.07);
+  --border2:rgba(255,255,255,0.12);
+  --cyan:#00d4c8;
+  --cyan-d:rgba(0,212,200,0.10);
+  --cyan-b:rgba(0,212,200,0.22);
+  --red:#e84040;
+  --red-d:rgba(232,64,64,0.10);
+  --amber:#e8a030;
+  --amber-d:rgba(232,160,48,0.10);
+  --green:#2dc27a;
+  --green-d:rgba(45,194,122,0.10);
+  --green-b:rgba(45,194,122,0.22);
+  --w:#f0f0f2;
+  --m:rgba(240,240,242,0.48);
+  --h:rgba(240,240,242,0.22);
+  --font:'Syne',sans-serif;
+  --body:'DM Sans',sans-serif;
+  --mono:'DM Mono',monospace;
+  --r:2px;
+}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--w);font-family:var(--body);font-size:14px;line-height:1.55;overflow-x:hidden;min-height:100vh}
+
+/* ─── LAYOUT ─────────────────────────────────────── */
+.app{display:grid;grid-template-columns:260px 1fr;min-height:100vh}
+
+/* ─── SIDEBAR ─────────────────────────────────────── */
+.sb{background:var(--s1);border-right:1px solid var(--border);display:flex;flex-direction:column;position:sticky;top:0;height:100vh;overflow:hidden}
+.sb-top{padding:22px 22px 18px;border-bottom:1px solid var(--border)}
+.sb-logo{display:flex;align-items:center;gap:9px;margin-bottom:18px}
+.sb-hex{width:24px;height:24px;clip-path:polygon(50% 0%,100% 25%,100% 75%,50% 100%,0% 75%,0% 25%);background:linear-gradient(135deg,var(--cyan),var(--red));flex-shrink:0}
+.sb-wordmark{font-family:var(--font);font-weight:800;font-size:17px;letter-spacing:-0.03em}
+.sb-pill{font-size:8px;letter-spacing:0.14em;text-transform:uppercase;background:var(--cyan-d);color:var(--cyan);border:1px solid var(--cyan-b);padding:2px 7px;border-radius:1px;margin-left:auto}
+.sb-pbar-wrap{margin-top:0}
+.sb-pbar-meta{display:flex;justify-content:space-between;font-size:9px;letter-spacing:0.1em;text-transform:uppercase;color:var(--h);margin-bottom:8px}
+.sb-pbar{height:1px;background:rgba(255,255,255,0.07);position:relative}
+.sb-pbar-fill{height:100%;background:var(--cyan);transition:width 0.5s ease;position:absolute;top:0;left:0}
+
+.sb-steps{flex:1;overflow-y:auto;padding:8px 0}
+.sb-step{padding:9px 22px;display:flex;align-items:flex-start;gap:11px;cursor:pointer;position:relative;transition:background 0.15s}
+.sb-step-line{position:absolute;left:0;top:0;bottom:0;width:2px;background:transparent;transition:background 0.2s}
+.sb-step.act .sb-step-line{background:var(--cyan)}
+.sb-step.act{background:rgba(0,212,200,0.04)}
+.sb-step.done .sn{background:var(--cyan);border-color:var(--cyan);color:#000}
+.sn{width:20px;height:20px;border-radius:50%;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:600;flex-shrink:0;margin-top:1px;color:var(--h);transition:all 0.2s;font-family:var(--font)}
+.sb-step.act .sn{border-color:var(--cyan);color:var(--cyan)}
+.si-title{font-size:11px;font-weight:500;color:var(--h);transition:color 0.2s;letter-spacing:0.01em}
+.sb-step.act .si-title,.sb-step.done .si-title{color:var(--w)}
+.si-sub{font-size:10px;color:var(--h);margin-top:1px;opacity:0.7}
+.sb-step.act .si-sub{opacity:1;color:var(--m)}
+
+.sb-foot{padding:14px 22px;border-top:1px solid var(--border)}
+.sb-stat{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+.sb-stat-k{font-size:9px;letter-spacing:0.1em;text-transform:uppercase;color:var(--h)}
+.sb-stat-v{font-family:var(--font);font-size:11px;font-weight:600;color:var(--cyan)}
+
+/* ─── MAIN ─────────────────────────────────────── */
+.main{display:flex;flex-direction:column;min-height:100vh}
+.panel{display:none;flex:1;flex-direction:column;min-height:100vh}
+.panel.act{display:flex}
+
+.ph{padding:40px 52px 30px;border-bottom:1px solid var(--border)}
+.ph-ey{font-size:9px;letter-spacing:0.16em;text-transform:uppercase;color:var(--cyan);margin-bottom:10px;display:flex;align-items:center;gap:8px}
+.ph-ey::before{content:'';width:16px;height:1px;background:var(--cyan);display:block}
+.ph-title{font-family:var(--font);font-size:26px;font-weight:800;letter-spacing:-0.04em;line-height:1.05;margin-bottom:8px}
+.ph-sub{font-size:13px;color:var(--m);max-width:540px;line-height:1.65;font-weight:300}
+.pb{flex:1;padding:32px 52px;overflow-y:auto}
+.pf{padding:18px 52px;border-top:1px solid var(--border);background:var(--s1);display:flex;align-items:center;justify-content:space-between;position:sticky;bottom:0}
+
+/* ─── FORMS ─────────────────────────────────────── */
+.fr{margin-bottom:22px}
+.fr2{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:22px}
+.fr3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:22px}
+label{display:block;font-size:9px;letter-spacing:0.12em;text-transform:uppercase;color:var(--m);margin-bottom:7px;font-weight:500}
+input[type=text],input[type=email],select,textarea{
+  width:100%;background:var(--s2);border:1px solid var(--border);color:var(--w);
+  padding:9px 13px;font-family:var(--body);font-size:13px;border-radius:var(--r);
+  outline:none;transition:border-color 0.2s;-webkit-appearance:none;
+}
+input:focus,select:focus,textarea:focus{border-color:var(--cyan)}
+select option{background:#1a1a22}
+textarea{resize:vertical;min-height:72px}
+input::placeholder{color:var(--h)}
+
+/* ─── CHOICE CARDS ─────────────────────────────── */
+.cg{display:grid;gap:8px;margin-bottom:22px}
+.cg2{grid-template-columns:1fr 1fr}
+.cg3{grid-template-columns:1fr 1fr 1fr}
+.cc{background:var(--s2);border:1px solid var(--border);border-radius:var(--r);padding:14px 16px;cursor:pointer;transition:all 0.15s;position:relative}
+.cc:hover{border-color:rgba(255,255,255,0.14);background:rgba(255,255,255,0.03)}
+.cc.sel{border-color:var(--cyan);background:var(--cyan-d)}
+.cc.sel::after{content:'✓';position:absolute;top:8px;right:10px;width:16px;height:16px;background:var(--cyan);color:#000;border-radius:50%;font-size:9px;font-weight:800;display:flex;align-items:center;justify-content:center;line-height:16px;text-align:center}
+.cc-ico{font-size:18px;margin-bottom:7px;line-height:1}
+.cc-title{font-family:var(--font);font-size:12px;font-weight:700;letter-spacing:-0.01em;margin-bottom:3px}
+.cc-desc{font-size:11px;color:var(--m);line-height:1.4;font-weight:300}
+.cc-tag{display:inline-block;font-size:8px;letter-spacing:0.1em;text-transform:uppercase;padding:2px 6px;border:1px solid var(--border);border-radius:1px;color:var(--h);margin-top:5px}
+.cc.sel .cc-tag{border-color:var(--cyan-b);color:var(--cyan)}
+
+/* ─── MODULES ─────────────────────────────────── */
+.mg{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:7px;margin-bottom:20px}
+.mc{background:var(--s2);border:1px solid var(--border);border-radius:var(--r);padding:13px 13px 10px;cursor:pointer;transition:all 0.15s;position:relative}
+.mc:hover{border-color:rgba(255,255,255,0.14)}
+.mc.sel{border-color:var(--cyan);background:var(--cyan-d)}
+.mc.core-app{border-color:rgba(0,212,200,0.18);cursor:default;opacity:0.72}
+.mc-ico{font-size:15px;margin-bottom:5px;line-height:1}
+.mc-name{font-size:11px;font-weight:500;margin-bottom:2px}
+.mc-cat{font-size:9px;color:var(--h)}
+.mc-core{font-size:8px;letter-spacing:0.1em;text-transform:uppercase;color:var(--cyan);display:block;margin-top:3px}
+
+/* ─── JURISDICTIONS ─────────────────────────────── */
+.jg{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:7px;margin-bottom:18px}
+.jc{background:var(--s2);border:1px solid var(--border);border-radius:var(--r);padding:11px 13px;cursor:pointer;transition:all 0.15s;display:flex;align-items:center;gap:9px}
+.jc:hover{border-color:rgba(255,255,255,0.14)}
+.jc.sel{border-color:var(--cyan);background:var(--cyan-d)}
+.jf{font-size:16px;line-height:1;flex-shrink:0}
+.jn{font-size:11px;font-weight:500;line-height:1.3}
+.jt{font-size:9px;color:var(--h)}
+
+/* ─── ACTORS ─────────────────────────────────── */
+.al{display:flex;flex-direction:column;gap:7px;margin-bottom:18px}
+.ai{background:var(--s2);border:1px solid var(--border);border-radius:var(--r);padding:12px 15px;display:flex;align-items:center;gap:12px}
+.av{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;flex-shrink:0}
+.av-h{background:var(--cyan-d);color:var(--cyan);border:1px solid var(--cyan-b)}
+.av-ai{background:var(--amber-d);color:var(--amber);border:1px solid rgba(232,160,48,0.25)}
+.av-cpu{background:var(--red-d);color:var(--red);border:1px solid rgba(232,64,64,0.25)}
+.av-hy{background:rgba(120,80,200,0.1);color:#b090f0;border:1px solid rgba(120,80,200,0.25)}
+.a-info{flex:1}
+.a-name{font-size:12px;font-weight:500}
+.a-role{font-size:10px;color:var(--m);margin-top:1px}
+.ab{font-size:8px;letter-spacing:0.1em;text-transform:uppercase;padding:2px 7px;border-radius:1px;flex-shrink:0}
+.ab-h{background:var(--cyan-d);color:var(--cyan);border:1px solid var(--cyan-b)}
+.ab-ai{background:var(--amber-d);color:var(--amber);border:1px solid rgba(232,160,48,0.25)}
+.ab-cpu{background:var(--red-d);color:var(--red);border:1px solid rgba(232,64,64,0.25)}
+.ab-hy{background:rgba(120,80,200,0.1);color:#b090f0;border:1px solid rgba(120,80,200,0.25)}
+.add-row{display:flex;gap:8px;margin-bottom:22px}
+.add-row input{flex:1}
+.add-row select{width:130px}
+.add-row .add-role{flex:0.65}
+
+/* ─── ODD CARDS ─────────────────────────────────── */
+.odd-c{background:var(--s2);border:1px solid var(--border);border-radius:var(--r);margin-bottom:10px;overflow:hidden}
+.odd-h{padding:13px 16px;display:flex;align-items:center;gap:11px;cursor:pointer;user-select:none;transition:background 0.15s}
+.odd-h:hover{background:rgba(255,255,255,0.02)}
+.odd-arr{font-size:10px;color:var(--h);margin-left:auto;transition:transform 0.2s;line-height:1}
+.odd-c.open .odd-arr{transform:rotate(180deg)}
+.odd-b{display:none;border-top:1px solid var(--border);padding:14px 16px}
+.odd-c.open .odd-b{display:block}
+.tr{display:flex;align-items:center;justify-content:space-between;padding:5px 0;border-bottom:1px solid rgba(255,255,255,0.04)}
+.tr:last-child{border-bottom:none}
+.tr-label{font-size:11px;color:var(--m)}
+.tog{position:relative;width:30px;height:17px;flex-shrink:0}
+.tog input{opacity:0;width:0;height:0;position:absolute}
+.tog-t{position:absolute;inset:0;background:rgba(255,255,255,0.09);border-radius:9px;cursor:pointer;transition:background 0.2s}
+.tog input:checked+.tog-t{background:var(--cyan)}
+.tog-t::after{content:'';position:absolute;width:11px;height:11px;background:#fff;border-radius:50%;top:3px;left:3px;transition:transform 0.2s}
+.tog input:checked+.tog-t::after{transform:translateX(13px)}
+
+/* ─── DNA REVIEW ─────────────────────────────────── */
+.dna-card{background:var(--s2);border:1px solid var(--border);border-radius:var(--r);padding:18px;margin-bottom:14px}
+.dna-row{display:flex;justify-content:space-between;align-items:flex-start;padding:7px 0;border-bottom:1px solid rgba(255,255,255,0.04)}
+.dna-row:last-child{border-bottom:none}
+.dk{font-size:10px;color:var(--h);letter-spacing:0.05em;width:150px;flex-shrink:0;padding-top:1px}
+.dv{font-size:12px;color:var(--w);text-align:right;line-height:1.4}
+.dv.cy{color:var(--cyan)}
+.dv.gn{color:var(--green)}
+.dna-version{font-family:var(--mono);font-size:11px;color:var(--cyan);letter-spacing:0.02em}
+
+/* ─── PROVISIONING ─────────────────────────────────── */
+.plog{background:#030306;border:1px solid var(--border);border-radius:var(--r);padding:14px 18px;font-family:var(--mono);font-size:10.5px;line-height:1.9;max-height:220px;overflow-y:auto;margin-bottom:18px}
+.ll{display:flex;gap:10px;opacity:0;transition:opacity 0.3s}
+.ll.sh{opacity:1}
+.lt{color:var(--h);flex-shrink:0;letter-spacing:0.03em}
+.lok{color:var(--green);font-weight:400}
+.lwarn{color:var(--amber)}
+.lstep{color:var(--cyan)}
+.lmsg{color:var(--m);font-weight:300}
+.ps-list{display:flex;flex-direction:column;gap:7px;margin-bottom:20px}
+.ps{display:flex;align-items:center;gap:11px;padding:11px 15px;background:var(--s2);border:1px solid var(--border);border-radius:var(--r)}
+.pi{width:26px;height:26px;border-radius:50%;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:10px;flex-shrink:0;font-weight:600;font-family:var(--font)}
+.pi.done{background:var(--green-d);border-color:var(--green-b);color:var(--green)}
+.pi.active{background:var(--cyan-d);border-color:var(--cyan-b);color:var(--cyan)}
+.pi.wait{color:var(--h)}
+.p-info{flex:1}
+.p-label{font-size:12px;font-weight:500}
+.p-detail{font-size:10px;color:var(--m);margin-top:1px;font-weight:300}
+.p-time{font-size:9px;color:var(--h);letter-spacing:0.08em;font-family:var(--mono)}
+@keyframes spin{from{transform:rotate(0)}to{transform:rotate(360deg)}}
+.spin{display:inline-block;animation:spin 1.2s linear infinite}
+
+/* ─── COMPLETE ─────────────────────────────────── */
+.comp-hero{text-align:center;padding:40px 0 28px}
+.comp-icon{width:56px;height:56px;background:var(--green-d);border:2px solid var(--green-b);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:22px;margin:0 auto 18px}
+.comp-title{font-family:var(--font);font-size:30px;font-weight:800;letter-spacing:-0.04em;margin-bottom:8px;line-height:1}
+.comp-sub{font-size:13px;color:var(--m);max-width:420px;margin:0 auto;font-weight:300;line-height:1.6}
+.met-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--border);border:1px solid var(--border);margin:28px 0}
+.met{background:var(--bg);padding:18px 16px}
+.met-v{font-family:var(--font);font-size:24px;font-weight:800;letter-spacing:-0.04em;color:var(--cyan);line-height:1}
+.met-l{font-size:9px;letter-spacing:0.1em;text-transform:uppercase;color:var(--h);margin-top:4px}
+.dash-prev{border:1px solid var(--border);border-radius:var(--r);overflow:hidden;background:var(--s1)}
+.dash-bar-x{background:var(--s2);border-bottom:1px solid var(--border);padding:9px 14px;display:flex;align-items:center;gap:8px}
+.d-dot{width:7px;height:7px;border-radius:50%}
+.d-url{flex:1;background:var(--bg);border:1px solid var(--border);border-radius:1px;padding:3px 8px;font-size:9px;color:var(--h);font-family:var(--mono)}
+.d-body{padding:16px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+.dw{background:var(--s2);border:1px solid var(--border);border-radius:var(--r);padding:12px}
+.dw-l{font-size:8px;letter-spacing:0.1em;text-transform:uppercase;color:var(--h);margin-bottom:5px}
+.dw-v{font-family:var(--font);font-size:18px;font-weight:700;letter-spacing:-0.03em;color:var(--w)}
+.dw-s{font-size:9px;color:var(--m);margin-top:2px}
+.dw-bar{height:2px;background:rgba(255,255,255,0.07);border-radius:1px;margin-top:7px}
+.dw-bf{height:100%;border-radius:1px}
+.next-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:20px}
+.nx{background:var(--s2);border:1px solid var(--border);border-radius:var(--r);padding:14px}
+.nx-tag{font-size:8px;letter-spacing:0.1em;text-transform:uppercase;color:var(--h);margin-bottom:7px}
+.nx-title{font-size:12px;font-weight:500;margin-bottom:4px}
+.nx-body{font-size:10px;color:var(--m);line-height:1.5;font-weight:300}
+
+/* ─── MISC ─────────────────────────────────────── */
+.stag{font-size:9px;letter-spacing:0.14em;text-transform:uppercase;color:var(--cyan);margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.stag::before{content:'';display:block;width:12px;height:1px;background:var(--cyan)}
+.sh2{font-family:var(--font);font-size:14px;font-weight:700;letter-spacing:-0.02em;margin-bottom:10px}
+.div{border:none;border-top:1px solid var(--border);margin:22px 0}
+.hint{font-size:11px;color:var(--h);line-height:1.5}
+.ibox{background:var(--cyan-d);border:1px solid var(--cyan-b);border-radius:var(--r);padding:11px 13px;margin-bottom:18px;font-size:11px;color:var(--m);line-height:1.6}
+.ibox strong{color:var(--w);font-weight:500}
+.wbox{background:var(--amber-d);border:1px solid rgba(232,160,48,0.2);border-radius:var(--r);padding:11px 13px;margin-bottom:18px;font-size:11px;color:var(--m);line-height:1.6}
+.wbox strong{color:var(--w);font-weight:500}
+.badge{display:inline-block;font-size:8px;letter-spacing:0.1em;text-transform:uppercase;padding:2px 7px;border-radius:1px}
+.bc{background:var(--cyan-d);color:var(--cyan);border:1px solid var(--cyan-b)}
+.ba{background:var(--amber-d);color:var(--amber);border:1px solid rgba(232,160,48,0.25)}
+.bg{background:var(--green-d);color:var(--green);border:1px solid var(--green-b)}
+.bw{background:rgba(255,255,255,0.05);color:var(--m);border:1px solid var(--border)}
+.chk-list{display:flex;flex-direction:column;gap:6px;margin-bottom:20px}
+.chk-item{display:flex;align-items:center;gap:9px;font-size:11px;color:var(--m);padding:7px 11px;background:var(--s2);border-radius:var(--r);font-weight:300}
+.chk-ok{color:var(--green)}
+.chk-na{color:var(--h)}
+
+/* ─── BUTTONS ─────────────────────────────────── */
+.btn{padding:9px 20px;border-radius:var(--r);font-family:var(--body);font-size:12px;font-weight:500;cursor:pointer;transition:all 0.15s;border:none;letter-spacing:0.03em}
+.btn-p{background:var(--cyan);color:#000}
+.btn-p:hover{opacity:0.85;transform:translateY(-1px)}
+.btn-p:disabled{opacity:0.35;cursor:default;transform:none}
+.btn-g{background:transparent;border:1px solid var(--border);color:var(--m)}
+.btn-g:hover{border-color:rgba(255,255,255,0.2);color:var(--w)}
+
+/* ─── SCROLLBAR ─────────────────────────────────── */
+::-webkit-scrollbar{width:4px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.1);border-radius:2px}
+::-webkit-scrollbar-thumb:hover{background:rgba(255,255,255,0.18)}
+</style>
+</head>
+<body>
+<div class="app">
+
+<!-- ════════════ SIDEBAR ════════════ -->
+<aside class="sb">
+  <div class="sb-top">
+    <div class="sb-logo">
+      <div class="sb-hex"></div>
+      <span class="sb-wordmark">UME</span>
+      <span class="sb-pill">OrgOS Setup</span>
+    </div>
+    <div class="sb-pbar-wrap">
+      <div class="sb-pbar-meta">
+        <span>Setup progress</span>
+        <span id="pct">0%</span>
+      </div>
+      <div class="sb-pbar"><div class="sb-pbar-fill" id="pfill" style="width:0%"></div></div>
+    </div>
+  </div>
+
+  <nav class="sb-steps" id="sb-nav">
+    <div class="sb-step act" data-s="0" onclick="gotoStep(0)">
+      <div class="sb-step-line"></div>
+      <div class="sn">1</div>
+      <div><div class="si-title">Org identity</div><div class="si-sub">Name, type & structure</div></div>
+    </div>
+    <div class="sb-step" data-s="1" onclick="gotoStep(1)">
+      <div class="sb-step-line"></div>
+      <div class="sn">2</div>
+      <div><div class="si-title">Jurisdiction packs</div><div class="si-sub">Compliance & filing rules</div></div>
+    </div>
+    <div class="sb-step" data-s="2" onclick="gotoStep(2)">
+      <div class="sb-step-line"></div>
+      <div class="sn">3</div>
+      <div><div class="si-title">OrgApps</div><div class="si-sub">Select domain modules</div></div>
+    </div>
+    <div class="sb-step" data-s="3" onclick="gotoStep(3)">
+      <div class="sb-step-line"></div>
+      <div class="sn">4</div>
+      <div><div class="si-title">Actors & ODDs</div><div class="si-sub">People, AI, devices</div></div>
+    </div>
+    <div class="sb-step" data-s="4" onclick="gotoStep(4)">
+      <div class="sb-step-line"></div>
+      <div class="sn">5</div>
+      <div><div class="si-title">OrgDNA review</div><div class="si-sub">Complete config summary</div></div>
+    </div>
+    <div class="sb-step" data-s="5">
+      <div class="sb-step-line"></div>
+      <div class="sn">6</div>
+      <div><div class="si-title">Provisioning</div><div class="si-sub">Boot sequence</div></div>
+    </div>
+    <div class="sb-step" data-s="6">
+      <div class="sb-step-line"></div>
+      <div class="sn">7</div>
+      <div><div class="si-title">OrgOS live</div><div class="si-sub">Ready to operate</div></div>
+    </div>
+  </nav>
+
+  <div class="sb-foot">
+    <div class="sb-stat"><span class="sb-stat-k">OrgDNA version</span><span class="sb-stat-v" id="sb-dna">—</span></div>
+    <div class="sb-stat"><span class="sb-stat-k">OrgApps active</span><span class="sb-stat-v" id="sb-mods">4 / 42</span></div>
+    <div class="sb-stat"><span class="sb-stat-k">Actors registered</span><span class="sb-stat-v" id="sb-actors">1</span></div>
+    <div class="sb-stat"><span class="sb-stat-k">Jurisdictions</span><span class="sb-stat-v" id="sb-juris">1</span></div>
+  </div>
+</aside>
+
+<!-- ════════════ MAIN ════════════ -->
+<main class="main">
+
+<!-- ══════════════════════════════════ -->
+<!-- PANEL 0 · ORG IDENTITY            -->
+<!-- ══════════════════════════════════ -->
+<div class="panel act" id="p0">
+  <div class="ph">
+    <div class="ph-ey">Step 1 of 7 · Org Identity</div>
+    <h1 class="ph-title">Name your organisation</h1>
+    <p class="ph-sub">This seeds your OrgDNA and determines which compliance packs, chart-of-accounts templates, and ODD contract defaults are loaded on provisioning.</p>
+  </div>
+  <div class="pb">
+
+    <div class="fr2">
+      <div><label>Organisation name</label><input type="text" id="org-name" placeholder="e.g. Meridian Ventures Ltd" oninput="updateSB()"></div>
+      <div><label>Trading / short name</label><input type="text" id="org-short" placeholder="e.g. Meridian"></div>
+    </div>
+
+    <div class="fr">
+      <label>Organisation type</label>
+      <div class="cg cg3">
+        <div class="cc sel" data-g="ot" data-v="startup" onclick="selChoice(this,'ot')">
+          <div class="cc-ico">🚀</div><div class="cc-title">Startup / Scale-up</div>
+          <div class="cc-desc">Pre-revenue to Series B growth company</div>
+          <span class="cc-tag">Seed → $50M ARR</span>
+        </div>
+        <div class="cc" data-g="ot" data-v="smb" onclick="selChoice(this,'ot')">
+          <div class="cc-ico">🏪</div><div class="cc-title">SMB / Established</div>
+          <div class="cc-desc">Operating business with staff and revenue</div>
+          <span class="cc-tag">2–200 employees</span>
+        </div>
+        <div class="cc" data-g="ot" data-v="enterprise" onclick="selChoice(this,'ot')">
+          <div class="cc-ico">🏢</div><div class="cc-title">Enterprise / Group</div>
+          <div class="cc-desc">Multi-entity corporate or holding structure</div>
+          <span class="cc-tag">200+ · Multi-entity</span>
+        </div>
+        <div class="cc" data-g="ot" data-v="solo" onclick="selChoice(this,'ot')">
+          <div class="cc-ico">💼</div><div class="cc-title">Solo / Freelancer</div>
+          <div class="cc-desc">Single-person sole trader or contractor</div>
+          <span class="cc-tag">1 person</span>
+        </div>
+        <div class="cc" data-g="ot" data-v="nonprofit" onclick="selChoice(this,'ot')">
+          <div class="cc-ico">🌱</div><div class="cc-title">Non-Profit / NGO</div>
+          <div class="cc-desc">Charitable foundation, CIO or NGO</div>
+          <span class="cc-tag">Grant-funded</span>
+        </div>
+        <div class="cc" data-g="ot" data-v="franchise" onclick="selChoice(this,'ot')">
+          <div class="cc-ico">🔗</div><div class="cc-title">Franchise / DAO</div>
+          <div class="cc-desc">Franchise network or multi-org DAO</div>
+          <span class="cc-tag">DAO · DLT-enabled</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="fr">
+      <label>Legal structure</label>
+      <div class="cg cg3">
+        <div class="cc sel" data-g="ls" data-v="ltd" onclick="selChoice(this,'ls')"><div class="cc-title">Private Limited (Ltd)</div><div class="cc-desc">England & Wales standard incorporation</div></div>
+        <div class="cc" data-g="ls" data-v="llc" onclick="selChoice(this,'ls')"><div class="cc-title">LLC</div><div class="cc-desc">United States — Delaware / federal</div></div>
+        <div class="cc" data-g="ls" data-v="corp" onclick="selChoice(this,'ls')"><div class="cc-title">C-Corp</div><div class="cc-desc">US Delaware — investor standard</div></div>
+        <div class="cc" data-g="ls" data-v="sole" onclick="selChoice(this,'ls')"><div class="cc-title">Sole Trader</div><div class="cc-desc">UK unincorporated individual</div></div>
+        <div class="cc" data-g="ls" data-v="llp" onclick="selChoice(this,'ls')"><div class="cc-title">LLP</div><div class="cc-desc">Limited Liability Partnership</div></div>
+        <div class="cc" data-g="ls" data-v="charity" onclick="selChoice(this,'ls')"><div class="cc-title">Charity / CIO</div><div class="cc-desc">Registered charity (UK)</div></div>
+      </div>
+    </div>
+
+    <div class="fr3">
+      <div><label>Registration number</label><input type="text" id="reg-num" placeholder="e.g. 12345678"></div>
+      <div>
+        <label>Financial year end</label>
+        <select id="fy-end">
+          <option value="03-31">31 March</option><option value="04-30">30 April</option>
+          <option value="05-31">31 May</option><option value="06-30">30 June</option>
+          <option value="09-30">30 September</option><option value="12-31" selected>31 December</option>
+        </select>
+      </div>
+      <div>
+        <label>Sector / Industry</label>
+        <select id="sector">
+          <option value="">Select sector…</option>
+          <option>Technology & Software</option><option>Professional Services</option>
+          <option>Financial Services</option><option>Healthcare</option>
+          <option>Retail & E-commerce</option><option>Manufacturing</option>
+          <option>Hospitality & Food Service</option><option>Construction & Property</option>
+          <option>Education & Training</option><option>Media & Creative</option>
+          <option>Non-Profit & Social Enterprise</option><option>Other</option>
+        </select>
+      </div>
+    </div>
+
+  </div>
+  <div class="pf">
+    <span class="hint">All fields editable after provisioning via OrgDNA Manager</span>
+    <button class="btn btn-p" onclick="goNext(1)">Continue →</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════ -->
+<!-- PANEL 1 · JURISDICTIONS           -->
+<!-- ══════════════════════════════════ -->
+<div class="panel" id="p1">
+  <div class="ph">
+    <div class="ph-ey">Step 2 of 7 · Jurisdiction Packs</div>
+    <h1 class="ph-title">Select jurisdiction packs</h1>
+    <p class="ph-sub">Each pack loads the Chombo compliance rules, statutory filing calendars, tax categories, and employment law for that territory. Regulatory updates ship as data — no code releases needed.</p>
+  </div>
+  <div class="pb">
+    <div class="ibox"><strong>Chombo policy engine:</strong> Each pack evaluates up to 45 compliance policies against your entity type and auto-generates a filing calendar with 14-day advance alerts.</div>
+
+    <div class="stag">United Kingdom</div>
+    <div class="jg">
+      <div class="jc sel" onclick="togJ(this)"><div class="jf">🇬🇧</div><div><div class="jn">England & Wales</div><div class="jt">Ltd · LLP · Sole Trader</div></div></div>
+      <div class="jc" onclick="togJ(this)"><div class="jf">🏴󠁧󠁢󠁳󠁣󠁴󠁿</div><div><div class="jn">Scotland</div><div class="jt">Scottish law specifics</div></div></div>
+      <div class="jc" onclick="togJ(this)"><div class="jf">🏴󠁧󠁢󠁮󠁩󠁲󠁿</div><div><div class="jn">Northern Ireland</div><div class="jt">NI employment rules</div></div></div>
+    </div>
+
+    <div class="stag">United States</div>
+    <div class="jg">
+      <div class="jc" onclick="togJ(this)"><div class="jf">🇺🇸</div><div><div class="jn">Federal</div><div class="jt">C-Corp · LLC · LLP</div></div></div>
+      <div class="jc" onclick="togJ(this)"><div class="jf">🏛</div><div><div class="jn">Delaware</div><div class="jt">Incorporation state</div></div></div>
+      <div class="jc" onclick="togJ(this)"><div class="jf">🌁</div><div><div class="jn">California</div><div class="jt">State requirements</div></div></div>
+      <div class="jc" onclick="togJ(this)"><div class="jf">🗽</div><div><div class="jn">New York</div><div class="jt">State requirements</div></div></div>
+    </div>
+
+    <div class="stag">European Union</div>
+    <div class="jg">
+      <div class="jc" onclick="togJ(this)"><div class="jf">🇩🇪</div><div><div class="jn">Germany</div><div class="jt">GmbH · AG</div></div></div>
+      <div class="jc" onclick="togJ(this)"><div class="jf">🇫🇷</div><div><div class="jn">France</div><div class="jt">SARL · SAS</div></div></div>
+      <div class="jc" onclick="togJ(this)"><div class="jf">🇮🇪</div><div><div class="jn">Ireland</div><div class="jt">Ltd · DAC</div></div></div>
+      <div class="jc" onclick="togJ(this)"><div class="jf">🇳🇱</div><div><div class="jn">Netherlands</div><div class="jt">BV · NV</div></div></div>
+      <div class="jc" onclick="togJ(this)"><div class="jf">🇱🇺</div><div><div class="jn">Luxembourg</div><div class="jt">Fund structures</div></div></div>
+    </div>
+
+    <div class="stag">Commonwealth & APAC</div>
+    <div class="jg">
+      <div class="jc" onclick="togJ(this)"><div class="jf">🇦🇺</div><div><div class="jn">Australia</div><div class="jt">Pty Ltd · Trust</div></div></div>
+      <div class="jc" onclick="togJ(this)"><div class="jf">🇨🇦</div><div><div class="jn">Canada</div><div class="jt">Federal + ON, BC</div></div></div>
+      <div class="jc" onclick="togJ(this)"><div class="jf">🇸🇬</div><div><div class="jn">Singapore</div><div class="jt">Pte Ltd</div></div></div>
+      <div class="jc" onclick="togJ(this)"><div class="jf">🇭🇰</div><div><div class="jn">Hong Kong</div><div class="jt">Limited Company</div></div></div>
+    </div>
+
+    <div class="stag">Offshore & Specialist Structures</div>
+    <div class="jg">
+      <div class="jc" onclick="togJ(this)"><div class="jf">🏝</div><div><div class="jn">Cayman Islands</div><div class="jt">Fund structures</div></div></div>
+      <div class="jc" onclick="togJ(this)"><div class="jf">🌊</div><div><div class="jn">BVI</div><div class="jt">International BC</div></div></div>
+      <div class="jc" onclick="togJ(this)"><div class="jf">⛵</div><div><div class="jn">Jersey</div><div class="jt">Trust · Fund</div></div></div>
+      <div class="jc" onclick="togJ(this)"><div class="jf">🌍</div><div><div class="jn">Kenya</div><div class="jt">Companies Act</div></div></div>
+      <div class="jc" onclick="togJ(this)"><div class="jf">🌍</div><div><div class="jn">Nigeria</div><div class="jt">CAMA structures</div></div></div>
+    </div>
+
+  </div>
+  <div class="pf">
+    <button class="btn btn-g" onclick="goNext(0)">← Back</button>
+    <div style="display:flex;align-items:center;gap:14px">
+      <span class="hint" id="j-count-lbl">1 jurisdiction selected</span>
+      <button class="btn btn-p" onclick="goNext(2)">Continue →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════ -->
+<!-- PANEL 2 · ORGAPPS                 -->
+<!-- ══════════════════════════════════ -->
+<div class="panel" id="p2">
+  <div class="ph">
+    <div class="ph-ey">Step 3 of 7 · OrgApps</div>
+    <h1 class="ph-title">Choose your domain modules</h1>
+    <p class="ph-sub">Every OrgApp shares the OrgKernel event bus, RBAC, and audit chain. A change in HR propagates to Finance with no manual integration. Core apps are always included.</p>
+  </div>
+  <div class="pb">
+    <div class="ibox"><strong>Core OrgApps</strong> — Finance, Legal & Compliance, HR & People, and Dashboard — are always active. Additional OrgApps can be toggled at any time through OrgDNA Manager without re-provisioning.</div>
+
+    <div class="stag">Core · Always active</div>
+    <div class="mg">
+      <div class="mc core-app"><div class="mc-ico">💹</div><div class="mc-name">Finance & Accounting</div><div class="mc-cat">Core · Tier 0</div><span class="mc-core">Always on</span></div>
+      <div class="mc core-app"><div class="mc-ico">⚖</div><div class="mc-name">Legal & Compliance</div><div class="mc-cat">Core · Tier 0</div><span class="mc-core">Always on</span></div>
+      <div class="mc core-app"><div class="mc-ico">👥</div><div class="mc-name">HR & People</div><div class="mc-cat">Core · Tier 0</div><span class="mc-core">Always on</span></div>
+      <div class="mc core-app"><div class="mc-ico">📊</div><div class="mc-name">Dashboard</div><div class="mc-cat">Core · Tier 0</div><span class="mc-core">Always on</span></div>
+    </div>
+
+    <hr class="div">
+    <div class="stag">Governance, Risk & Compliance</div>
+    <div class="mg">
+      <div class="mc" data-m="board" onclick="togM(this)"><div class="mc-ico">🏛</div><div class="mc-name">Board Governance</div><div class="mc-cat">Governance</div></div>
+      <div class="mc" data-m="risk" onclick="togM(this)"><div class="mc-ico">⚠</div><div class="mc-name">Risk Management</div><div class="mc-cat">GRC</div></div>
+      <div class="mc" data-m="audit" onclick="togM(this)"><div class="mc-ico">🔄</div><div class="mc-name">Audit Management</div><div class="mc-cat">GRC</div></div>
+      <div class="mc" data-m="contracts" onclick="togM(this)"><div class="mc-ico">📜</div><div class="mc-name">Contracts</div><div class="mc-cat">Legal</div></div>
+      <div class="mc" data-m="ip" onclick="togM(this)"><div class="mc-ico">🔏</div><div class="mc-name">IP Management</div><div class="mc-cat">Legal</div></div>
+      <div class="mc" data-m="privacy" onclick="togM(this)"><div class="mc-ico">🛡</div><div class="mc-name">Data Privacy (GDPR)</div><div class="mc-cat">GRC · IT</div></div>
+    </div>
+
+    <div class="stag">Finance — Extended</div>
+    <div class="mg">
+      <div class="mc" data-m="treasury" onclick="togM(this)"><div class="mc-ico">💰</div><div class="mc-name">Treasury</div><div class="mc-cat">Finance</div></div>
+      <div class="mc" data-m="tax" onclick="togM(this)"><div class="mc-ico">🧾</div><div class="mc-name">Tax Management</div><div class="mc-cat">Finance</div></div>
+      <div class="mc" data-m="ap" onclick="togM(this)"><div class="mc-ico">📑</div><div class="mc-name">Accounts Payable</div><div class="mc-cat">Finance</div></div>
+      <div class="mc" data-m="ar" onclick="togM(this)"><div class="mc-ico">🧮</div><div class="mc-name">Accounts Receivable</div><div class="mc-cat">Finance</div></div>
+      <div class="mc" data-m="freport" onclick="togM(this)"><div class="mc-ico">📈</div><div class="mc-name">Financial Reporting</div><div class="mc-cat">Finance</div></div>
+    </div>
+
+    <div class="stag">People & Operations</div>
+    <div class="mg">
+      <div class="mc" data-m="payroll" onclick="togM(this)"><div class="mc-ico">📋</div><div class="mc-name">Payroll</div><div class="mc-cat">HR</div></div>
+      <div class="mc" data-m="perf" onclick="togM(this)"><div class="mc-ico">🎯</div><div class="mc-name">Performance & OKRs</div><div class="mc-cat">HR</div></div>
+      <div class="mc" data-m="recruit" onclick="togM(this)"><div class="mc-ico">🔑</div><div class="mc-name">Recruitment</div><div class="mc-cat">HR</div></div>
+      <div class="mc" data-m="ops" onclick="togM(this)"><div class="mc-ico">⚙</div><div class="mc-name">Operations</div><div class="mc-cat">Ops</div></div>
+      <div class="mc" data-m="projects" onclick="togM(this)"><div class="mc-ico">🔧</div><div class="mc-name">Project Management</div><div class="mc-cat">Ops</div></div>
+      <div class="mc" data-m="assets" onclick="togM(this)"><div class="mc-ico">🏭</div><div class="mc-name">Asset Management</div><div class="mc-cat">Ops</div></div>
+      <div class="mc" data-m="supply" onclick="togM(this)"><div class="mc-ico">📦</div><div class="mc-name">Supply Chain</div><div class="mc-cat">Ops</div></div>
+    </div>
+
+    <div class="stag">Sales, Marketing & CRM</div>
+    <div class="mg">
+      <div class="mc sel" data-m="crm" onclick="togM(this)"><div class="mc-ico">🤝</div><div class="mc-name">CRM</div><div class="mc-cat">Sales</div></div>
+      <div class="mc sel" data-m="sales" onclick="togM(this)"><div class="mc-ico">📈</div><div class="mc-name">Sales Management</div><div class="mc-cat">Sales</div></div>
+      <div class="mc" data-m="marketing" onclick="togM(this)"><div class="mc-ico">📣</div><div class="mc-name">Marketing</div><div class="mc-cat">Marketing</div></div>
+      <div class="mc" data-m="partners" onclick="togM(this)"><div class="mc-ico">🌐</div><div class="mc-name">Partnerships</div><div class="mc-cat">Sales</div></div>
+    </div>
+
+    <div class="stag">IT & Security</div>
+    <div class="mg">
+      <div class="mc" data-m="it" onclick="togM(this)"><div class="mc-ico">💻</div><div class="mc-name">IT Management</div><div class="mc-cat">IT</div></div>
+      <div class="mc" data-m="bcp" onclick="togM(this)"><div class="mc-ico">🌩</div><div class="mc-name">Business Continuity</div><div class="mc-cat">IT</div></div>
+    </div>
+
+    <div class="stag">OrgOS Native · v2.0 capabilities</div>
+    <div class="mg">
+      <div class="mc" data-m="sdo" onclick="togM(this)"><div class="mc-ico">🪞</div><div class="mc-name">SDO Digital Twin</div><div class="mc-cat">OrgOS Native</div></div>
+      <div class="mc" data-m="aiagents" onclick="togM(this)"><div class="mc-ico">🤖</div><div class="mc-name">AI Agents (ODD)</div><div class="mc-cat">OrgOS Native</div></div>
+      <div class="mc" data-m="iot" onclick="togM(this)"><div class="mc-ico">📡</div><div class="mc-name">IoT / OrgCPU</div><div class="mc-cat">OrgOS Native</div></div>
+      <div class="mc" data-m="dao" onclick="togM(this)"><div class="mc-ico">🔗</div><div class="mc-name">DAO / DLT</div><div class="mc-cat">OrgOS Native</div></div>
+      <div class="mc" data-m="strategy" onclick="togM(this)"><div class="mc-ico">🎯</div><div class="mc-name">Strategy</div><div class="mc-cat">Strategy</div></div>
+      <div class="mc" data-m="esg" onclick="togM(this)"><div class="mc-ico">📉</div><div class="mc-name">ESG Reporting</div><div class="mc-cat">Strategy</div></div>
+    </div>
+
+  </div>
+  <div class="pf">
+    <button class="btn btn-g" onclick="goNext(1)">← Back</button>
+    <div style="display:flex;align-items:center;gap:14px">
+      <span class="hint" id="m-count-lbl">6 modules selected (2 additional)</span>
+      <button class="btn btn-p" onclick="goNext(3)">Continue →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════ -->
+<!-- PANEL 3 · ACTORS & ODDs           -->
+<!-- ══════════════════════════════════ -->
+<div class="panel" id="p3">
+  <div class="ph">
+    <div class="ph-ey">Step 4 of 7 · Actors & ODD Contracts</div>
+    <h1 class="ph-title">Register OrgExecs & OrgCPUs</h1>
+    <p class="ph-sub">Every actor in your OrgOS — human, AI agent, hybrid, or device — must have an OrgDeviceDriver (ODD) contract. All actions are validated in &lt;5ms p99 and recorded in the immutable audit chain.</p>
+  </div>
+  <div class="pb">
+    <div class="wbox"><strong>Universal ODD enforcement:</strong> AI agents are subject to identical ODD validation as human OrgExecs. No actor type is exempt. Self-modification of ODD constraints by AI requires explicit human OrgExec approval.</div>
+
+    <div class="stag">Registered actors</div>
+    <div class="al" id="actor-list">
+      <div class="ai">
+        <div class="av av-h">AD</div>
+        <div class="a-info"><div class="a-name">Admin (You)</div><div class="a-role">OrgAdmin · All capabilities · ODD: System Administrator Template · Active</div></div>
+        <span class="ab ab-h">Human</span>
+      </div>
+    </div>
+
+    <div class="add-row">
+      <input type="text" id="na-name" placeholder="Actor name (e.g. Sarah Chen, GPT-4 Finance Agent, POS-01)">
+      <select id="na-type">
+        <option value="human">Human OrgExec</option>
+        <option value="ai">AI Agent</option>
+        <option value="hybrid">Hybrid</option>
+        <option value="cpu">OrgCPU / Device</option>
+      </select>
+      <input type="text" id="na-role" class="add-role" placeholder="Role / function">
+      <button class="btn btn-g" onclick="addActor()">+ Add</button>
+    </div>
+
+    <hr class="div">
+    <div class="stag">ODD contract templates</div>
+    <p style="font-size:11px;color:var(--m);margin-bottom:14px;font-weight:300">Templates apply to all actors of each type by default. Individual ODDs can be customised per-actor in ODD Manager after provisioning.</p>
+
+    <div class="odd-c open" id="odd-human">
+      <div class="odd-h" onclick="togOdd('odd-human')">
+        <div class="av av-h" style="width:28px;height:28px;font-size:10px">HU</div>
+        <div><div style="font-size:12px;font-weight:500">Human OrgExec template</div><div style="font-size:10px;color:var(--m)">ODD-TPL-HUMAN-001 · v1.0.0</div></div>
+        <span class="badge bc" style="margin-left:auto;margin-right:10px">Active</span>
+        <span class="odd-arr">▾</span>
+      </div>
+      <div class="odd-b">
+        <div class="tr"><span class="tr-label">Read Finance data</span><label class="tog"><input type="checkbox" checked><div class="tog-t"></div></label></div>
+        <div class="tr"><span class="tr-label">Write Finance data</span><label class="tog"><input type="checkbox"><div class="tog-t"></div></label></div>
+        <div class="tr"><span class="tr-label">HR record access (own only)</span><label class="tog"><input type="checkbox" checked><div class="tog-t"></div></label></div>
+        <div class="tr"><span class="tr-label">Approve payments (requires 2FA)</span><label class="tog"><input type="checkbox" checked><div class="tog-t"></div></label></div>
+        <div class="tr"><span class="tr-label">Create and countersign contracts</span><label class="tog"><input type="checkbox" checked><div class="tog-t"></div></label></div>
+        <div class="tr"><span class="tr-label">Escalation: flag anomalous transactions</span><label class="tog"><input type="checkbox" checked><div class="tog-t"></div></label></div>
+        <div class="tr"><span class="tr-label">Rate limit: 1,000 API calls / hr</span><label class="tog"><input type="checkbox" checked><div class="tog-t"></div></label></div>
+      </div>
+    </div>
+
+    <div class="odd-c" id="odd-ai">
+      <div class="odd-h" onclick="togOdd('odd-ai')">
+        <div class="av av-ai" style="width:28px;height:28px;font-size:10px">AI</div>
+        <div><div style="font-size:12px;font-weight:500">AI Agent template</div><div style="font-size:10px;color:var(--m)">ODD-TPL-AI-001 · v1.0.0</div></div>
+        <span class="badge ba" style="margin-left:auto;margin-right:10px">Configure</span>
+        <span class="odd-arr">▾</span>
+      </div>
+      <div class="odd-b">
+        <div class="tr"><span class="tr-label">Read-only Finance access</span><label class="tog"><input type="checkbox" checked><div class="tog-t"></div></label></div>
+        <div class="tr"><span class="tr-label">Write Finance data (requires human approval)</span><label class="tog"><input type="checkbox"><div class="tog-t"></div></label></div>
+        <div class="tr"><span class="tr-label">Draft documents only (no countersign)</span><label class="tog"><input type="checkbox" checked><div class="tog-t"></div></label></div>
+        <div class="tr"><span class="tr-label">Self-modify ODD constraints</span><label class="tog"><input type="checkbox"><div class="tog-t"></div></label></div>
+        <div class="tr"><span class="tr-label">Escalate on anomaly detection</span><label class="tog"><input type="checkbox" checked><div class="tog-t"></div></label></div>
+        <div class="tr"><span class="tr-label">Access personal HR data</span><label class="tog"><input type="checkbox"><div class="tog-t"></div></label></div>
+        <div class="tr"><span class="tr-label">Rate limit: 500 API calls / hr</span><label class="tog"><input type="checkbox" checked><div class="tog-t"></div></label></div>
+      </div>
+    </div>
+
+    <div class="odd-c" id="odd-cpu">
+      <div class="odd-h" onclick="togOdd('odd-cpu')">
+        <div class="av av-cpu" style="width:28px;height:28px;font-size:10px">CPU</div>
+        <div><div style="font-size:12px;font-weight:500">OrgCPU / Device template</div><div style="font-size:10px;color:var(--m)">ODD-TPL-CPU-001 · v1.0.0</div></div>
+        <span class="badge bc" style="margin-left:auto;margin-right:10px">Active</span>
+        <span class="odd-arr">▾</span>
+      </div>
+      <div class="odd-b">
+        <div class="tr"><span class="tr-label">Telemetry reporting (push only)</span><label class="tog"><input type="checkbox" checked><div class="tog-t"></div></label></div>
+        <div class="tr"><span class="tr-label">Read org data (restricted scope)</span><label class="tog"><input type="checkbox"><div class="tog-t"></div></label></div>
+        <div class="tr"><span class="tr-label">Auto-escalate on fault / missed report</span><label class="tog"><input type="checkbox" checked><div class="tog-t"></div></label></div>
+        <div class="tr"><span class="tr-label">Rate limit: 10,000 msg / sec</span><label class="tog"><input type="checkbox" checked><div class="tog-t"></div></label></div>
+      </div>
+    </div>
+
+    <div class="odd-c" id="odd-hy">
+      <div class="odd-h" onclick="togOdd('odd-hy')">
+        <div class="av av-hy" style="width:28px;height:28px;font-size:10px">HY</div>
+        <div><div style="font-size:12px;font-weight:500">Hybrid (human-AI) template</div><div style="font-size:10px;color:var(--m)">ODD-TPL-HYBRID-001 · v1.0.0</div></div>
+        <span class="badge bw" style="margin-left:auto;margin-right:10px">Optional</span>
+        <span class="odd-arr">▾</span>
+      </div>
+      <div class="odd-b">
+        <div class="tr"><span class="tr-label">Human-tier data access</span><label class="tog"><input type="checkbox" checked><div class="tog-t"></div></label></div>
+        <div class="tr"><span class="tr-label">AI suggestions surfaced (no auto-execute)</span><label class="tog"><input type="checkbox" checked><div class="tog-t"></div></label></div>
+        <div class="tr"><span class="tr-label">Human sign-off required on AI outputs</span><label class="tog"><input type="checkbox" checked><div class="tog-t"></div></label></div>
+        <div class="tr"><span class="tr-label">Rate limit: 800 API calls / hr</span><label class="tog"><input type="checkbox" checked><div class="tog-t"></div></label></div>
+      </div>
+    </div>
+
+  </div>
+  <div class="pf">
+    <button class="btn btn-g" onclick="goNext(2)">← Back</button>
+    <button class="btn btn-p" onclick="goNext(4)">Review OrgDNA →</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════ -->
+<!-- PANEL 4 · ORGDNA REVIEW           -->
+<!-- ══════════════════════════════════ -->
+<div class="panel" id="p4">
+  <div class="ph">
+    <div class="ph-ey">Step 5 of 7 · OrgDNA Review</div>
+    <h1 class="ph-title">Your OrgDNA package</h1>
+    <p class="ph-sub">Review your complete OrgOS configuration. On provisioning this becomes OrgDNA v1.0.0 — your organisation's master config, immutably versioned and exportable forever.</p>
+  </div>
+  <div class="pb">
+
+    <div class="dna-card">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:14px;padding-bottom:12px;border-bottom:1px solid rgba(255,255,255,0.06)">
+        <div>
+          <div class="dna-version" id="dna-id">ORG-DNA-v1.0.0</div>
+          <div style="font-family:var(--font);font-size:18px;font-weight:800;letter-spacing:-0.03em;margin-top:4px;line-height:1.1" id="dna-title">Your Organisation</div>
+        </div>
+        <div style="text-align:right">
+          <div style="font-size:9px;letter-spacing:0.1em;text-transform:uppercase;color:var(--h)">Status</div>
+          <div style="font-size:11px;color:var(--green);margin-top:2px;font-weight:500">● Ready to provision</div>
+          <div style="font-size:9px;color:var(--h);margin-top:2px" id="dna-timestamp">—</div>
+        </div>
+      </div>
+      <div class="dna-row"><span class="dk">Org type</span><span class="dv cy" id="dna-type">Startup / Scale-up</span></div>
+      <div class="dna-row"><span class="dk">Legal structure</span><span class="dv" id="dna-legal">Private Limited (Ltd)</span></div>
+      <div class="dna-row"><span class="dk">Financial year end</span><span class="dv" id="dna-fy">31 December</span></div>
+      <div class="dna-row"><span class="dk">Jurisdiction packs</span><span class="dv" id="dna-juris">England & Wales</span></div>
+      <div class="dna-row"><span class="dk">OrgApps active</span><span class="dv" id="dna-mods">Finance, Legal, HR, Dashboard + 2 more</span></div>
+      <div class="dna-row"><span class="dk">ODD templates loaded</span><span class="dv">Human · AI Agent · OrgCPU · Hybrid</span></div>
+      <div class="dna-row"><span class="dk">Actors registered</span><span class="dv" id="dna-actors">1 actor (Admin)</span></div>
+      <div class="dna-row"><span class="dk">Deployment topology</span><span class="dv">Shared cloud · PostgreSQL · Kubernetes</span></div>
+      <div class="dna-row"><span class="dk">Audit chain</span><span class="dv cy">SHA-256 hash-chained · Tamper-evident · Always-on</span></div>
+      <div class="dna-row"><span class="dk">OrgDNA size (est.)</span><span class="dv" id="dna-size">~1.2 MB</span></div>
+      <div class="dna-row"><span class="dk">Estimated provision time</span><span class="dv cy">~42 seconds</span></div>
+    </div>
+
+    <div class="stag">Provisioning checklist</div>
+    <div class="chk-list" id="dna-checklist">
+      <div class="chk-item"><span class="chk-ok">✓</span> OrgDNA integrity validated — all OrgApp dependencies satisfied</div>
+      <div class="chk-item"><span class="chk-ok">✓</span> Chombo jurisdiction packs loaded and policy rules compiled</div>
+      <div class="chk-item"><span class="chk-ok">✓</span> All selected OrgApps available at current tier</div>
+      <div class="chk-item"><span class="chk-ok">✓</span> ODD templates validated — no constraint conflicts detected</div>
+      <div class="chk-item"><span class="chk-ok">✓</span> Admin OrgExec registered with full-permission ODD contract</div>
+      <div class="chk-item" id="dao-check-item"><span class="chk-na">○</span> <span id="dao-check-text">DAO / DLT: not selected — single-org mode</span></div>
+    </div>
+
+    <div class="ibox" style="margin-top:8px">After provisioning, your OrgDNA v1.0.0 is written to immutable storage. Every subsequent configuration change creates a new version. You can roll back to any prior version in under 5 minutes.</div>
+
+  </div>
+  <div class="pf">
+    <button class="btn btn-g" onclick="goNext(3)">← Back</button>
+    <button class="btn btn-p" onclick="startProv()">Provision OrgOS →</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════ -->
+<!-- PANEL 5 · PROVISIONING            -->
+<!-- ══════════════════════════════════ -->
+<div class="panel" id="p5">
+  <div class="ph">
+    <div class="ph-ey">Step 6 of 7 · Provisioning</div>
+    <h1 class="ph-title">Booting your OrgOS</h1>
+    <p class="ph-sub">The UME OrgOS Factory is executing the 9-step provisioning sequence. Your OrgDNA is being committed to immutable storage. This takes under 90 seconds.</p>
+  </div>
+  <div class="pb">
+    <div class="ps-list" id="prov-steps">
+      <div class="ps" id="ps1"><div class="pi wait" id="pi1">1</div><div class="p-info"><div class="p-label">Validating OrgDNA package</div><div class="p-detail">OrgDNALoader::validate() — all deps, config integrity, size check</div></div><span class="p-time" id="pt1"></span></div>
+      <div class="ps" id="ps2"><div class="pi wait" id="pi2">2</div><div class="p-info"><div class="p-label">Allocating infrastructure</div><div class="p-detail">OrgOSFactory::allocate_resources() — db schema namespace · S3 prefix · executor threads</div></div><span class="p-time" id="pt2"></span></div>
+      <div class="ps" id="ps3"><div class="pi wait" id="pi3">3</div><div class="p-info"><div class="p-label">Running database migrations</div><div class="p-detail">StorageManager::migrate_all() — schema init for all selected OrgApps</div></div><span class="p-time" id="pt3"></span></div>
+      <div class="ps" id="ps4"><div class="pi wait" id="pi4">4</div><div class="p-info"><div class="p-label">Instantiating OrgKernel</div><div class="p-detail">OrgKernel::new() — Rust boot · Tokio runtime · event bus · kernel facade</div></div><span class="p-time" id="pt4"></span></div>
+      <div class="ps" id="ps5"><div class="pi wait" id="pi5">5</div><div class="p-info"><div class="p-label">Registering ODD templates</div><div class="p-detail">ODDBus::load_from_orgdna() — Human · AI Agent · OrgCPU · Hybrid contracts</div></div><span class="p-time" id="pt5"></span></div>
+      <div class="ps" id="ps6"><div class="pi wait" id="pi6">6</div><div class="p-info"><div class="p-label">Booting OrgApps</div><div class="p-detail">OrgAppRegistry::boot_all() — dependency order · event subscriptions registered</div></div><span class="p-time" id="pt6"></span></div>
+      <div class="ps" id="ps7"><div class="pi wait" id="pi7">7</div><div class="p-info"><div class="p-label">Initialising SDO engine</div><div class="p-detail">SDOEngine::initialize() — topology graph · state snapshots · health baseline</div></div><span class="p-time" id="pt7"></span></div>
+      <div class="ps" id="ps8"><div class="pi wait" id="pi8">8</div><div class="p-info"><div class="p-label">Loading jurisdiction packs</div><div class="p-detail">Chombo::load_packs() — policy rules compiled · filing calendar generated</div></div><span class="p-time" id="pt8"></span></div>
+      <div class="ps" id="ps9"><div class="pi wait" id="pi9">9</div><div class="p-info"><div class="p-label">Publishing OrgOS endpoints</div><div class="p-detail">kernel.event_bus.publish(OrgOSProvisionedEvent) — HTTP API live</div></div><span class="p-time" id="pt9"></span></div>
+    </div>
+    <div class="plog" id="prov-log"></div>
+  </div>
+  <div class="pf">
+    <div></div>
+    <button class="btn btn-p" id="prov-done" style="display:none" onclick="goNext(6)">Open my OrgOS →</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════ -->
+<!-- PANEL 6 · COMPLETE                -->
+<!-- ══════════════════════════════════ -->
+<div class="panel" id="p6">
+  <div class="ph">
+    <div class="ph-ey">Step 7 of 7 · OrgOS Live</div>
+    <h1 class="ph-title">Your OrgOS is running</h1>
+    <p class="ph-sub">Provisioned and operational. OrgDNA v1.0.0 is committed. Every OrgApp is active, every actor has a validated ODD contract, and the audit chain is recording.</p>
+  </div>
+  <div class="pb">
+    <div class="comp-hero">
+      <div class="comp-icon">✓</div>
+      <div class="comp-title" id="comp-name">Your Organisation</div>
+      <p class="comp-sub">OrgOS provisioned in 42s · OrgDNA v1.0.0 committed · Audit chain active · Chombo compliance live</p>
+    </div>
+
+    <div class="met-grid">
+      <div class="met"><div class="met-v" id="met-mods">6</div><div class="met-l">OrgApps active</div></div>
+      <div class="met"><div class="met-v" id="met-actors">1</div><div class="met-l">Actors registered</div></div>
+      <div class="met"><div class="met-v" id="met-juris">1</div><div class="met-l">Jurisdiction packs</div></div>
+      <div class="met"><div class="met-v">v1.0.0</div><div class="met-l">OrgDNA version</div></div>
+    </div>
+
+    <div class="stag">OrgOS dashboard preview</div>
+    <div class="dash-prev">
+      <div class="dash-bar-x">
+        <div class="d-dot" style="background:#ff5f57"></div>
+        <div class="d-dot" style="background:#febc2e"></div>
+        <div class="d-dot" style="background:#28c840"></div>
+        <div class="d-url" id="d-url">app.ume.io/orgos/your-org</div>
+      </div>
+      <div class="d-body">
+        <div class="dw"><div class="dw-l">Cash position</div><div class="dw-v">£0.00</div><div class="dw-s">Connect bank to sync →</div><div class="dw-bar"><div class="dw-bf" style="width:0%;background:var(--cyan)"></div></div></div>
+        <div class="dw"><div class="dw-l">Compliance score</div><div class="dw-v" style="color:var(--green)">100%</div><div class="dw-s" id="d-filings">0 upcoming filings</div><div class="dw-bar"><div class="dw-bf" style="width:100%;background:var(--green)"></div></div></div>
+        <div class="dw"><div class="dw-l">SDO health</div><div class="dw-v" style="color:var(--cyan)">100%</div><div class="dw-s">All systems nominal</div><div class="dw-bar"><div class="dw-bf" style="width:100%;background:var(--cyan)"></div></div></div>
+        <div class="dw"><div class="dw-l">Open invoices</div><div class="dw-v">0</div><div class="dw-s">Create first invoice →</div></div>
+        <div class="dw"><div class="dw-l">ODD actors active</div><div class="dw-v" id="d-actors">1</div><div class="dw-s">0 violations · 0 escalations</div><div class="dw-bar"><div class="dw-bf" style="width:100%;background:var(--cyan)"></div></div></div>
+        <div class="dw"><div class="dw-l">OrgDNA version</div><div class="dw-v" style="font-size:13px;color:var(--cyan)">v1.0.0</div><div class="dw-s">0 changes since boot</div></div>
+      </div>
+    </div>
+
+    <div class="next-grid">
+      <div class="nx"><div class="nx-tag">First step</div><div class="nx-title">Record opening balance</div><div class="nx-body">Finance → Chart of Accounts → Opening Balance to set your starting position</div></div>
+      <div class="nx"><div class="nx-tag">Invite your team</div><div class="nx-title">Register OrgExecs</div><div class="nx-body">ODD Manager → Add Actor to register staff, AI agents, or devices with governance contracts</div></div>
+      <div class="nx"><div class="nx-tag">Export OrgDNA</div><div class="nx-title">Clone or share config</div><div class="nx-body">OrgDNA Manager → Export to share with advisors, seed a subsidiary, or publish a franchise template</div></div>
+    </div>
+  </div>
+  <div class="pf">
+    <button class="btn btn-g" onclick="resetAll()">Bootstrap another OrgOS</button>
+    <button class="btn btn-p">Open OrgOS Dashboard →</button>
+  </div>
+</div>
+
+</main>
+</div>
+
+<script>
+var S = {
+  step: 0,
+  orgType: 'startup',
+  legalType: 'ltd',
+  orgName: '',
+  jurisCount: 1,
+  modCount: 6,
+  actorCount: 1,
+  extraMods: ['crm','sales']
+};
+
+var actors = [{ name:'Admin (You)', type:'human', role:'OrgAdmin · Full permissions', initials:'AD' }];
+
+function gotoStep(n) {
+  if (n > S.step) return;
+  goNext(n);
+}
+
+function goNext(n) {
+  if (n === 5) return;
+  S.step = n;
+  document.querySelectorAll('.panel').forEach(function(p){ p.classList.remove('act'); });
+  document.getElementById('p'+n).classList.add('act');
+  document.querySelectorAll('.sb-step').forEach(function(s, i){
+    s.classList.remove('act');
+    if (i < n) s.classList.add('done'); else s.classList.remove('done');
+    if (i === n) s.classList.add('act');
+  });
+  var pct = Math.round((n / 6) * 100);
+  document.getElementById('pfill').style.width = pct + '%';
+  document.getElementById('pct').textContent = pct + '%';
+  if (n === 4) buildDNA();
+  updateSB();
+  window.scrollTo(0,0);
+}
+
+function updateSB() {
+  var nm = document.getElementById('org-name');
+  if (nm) S.orgName = nm.value.trim();
+  S.extraMods = [];
+  document.querySelectorAll('.mc.sel[data-m]').forEach(function(m){ S.extraMods.push(m.dataset.m); });
+  S.modCount = 4 + S.extraMods.length;
+  S.jurisCount = document.querySelectorAll('.jc.sel').length;
+  S.actorCount = actors.length;
+  document.getElementById('sb-dna').textContent = 'v1.0.0';
+  document.getElementById('sb-mods').textContent = S.modCount + ' / 42';
+  document.getElementById('sb-actors').textContent = S.actorCount;
+  document.getElementById('sb-juris').textContent = S.jurisCount;
+  var jl = document.getElementById('j-count-lbl');
+  if (jl) jl.textContent = S.jurisCount + ' jurisdiction' + (S.jurisCount !== 1 ? 's' : '') + ' selected';
+  var ml = document.getElementById('m-count-lbl');
+  if (ml) ml.textContent = S.modCount + ' modules selected (' + S.extraMods.length + ' additional)';
+  document.getElementById('met-mods').textContent = S.modCount;
+  document.getElementById('met-actors').textContent = S.actorCount;
+  document.getElementById('met-juris').textContent = S.jurisCount;
+  document.getElementById('d-actors').textContent = S.actorCount;
+  var orgSlug = (S.orgName || 'your-org').toLowerCase().replace(/\s+/g,'-').replace(/[^a-z0-9-]/g,'').slice(0,30) || 'your-org';
+  var du = document.getElementById('d-url');
+  if (du) du.textContent = 'app.ume.io/orgos/' + orgSlug;
+}
+
+function selChoice(el, group) {
+  document.querySelectorAll('[data-g="'+group+'"]').forEach(function(c){ c.classList.remove('sel'); });
+  el.classList.add('sel');
+  if (group === 'ot') S.orgType = el.dataset.v;
+  if (group === 'ls') S.legalType = el.dataset.v;
+}
+
+function togM(el) {
+  if (el.classList.contains('core-app')) return;
+  el.classList.toggle('sel');
+  updateSB();
+}
+
+function togJ(el) {
+  el.classList.toggle('sel');
+  updateSB();
+}
+
+function togOdd(id) {
+  document.getElementById(id).classList.toggle('open');
+}
+
+function addActor() {
+  var name = document.getElementById('na-name').value.trim();
+  var type = document.getElementById('na-type').value;
+  var role = document.getElementById('na-role').value.trim() || 'OrgExec';
+  if (!name) return;
+  var initials = name.split(' ').map(function(w){ return w[0] || ''; }).join('').slice(0,2).toUpperCase() || '??';
+  actors.push({ name: name, type: type, role: role + ' · ODD: ' + type.charAt(0).toUpperCase() + type.slice(1) + ' Template · Pending', initials: initials });
+  renderActors();
+  document.getElementById('na-name').value = '';
+  document.getElementById('na-role').value = '';
+  updateSB();
+}
+
+function renderActors() {
+  var list = document.getElementById('actor-list');
+  list.innerHTML = '';
+  actors.forEach(function(a) {
+    var avC = a.type === 'ai' ? 'av-ai' : a.type === 'cpu' ? 'av-cpu' : a.type === 'hybrid' ? 'av-hy' : 'av-h';
+    var bC = a.type === 'ai' ? 'ab-ai' : a.type === 'cpu' ? 'ab-cpu' : a.type === 'hybrid' ? 'ab-hy' : 'ab-h';
+    var bL = a.type === 'ai' ? 'AI Agent' : a.type === 'cpu' ? 'OrgCPU' : a.type === 'hybrid' ? 'Hybrid' : 'Human';
+    list.innerHTML += '<div class="ai"><div class="av ' + avC + '">' + a.initials + '</div><div class="a-info"><div class="a-name">' + a.name + '</div><div class="a-role">' + a.role + '</div></div><span class="ab ' + bC + '">' + bL + '</span></div>';
+  });
+}
+
+function buildDNA() {
+  var now = new Date();
+  var ts = now.toISOString().slice(0,16).replace('T',' ') + ' UTC';
+  document.getElementById('dna-timestamp').textContent = ts;
+
+  var orgN = S.orgName || 'Your Organisation';
+  document.getElementById('dna-title').textContent = orgN;
+  document.getElementById('comp-name').textContent = orgN;
+
+  var typeMap = { startup:'Startup / Scale-up', smb:'SMB / Established', enterprise:'Enterprise / Group', solo:'Solo / Freelancer', nonprofit:'Non-Profit / NGO', franchise:'Franchise / DAO' };
+  var legalMap = { ltd:'Private Limited (Ltd)', llc:'LLC (Delaware)', corp:'C-Corp (Delaware)', sole:'Sole Trader', llp:'LLP', charity:'Charity / CIO' };
+  document.getElementById('dna-type').textContent = typeMap[S.orgType] || S.orgType;
+  document.getElementById('dna-legal').textContent = legalMap[S.legalType] || S.legalType;
+
+  var fyEl = document.getElementById('fy-end');
+  var fyMap = { '03-31':'31 March','04-30':'30 April','05-31':'31 May','06-30':'30 June','09-30':'30 September','12-31':'31 December' };
+  document.getElementById('dna-fy').textContent = fyMap[fyEl ? fyEl.value : '12-31'] || '31 December';
+
+  var jNames = [];
+  document.querySelectorAll('.jc.sel').forEach(function(j){ jNames.push(j.querySelector('.jn').textContent); });
+  document.getElementById('dna-juris').textContent = jNames.length ? jNames.join(', ') : 'None selected';
+
+  var coreApps = ['Finance', 'Legal', 'HR', 'Dashboard'];
+  var extraNames = S.extraMods.slice(0,3).map(function(m){ var el=document.querySelector('[data-m="'+m+'"]'); return el ? el.querySelector('.mc-name').textContent : m; });
+  var mText = coreApps.concat(extraNames).join(', ');
+  if (S.extraMods.length > 3) mText += ' + ' + (S.extraMods.length - 3) + ' more';
+  document.getElementById('dna-mods').textContent = mText;
+  document.getElementById('dna-actors').textContent = actors.length + ' actor' + (actors.length !== 1 ? 's' : '');
+  document.getElementById('dna-size').textContent = '~' + (0.8 + S.modCount * 0.08 + S.jurisCount * 0.12).toFixed(1) + ' MB';
+
+  var hasDAO = S.extraMods.indexOf('dao') !== -1;
+  var dc = document.getElementById('dao-check-item');
+  var dt = document.getElementById('dao-check-text');
+  if (dc && dt) {
+    if (hasDAO) {
+      dc.querySelector('.chk-na, .chk-ok').className = 'chk-ok';
+      dc.querySelector('.chk-ok, .chk-na').textContent = '✓';
+      dt.textContent = 'DAO / DLT module enabled — multi-org smart contract governance ready';
+    } else {
+      dt.textContent = 'DAO / DLT: not selected — single-org mode';
+    }
+  }
+
+  var orgSlug = orgN.toLowerCase().replace(/\s+/g,'-').replace(/[^a-z0-9-]/g,'').slice(0,30) || 'your-org';
+  var du = document.getElementById('d-url');
+  if (du) du.textContent = 'app.ume.io/orgos/' + orgSlug;
+}
+
+function startProv() {
+  S.step = 5;
+  document.querySelectorAll('.panel').forEach(function(p){ p.classList.remove('act'); });
+  document.getElementById('p5').classList.add('act');
+  document.querySelectorAll('.sb-step').forEach(function(s, i){
+    s.classList.remove('act','done');
+    if (i < 5) s.classList.add('done');
+    if (i === 5) s.classList.add('act');
+  });
+  document.getElementById('pfill').style.width = Math.round((5/6)*100) + '%';
+  document.getElementById('pct').textContent = Math.round((5/6)*100) + '%';
+  window.scrollTo(0,0);
+
+  var orgId = Math.random().toString(36).slice(2,10);
+  var mCount = S.modCount;
+  var jCount = S.jurisCount;
+
+  var provSteps = [
+    { msg: 'OrgDNA::validate() → Ok · deps: ' + mCount + ' OrgApps satisfied · integrity: PASS · size: ' + (0.8+mCount*0.08+jCount*0.12).toFixed(1) + 'MB', delay: 700 },
+    { msg: 'OrgOSFactory::allocate_resources(org_id: ' + orgId + ') → ResourceHandle · db_ns: org_' + orgId + ' · s3_prefix: orgs/' + orgId + ' · threads: 4', delay: 1300 },
+    { msg: 'StorageManager::migrate_all() → ' + mCount + ' migrations applied · 0 errors · 0 rollbacks · elapsed: 910ms', delay: 2400 },
+    { msg: 'OrgKernel::new(org_id: ' + orgId + ') → Ok · Tokio 1.36 · event_bus: InMemory · facade: mounted · rbac: active', delay: 3100 },
+    { msg: 'ODDBus::load_from_orgdna() → 4 templates registered (Human · AI · OrgCPU · Hybrid) · 0 constraint conflicts', delay: 3900 },
+    { msg: 'OrgAppRegistry::boot_all() → ' + mCount + ' OrgApps active · 0 failures · event subscriptions: ' + (mCount*3) + ' registered', delay: 5100 },
+    { msg: 'SDOEngine::initialize() → topology_nodes: ' + (mCount+1) + ' · health_score: 100 · snapshot_id: sdo-' + orgId, delay: 6200 },
+    { msg: 'Chombo::load_packs(count: ' + jCount + ') → ' + (jCount*45) + ' policy rules compiled · filing_calendar: ' + (jCount*8) + ' entries generated', delay: 7200 },
+    { msg: 'OrgOS.provisioned event emitted · HTTP endpoints live · org_id: ' + orgId + ' · boot_time: 42.3s', delay: 8100 }
+  ];
+
+  var log = document.getElementById('prov-log');
+  log.innerHTML = '';
+
+  function addLog(type, msg) {
+    var now = new Date();
+    var ts = now.getHours().toString().padStart(2,'0') + ':' + now.getMinutes().toString().padStart(2,'0') + ':' + now.getSeconds().toString().padStart(2,'0') + '.' + now.getMilliseconds().toString().padStart(3,'0');
+    var line = document.createElement('div');
+    line.className = 'll';
+    var badge = type === 'ok' ? '<span class="lok">[  OK  ]</span>' : type === 'step' ? '<span class="lstep">[ STEP ]</span>' : '<span class="lwarn">[ WARN ]</span>';
+    line.innerHTML = '<span class="lt">' + ts + '</span>' + badge + ' <span class="lmsg">' + msg + '</span>';
+    log.appendChild(line);
+    setTimeout(function(){ line.classList.add('sh'); }, 30);
+    log.scrollTop = log.scrollHeight;
+  }
+
+  setTimeout(function(){
+    addLog('step', 'UME OrgOS Factory provisioning sequence initiated · org_id: ' + orgId + ' · dna_version: 1.0.0');
+    runProvStep(0);
+  }, 200);
+
+  function runProvStep(i) {
+    if (i >= provSteps.length) {
+      setTimeout(function(){
+        addLog('ok', 'OrgOS fully operational · all health checks PASS · audit chain: ACTIVE');
+        document.getElementById('prov-done').style.display = 'block';
+      }, 300);
+      return;
+    }
+    var ps = provSteps[i];
+    var prevDelay = i === 0 ? 0 : provSteps[i-1].delay;
+    var stepDelay = ps.delay - prevDelay;
+    var pi = document.getElementById('pi' + (i+1));
+    var pt = document.getElementById('pt' + (i+1));
+    if (pi) { pi.className = 'pi active'; pi.innerHTML = '<span class="spin">◌</span>'; }
+    setTimeout(function(){
+      if (pi) { pi.className = 'pi done'; pi.textContent = '✓'; }
+      if (pt) pt.textContent = stepDelay + 'ms';
+      addLog('ok', ps.msg);
+      runProvStep(i + 1);
+    }, stepDelay);
+  }
+}
+
+function resetAll() {
+  actors = [{ name:'Admin (You)', type:'human', role:'OrgAdmin · Full permissions', initials:'AD' }];
+  S = { step:0, orgType:'startup', legalType:'ltd', orgName:'', jurisCount:1, modCount:6, actorCount:1, extraMods:['crm','sales'] };
+  document.querySelectorAll('.mc.sel[data-m]').forEach(function(m){ if (m.dataset.m !== 'crm' && m.dataset.m !== 'sales') m.classList.remove('sel'); });
+  var crmEl = document.querySelector('[data-m="crm"]'); if (crmEl) crmEl.classList.add('sel');
+  var salesEl = document.querySelector('[data-m="sales"]'); if (salesEl) salesEl.classList.add('sel');
+  document.querySelectorAll('.jc').forEach(function(j, i){ j.classList.toggle('sel', i === 0); });
+  document.querySelectorAll('[data-g="ot"]').forEach(function(c){ c.classList.toggle('sel', c.dataset.v === 'startup'); });
+  document.querySelectorAll('[data-g="ls"]').forEach(function(c){ c.classList.toggle('sel', c.dataset.v === 'ltd'); });
+  var orgNm = document.getElementById('org-name'); if (orgNm) orgNm.value = '';
+  document.getElementById('prov-done').style.display = 'none';
+  document.getElementById('prov-log').innerHTML = '';
+  for (var i = 1; i <= 9; i++) {
+    var pi = document.getElementById('pi'+i); if (pi) { pi.className = 'pi wait'; pi.textContent = i; }
+    var pt = document.getElementById('pt'+i); if (pt) pt.textContent = '';
+  }
+  renderActors();
+  goNext(0);
+}
+
+updateSB();
+</script>
+</body>
+</html>

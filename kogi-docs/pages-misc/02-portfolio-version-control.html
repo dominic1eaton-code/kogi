@@ -1,0 +1,1318 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KOGI · Portfolio · Version Control</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap');
+
+:root {
+  --bg:#07080d;--bg1:#0c0e15;--bg2:#10121a;--bg3:#161921;--bg4:#1c1f2c;--bg5:#222638;
+  --border:rgba(255,255,255,0.05);--border2:rgba(255,255,255,0.09);--border3:rgba(255,255,255,0.14);
+  --text:#c4c9de;--text2:#7680a0;--text3:#3e4560;--text4:#272d42;
+  --cyan:#00d4aa;--cyan2:#00a888;--cyan-dim:rgba(0,212,170,0.12);
+  --gold:#c8a84b;--gold-dim:rgba(200,168,75,0.12);
+  --violet:#7c5cbf;--violet2:#6347a8;--violet-dim:rgba(124,92,191,0.14);
+  --rose:#c45c7a;--rose-dim:rgba(196,92,122,0.12);
+  --orange:#c87c3a;--orange-dim:rgba(200,124,58,0.12);
+  --blue:#3a7cc8;--blue-dim:rgba(58,124,200,0.12);
+  --green:#4aab6d;--green-dim:rgba(74,171,109,0.12);
+  --pink:#bf5ca0;--pink-dim:rgba(191,92,160,0.12);
+  --teal:#5cbfbf;--amber:#e8a020;
+  --mono:'IBM Plex Mono',monospace;--sans:'IBM Plex Sans',sans-serif;
+  --nav-w:168px;--header-h:36px;--panel-w:300px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{width:100%;height:100%;background:var(--bg);font-family:var(--sans);color:var(--text);font-size:10px;overflow:hidden}
+
+/* ── LAYOUT ── */
+.screen{display:flex;flex-direction:column;width:100%;height:100vh;overflow:hidden}
+.body-layout{display:flex;flex:1;min-height:0;overflow:hidden}
+.main{flex:1;display:flex;flex-direction:column;min-width:0;overflow:hidden}
+
+/* ── GLOBAL HEADER ── */
+.g-header{height:var(--header-h);background:var(--bg1);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 14px;gap:12px;flex-shrink:0}
+.g-logo{font-family:var(--mono);font-size:11px;font-weight:700;color:var(--cyan);letter-spacing:0.1em}
+.g-sep{width:1px;height:14px;background:var(--border2)}
+.g-breadcrumb{display:flex;align-items:center;gap:5px;font-family:var(--mono);font-size:9px;color:var(--text3)}
+.g-breadcrumb a{color:var(--text2);text-decoration:none}.g-breadcrumb a:hover{color:var(--cyan)}
+.g-breadcrumb .cur{color:var(--text)}
+.g-breadcrumb .sep{color:var(--text3)}
+.ml-auto{margin-left:auto}
+.g-actions{display:flex;gap:6px;align-items:center}
+.g-btn{background:var(--bg2);border:1px solid var(--border2);border-radius:3px;padding:3px 9px;font-family:var(--mono);font-size:8px;color:var(--text2);cursor:pointer;white-space:nowrap;transition:all 0.1s}
+.g-btn:hover{border-color:var(--cyan);color:var(--cyan)}
+.g-btn.primary{background:var(--cyan);border-color:var(--cyan);color:#000;font-weight:600}
+.g-btn.primary:hover{background:#00efc0}
+.g-dot{width:7px;height:7px;border-radius:50%;background:var(--cyan);animation:blink 2s ease-in-out infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0.3}}
+
+/* ── LEFT NAV ── */
+.l-nav{width:var(--nav-w);background:var(--bg1);border-right:1px solid var(--border);flex-shrink:0;display:flex;flex-direction:column;padding:8px 0;gap:1px;overflow-y:auto}
+.nav-section{font-family:var(--mono);font-size:7px;letter-spacing:0.14em;text-transform:uppercase;color:var(--text3);padding:8px 12px 3px}
+.nav-item{display:flex;align-items:center;gap:7px;padding:5px 12px;font-family:var(--mono);font-size:9px;color:var(--text3);cursor:pointer;border-left:2px solid transparent;transition:all 0.1s;white-space:nowrap}
+.nav-item:hover{background:var(--bg2);color:var(--text2)}
+.nav-item.active{background:var(--bg2);color:var(--text);border-left-color:var(--cyan)}
+.nav-item .badge{margin-left:auto;background:var(--bg3);border-radius:2px;padding:1px 4px;font-size:7px;color:var(--text3)}
+.nav-item.active .badge{background:var(--cyan-dim);color:var(--cyan)}
+.nav-dot{width:5px;height:5px;border-radius:50%;flex-shrink:0}
+
+/* ── TOOLBAR ── */
+.toolbar{height:34px;background:var(--bg1);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 14px;gap:10px;flex-shrink:0}
+.toolbar-title{font-family:var(--mono);font-size:10px;font-weight:600;color:var(--text)}
+.toolbar-sub{font-family:var(--mono);font-size:8px;color:var(--text3)}
+.tab-bar{display:flex;gap:2px}
+.vtab{font-family:var(--mono);font-size:8px;color:var(--text3);padding:4px 10px;border-radius:3px;cursor:pointer;transition:all 0.1s;border:1px solid transparent}
+.vtab:hover{color:var(--text2);background:var(--bg3)}
+.vtab.active{color:var(--text);background:var(--bg3);border-color:var(--border2)}
+
+/* ── COMPONENT SELECTOR BAR ── */
+.comp-bar{background:var(--bg2);border-bottom:1px solid var(--border);padding:8px 14px;display:flex;align-items:center;gap:10px;flex-shrink:0}
+.comp-pill{display:flex;align-items:center;gap:6px;padding:4px 10px;border-radius:20px;border:1px solid var(--border2);background:var(--bg3);font-family:var(--mono);font-size:8px;color:var(--text2);cursor:pointer;transition:all 0.12s}
+.comp-pill:hover{border-color:var(--border3);color:var(--text)}
+.comp-pill.active{border-color:var(--cyan);color:var(--cyan);background:var(--cyan-dim)}
+.comp-pill-dot{width:6px;height:6px;border-radius:50%}
+.comp-pill-badge{background:var(--bg4);border-radius:2px;padding:1px 4px;font-size:6px;color:var(--text3)}
+.comp-bar-sep{width:1px;height:20px;background:var(--border2)}
+
+/* ── MAIN CONTENT SPLIT ── */
+.vc-layout{display:flex;flex:1;min-height:0;overflow:hidden}
+.vc-left{width:260px;border-right:1px solid var(--border);flex-shrink:0;display:flex;flex-direction:column;overflow:hidden;background:var(--bg1)}
+.vc-center{flex:1;display:flex;flex-direction:column;overflow:hidden}
+.vc-right{width:var(--panel-w);border-left:1px solid var(--border);flex-shrink:0;display:flex;flex-direction:column;overflow:hidden;background:var(--bg1)}
+
+/* ── BRANCH LIST (left panel) ── */
+.panel-header{display:flex;align-items:center;justify-content:space-between;padding:8px 12px;border-bottom:1px solid var(--border);flex-shrink:0}
+.panel-header-title{font-family:var(--mono);font-size:8px;letter-spacing:0.12em;text-transform:uppercase;color:var(--text3)}
+.panel-header-action{font-family:var(--mono);font-size:8px;color:var(--cyan);cursor:pointer}
+.panel-header-action:hover{text-decoration:underline}
+.panel-body{flex:1;overflow-y:auto;padding:6px 0}
+
+.branch-item{display:flex;align-items:center;gap:8px;padding:6px 12px;cursor:pointer;border-left:2px solid transparent;transition:all 0.1s}
+.branch-item:hover{background:var(--bg2)}
+.branch-item.active{background:var(--bg2);border-left-color:var(--cyan)}
+.branch-icon{width:16px;height:16px;border-radius:3px;display:flex;align-items:center;justify-content:center;font-size:8px;flex-shrink:0}
+.branch-name{font-family:var(--mono);font-size:9px;color:var(--text);flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.branch-meta{font-family:var(--mono);font-size:7px;color:var(--text3)}
+.branch-item.active .branch-name{color:var(--cyan)}
+.branch-badge{font-family:var(--mono);font-size:6px;padding:1px 4px;border-radius:2px;border:1px solid;flex-shrink:0}
+.b-main{border-color:var(--cyan);color:var(--cyan);background:var(--cyan-dim)}
+.b-feature{border-color:var(--violet);color:var(--violet);background:var(--violet-dim)}
+.b-hotfix{border-color:var(--rose);color:var(--rose);background:var(--rose-dim)}
+.b-release{border-color:var(--gold);color:var(--gold);background:var(--gold-dim)}
+.b-experiment{border-color:var(--orange);color:var(--orange);background:var(--orange-dim)}
+.b-collab{border-color:var(--teal);color:var(--teal);background:rgba(92,191,191,0.1)}
+
+.branch-section{font-family:var(--mono);font-size:7px;letter-spacing:0.1em;text-transform:uppercase;color:var(--text3);padding:8px 12px 3px}
+
+/* ── VERSION GRAPH (center) ── */
+.graph-header{display:flex;align-items:center;padding:8px 14px;border-bottom:1px solid var(--border);gap:10px;flex-shrink:0}
+.graph-title{font-family:var(--mono);font-size:9px;color:var(--text2)}
+.graph-controls{display:flex;gap:4px;margin-left:auto}
+.graph-btn{font-family:var(--mono);font-size:7px;color:var(--text3);border:1px solid var(--border);border-radius:2px;padding:2px 6px;cursor:pointer;transition:all 0.1s}
+.graph-btn:hover{border-color:var(--border2);color:var(--text2)}
+.graph-btn.active{border-color:var(--cyan);color:var(--cyan);background:var(--cyan-dim)}
+
+.graph-canvas{flex:1;overflow:auto;padding:16px;position:relative}
+
+/* Version graph SVG + rows */
+.vg-row{display:flex;align-items:center;gap:0;margin-bottom:2px;position:relative;cursor:pointer;border-radius:3px;transition:background 0.08s}
+.vg-row:hover{background:var(--bg3)}
+.vg-row.selected{background:var(--bg3)}
+.vg-row.head-row{background:rgba(0,212,170,0.04)}
+.vg-graph-col{width:140px;flex-shrink:0;position:relative;height:28px}
+.vg-info-col{flex:1;display:flex;align-items:center;gap:8px;padding:4px 8px;min-width:0}
+.vg-hash{font-family:var(--mono);font-size:8px;color:var(--cyan);flex-shrink:0;width:52px}
+.vg-msg{font-family:var(--mono);font-size:9px;color:var(--text);flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.vg-author{font-family:var(--mono);font-size:7px;color:var(--text3);flex-shrink:0;width:70px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.vg-date{font-family:var(--mono);font-size:7px;color:var(--text3);flex-shrink:0;width:60px}
+.vg-badges{display:flex;gap:3px;flex-shrink:0}
+.vg-badge{font-family:var(--mono);font-size:6px;padding:1px 4px;border-radius:2px;border:1px solid;white-space:nowrap}
+.vg-tag-badge{border-color:var(--gold);color:var(--gold);background:var(--gold-dim)}
+.vg-head-badge{border-color:var(--cyan);color:var(--cyan);background:var(--cyan-dim)}
+.vg-release-badge{border-color:var(--green);color:var(--green);background:var(--green-dim)}
+.vg-checkpoint-badge{border-color:var(--violet);color:var(--violet);background:var(--violet-dim)}
+
+/* ── RIGHT PANEL: VERSION DETAIL ── */
+.detail-header{padding:10px 14px 8px;border-bottom:1px solid var(--border);flex-shrink:0}
+.detail-hash-row{display:flex;align-items:center;gap:8px;margin-bottom:4px}
+.detail-hash{font-family:var(--mono);font-size:11px;font-weight:700;color:var(--cyan)}
+.detail-ver{font-family:var(--mono);font-size:9px;color:var(--text2);background:var(--bg3);border:1px solid var(--border2);border-radius:3px;padding:1px 6px}
+.detail-msg{font-family:var(--sans);font-size:10px;font-weight:500;color:var(--text);margin-bottom:4px;line-height:1.4}
+.detail-meta{font-family:var(--mono);font-size:8px;color:var(--text3)}
+.detail-color-bar{height:2px;border-radius:1px;margin-top:6px}
+.detail-tabs{display:flex;border-bottom:1px solid var(--border);padding:0 14px;flex-shrink:0}
+.d-tab{font-family:var(--mono);font-size:8px;color:var(--text3);padding:5px 8px;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;transition:all 0.1s}
+.d-tab.active{color:var(--text);border-bottom-color:var(--cyan)}
+.detail-body{flex:1;overflow:auto;padding:10px 14px;display:flex;flex-direction:column;gap:10px}
+.det-section{font-family:var(--mono);font-size:7px;letter-spacing:0.12em;text-transform:uppercase;color:var(--text3);margin-bottom:5px}
+.det-kv{display:flex;justify-content:space-between;padding:3px 0;border-bottom:1px solid var(--border)}
+.det-key{font-family:var(--mono);font-size:8px;color:var(--text3)}
+.det-val{font-family:var(--mono);font-size:8px;color:var(--text2);font-weight:500;text-align:right}
+.det-val.c-cyan{color:var(--cyan)}.det-val.c-gold{color:var(--gold)}.det-val.c-green{color:var(--green)}.det-val.c-rose{color:var(--rose)}.det-val.c-violet{color:var(--violet)}
+
+/* Diff view */
+.diff-block{background:var(--bg2);border:1px solid var(--border);border-radius:3px;overflow:hidden;font-family:var(--mono);font-size:8px}
+.diff-header{background:var(--bg3);padding:4px 10px;border-bottom:1px solid var(--border);color:var(--text3);display:flex;justify-content:space-between}
+.diff-line{padding:2px 10px;display:flex;gap:8px}
+.diff-line.add{background:rgba(74,171,109,0.08);color:var(--green)}
+.diff-line.remove{background:rgba(196,92,122,0.08);color:var(--rose)}
+.diff-line.ctx{color:var(--text3)}
+.diff-lnum{color:var(--text3);flex-shrink:0;width:20px;text-align:right}
+.diff-sym{flex-shrink:0;width:10px}
+
+/* Users list */
+.user-item{display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid var(--border)}
+.user-av{width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:8px;font-weight:700;color:#000;flex-shrink:0}
+.user-name{font-family:var(--mono);font-size:9px;color:var(--text);flex:1}
+.user-role-badge{font-family:var(--mono);font-size:6px;padding:1px 5px;border-radius:2px;border:1px solid;font-weight:600}
+.ur-owner{border-color:var(--cyan);color:var(--cyan);background:var(--cyan-dim)}
+.ur-editor{border-color:var(--violet);color:var(--violet);background:var(--violet-dim)}
+.ur-contributor{border-color:var(--green);color:var(--green);background:var(--green-dim)}
+.ur-viewer{border-color:var(--text3);color:var(--text3)}
+.ur-investor{border-color:var(--gold);color:var(--gold);background:var(--gold-dim)}
+.ur-donor{border-color:var(--orange);color:var(--orange);background:var(--orange-dim)}
+.ur-watcher{border-color:var(--blue);color:var(--blue);background:var(--blue-dim)}
+.ur-subscriber{border-color:var(--pink);color:var(--pink);background:var(--pink-dim)}
+.ur-contractor{border-color:var(--teal);color:var(--teal);background:rgba(92,191,191,0.1)}
+.ur-steward{border-color:var(--amber);color:var(--amber);background:rgba(232,160,32,0.1)}
+.ur-manager{border-color:var(--rose);color:var(--rose);background:var(--rose-dim)}
+.user-since{font-family:var(--mono);font-size:7px;color:var(--text3)}
+
+/* Tags + attrs */
+.tag-cloud{display:flex;flex-wrap:wrap;gap:4px}
+.tag{font-family:var(--mono);font-size:7px;padding:2px 6px;border-radius:2px;background:var(--bg3);border:1px solid var(--border);color:var(--text3)}
+.tag.cat{border-color:var(--cyan);color:var(--cyan);background:var(--cyan-dim)}
+.attr-row{display:flex;align-items:center;gap:6px;padding:3px 0;border-bottom:1px solid var(--border)}
+.attr-key{font-family:var(--mono);font-size:8px;color:var(--text3);flex:1}
+.attr-val{font-family:var(--mono);font-size:8px;color:var(--text2)}
+
+/* Connection map */
+.conn-item{display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid var(--border);cursor:pointer}
+.conn-item:hover .conn-name{color:var(--cyan)}
+.conn-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+.conn-name{font-family:var(--mono);font-size:8px;color:var(--text2);flex:1}
+.conn-type{font-family:var(--mono);font-size:7px;color:var(--text3)}
+.conn-ver{font-family:var(--mono);font-size:7px;color:var(--text3);border:1px solid var(--border);border-radius:2px;padding:1px 4px}
+
+/* Action buttons */
+.det-actions{display:flex;flex-direction:column;gap:4px}
+.det-btn{font-family:var(--mono);font-size:8px;padding:5px 10px;border-radius:3px;border:1px solid var(--border2);color:var(--text2);cursor:pointer;text-align:center;transition:all 0.1s}
+.det-btn:hover{background:var(--bg3);color:var(--text)}
+.det-btn.primary{background:var(--cyan);border-color:var(--cyan);color:#000;font-weight:600}
+.det-btn.primary:hover{background:#00efc0}
+.det-btn.danger{border-color:var(--rose);color:var(--rose)}
+.det-btn.danger:hover{background:var(--rose-dim)}
+
+/* Health gauge */
+.health-row{display:flex;align-items:center;gap:8px;margin-bottom:4px}
+.health-label{font-family:var(--mono);font-size:8px;color:var(--text3);width:90px}
+.health-bar{flex:1;height:4px;background:var(--bg3);border-radius:2px;overflow:hidden}
+.health-fill{height:100%;border-radius:2px}
+.health-val{font-family:var(--mono);font-size:8px;color:var(--text2);width:28px;text-align:right}
+
+/* ── WBS PANEL (left sub-panel in center) ── */
+.wbs-panel{width:220px;border-right:1px solid var(--border);flex-shrink:0;overflow-y:auto;background:var(--bg1)}
+.wbs-row{display:flex;align-items:center;gap:6px;padding:4px 10px;cursor:pointer;border-bottom:1px solid var(--border);transition:background 0.08s}
+.wbs-row:hover{background:var(--bg2)}
+.wbs-row.selected{background:var(--bg2);border-left:2px solid var(--cyan)}
+.wbs-indent{flex-shrink:0}
+.wbs-expand{font-family:var(--mono);font-size:8px;color:var(--text3);width:10px;flex-shrink:0}
+.wbs-dot{width:5px;height:5px;border-radius:50%;flex-shrink:0}
+.wbs-name{font-family:var(--mono);font-size:8px;color:var(--text2);flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.wbs-type{font-family:var(--mono);font-size:6px;color:var(--text3);text-transform:uppercase;letter-spacing:0.06em}
+.wbs-ver{font-family:var(--mono);font-size:7px;color:var(--text3)}
+
+/* Toast */
+.toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%) translateY(18px);background:var(--bg4);border:1px solid var(--border2);border-radius:4px;padding:7px 14px;font-family:var(--mono);font-size:9px;color:var(--text2);opacity:0;transition:all 0.18s;z-index:200;pointer-events:none;white-space:nowrap}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* Modal */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.75);display:none;align-items:center;justify-content:center;z-index:100;backdrop-filter:blur(4px)}
+.modal-overlay.open{display:flex}
+.modal{background:var(--bg1);border:1px solid var(--border2);border-radius:6px;width:480px;max-width:95vw;max-height:88vh;overflow:auto;box-shadow:0 24px 64px rgba(0,0,0,0.7)}
+.modal-header{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1px solid var(--border)}
+.modal-title{font-family:var(--mono);font-size:11px;font-weight:700;color:var(--text)}
+.modal-close{font-family:var(--mono);font-size:13px;color:var(--text3);cursor:pointer;padding:2px 6px;border-radius:3px;transition:all 0.1s}
+.modal-close:hover{color:var(--text);background:var(--bg2)}
+.modal-body{padding:16px;display:flex;flex-direction:column;gap:11px}
+.form-group{display:flex;flex-direction:column;gap:5px}
+.form-label{font-family:var(--mono);font-size:8px;color:var(--text3);text-transform:uppercase;letter-spacing:0.1em}
+.form-input{background:var(--bg2);border:1px solid var(--border2);border-radius:3px;padding:6px 10px;font-family:var(--mono);font-size:9px;color:var(--text);outline:none;transition:border-color 0.1s;width:100%}
+.form-input:focus{border-color:var(--cyan)}
+.form-select{background:var(--bg2);border:1px solid var(--border2);border-radius:3px;padding:6px 10px;font-family:var(--mono);font-size:9px;color:var(--text);outline:none;cursor:pointer;width:100%}
+.form-textarea{background:var(--bg2);border:1px solid var(--border2);border-radius:3px;padding:6px 10px;font-family:var(--sans);font-size:9px;color:var(--text);outline:none;min-height:60px;resize:vertical;width:100%}
+.form-row{display:flex;gap:10px}
+.form-row>*{flex:1}
+.modal-footer{padding:10px 16px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:8px;align-items:center}
+.btn{font-family:var(--mono);font-size:9px;padding:5px 12px;border-radius:3px;cursor:pointer;border:1px solid;transition:all 0.12s}
+.btn-cancel{background:var(--bg2);border-color:var(--border2);color:var(--text2)}.btn-cancel:hover{color:var(--text)}
+.btn-primary{background:var(--cyan);border-color:var(--cyan);color:#000;font-weight:600}.btn-primary:hover{background:#00efc0}
+.color-swatches{display:flex;flex-wrap:wrap;gap:6px}
+.csw{width:22px;height:22px;border-radius:50%;cursor:pointer;border:2px solid transparent;transition:all 0.1s}
+.csw.sel{border-color:#fff;transform:scale(1.2)}
+
+/* Version type badges */
+.vt-badge{font-family:var(--mono);font-size:6px;padding:1px 5px;border-radius:2px;border:1px solid;text-transform:uppercase;letter-spacing:0.08em}
+.vt-major{border-color:var(--rose);color:var(--rose);background:var(--rose-dim)}
+.vt-minor{border-color:var(--gold);color:var(--gold);background:var(--gold-dim)}
+.vt-patch{border-color:var(--green);color:var(--green);background:var(--green-dim)}
+.vt-prerelease{border-color:var(--violet);color:var(--violet);background:var(--violet-dim)}
+
+/* contribution ledger */
+.contrib-item{display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid var(--border)}
+.contrib-av{width:18px;height:18px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:7px;font-weight:700;color:#000;flex-shrink:0}
+.contrib-name{font-family:var(--mono);font-size:8px;color:var(--text2);flex:1}
+.contrib-type{font-family:var(--mono);font-size:7px;color:var(--text3)}
+.contrib-weight{font-family:var(--mono);font-size:8px;color:var(--gold)}
+.contrib-status{font-family:var(--mono);font-size:6px;padding:1px 4px;border-radius:2px;border:1px solid}
+.cs-accepted{border-color:var(--green);color:var(--green)}
+.cs-pending{border-color:var(--gold);color:var(--gold)}
+.cs-merged{border-color:var(--cyan);color:var(--cyan)}
+.cs-rejected{border-color:var(--rose);color:var(--rose)}
+
+/* governance events */
+.gov-event{display:flex;gap:8px;padding:5px 0;border-bottom:1px solid var(--border)}
+.gov-dot{width:5px;height:5px;border-radius:50%;margin-top:5px;flex-shrink:0}
+.gov-text{font-family:var(--sans);font-size:8px;color:var(--text2);flex:1;line-height:1.5}
+.gov-time{font-family:var(--mono);font-size:7px;color:var(--text3)}
+</style>
+</head>
+<body>
+<div class="screen">
+
+<!-- GLOBAL HEADER -->
+<div class="g-header">
+  <span class="g-logo">KOGI</span>
+  <div class="g-sep"></div>
+  <div class="g-breadcrumb">
+    <a href="#">Office</a><span class="sep">/</span>
+    <a href="#">Portfolio</a><span class="sep">/</span>
+    <span class="cur">Version Control</span>
+  </div>
+  <div class="ml-auto g-actions">
+    <span class="g-btn" onclick="openBranchModal()">⎇ New Branch</span>
+    <span class="g-btn" onclick="openCommitModal()">↑ Commit</span>
+    <span class="g-btn" onclick="openMergeModal()">⇌ Merge</span>
+    <span class="g-btn primary" onclick="openTagModal()">◇ Tag Version</span>
+  </div>
+  <div class="g-dot"></div>
+</div>
+
+<div class="body-layout">
+<!-- LEFT NAV -->
+<div class="l-nav">
+  <div class="nav-section">Portfolio</div>
+  <div class="nav-item">🏠 Home</div>
+  <div class="nav-item">📁 Grid View <span class="badge">24</span></div>
+  <div class="nav-item active">⎇ Version Control <span class="badge">v2.1</span></div>
+  <div class="nav-item">🔗 Graph View</div>
+  <div class="nav-item">📊 Analytics</div>
+  <div class="nav-section">Components</div>
+  <div class="nav-item"><div class="nav-dot" style="background:var(--cyan)"></div> Items <span class="badge">11</span></div>
+  <div class="nav-item"><div class="nav-dot" style="background:var(--gold)"></div> Containers <span class="badge">6</span></div>
+  <div class="nav-item"><div class="nav-dot" style="background:var(--violet)"></div> Benefits <span class="badge">4</span></div>
+  <div class="nav-section">Tools</div>
+  <div class="nav-item">📋 EventLog</div>
+  <div class="nav-item">🔐 Governance</div>
+  <div class="nav-item">👥 Collaborators</div>
+  <div class="nav-item">⚙ Policy Engine</div>
+  <div class="nav-item">🗄 Snapshots</div>
+  <div class="nav-item">🤖 AI Agent</div>
+  <div class="nav-section">CRDT</div>
+  <div class="nav-item">🌐 Federation</div>
+  <div class="nav-item">⏱ VectorClock</div>
+</div>
+
+<!-- MAIN -->
+<div class="main">
+  <!-- TOOLBAR -->
+  <div class="toolbar">
+    <span class="toolbar-title">Version Control</span>
+    <span class="toolbar-sub" id="toolbar-sub">Portfolio System · CRDT · EventLog</span>
+    <div class="tab-bar" style="margin-left:16px">
+      <div class="vtab active" onclick="setView('graph',this)">History Graph</div>
+      <div class="vtab" onclick="setView('wbs',this)">WBS Explorer</div>
+      <div class="vtab" onclick="setView('diff',this)">Diff View</div>
+      <div class="vtab" onclick="setView('contrib',this)">Contributions</div>
+      <div class="vtab" onclick="setView('snapshots',this)">Snapshots</div>
+    </div>
+    <div class="g-actions" style="margin-left:auto">
+      <span class="g-btn graph-btn active" id="btn-all-branches" onclick="filterBranch('all',this)">All Branches</span>
+    </div>
+  </div>
+
+  <!-- COMPONENT SELECTOR -->
+  <div class="comp-bar" id="comp-bar">
+    <!-- rendered by JS -->
+  </div>
+
+  <!-- CONTENT -->
+  <div class="vc-layout">
+    <!-- BRANCH LIST -->
+    <div class="vc-left">
+      <div class="panel-header">
+        <span class="panel-header-title">Branches</span>
+        <span class="panel-header-action" onclick="openBranchModal()">+ New</span>
+      </div>
+      <div class="panel-body" id="branch-list"></div>
+    </div>
+
+    <!-- CENTER: graph / wbs / diff / contrib / snapshots -->
+    <div class="vc-center" id="vc-center">
+      <!-- graph view -->
+      <div id="view-graph" style="display:flex;flex-direction:column;flex:1;overflow:hidden">
+        <div class="graph-header">
+          <span class="graph-title" id="graph-title">History — all branches</span>
+          <div class="graph-controls">
+            <span class="graph-btn active" onclick="setZoom(1,this)">1×</span>
+            <span class="graph-btn" onclick="setZoom(1.5,this)">1.5×</span>
+            <span class="graph-btn" onclick="setZoom(2,this)">2×</span>
+          </div>
+        </div>
+        <div class="graph-canvas" id="graph-canvas"></div>
+      </div>
+      <!-- wbs view -->
+      <div id="view-wbs" style="display:none;flex:1;overflow:hidden;display:none">
+        <div class="graph-header"><span class="graph-title">Work Breakdown Structure — Version Tree</span></div>
+        <div style="display:flex;flex:1;overflow:hidden">
+          <div class="wbs-panel" id="wbs-tree"></div>
+          <div style="flex:1;overflow:auto;padding:16px" id="wbs-detail"></div>
+        </div>
+      </div>
+      <!-- diff view -->
+      <div id="view-diff" style="display:none;flex-direction:column;overflow:hidden">
+        <div class="graph-header"><span class="graph-title" id="diff-title">Diff — select two commits to compare</span></div>
+        <div style="flex:1;overflow:auto;padding:14px" id="diff-content"></div>
+      </div>
+      <!-- contrib view -->
+      <div id="view-contrib" style="display:none;flex-direction:column;overflow:hidden">
+        <div class="graph-header"><span class="graph-title">Contribution Ledger — Attribution Weights</span></div>
+        <div style="flex:1;overflow:auto;padding:14px" id="contrib-content"></div>
+      </div>
+      <!-- snapshots view -->
+      <div id="view-snapshots" style="display:none;flex-direction:column;overflow:hidden">
+        <div class="graph-header"><span class="graph-title">Snapshots & Checkpoints</span><span class="panel-header-action" style="margin-left:auto;font-family:var(--mono);font-size:8px;color:var(--cyan);cursor:pointer" onclick="createSnapshot()">+ Snapshot</span></div>
+        <div style="flex:1;overflow:auto;padding:14px" id="snapshots-content"></div>
+      </div>
+    </div>
+
+    <!-- RIGHT PANEL: version detail -->
+    <div class="vc-right" id="vc-right">
+      <div id="right-placeholder" style="display:flex;flex:1;align-items:center;justify-content:center;flex-direction:column;gap:8px;color:var(--text3);font-family:var(--mono);font-size:9px">
+        <div style="font-size:28px;opacity:0.2">⎇</div>
+        <div>Select a commit</div>
+        <div style="font-size:8px;color:var(--text3);margin-top:2px">Click any node in the graph</div>
+      </div>
+      <div id="right-detail" style="display:none;flex-direction:column;flex:1;overflow:hidden"></div>
+    </div>
+  </div>
+</div>
+</div>
+</div>
+
+<!-- BRANCH MODAL -->
+<div class="modal-overlay" id="modal-branch">
+  <div class="modal" style="width:420px">
+    <div class="modal-header"><div class="modal-title">Create Branch</div><div class="modal-close" onclick="closeModal('modal-branch')">✕</div></div>
+    <div class="modal-body">
+      <div class="form-group"><div class="form-label">Branch Name</div><input class="form-input" id="branch-name" placeholder="e.g. feature/v2-redesign"/></div>
+      <div class="form-group"><div class="form-label">Branch Type</div>
+        <select class="form-select" id="branch-type">
+          <option value="feature">Feature</option><option value="hotfix">Hotfix</option>
+          <option value="release">Release</option><option value="experiment">Experiment</option><option value="collab">Collaboration</option>
+        </select>
+      </div>
+      <div class="form-group"><div class="form-label">Fork From</div>
+        <select class="form-select" id="branch-from">
+          <option value="main">main</option>
+        </select>
+      </div>
+      <div class="form-group"><div class="form-label">Description</div><textarea class="form-textarea" id="branch-desc" placeholder="Purpose of this branch"></textarea></div>
+    </div>
+    <div class="modal-footer">
+      <div class="btn btn-cancel" onclick="closeModal('modal-branch')">Cancel</div>
+      <div class="btn btn-primary" onclick="createBranch()">Create Branch</div>
+    </div>
+  </div>
+</div>
+
+<!-- COMMIT MODAL -->
+<div class="modal-overlay" id="modal-commit">
+  <div class="modal" style="width:460px">
+    <div class="modal-header"><div class="modal-title">Commit Version</div><div class="modal-close" onclick="closeModal('modal-commit')">✕</div></div>
+    <div class="modal-body">
+      <div class="form-group"><div class="form-label">Commit Message</div><input class="form-input" id="commit-msg" placeholder="e.g. Add version control subsystem to ItemBook"/></div>
+      <div class="form-row">
+        <div class="form-group"><div class="form-label">Branch</div><select class="form-select" id="commit-branch"></select></div>
+        <div class="form-group"><div class="form-label">Version Bump</div>
+          <select class="form-select" id="commit-bump">
+            <option value="patch">Patch (0.0.x)</option><option value="minor">Minor (0.x.0)</option><option value="major">Major (x.0.0)</option><option value="prerelease">Pre-release</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><div class="form-label">Component</div><select class="form-select" id="commit-component"></select></div>
+        <div class="form-group"><div class="form-label">Change Type</div>
+          <select class="form-select" id="commit-change-type">
+            <option>feat</option><option>fix</option><option>refactor</option><option>docs</option><option>governance</option><option>chore</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group"><div class="form-label">Description / Notes</div><textarea class="form-textarea" id="commit-desc" placeholder="Detailed description of changes…"></textarea></div>
+      <div class="form-group"><div class="form-label">Governance Status</div>
+        <select class="form-select" id="commit-gov">
+          <option value="AutoAccept">Auto Accept</option><option value="StewardReview">Steward Review</option><option value="GovernanceVote">Governance Vote Required</option>
+        </select>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <div class="btn btn-cancel" onclick="closeModal('modal-commit')">Cancel</div>
+      <div class="btn btn-primary" onclick="createCommit()">Commit</div>
+    </div>
+  </div>
+</div>
+
+<!-- MERGE MODAL -->
+<div class="modal-overlay" id="modal-merge">
+  <div class="modal" style="width:380px">
+    <div class="modal-header"><div class="modal-title">Merge Branch</div><div class="modal-close" onclick="closeModal('modal-merge')">✕</div></div>
+    <div class="modal-body">
+      <div class="form-row">
+        <div class="form-group"><div class="form-label">From Branch</div><select class="form-select" id="merge-from"></select></div>
+        <div class="form-group"><div class="form-label">Into Branch</div><select class="form-select" id="merge-into"></select></div>
+      </div>
+      <div class="form-group"><div class="form-label">Merge Strategy</div>
+        <select class="form-select" id="merge-strategy">
+          <option>Merge Commit</option><option>Squash</option><option>Rebase</option><option>CRDT Merge</option>
+        </select>
+      </div>
+      <div class="form-group"><div class="form-label">Merge Message</div><input class="form-input" id="merge-msg" placeholder="e.g. Merge feature/v2 into main"/></div>
+    </div>
+    <div class="modal-footer">
+      <div class="btn btn-cancel" onclick="closeModal('modal-merge')">Cancel</div>
+      <div class="btn btn-primary" onclick="executeMerge()">Merge</div>
+    </div>
+  </div>
+</div>
+
+<!-- TAG MODAL -->
+<div class="modal-overlay" id="modal-tag">
+  <div class="modal" style="width:380px">
+    <div class="modal-header"><div class="modal-title">Tag Version</div><div class="modal-close" onclick="closeModal('modal-tag')">✕</div></div>
+    <div class="modal-body">
+      <div class="form-group"><div class="form-label">Tag Name</div><input class="form-input" id="tag-name" placeholder="e.g. v2.1.0-release"/></div>
+      <div class="form-row">
+        <div class="form-group"><div class="form-label">Type</div>
+          <select class="form-select" id="tag-type">
+            <option>release</option><option>checkpoint</option><option>snapshot</option><option>milestone</option>
+          </select>
+        </div>
+        <div class="form-group"><div class="form-label">Branch</div><select class="form-select" id="tag-branch"></select></div>
+      </div>
+      <div class="form-group"><div class="form-label">Message</div><textarea class="form-textarea" id="tag-msg" placeholder="Tag notes / release notes"></textarea></div>
+    </div>
+    <div class="modal-footer">
+      <div class="btn btn-cancel" onclick="closeModal('modal-tag')">Cancel</div>
+      <div class="btn btn-primary" onclick="createTag()">Create Tag</div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ═══════════════════════════════════════════════════════════════
+// DATA MODEL
+// ═══════════════════════════════════════════════════════════════
+
+const BRANCH_COLORS = {
+  main:'#00d4aa', feature:'#7c5cbf', hotfix:'#c45c7a',
+  release:'#c8a84b', experiment:'#c87c3a', collab:'#5cbfbf'
+};
+const COMP_COLORS = {
+  Portfolio:'#00d4aa', Program:'#c8a84b', Project:'#7c5cbf',
+  Resource:'#3a7cc8', Artifact:'#c87c3a', Asset:'#4aab6d',
+  Binder:'#c8a84b', Book:'#bf5ca0', Record:'#5ca8bf',
+  Folder:'#7abf5c', BenefitAccount:'#c45c7a', CrowdresourcingCampaign:'#5cbfbf'
+};
+const USER_COLORS = ['#00d4aa','#c8a84b','#7c5cbf','#c45c7a','#c87c3a','#3a7cc8','#4aab6d','#bf5ca0','#5cbfbf','#c8a84b'];
+
+let _id=500;
+function uid(){return 'c'+(++_id)}
+
+// BRANCHES
+let branches = [
+  {id:'main', name:'main', type:'main', desc:'Primary production branch', color:'#00d4aa', protected:true, head:null, commits:[]},
+  {id:'feat-vc', name:'feature/version-control', type:'feature', desc:'Version control subsystem', color:'#7c5cbf', protected:false, head:null, commits:[]},
+  {id:'feat-shared', name:'feature/shared-portfolios', type:'feature', desc:'Multi-party shared portfolios (§18)', color:'#7c5cbf', protected:false, head:null, commits:[]},
+  {id:'hotfix-crdt', name:'hotfix/crdt-status-fix', type:'hotfix', desc:'Fix CRDT status field conflict (§17.3)', color:'#c45c7a', protected:false, head:null, commits:[]},
+  {id:'rel-v21', name:'release/v2.1', type:'release', desc:'v2.1 TMS integration release', color:'#c8a84b', protected:false, head:null, commits:[]},
+  {id:'exp-benefits', name:'experiment/benefits-ui', type:'experiment', desc:'Portable benefits portfolio items (§19)', color:'#c87c3a', protected:false, head:null, commits:[]},
+  {id:'collab-org', name:'collab/org-portfolio', type:'collab', desc:'Org cooperative portfolio collaboration', color:'#5cbfbf', protected:false, head:null, commits:[]},
+];
+
+// COMPONENTS (portfolio items/containers)
+let components = [
+  {id:'cmp-alpha', name:'Alpha Platform', type:'Portfolio', category:'tech', color:'#00d4aa', version:'2.1.3', status:'active'},
+  {id:'cmp-brand', name:'Brand Identity System', type:'Project', category:'creative', color:'#7c5cbf', version:'1.8.3', status:'active'},
+  {id:'cmp-mobile', name:'Mobile App MVP', type:'Project', category:'tech', color:'#00d4aa', version:'0.4.2', status:'active'},
+  {id:'cmp-dl', name:'Design System Library', type:'Asset', category:'creative', color:'#c87c3a', version:'3.2.1', status:'active'},
+  {id:'cmp-binder', name:'Platform Binder', type:'Binder', category:'tech', color:'#c8a84b', version:'1.0.5', status:'active'},
+  {id:'cmp-itembook', name:'Project Dossier · Brand', type:'Book', category:'creative', color:'#bf5ca0', version:'2.0.1', status:'active'},
+  {id:'cmp-legal', name:'Legal Compliance Pack', type:'Record', category:'legal', color:'#c45c7a', version:'1.3.0', status:'active'},
+  {id:'cmp-hsa', name:'HSA Benefit Account', type:'BenefitAccount', category:'finance', color:'#4aab6d', version:'1.0.0', status:'active'},
+  {id:'cmp-crowd', name:'Community Growth Campaign', type:'CrowdresourcingCampaign', category:'community', color:'#5cbfbf', version:'1.1.0', status:'active'},
+  {id:'cmp-worker', name:'Worker Portal v1', type:'Project', category:'product', color:'#4aab6d', version:'1.0.9', status:'active'},
+];
+
+// USERS (with roles/personas)
+let users = [
+  {id:'u1', name:'Alex Chen', initials:'AC', color:'#00d4aa', roles:['owner','editor'], persona:'Founder', tier:5},
+  {id:'u2', name:'Morgan Lee', initials:'ML', color:'#c8a84b', roles:['editor','contributor'], persona:'Product Lead', tier:3},
+  {id:'u3', name:'Sam Obi', initials:'SO', color:'#7c5cbf', roles:['contributor'], persona:'Designer', tier:2},
+  {id:'u4', name:'Jordan Kim', initials:'JK', color:'#c45c7a', roles:['investor'], persona:'Investor', tier:1},
+  {id:'u5', name:'Taylor Wu', initials:'TW', color:'#3a7cc8', roles:['watcher','subscriber'], persona:'Community Member', tier:1},
+  {id:'u6', name:'Aria Patel', initials:'AP', color:'#4aab6d', roles:['donor'], persona:'Donor', tier:1},
+  {id:'u7', name:'Chris Nduka', initials:'CN', color:'#bf5ca0', roles:['contractor'], persona:'Contractor', tier:2},
+  {id:'u8', name:'Dana Reeves', initials:'DR', color:'#c87c3a', roles:['steward'], persona:'Steward', tier:4},
+  {id:'u9', name:'Kyle Song', initials:'KS', color:'#5cbfbf', roles:['manager'], persona:'Manager', tier:4},
+  {id:'u10', name:'Oba AI', initials:'OA', color:'#c8a84b', roles:['contributor'], persona:'AI Agent', tier:2},
+];
+
+// COMMITS (version history)
+let commits = [];
+
+function makeCommit(data){
+  return {
+    id: uid(),
+    hash: Math.random().toString(36).slice(2,9),
+    ...data,
+    timestamp: data.timestamp || new Date().toISOString(),
+    connections: data.connections || [],
+    tags: data.tags || [],
+    governance: data.governance || 'AutoAccept',
+    diff: data.diff || [],
+  };
+}
+
+function initCommits(){
+  const c = makeCommit;
+  // main branch history
+  const m1 = c({branch:'main',component:'cmp-alpha',version:'1.0.0',bump:'major',msg:'Initial portfolio system — v1.0 genesis',author:'u1',timestamp:'2025-01-10T09:00:00Z',tags:['v1.0.0','genesis'],type:'feat',connections:[]});
+  const m2 = c({branch:'main',component:'cmp-alpha',version:'1.1.0',bump:'minor',msg:'Add Program and Project item types; EventLog foundation',author:'u1',timestamp:'2025-02-14T11:30:00Z',tags:[],type:'feat',connections:[m1.id],parent:[m1.id]});
+  const m3 = c({branch:'main',component:'cmp-alpha',version:'1.2.0',bump:'minor',msg:'VectorClock + CRDT log (LWW + OR-Set) distributed support',author:'u2',timestamp:'2025-03-22T14:00:00Z',tags:[],type:'feat',connections:[m2.id],parent:[m2.id]});
+  const m4 = c({branch:'main',component:'cmp-alpha',version:'1.3.0',bump:'minor',msg:'PolicyEngine trait + ApprovalWorkflow governance layer',author:'u1',timestamp:'2025-04-18T10:00:00Z',tags:[],type:'feat',connections:[m3.id],parent:[m3.id]});
+  const m5 = c({branch:'main',component:'cmp-alpha',version:'1.4.0',bump:'minor',msg:'11 computational models: PortfolioHealth, ProjectMetrics…',author:'u2',timestamp:'2025-05-30T16:00:00Z',tags:['v1.4-stable'],type:'feat',connections:[m4.id],parent:[m4.id]});
+  const m6 = c({branch:'main',component:'cmp-alpha',version:'2.0.0',bump:'major',msg:'BREAKING: Unified Component taxonomy — Item + Container hierarchy',author:'u1',timestamp:'2025-07-04T09:00:00Z',tags:['v2.0.0'],type:'feat',connections:[m5.id],parent:[m5.id],governance:'GovernanceVote'});
+  const m7 = c({branch:'main',component:'cmp-alpha',version:'2.0.1',bump:'patch',msg:'fix: EventLog FIFO eviction — cap at 10,000 events',author:'u2',timestamp:'2025-07-15T11:00:00Z',tags:[],type:'fix',connections:[m6.id],parent:[m6.id]});
+  const m8 = c({branch:'main',component:'cmp-alpha',version:'2.1.0',bump:'minor',msg:'feat(TMS): ToolBoxId integration — toolbox_ids on ComponentData',author:'u1',timestamp:'2025-09-01T10:00:00Z',tags:['v2.1.0'],type:'feat',connections:[m7.id],parent:[m7.id]});
+  const m9 = c({branch:'main',component:'cmp-alpha',version:'2.1.1',bump:'patch',msg:'fix: apply_action() VectorClock tick ordering',author:'u9',timestamp:'2025-10-12T14:00:00Z',tags:[],type:'fix',connections:[m8.id],parent:[m8.id]});
+  const m10= c({branch:'main',component:'cmp-alpha',version:'2.1.2',bump:'patch',msg:'docs: ItemBook structure — 10 sub-components documented',author:'u3',timestamp:'2025-11-20T09:00:00Z',tags:[],type:'docs',connections:[m9.id],parent:[m9.id]});
+  const m11= c({branch:'main',component:'cmp-alpha',version:'2.1.3',bump:'patch',msg:'refactor: SearchQuery PQL predicate model cleanup',author:'u2',timestamp:'2026-01-08T11:00:00Z',tags:['v2.1.3','HEAD'],type:'refactor',connections:[m10.id],parent:[m10.id]});
+
+  // feature/version-control branch
+  const f1 = c({branch:'feat-vc',component:'cmp-alpha',version:'2.1.3-vc.1',bump:'prerelease',msg:'feat: VersionHistory per ItemBook — semver + author + diff_ref',author:'u2',timestamp:'2026-01-12T10:00:00Z',tags:[],type:'feat',connections:[m11.id],parent:[m11.id]});
+  const f2 = c({branch:'feat-vc',component:'cmp-alpha',version:'2.1.3-vc.2',bump:'prerelease',msg:'feat: Branch model — main/feature/hotfix/release/experiment/collab',author:'u2',timestamp:'2026-01-18T14:00:00Z',tags:[],type:'feat',connections:[f1.id],parent:[f1.id]});
+  const f3 = c({branch:'feat-vc',component:'cmp-alpha',version:'2.1.3-vc.3',bump:'prerelease',msg:'feat: Merge workflow — CRDT merge + squash + rebase strategies',author:'u1',timestamp:'2026-02-01T10:00:00Z',tags:[],type:'feat',connections:[f2.id],parent:[f2.id]});
+
+  // feature/shared-portfolios
+  const s1 = c({branch:'feat-shared',component:'cmp-alpha',version:'2.1.3-shared.1',bump:'prerelease',msg:'feat(§18): SharedPortfolio types — Team/Org/Collective/Coop/Fed/Crowd',author:'u1',timestamp:'2026-01-15T09:00:00Z',tags:[],type:'feat',connections:[m11.id],parent:[m11.id]});
+  const s2 = c({branch:'feat-shared',component:'cmp-alpha',version:'2.1.3-shared.2',bump:'prerelease',msg:'feat(§18.3): ContributionRecord — attribution_weight, governance_status',author:'u8',timestamp:'2026-01-25T14:00:00Z',tags:[],type:'feat',connections:[s1.id],parent:[s1.id]});
+  const s3 = c({branch:'feat-shared',component:'cmp-crowd',version:'1.1.0',bump:'minor',msg:'feat(§18.6): CrowdresourcingCampaign — campaign_id + reviewer policy',author:'u8',timestamp:'2026-02-05T11:00:00Z',tags:[],type:'feat',connections:[s2.id],parent:[s2.id],governance:'StewardReview'});
+
+  // hotfix branch
+  const h1 = c({branch:'hotfix-crdt',component:'cmp-alpha',version:'2.1.2-hotfix.1',bump:'patch',msg:'fix(§17.3): CRDT status field — implement lifecycle lattice merge',author:'u9',timestamp:'2025-12-03T08:00:00Z',tags:[],type:'fix',connections:[m10.id],parent:[m10.id]});
+
+  // release branch
+  const r1 = c({branch:'rel-v21',component:'cmp-alpha',version:'2.1.0-rc.1',bump:'prerelease',msg:'chore: Release candidate — v2.1.0 TMS integration',author:'u1',timestamp:'2025-08-20T10:00:00Z',tags:['v2.1.0-rc.1'],type:'chore',connections:[m7.id],parent:[m7.id]});
+  const r2 = c({branch:'rel-v21',component:'cmp-alpha',version:'2.1.0-rc.2',bump:'patch',msg:'fix: Tag modal validation + branch selector fix',author:'u2',timestamp:'2025-08-26T14:00:00Z',tags:['v2.1.0-rc.2'],type:'fix',connections:[r1.id],parent:[r1.id]});
+
+  // experiment/benefits
+  const e1 = c({branch:'exp-benefits',component:'cmp-hsa',version:'1.0.0',bump:'major',msg:'feat(§19): BenefitAccount as PortfolioItem — HSA/Retirement/PTO',author:'u1',timestamp:'2026-01-20T11:00:00Z',tags:[],type:'feat',connections:[m11.id],parent:[m11.id]});
+  const e2 = c({branch:'exp-benefits',component:'cmp-hsa',version:'1.0.1',bump:'patch',msg:'feat(§19): BenefitsEngine — eligibility + gap analysis hooks',author:'u10',timestamp:'2026-02-08T10:00:00Z',tags:[],type:'feat',connections:[e1.id],parent:[e1.id]});
+
+  // collab
+  const cl1= c({branch:'collab-org',component:'cmp-crowd',version:'1.1.0',bump:'minor',msg:'feat(§18.2): Organization Portfolio — multi-sig + governance proposal',author:'u8',timestamp:'2026-02-10T09:00:00Z',tags:[],type:'feat',connections:[m11.id],parent:[m11.id],governance:'GovernanceVote'});
+
+  commits = [m1,m2,m3,m4,m5,m6,m7,m8,m9,m10,m11,f1,f2,f3,s1,s2,s3,h1,r1,r2,e1,e2,cl1];
+
+  // set branch heads
+  branches.find(b=>b.id==='main').head = m11.id;
+  branches.find(b=>b.id==='feat-vc').head = f3.id;
+  branches.find(b=>b.id==='feat-shared').head = s3.id;
+  branches.find(b=>b.id==='hotfix-crdt').head = h1.id;
+  branches.find(b=>b.id==='rel-v21').head = r2.id;
+  branches.find(b=>b.id==='exp-benefits').head = e2.id;
+  branches.find(b=>b.id==='collab-org').head = cl1.id;
+}
+
+// SNAPSHOTS
+let snapshots = [
+  {id:'snap-1',label:'v2.0-stable',note:'Stable before TMS integration',timestamp:'2025-07-10T10:00:00Z',type:'checkpoint',branch:'main'},
+  {id:'snap-2',label:'v2.1-pre-release',note:'Pre-release snapshot before v2.1 merge',timestamp:'2025-08-30T14:00:00Z',type:'snapshot',branch:'main'},
+  {id:'snap-3',label:'vc-baseline',note:'Version control feature baseline',timestamp:'2026-01-12T09:00:00Z',type:'checkpoint',branch:'feat-vc'},
+  {id:'snap-4',label:'shared-portfolios-alpha',note:'First alpha of shared portfolio model',timestamp:'2026-01-20T11:00:00Z',type:'snapshot',branch:'feat-shared'},
+];
+
+// Contributions
+let contributions = [
+  {id:'ct1',contributor:'u1',type:'Labor',component:'cmp-alpha',value:'120h',weight:0.42,status:'Accepted',timestamp:'2026-01-08T11:00:00Z'},
+  {id:'ct2',contributor:'u2',type:'Labor',component:'cmp-alpha',value:'88h',weight:0.28,status:'Accepted',timestamp:'2026-01-18T14:00:00Z'},
+  {id:'ct3',contributor:'u3',type:'Design',component:'cmp-brand',value:'40h',weight:0.12,status:'Accepted',timestamp:'2025-11-20T09:00:00Z'},
+  {id:'ct4',contributor:'u4',type:'Capital',component:'cmp-alpha',value:'$15,000',weight:0.09,status:'Accepted',timestamp:'2025-07-04T09:00:00Z'},
+  {id:'ct5',contributor:'u6',type:'Knowledge',component:'cmp-legal',value:'12h',weight:0.04,status:'Merged',timestamp:'2025-10-12T14:00:00Z'},
+  {id:'ct6',contributor:'u7',type:'Code',component:'cmp-mobile',value:'60h',weight:0.08,status:'Accepted',timestamp:'2026-01-25T14:00:00Z'},
+  {id:'ct7',contributor:'u8',type:'Labor',component:'cmp-crowd',value:'20h',weight:0.05,status:'PendingReview',timestamp:'2026-02-10T09:00:00Z'},
+  {id:'ct8',contributor:'u10',type:'Data',component:'cmp-hsa',value:'AI analysis',weight:0.03,status:'PendingReview',timestamp:'2026-02-08T10:00:00Z'},
+];
+
+// ═══════════════════════════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════════════════════════
+let state = {
+  selectedBranch: null,
+  selectedCommit: null,
+  filterBranch: 'all',
+  view: 'graph',
+  selectedComponent: null,
+  zoom: 1,
+  diffA: null, diffB: null,
+  rightTab: 'overview',
+};
+
+// ═══════════════════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════════════════
+initCommits();
+
+function init(){
+  renderCompBar();
+  renderBranchList();
+  renderGraph();
+  renderContribContent();
+  renderSnapshotsContent();
+  renderWbs();
+  populateModals();
+}
+
+// ═══════════════════════════════════════════════════════════════
+// COMPONENT BAR
+// ═══════════════════════════════════════════════════════════════
+function renderCompBar(){
+  const bar = document.getElementById('comp-bar');
+  bar.innerHTML = '<span style="font-family:var(--mono);font-size:8px;color:var(--text3);align-self:center;margin-right:6px">COMPONENT:</span>';
+  const all = document.createElement('div');
+  all.className = 'comp-pill'+(state.selectedComponent===null?' active':'');
+  all.textContent = 'All';
+  all.onclick=()=>{state.selectedComponent=null;renderCompBar();renderGraph()};
+  bar.appendChild(all);
+  components.forEach(c=>{
+    const p = document.createElement('div');
+    p.className = 'comp-pill'+(state.selectedComponent===c.id?' active':'');
+    p.innerHTML=`<div class="comp-pill-dot" style="background:${c.color}"></div>${c.name}<span class="comp-pill-badge">${c.type}</span>`;
+    p.onclick=()=>{state.selectedComponent=c.id;renderCompBar();renderGraph()};
+    bar.appendChild(p);
+  });
+}
+
+// ═══════════════════════════════════════════════════════════════
+// BRANCH LIST
+// ═══════════════════════════════════════════════════════════════
+function renderBranchList(){
+  const list = document.getElementById('branch-list');
+  list.innerHTML='';
+  const grouped = {};
+  branches.forEach(b=>{if(!grouped[b.type])grouped[b.type]=[];grouped[b.type].push(b)});
+  const order=['main','release','feature','hotfix','experiment','collab'];
+  order.forEach(type=>{
+    if(!grouped[type])return;
+    const sec=document.createElement('div');sec.className='branch-section';sec.textContent=type.toUpperCase();list.appendChild(sec);
+    grouped[type].forEach(b=>{
+      const el=document.createElement('div');
+      el.className='branch-item'+(state.selectedBranch===b.id?' active':'');
+      const count=commits.filter(c=>c.branch===b.id).length;
+      el.innerHTML=`
+        <div class="branch-icon" style="background:${b.color}22;color:${b.color}">⎇</div>
+        <div style="flex:1;min-width:0">
+          <div class="branch-name">${b.name}</div>
+          <div class="branch-meta">${count} commit${count!==1?'s':''}</div>
+        </div>
+        <span class="branch-badge b-${b.type}">${b.type}</span>`;
+      el.onclick=()=>selectBranch(b.id);
+      list.appendChild(el);
+    });
+  });
+}
+
+function selectBranch(id){
+  state.selectedBranch = state.selectedBranch===id?null:id;
+  state.filterBranch = state.selectedBranch||'all';
+  renderBranchList();renderGraph();
+  document.getElementById('graph-title').textContent = state.selectedBranch
+    ? 'History — '+(branches.find(b=>b.id===state.selectedBranch)?.name||'')
+    : 'History — all branches';
+}
+
+// ═══════════════════════════════════════════════════════════════
+// VERSION GRAPH
+// ═══════════════════════════════════════════════════════════════
+const LANE_W = 16, LANE_PAD = 8, NODE_R = 5, ROW_H = 28;
+const BRANCH_LANE = {main:0,'rel-v21':1,'feat-vc':2,'feat-shared':3,'hotfix-crdt':4,'exp-benefits':5,'collab-org':6};
+
+function renderGraph(){
+  const canvas = document.getElementById('graph-canvas');
+  const filtered = getFilteredCommits();
+  // sort by timestamp desc
+  const sorted = [...filtered].sort((a,b)=>new Date(b.timestamp)-new Date(a.timestamp));
+  const totalLanes = Object.keys(BRANCH_LANE).length;
+  const svgW = totalLanes*LANE_W + LANE_PAD*2;
+
+  let html = '';
+  sorted.forEach((commit,i)=>{
+    const br = branches.find(b=>b.id===commit.branch);
+    const color = br?.color||'#888';
+    const lane = BRANCH_LANE[commit.branch]||0;
+    const cx = LANE_PAD + lane*LANE_W + LANE_W/2;
+    const cy = ROW_H/2;
+    const isHead = br?.head===commit.id;
+    const isSelected = state.selectedCommit===commit.id;
+    const comp = components.find(c=>c.id===commit.component);
+    const compColor = comp?.color||color;
+    const typeLabel = {feat:'F',fix:'X',refactor:'R',docs:'D',chore:'C',governance:'G'}[commit.type]||'·';
+    const bumpClass = {major:'vt-major',minor:'vt-minor',patch:'vt-patch',prerelease:'vt-prerelease'}[commit.bump]||'vt-patch';
+
+    // Draw connecting line to parent (simplified: just show as SVG path within SVG column)
+    // We'll build SVG per-row for the graph lane
+    let svgContent = `<circle cx="${cx}" cy="${cy}" r="${isHead||isSelected?NODE_R+1.5:NODE_R}" fill="${color}" stroke="${isSelected?'#fff':'none'}" stroke-width="${isSelected?2:0}"/>`;
+    if(isHead){svgContent+=`<circle cx="${cx}" cy="${cy}" r="${NODE_R+4}" fill="none" stroke="${color}" stroke-width="1" opacity="0.4"/>`;}
+
+    // Parent connection line downward (to previous row with same/parent branch)
+    const parentIdx = sorted.findIndex(c=>c.id===(commit.parent?.[0]));
+    if(parentIdx>-1&&parentIdx<sorted.length){
+      const parentCommit=sorted[parentIdx];
+      const parentLane=BRANCH_LANE[parentCommit.branch]||0;
+      const px=LANE_PAD+parentLane*LANE_W+LANE_W/2;
+      // simplified: just draw a vertical line within this row at bottom half going down
+      // We'll handle cross-branch with a small offset curve
+      svgContent+=`<line x1="${cx}" y1="${cy+NODE_R}" x2="${cx}" y2="${ROW_H}" stroke="${color}" stroke-width="1.2" opacity="0.5"/>`;
+    }else{
+      // no parent, draw half-line up only
+    }
+    // draw connecting line from top if there are commits above
+    if(i>0){
+      const prevC=sorted[i-1];const prevLane=BRANCH_LANE[prevC.branch]||0;
+      const prevCx=LANE_PAD+prevLane*LANE_W+LANE_W/2;
+      if(prevC.branch===commit.branch){
+        svgContent+=`<line x1="${cx}" y1="0" x2="${cx}" y2="${cy-NODE_R}" stroke="${color}" stroke-width="1.2" opacity="0.5"/>`;
+      }else if(commit.parent?.length){
+        // branch line from parent
+        svgContent+=`<line x1="${cx}" y1="0" x2="${cx}" y2="${cy-NODE_R}" stroke="${color}" stroke-width="1.2" opacity="0.35"/>`;
+      }
+    }
+
+    const author = users.find(u=>u.id===commit.author);
+    const govBadge = commit.governance==='GovernanceVote'?'<span class="vg-badge vg-checkpoint-badge">vote</span>':
+                     commit.governance==='StewardReview'?'<span class="vg-badge" style="border-color:var(--orange);color:var(--orange);background:var(--orange-dim)">review</span>':'';
+    const tags = (commit.tags||[]).map(t=>`<span class="vg-badge ${t.includes('HEAD')?'vg-head-badge':t.includes('release')||t.includes('stable')?'vg-release-badge':'vg-tag-badge'}">${t}</span>`).join('');
+
+    html += `<div class="vg-row${isSelected?' selected':''}${isHead?' head-row':''}" onclick="selectCommit('${commit.id}')">
+      <div class="vg-graph-col">
+        <svg width="${svgW}" height="${ROW_H}" style="overflow:visible">
+          ${svgContent}
+        </svg>
+      </div>
+      <div class="vg-info-col">
+        <span class="vg-hash" style="color:${color}">${commit.hash.slice(0,7)}</span>
+        <span class="vg-msg">${commit.msg}</span>
+        <div class="vg-badges">${tags}${govBadge}<span class="vg-badge ${bumpClass}">${commit.bump}</span></div>
+        <span class="vg-author" style="color:${author?.color||'var(--text3)'}">${author?.name||commit.author}</span>
+        <span class="vg-date">${fmtDate(commit.timestamp)}</span>
+      </div>
+    </div>`;
+  });
+
+  canvas.innerHTML = html||'<div style="font-family:var(--mono);font-size:9px;color:var(--text3);padding:16px">No commits match current filter</div>';
+}
+
+function getFilteredCommits(){
+  let fc = [...commits];
+  if(state.filterBranch!=='all') fc=fc.filter(c=>c.branch===state.filterBranch);
+  if(state.selectedComponent) fc=fc.filter(c=>c.component===state.selectedComponent||!state.selectedComponent);
+  return fc;
+}
+
+function selectCommit(id){
+  state.selectedCommit = state.selectedCommit===id?null:id;
+  renderGraph();
+  renderRightPanel();
+}
+
+// ═══════════════════════════════════════════════════════════════
+// RIGHT PANEL
+// ═══════════════════════════════════════════════════════════════
+function renderRightPanel(){
+  const ph = document.getElementById('right-placeholder');
+  const rd = document.getElementById('right-detail');
+  if(!state.selectedCommit){ph.style.display='';rd.style.display='none';return;}
+  const commit = commits.find(c=>c.id===state.selectedCommit);
+  if(!commit){ph.style.display='';rd.style.display='none';return;}
+  ph.style.display='none';rd.style.display='flex';
+
+  const br = branches.find(b=>b.id===commit.branch);
+  const comp = components.find(c=>c.id===commit.component);
+  const author = users.find(u=>u.id===commit.author);
+  const color = br?.color||'#888';
+  const bumpClass={major:'vt-major',minor:'vt-minor',patch:'vt-patch',prerelease:'vt-prerelease'}[commit.bump]||'vt-patch';
+  const govColor={AutoAccept:'var(--green)',StewardReview:'var(--orange)',GovernanceVote:'var(--violet)'}[commit.governance]||'var(--text2)';
+
+  // Connections (parent commits)
+  const parentCommits = (commit.parent||[]).map(pid=>commits.find(c=>c.id===pid)).filter(Boolean);
+  const childCommits = commits.filter(c=>(c.parent||[]).includes(commit.id));
+
+  // Users for this component
+  const compUsers = users.slice(0,4);
+
+  rd.innerHTML = `
+    <div class="detail-header">
+      <div class="detail-hash-row">
+        <span class="detail-hash">${commit.hash}</span>
+        <span class="detail-ver">${commit.version}</span>
+        <span class="vg-badge ${bumpClass}" style="margin-left:4px">${commit.bump}</span>
+      </div>
+      <div class="detail-msg">${commit.msg}</div>
+      <div class="detail-meta">${author?.name||commit.author} · ${fmtDateFull(commit.timestamp)} · ${br?.name||commit.branch}</div>
+      <div class="detail-color-bar" style="background:${color}"></div>
+    </div>
+    <div class="detail-tabs">
+      <div class="d-tab active" onclick="detTab(this,'overview')">Overview</div>
+      <div class="d-tab" onclick="detTab(this,'diff')">Diff</div>
+      <div class="d-tab" onclick="detTab(this,'users')">Users</div>
+      <div class="d-tab" onclick="detTab(this,'connections')">Links</div>
+      <div class="d-tab" onclick="detTab(this,'attrs')">Attributes</div>
+    </div>
+    <div class="detail-body" id="det-body">
+      <!-- overview -->
+      <div id="det-overview">
+        <div class="det-section">Commit Metadata</div>
+        <div class="det-kv"><span class="det-key">Hash</span><span class="det-val c-cyan">${commit.hash}</span></div>
+        <div class="det-kv"><span class="det-key">Version</span><span class="det-val c-gold">${commit.version}</span></div>
+        <div class="det-kv"><span class="det-key">Branch</span><span class="det-val" style="color:${color}">${br?.name||commit.branch}</span></div>
+        <div class="det-kv"><span class="det-key">Change Type</span><span class="det-val">${commit.type||'—'}</span></div>
+        <div class="det-kv"><span class="det-key">Version Bump</span><span class="det-val">${commit.bump}</span></div>
+        <div class="det-kv"><span class="det-key">Author</span><span class="det-val" style="color:${author?.color||'var(--text2)'}">${author?.name||commit.author}</span></div>
+        <div class="det-kv"><span class="det-key">Timestamp</span><span class="det-val">${fmtDateFull(commit.timestamp)}</span></div>
+        <div class="det-kv"><span class="det-key">Governance</span><span class="det-val" style="color:${govColor}">${commit.governance}</span></div>
+        <div class="det-kv"><span class="det-key">Component</span><span class="det-val" style="color:${comp?.color||'var(--text2)'}">${comp?.name||commit.component}</span></div>
+        <div class="det-kv"><span class="det-key">Comp Version</span><span class="det-val">${comp?.version||'—'}</span></div>
+
+        ${(commit.tags||[]).length>0?`
+        <div class="det-section" style="margin-top:10px">Tags</div>
+        <div class="tag-cloud">
+          ${commit.tags.map(t=>`<span class="tag cat">${t}</span>`).join('')}
+        </div>`:''}
+
+        <div class="det-section" style="margin-top:10px">Health Signals</div>
+        <div class="health-row"><span class="health-label">Portfolio Health</span><div class="health-bar"><div class="health-fill" style="background:var(--cyan);width:84%"></div></div><span class="health-val">84</span></div>
+        <div class="health-row"><span class="health-label">Compliance</span><div class="health-bar"><div class="health-fill" style="background:var(--green);width:92%"></div></div><span class="health-val">92%</span></div>
+        <div class="health-row"><span class="health-label">Coverage</span><div class="health-bar"><div class="health-fill" style="background:var(--violet);width:76%"></div></div><span class="health-val">76%</span></div>
+        <div class="health-row"><span class="health-label">Collaboration</span><div class="health-bar"><div class="health-fill" style="background:var(--gold);width:68%"></div></div><span class="health-val">68%</span></div>
+
+        <div class="det-actions" style="margin-top:10px">
+          <div class="det-btn primary" onclick="showToast('Checking out ${commit.version}…')">Checkout This Version</div>
+          <div class="det-btn" onclick="showToast('Creating branch from ${commit.hash}…')">Branch From Here</div>
+          <div class="det-btn" onclick="setView('diff',null);state.diffA='${commit.id}';renderDiff()">Compare / Diff</div>
+          <div class="det-btn" onclick="showToast('Snapshot saved at ${commit.version}')">Create Snapshot</div>
+          <div class="det-btn danger" onclick="showToast('Revert initiated…')">Revert</div>
+        </div>
+      </div>
+
+      <!-- diff tab -->
+      <div id="det-diff" style="display:none">
+        <div class="det-section">Change Diff — ${commit.version}</div>
+        <div class="diff-block" style="margin-bottom:8px">
+          <div class="diff-header"><span>ComponentMetadata · version</span><span>+1 −1</span></div>
+          <div class="diff-line remove"><span class="diff-sym">−</span><span>version: "${prevVer(commit.version)}"</span></div>
+          <div class="diff-line add"><span class="diff-sym">+</span><span>version: "${commit.version}"</span></div>
+        </div>
+        <div class="diff-block" style="margin-bottom:8px">
+          <div class="diff-header"><span>EventLog · entry</span><span>+6 −0</span></div>
+          <div class="diff-line add"><span class="diff-sym">+</span><span>event_kind: ComponentUpdated</span></div>
+          <div class="diff-line add"><span class="diff-sym">+</span><span>actor: "${author?.name||commit.author}"</span></div>
+          <div class="diff-line add"><span class="diff-sym">+</span><span>version: "${commit.version}"</span></div>
+          <div class="diff-line add"><span class="diff-sym">+</span><span>timestamp: "${commit.timestamp}"</span></div>
+          <div class="diff-line add"><span class="diff-sym">+</span><span>vector_clock: {${author?.id||'u1'}: ${Math.floor(Math.random()*20)+10}}</span></div>
+          <div class="diff-line add"><span class="diff-sym">+</span><span>message: "${commit.msg.slice(0,60)}…"</span></div>
+        </div>
+        ${commit.type==='feat'?`<div class="diff-block">
+          <div class="diff-header"><span>ComponentData · description</span><span>+3 −1</span></div>
+          <div class="diff-line remove"><span class="diff-sym">−</span><span>description: "Previous feature scope"</span></div>
+          <div class="diff-line add"><span class="diff-sym">+</span><span>description: "${commit.msg.slice(5,80)}…"</span></div>
+          <div class="diff-line add"><span class="diff-sym">+</span><span>// updated ${fmtDate(commit.timestamp)}</span></div>
+        </div>`:''}
+      </div>
+
+      <!-- users tab -->
+      <div id="det-users" style="display:none">
+        <div class="det-section">Component Users — ${comp?.name||''}</div>
+        ${users.slice(0,7).map((u,i)=>{
+          const roles=['owner','editor','contributor','investor','donor','watcher','contractor','subscriber','steward','manager'];
+          const role = u.roles[0]||'viewer';
+          return `<div class="user-item">
+            <div class="user-av" style="background:${u.color}">${u.initials}</div>
+            <div style="flex:1;min-width:0">
+              <div class="user-name">${u.name}</div>
+              <div class="user-since">${u.persona} · Tier ${u.tier}</div>
+            </div>
+            <span class="user-role-badge ur-${role}">${role}</span>
+          </div>`;
+        }).join('')}
+        <div class="det-section" style="margin-top:12px">Permission Tier Legend</div>
+        ${[['Viewer','0','Read-only'],['Subscriber','1','Bookmark, follow'],['Contributor','2','Comment, react'],['Editor','3','Edit, bump version'],['Manager','4','Settings, members'],['Owner','5','Full ownership'],['Admin','6','Platform override']].map(([name,tier,cap])=>`
+          <div class="attr-row"><span class="attr-key">${name}</span><span class="attr-val">Tier ${tier} — ${cap}</span></div>`).join('')}
+      </div>
+
+      <!-- connections tab -->
+      <div id="det-connections" style="display:none">
+        <div class="det-section">${parentCommits.length} Parent Commit${parentCommits.length!==1?'s':''}</div>
+        ${parentCommits.map(pc=>{const pb=branches.find(b=>b.id===pc.branch);return`
+          <div class="conn-item" onclick="selectCommit('${pc.id}')">
+            <div class="conn-dot" style="background:${pb?.color||'#888'}"></div>
+            <span class="conn-name">${pc.msg.slice(0,48)}…</span>
+            <span class="conn-ver">${pc.version}</span>
+          </div>`}).join('')||'<div style="font-family:var(--mono);font-size:8px;color:var(--text3);padding:4px 0">No parents (root commit)</div>'}
+
+        <div class="det-section" style="margin-top:10px">${childCommits.length} Child Commit${childCommits.length!==1?'s':''}</div>
+        ${childCommits.map(cc=>{const cb=branches.find(b=>b.id===cc.branch);return`
+          <div class="conn-item" onclick="selectCommit('${cc.id}')">
+            <div class="conn-dot" style="background:${cb?.color||'#888'}"></div>
+            <span class="conn-name">${cc.msg.slice(0,48)}…</span>
+            <span class="conn-ver">${cc.version}</span>
+          </div>`}).join('')||'<div style="font-family:var(--mono);font-size:8px;color:var(--text3);padding:4px 0">No child commits (HEAD)</div>'}
+
+        <div class="det-section" style="margin-top:10px">Component Links</div>
+        ${components.filter(c=>c.id!==commit.component).slice(0,4).map(c=>`
+          <div class="conn-item" onclick="showToast('Navigating to ${c.name}')">
+            <div class="conn-dot" style="background:${c.color}"></div>
+            <span class="conn-name">${c.name}</span>
+            <span class="conn-type">${c.type}</span>
+            <span class="conn-ver">${c.version}</span>
+          </div>`).join('')}
+      </div>
+
+      <!-- attrs tab -->
+      <div id="det-attrs" style="display:none">
+        <div class="det-section">Component Attributes</div>
+        ${comp?[
+          ['ID',comp.id],['Name',comp.name],['Type',comp.type],['Category',comp.category],['Version',comp.version],['Status',comp.status],['Color',comp.color]
+        ].map(([k,v])=>`<div class="attr-row"><span class="attr-key">${k}</span><span class="attr-val">${v}</span></div>`).join(''):''}
+
+        <div class="det-section" style="margin-top:10px">Branch Attributes</div>
+        ${br?[
+          ['Branch ID',br.id],['Name',br.name],['Type',br.type],['Protected',br.protected?'Yes':'No'],['Color',br.color]
+        ].map(([k,v])=>`<div class="attr-row"><span class="attr-key">${k}</span><span class="attr-val">${v}</span></div>`).join(''):''}
+
+        <div class="det-section" style="margin-top:10px">CRDT Metadata</div>
+        <div class="attr-row"><span class="attr-key">VectorClock</span><span class="attr-val">{${author?.id||'u1'}: ${Math.floor(Math.random()*20)+8}}</span></div>
+        <div class="attr-row"><span class="attr-key">last_actor</span><span class="attr-val">${author?.name||'—'}</span></div>
+        <div class="attr-row"><span class="attr-key">Governance</span><span class="attr-val">${commit.governance}</span></div>
+        <div class="attr-row"><span class="attr-key">EventLog entries</span><span class="attr-val">${Math.floor(Math.random()*80)+20}</span></div>
+
+        <div class="det-section" style="margin-top:10px">Tags & Labels</div>
+        <div class="tag-cloud">
+          ${(commit.tags||[]).map(t=>`<span class="tag cat">${t}</span>`).join('')}
+          <span class="tag">${commit.type}</span>
+          <span class="tag">${br?.type||'main'}</span>
+          <span class="tag">${comp?.category||'tech'}</span>
+        </div>
+      </div>
+    </div>`;
+}
+
+function detTab(el,tab){
+  el.parentElement.querySelectorAll('.d-tab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+  ['overview','diff','users','connections','attrs'].forEach(id=>{const e=document.getElementById('det-'+id);if(e)e.style.display=id===tab?'':'none'});
+}
+
+// ═══════════════════════════════════════════════════════════════
+// WBS VIEW
+// ═══════════════════════════════════════════════════════════════
+const WBS_DATA = [
+  {id:'w0',name:'KOGI Platform',type:'Portfolio',color:'#00d4aa',indent:0,version:'2.1.3',children:['w1','w5','w9']},
+  {id:'w1',name:'Alpha Platform',type:'Portfolio',color:'#00d4aa',indent:1,version:'2.1.3',children:['w2','w3','w4']},
+  {id:'w2',name:'Community Growth',type:'Program',color:'#c8a84b',indent:2,version:'1.1.0',children:[]},
+  {id:'w3',name:'Worker Portal v1',type:'Project',color:'#4aab6d',indent:2,version:'1.0.9',children:[]},
+  {id:'w4',name:'Mobile App MVP',type:'Project',color:'#00d4aa',indent:2,version:'0.4.2',children:[]},
+  {id:'w5',name:'Design & Brand',type:'SubPortfolio',color:'#7c5cbf',indent:1,version:'1.8.3',children:['w6','w7','w8']},
+  {id:'w6',name:'Brand Identity System',type:'Project',color:'#7c5cbf',indent:2,version:'1.8.3',children:[]},
+  {id:'w7',name:'Design System Library',type:'Asset',color:'#c87c3a',indent:2,version:'3.2.1',children:[]},
+  {id:'w8',name:'Project Dossier · Brand',type:'Book',color:'#bf5ca0',indent:2,version:'2.0.1',children:[]},
+  {id:'w9',name:'Platform Infrastructure',type:'SubPortfolio',color:'#3a7cc8',indent:1,version:'2.1.3',children:['w10','w11','w12']},
+  {id:'w10',name:'Legal Compliance Pack',type:'Record',color:'#c45c7a',indent:2,version:'1.3.0',children:[]},
+  {id:'w11',name:'Platform Binder',type:'Binder',color:'#c8a84b',indent:2,version:'1.0.5',children:[]},
+  {id:'w12',name:'Benefits Portfolio',type:'BenefitAccount',color:'#4aab6d',indent:2,version:'1.0.0',children:[]},
+];
+
+function renderWbs(){
+  const tree=document.getElementById('wbs-tree');
+  tree.innerHTML='<div style="font-family:var(--mono);font-size:7px;letter-spacing:0.12em;text-transform:uppercase;color:var(--text3);padding:8px 10px 3px">Component Tree</div>';
+  WBS_DATA.forEach(node=>{
+    const el=document.createElement('div');
+    el.className='wbs-row';
+    el.style.paddingLeft=(10+node.indent*14)+'px';
+    el.innerHTML=`
+      <span class="wbs-expand">${node.children.length?'▾':' '}</span>
+      <div class="wbs-dot" style="background:${node.color}"></div>
+      <span class="wbs-name">${node.name}</span>
+      <span class="wbs-ver">${node.version}</span>`;
+    el.onclick=()=>selectWbsNode(node);
+    tree.appendChild(el);
+  });
+}
+
+function selectWbsNode(node){
+  const detail=document.getElementById('wbs-detail');
+  const comp=components.find(c=>c.name===node.name);
+  const nodeCommits=commits.filter(c=>c.component===comp?.id).sort((a,b)=>new Date(b.timestamp)-new Date(a.timestamp));
+  detail.innerHTML=`
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
+      <div style="width:28px;height:28px;border-radius:4px;background:${node.color}22;display:flex;align-items:center;justify-content:center;font-size:14px;color:${node.color}">◈</div>
+      <div>
+        <div style="font-family:var(--mono);font-size:11px;font-weight:700;color:var(--text)">${node.name}</div>
+        <div style="font-family:var(--mono);font-size:8px;color:var(--text3)">${node.type} · v${node.version}</div>
+      </div>
+    </div>
+    <div class="det-section">Version History</div>
+    ${nodeCommits.length===0?'<div style="font-family:var(--mono);font-size:8px;color:var(--text3);padding:6px 0">No commits for this component yet</div>':''}
+    ${nodeCommits.map(c=>{const br=branches.find(b=>b.id===c.branch);const a=users.find(u=>u.id===c.author);return`
+      <div style="display:flex;align-items:flex-start;gap:8px;padding:6px 0;border-bottom:1px solid var(--border);cursor:pointer" onclick="selectCommit('${c.id}');setView('graph',null)">
+        <div style="width:8px;height:8px;border-radius:50%;background:${br?.color||'#888'};margin-top:3px;flex-shrink:0"></div>
+        <div style="flex:1;min-width:0">
+          <div style="font-family:var(--mono);font-size:9px;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${c.msg}</div>
+          <div style="font-family:var(--mono);font-size:7px;color:var(--text3);margin-top:2px">${c.version} · ${a?.name||c.author} · ${fmtDate(c.timestamp)}</div>
+        </div>
+        <span style="font-family:var(--mono);font-size:7px;color:${br?.color||'#888'};border:1px solid ${br?.color||'#888'}30;border-radius:2px;padding:1px 4px;flex-shrink:0">${br?.name?.split('/')[1]||br?.name||c.branch}</span>
+      </div>`}).join('')}
+  `;
+}
+
+// ═══════════════════════════════════════════════════════════════
+// CONTRIBUTIONS
+// ═══════════════════════════════════════════════════════════════
+function renderContribContent(){
+  const el=document.getElementById('contrib-content');
+  const totalWeight=contributions.reduce((s,c)=>s+c.weight,0);
+  el.innerHTML=`
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:18px">
+      ${[['Total Contributions',contributions.length,'cyan'],['Total Weight',totalWeight.toFixed(2),'gold'],['Pending Review',contributions.filter(c=>c.status==='PendingReview').length,'orange'],['Contributors',new Set(contributions.map(c=>c.contributor)).size,'violet']].map(([l,v,c])=>`
+        <div style="background:var(--bg2);border:1px solid var(--border);border-radius:4px;padding:10px 12px">
+          <div style="font-family:var(--mono);font-size:7px;color:var(--text3);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:3px">${l}</div>
+          <div style="font-family:var(--mono);font-size:16px;font-weight:700;color:var(--${c})">${v}</div>
+        </div>`).join('')}
+    </div>
+    <div class="det-section">Contribution Records — ContributionRecord[]</div>
+    ${contributions.map(ct=>{
+      const u=users.find(x=>x.id===ct.contributor);
+      const comp=components.find(c=>c.id===ct.component);
+      const sc={Accepted:'cs-accepted',PendingReview:'cs-pending',Merged:'cs-merged',Rejected:'cs-rejected'}[ct.status]||'cs-pending';
+      const pct=Math.round(ct.weight/totalWeight*100);
+      return`<div class="contrib-item">
+        <div class="contrib-av" style="background:${u?.color||'#888'}">${u?.initials||'?'}</div>
+        <div style="flex:1;min-width:0">
+          <div class="contrib-name">${u?.name||ct.contributor}</div>
+          <div class="contrib-type">${ct.type} · ${comp?.name||ct.component} · ${fmtDate(ct.timestamp)}</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:6px">
+          <span style="font-family:var(--mono);font-size:8px;color:var(--text3)">${ct.value}</span>
+          <div style="width:50px;height:3px;background:var(--bg3);border-radius:1px;overflow:hidden">
+            <div style="height:100%;background:var(--gold);width:${pct}%"></div>
+          </div>
+          <span class="contrib-weight">${(ct.weight*100).toFixed(0)}%</span>
+          <span class="contrib-status ${sc}">${ct.status}</span>
+        </div>
+      </div>`;
+    }).join('')}
+    <div class="det-section" style="margin-top:16px">Contribution Type Breakdown</div>
+    <div style="display:flex;flex-wrap:wrap;gap:8px">
+      ${['Labor','Capital','Design','Code','Knowledge','Data','Artifact'].map(type=>{
+        const cnt=contributions.filter(c=>c.type===type).length;
+        const w=contributions.filter(c=>c.type===type).reduce((s,c)=>s+c.weight,0);
+        return`<div style="background:var(--bg2);border:1px solid var(--border);border-radius:3px;padding:7px 10px;font-family:var(--mono)">
+          <div style="font-size:7px;color:var(--text3);text-transform:uppercase">${type}</div>
+          <div style="font-size:12px;font-weight:700;color:var(--text);margin-top:2px">${cnt}</div>
+          <div style="font-size:7px;color:var(--text3)">${(w*100).toFixed(0)}% weight</div>
+        </div>`;
+      }).join('')}
+    </div>`;
+}
+
+// ═══════════════════════════════════════════════════════════════
+// SNAPSHOTS
+// ═══════════════════════════════════════════════════════════════
+function renderSnapshotsContent(){
+  const el=document.getElementById('snapshots-content');
+  el.innerHTML=`
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px">
+      ${[['Snapshots',snapshots.filter(s=>s.type==='snapshot').length,'cyan'],['Checkpoints',snapshots.filter(s=>s.type==='checkpoint').length,'violet'],['Branches',branches.length,'gold']].map(([l,v,c])=>`
+        <div style="background:var(--bg2);border:1px solid var(--border);border-radius:4px;padding:10px 12px">
+          <div style="font-family:var(--mono);font-size:7px;color:var(--text3);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:3px">${l}</div>
+          <div style="font-family:var(--mono);font-size:16px;font-weight:700;color:var(--${c})">${v}</div>
+        </div>`).join('')}
+    </div>
+    <div class="det-section">Snapshots & Checkpoints</div>
+    ${snapshots.map(snap=>{
+      const br=branches.find(b=>b.id===snap.branch);
+      const typeColor=snap.type==='checkpoint'?'var(--violet)':'var(--cyan)';
+      return`<div style="display:flex;align-items:center;gap:10px;padding:8px 10px;background:var(--bg2);border:1px solid var(--border);border-radius:4px;margin-bottom:6px">
+        <div style="width:28px;height:28px;border-radius:4px;background:${typeColor}22;display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:10px;color:${typeColor}">${snap.type==='checkpoint'?'◇':'◈'}</div>
+        <div style="flex:1;min-width:0">
+          <div style="font-family:var(--mono);font-size:9px;font-weight:600;color:var(--text)">${snap.label}</div>
+          <div style="font-family:var(--mono);font-size:7px;color:var(--text3);margin-top:2px">${snap.note} · ${fmtDateFull(snap.timestamp)}</div>
+        </div>
+        <div style="display:flex;gap:6px;align-items:center">
+          <span style="font-family:var(--mono);font-size:6px;padding:1px 5px;border-radius:2px;border:1px solid ${br?.color||'#888'}30;color:${br?.color||'#888'}">${br?.name||snap.branch}</span>
+          <span style="font-family:var(--mono);font-size:7px;padding:2px 7px;border-radius:3px;border:1px solid var(--border2);color:var(--text2);cursor:pointer" onclick="showToast('Restoring ${snap.label}…')">Restore</span>
+        </div>
+      </div>`;
+    }).join('')}`;
+}
+
+// ═══════════════════════════════════════════════════════════════
+// VIEW SWITCHING
+// ═══════════════════════════════════════════════════════════════
+function setView(view, el){
+  state.view=view;
+  if(el){document.querySelectorAll('.vtab').forEach(t=>t.classList.remove('active'));el.classList.add('active');}
+  const views=['graph','wbs','diff','contrib','snapshots'];
+  views.forEach(v=>{
+    const el2=document.getElementById('view-'+v);
+    if(el2)el2.style.display=v===view?'flex':'none';
+  });
+  if(view==='wbs'){document.getElementById('view-wbs').style.display='flex';renderWbs();}
+}
+
+// ═══════════════════════════════════════════════════════════════
+// CRUD OPERATIONS
+// ═══════════════════════════════════════════════════════════════
+function populateModals(){
+  const branchSels = ['branch-from','commit-branch','merge-from','merge-into','tag-branch'];
+  branchSels.forEach(id=>{
+    const el=document.getElementById(id);
+    if(el)el.innerHTML=branches.map(b=>`<option value="${b.id}">${b.name}</option>`).join('');
+  });
+  const compSel=document.getElementById('commit-component');
+  if(compSel)compSel.innerHTML=components.map(c=>`<option value="${c.id}">${c.name}</option>`).join('');
+}
+
+function createBranch(){
+  const name=document.getElementById('branch-name').value.trim();
+  if(!name){showToast('Branch name required');return;}
+  const type=document.getElementById('branch-type').value;
+  const nb={id:'br_'+uid(),name:name,type,desc:document.getElementById('branch-desc').value,color:BRANCH_COLORS[type]||'#888',protected:false,head:null,commits:[]};
+  branches.push(nb);
+  closeModal('modal-branch');renderBranchList();populateModals();
+  showToast('Branch "'+name+'" created');
+}
+
+function createCommit(){
+  const msg=document.getElementById('commit-msg').value.trim();
+  if(!msg){showToast('Commit message required');return;}
+  const branch=document.getElementById('commit-branch').value;
+  const comp=document.getElementById('commit-component').value;
+  const bump=document.getElementById('commit-bump').value;
+  const type=document.getElementById('commit-change-type').value;
+  const gov=document.getElementById('commit-gov').value;
+  const compObj=components.find(c=>c.id===comp);
+  const newVer=bumpVer(compObj?.version||'0.0.0',bump);
+  const nc=makeCommit({branch,component:comp,version:newVer,bump,msg,author:'u1',type,governance:gov,parent:[branches.find(b=>b.id===branch)?.head].filter(Boolean)});
+  commits.unshift(nc);
+  const br=branches.find(b=>b.id===branch);if(br)br.head=nc.id;
+  if(compObj)compObj.version=newVer;
+  closeModal('modal-commit');renderGraph();renderBranchList();renderCompBar();populateModals();
+  showToast('Committed v'+newVer+' to '+branches.find(b=>b.id===branch)?.name);
+}
+
+function executeMerge(){
+  const from=document.getElementById('merge-from').value;
+  const into=document.getElementById('merge-into').value;
+  const msg=document.getElementById('merge-msg').value||`Merge ${branches.find(b=>b.id===from)?.name} into ${branches.find(b=>b.id===into)?.name}`;
+  const strategy=document.getElementById('merge-strategy').value;
+  const intoBr=branches.find(b=>b.id===into);
+  const fromHead=branches.find(b=>b.id===from)?.head;
+  const mc=makeCommit({branch:into,component:'cmp-alpha',version:bumpVer(components[0].version,'patch'),bump:'patch',msg,author:'u1',type:'chore',governance:'AutoAccept',parent:[intoBr?.head,fromHead].filter(Boolean)});
+  commits.unshift(mc);if(intoBr)intoBr.head=mc.id;
+  closeModal('modal-merge');renderGraph();renderBranchList();
+  showToast('Merged ('+strategy+') → '+intoBr?.name);
+}
+
+function createTag(){
+  const name=document.getElementById('tag-name').value.trim();
+  if(!name){showToast('Tag name required');return;}
+  const branch=document.getElementById('tag-branch').value;
+  const br=branches.find(b=>b.id===branch);
+  if(br?.head){
+    const c=commits.find(x=>x.id===br.head);
+    if(c&&!c.tags.includes(name))c.tags.push(name);
+  }
+  closeModal('modal-tag');renderGraph();
+  showToast('Tag "'+name+'" created');
+}
+
+function createSnapshot(){
+  const label='snap-'+new Date().toISOString().slice(0,10);
+  snapshots.unshift({id:'snap-'+uid(),label,note:'Manual snapshot',timestamp:new Date().toISOString(),type:'snapshot',branch:state.filterBranch==='all'?'main':state.filterBranch});
+  renderSnapshotsContent();showToast('Snapshot created: '+label);
+}
+
+function filterBranch(br,el){
+  state.filterBranch=br;
+  document.querySelectorAll('.graph-btn').forEach(b=>b.classList.remove('active'));
+  if(el)el.classList.add('active');
+  renderGraph();
+}
+
+function setZoom(z,el){
+  state.zoom=z;
+  document.querySelectorAll('.graph-controls .graph-btn').forEach(b=>b.classList.remove('active'));
+  if(el)el.classList.add('active');
+  document.getElementById('graph-canvas').style.fontSize=(z*10)+'px';
+}
+
+// ═══════════════════════════════════════════════════════════════
+// UTILS
+// ═══════════════════════════════════════════════════════════════
+function fmtDate(ts){if(!ts)return'—';const d=new Date(ts);return d.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'2-digit'});}
+function fmtDateFull(ts){if(!ts)return'—';const d=new Date(ts);return d.toLocaleString('en-US',{month:'short',day:'numeric',year:'numeric',hour:'2-digit',minute:'2-digit'});}
+function prevVer(v){const p=v.split('.');if(p.length<3)return v;const last=parseInt(p[p.length-1]);return p.slice(0,-1).concat(Math.max(0,last-1).toString()).join('.');}
+function bumpVer(v,part){
+  const clean=v.replace(/-.*$/,'');const p=clean.split('.').map(Number);
+  if(part==='major')return`${p[0]+1}.0.0`;
+  if(part==='minor')return`${p[0]}.${(p[1]||0)+1}.0`;
+  if(part==='patch')return`${p[0]}.${p[1]||0}.${(p[2]||0)+1}`;
+  if(part==='prerelease')return`${v}-pre.${Date.now().toString(36).slice(-4)}`;
+  return v;
+}
+
+function openModal(id){document.getElementById(id).classList.add('open');}
+function closeModal(id){document.getElementById(id).classList.remove('open');}
+function openBranchModal(){openModal('modal-branch');}
+function openCommitModal(){populateModals();openModal('modal-commit');}
+function openMergeModal(){populateModals();openModal('modal-merge');}
+function openTagModal(){populateModals();openModal('modal-tag');}
+document.addEventListener('click',e=>{if(e.target.classList.contains('modal-overlay'))closeModal(e.target.id)});
+
+function renderDiff(){setView('diff',null);}
+
+let _toastT;
+function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');clearTimeout(_toastT);_toastT=setTimeout(()=>t.classList.remove('show'),2200);}
+
+// INIT
+init();
+// default view
+setView('graph',null);
+document.querySelectorAll('.vtab')[0].classList.add('active');
+</script>
+</body>
+</html>

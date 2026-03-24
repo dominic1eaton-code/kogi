@@ -1,0 +1,406 @@
+<!DOCTYPE html><html lang="en"><head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>UME OrgOS — Marketing Intelligence</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#070010;--surface:#0f0820;--surface-2:#150b2c;--surface-3:#1b1038;--border:rgba(255,255,255,.065);--border-mid:rgba(255,255,255,.10);--text:#ede6ff;--text-soft:rgba(215,205,255,.7);--text-muted:rgba(190,175,240,.4);--purple:#6a2fff;--purple-mid:#2d0072;--purple-dim:rgba(106,47,255,.18);--cherry:#ff2a55;--cherry-dim:rgba(255,42,85,.15);--teal:#00e5d8;--teal-dim:rgba(0,229,216,.12);--amber:#f5b942;--amber-dim:rgba(245,185,66,.12);--blue:#38b4ff;--blue-dim:rgba(56,180,255,.13);--emerald:#34e8a0;--emerald-dim:rgba(52,232,160,.11);--coral:#ff6b4a;--coral-dim:rgba(255,107,74,.13);--orchid:#d855ff;--orchid-dim:rgba(216,85,255,.14);--rose:#ff4c8b;--rose-dim:rgba(255,76,139,.13);--sidebar-w:210px;}
+*{margin:0;padding:0;box-sizing:border-box;}html,body{height:100%;font-family:"Space Grotesk",sans-serif;background:var(--bg);overflow:hidden;color:var(--text);}body{display:flex;}
+.sidebar{width:var(--sidebar-w);height:100vh;background:#0a0018;display:flex;flex-direction:column;flex-shrink:0;border-right:1px solid rgba(255,255,255,.05);}
+.sidebar-logo{display:flex;align-items:center;gap:9px;padding:16px 16px 14px;border-bottom:1px solid rgba(255,255,255,.06);}
+.s-icon{width:30px;height:30px;border-radius:8px;background:var(--purple-mid);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:15px;color:#fff;box-shadow:0 0 14px 2px rgba(106,47,255,.5);flex-shrink:0;}
+.s-logo-text{font-weight:700;font-size:15px;color:#fff;}.s-logo-text span{color:var(--cherry);}
+.org-selector{margin:10px 10px 4px;padding:8px 10px;border-radius:8px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.07);cursor:pointer;display:flex;align-items:center;gap:8px;}
+.org-dot{width:7px;height:7px;border-radius:50%;background:var(--teal);flex-shrink:0;box-shadow:0 0 6px rgba(0,229,216,.65);}.org-name{font-size:12px;font-weight:600;color:rgba(220,210,255,.8);flex:1;}.org-chevron{color:rgba(200,190,255,.3);font-size:10px;}
+.nav-section{padding:0 8px;margin-bottom:2px;}.nav-label{font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:rgba(200,190,255,.18);padding:10px 8px 4px;}
+.nav-item{display:flex;align-items:center;gap:9px;padding:7px 10px;border-radius:7px;cursor:pointer;transition:.15s;text-decoration:none;margin-bottom:1px;}
+.nav-item:hover{background:rgba(255,255,255,.06);}.nav-item.active{background:linear-gradient(90deg,rgba(106,47,255,.5),rgba(255,42,85,.22));border:1px solid rgba(255,42,85,.15);}
+.nav-icon{font-size:14px;width:20px;text-align:center;flex-shrink:0;}.nav-text{font-size:12.5px;font-weight:500;color:rgba(210,200,255,.38);flex:1;}.nav-item.active .nav-text{color:#fff;font-weight:600;}
+.nav-badge{min-width:18px;height:18px;border-radius:9px;background:var(--cherry);color:#fff;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;padding:0 5px;}
+.sidebar-footer{margin-top:auto;padding:10px;border-top:1px solid rgba(255,255,255,.05);}
+.user-row{display:flex;align-items:center;gap:9px;cursor:pointer;padding:8px;border-radius:8px;}
+.user-avatar{width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,var(--purple-mid),var(--cherry));display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff;flex-shrink:0;}
+.user-name{font-size:12px;font-weight:600;color:rgba(220,210,255,.8);}.user-role{font-size:10px;color:rgba(200,190,255,.3);}
+.main{flex:1;display:flex;flex-direction:column;height:100vh;overflow:hidden;}
+.topbar{height:52px;background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 24px;gap:12px;flex-shrink:0;}
+.page-title{font-size:15px;font-weight:700;}.topbar-meta{font-size:11.5px;color:var(--text-muted);}
+.topbar-right{margin-left:auto;display:flex;align-items:center;gap:10px;}
+.tb-btn{padding:6px 13px;border:1px solid var(--border-mid);border-radius:7px;font-size:12px;font-weight:600;color:var(--text-soft);background:var(--surface-2);cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:5px;transition:.15s;text-decoration:none;}
+.tb-btn.primary{background:linear-gradient(135deg,var(--rose),var(--cherry));color:#fff;border:none;box-shadow:0 3px 16px rgba(255,76,139,.3);}
+.subnav{display:flex;align-items:center;gap:2px;padding:0 24px;height:42px;background:var(--surface-2);border-bottom:1px solid var(--border);flex-shrink:0;overflow-x:auto;}
+.subnav::-webkit-scrollbar{height:0;}
+.snav-item{display:inline-flex;align-items:center;gap:5px;padding:6px 12px;border-radius:6px;font-size:12px;font-weight:600;color:rgba(200,185,255,.4);cursor:pointer;text-decoration:none;white-space:nowrap;transition:.15s;border:1px solid transparent;}
+.snav-item:hover{color:rgba(210,200,255,.8);background:rgba(255,255,255,.05);}.snav-item.active{color:#fff;background:rgba(255,76,139,.18);border-color:rgba(255,76,139,.32);}
+.content{flex:1;overflow-y:auto;padding:20px 24px;}
+.breadcrumb{font-size:12px;color:var(--text-muted);margin-bottom:14px;display:flex;align-items:center;gap:6px;}
+.breadcrumb a{color:var(--text-muted);text-decoration:none;}.breadcrumb-sep{color:rgba(200,190,255,.2);}
+.card{background:var(--surface);border-radius:14px;border:1px solid var(--border);padding:18px;margin-bottom:14px;}
+.card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
+.card-title{font-size:13.5px;font-weight:700;}.card-sub{font-size:11px;color:var(--text-muted);margin-top:2px;}
+.card-action{font-size:12px;color:var(--rose);font-weight:600;cursor:pointer;text-decoration:none;}
+.kpi-grid{display:grid;gap:12px;margin-bottom:16px;}.kpi-grid.c4{grid-template-columns:repeat(4,1fr);}.kpi-grid.c3{grid-template-columns:repeat(3,1fr);}
+.kpi{background:var(--surface);border-radius:12px;border:1px solid var(--border);padding:14px 16px;position:relative;overflow:hidden;transition:.18s;}
+.kpi:hover{transform:translateY(-1px);}
+.kpi::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;border-radius:12px 12px 0 0;}
+.kpi::after{content:'';position:absolute;inset:0;pointer-events:none;border-radius:12px;}
+.kpi.c-rose::before{background:linear-gradient(90deg,var(--rose),var(--cherry));}.kpi.c-rose::after{background:radial-gradient(ellipse at 90% 0%,rgba(255,76,139,.11),transparent 65%);}
+.kpi.c-blue::before{background:linear-gradient(90deg,var(--blue),var(--teal));}.kpi.c-blue::after{background:radial-gradient(ellipse at 90% 0%,rgba(56,180,255,.11),transparent 65%);}
+.kpi.c-emerald::before{background:linear-gradient(90deg,var(--emerald),var(--teal));}.kpi.c-emerald::after{background:radial-gradient(ellipse at 90% 0%,rgba(52,232,160,.11),transparent 65%);}
+.kpi.c-amber::before{background:linear-gradient(90deg,var(--amber),var(--coral));}.kpi.c-amber::after{background:radial-gradient(ellipse at 90% 0%,rgba(245,185,66,.11),transparent 65%);}
+.kpi.c-orchid::before{background:linear-gradient(90deg,var(--orchid),var(--purple));}.kpi.c-orchid::after{background:radial-gradient(ellipse at 90% 0%,rgba(216,85,255,.11),transparent 65%);}
+.kpi-label{font-size:11px;color:var(--text-muted);margin-bottom:6px;font-weight:500;}.kpi-val{font-size:22px;font-weight:700;margin-bottom:4px;}.kpi-sub{font-size:11px;color:var(--text-muted);}
+.kpi-sub.up{color:var(--emerald);}.kpi-sub.warn{color:var(--amber);}.kpi-sub.alert{color:var(--cherry);}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;}
+.three-col{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:14px;}
+.badge{display:inline-flex;align-items:center;padding:2px 8px;border-radius:20px;font-size:10.5px;font-weight:700;}
+.b-green{background:rgba(52,232,160,.12);color:var(--emerald);border:1px solid rgba(52,232,160,.22);}
+.b-amber{background:rgba(245,185,66,.12);color:var(--amber);border:1px solid rgba(245,185,66,.22);}
+.b-blue{background:rgba(56,180,255,.12);color:var(--blue);border:1px solid rgba(56,180,255,.2);}
+.b-red{background:rgba(255,42,85,.14);color:var(--cherry);border:1px solid rgba(255,42,85,.22);}
+.b-rose{background:var(--rose-dim);color:var(--rose);border:1px solid rgba(255,76,139,.22);}
+.b-purple{background:rgba(106,47,255,.18);color:#a888ff;border:1px solid rgba(106,47,255,.28);}
+.b-orchid{background:var(--orchid-dim);color:var(--orchid);border:1px solid rgba(216,85,255,.22);}
+.mini-table{width:100%;border-collapse:collapse;}
+.mini-table th{font-size:10.5px;font-weight:700;color:var(--text-muted);text-align:left;padding:5px 8px;border-bottom:1px solid var(--border);}
+.mini-table td{font-size:12px;color:var(--text-soft);padding:7px 8px;border-bottom:1px solid rgba(255,255,255,.035);}
+.mini-table tr:last-child td{border:none;}.mini-table td.hi{color:var(--text);font-weight:600;}
+.bar-row{display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid var(--border);}
+.bar-row:last-child{border:none;}.bar-label{font-size:12px;color:var(--text-soft);min-width:160px;}
+.bar-track{flex:1;height:6px;background:rgba(255,255,255,.06);border-radius:3px;overflow:hidden;}
+.bar-fill{height:100%;border-radius:3px;}.bar-val{font-size:12px;font-weight:700;min-width:56px;text-align:right;}
+/* Intelligence-specific */
+.comp-card{background:var(--surface-2);border-radius:11px;border:1px solid var(--border);padding:14px;}
+.comp-header{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
+.comp-logo{width:34px;height:34px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;color:#fff;flex-shrink:0;}
+.comp-name{font-size:13px;font-weight:700;}.comp-tier{font-size:10.5px;color:var(--text-muted);}
+.comp-row{display:flex;justify-content:space-between;align-items:center;padding:4px 0;border-bottom:1px solid rgba(255,255,255,.035);}
+.comp-row:last-child{border:none;}.comp-metric{font-size:11px;color:var(--text-muted);}.comp-val{font-size:11.5px;font-weight:600;}
+.signal-item{display:flex;align-items:flex-start;gap:10px;padding:9px 0;border-bottom:1px solid rgba(255,255,255,.035);}
+.signal-item:last-child{border:none;}
+.signal-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;margin-top:3px;}
+.signal-content{flex:1;}.signal-title{font-size:12px;font-weight:600;color:var(--text);margin-bottom:2px;}
+.signal-meta{font-size:11px;color:var(--text-muted);}
+.mdss-block{background:var(--surface-2);border-radius:10px;border:1px solid var(--border);padding:14px;margin-bottom:8px;position:relative;overflow:hidden;}
+.mdss-block::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;border-radius:2px;}
+.mdss-rose::before{background:var(--rose);}.mdss-blue::before{background:var(--blue);}.mdss-emerald::before{background:var(--emerald);}.mdss-amber::before{background:var(--amber);}.mdss-orchid::before{background:var(--orchid);}
+.mdss-title{font-size:12px;font-weight:700;margin-bottom:4px;}.mdss-desc{font-size:11.5px;color:var(--text-soft);line-height:1.5;margin-bottom:6px;}
+.mdss-footer{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+.feedback-item{display:flex;align-items:flex-start;gap:10px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.035);}
+.feedback-item:last-child{border:none;}
+.feedback-score{width:36px;height:36px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;flex-shrink:0;}
+.score-hi{background:rgba(52,232,160,.14);color:var(--emerald);border:1px solid rgba(52,232,160,.22);}
+.score-mid{background:rgba(245,185,66,.14);color:var(--amber);border:1px solid rgba(245,185,66,.22);}
+.score-lo{background:rgba(255,42,85,.14);color:var(--cherry);border:1px solid rgba(255,42,85,.22);}
+.feedback-body{flex:1;}.feedback-source{font-size:11px;color:var(--text-muted);margin-bottom:2px;}
+.feedback-text{font-size:12px;color:var(--text-soft);line-height:1.4;}
+.radar-wrap{display:grid;grid-template-columns:1fr 1fr;gap:6px;}
+.radar-metric{background:var(--surface-3);border-radius:8px;padding:9px 11px;display:flex;align-items:center;gap:8px;}
+.radar-icon{font-size:13px;width:22px;text-align:center;}
+.radar-label{font-size:11.5px;color:var(--text-soft);flex:1;}
+.radar-score{font-size:13px;font-weight:700;}
+.intel-tag{display:inline-flex;padding:2px 7px;border-radius:10px;font-size:10px;font-weight:600;}
+.trend-row{display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid rgba(255,255,255,.035);}
+.trend-row:last-child{border:none;}
+.trend-keyword{font-size:12px;font-weight:600;color:var(--text);min-width:140px;}
+.trend-bars{flex:1;display:flex;gap:2px;align-items:flex-end;height:20px;}
+.trend-bar{flex:1;border-radius:2px;transition:.3s;}
+.trend-delta{font-size:11px;font-weight:700;min-width:44px;text-align:right;}
+.delta-up{color:var(--emerald);}.delta-dn{color:var(--cherry);}
+</style></head><body>
+
+<div class="sidebar">
+  <div class="sidebar-logo"><div class="s-icon">U</div><div class="s-logo-text">UME <span>OrgOS</span></div></div>
+  <div class="org-selector"><div class="org-dot"></div><div class="org-name">Acme Corp LLC</div><div class="org-chevron">&#9662;</div></div>
+  <div class="nav-section"><div class="nav-label">Overview</div><a class="nav-item" href="dashboard.html"><div class="nav-icon">&#127968;</div><div class="nav-text">Dashboard</div></a></div>
+  <div class="nav-section"><div class="nav-label">OrgApps</div>
+    <a class="nav-item" href="finance.html"><div class="nav-icon">&#128176;</div><div class="nav-text">Finance</div></a>
+    <a class="nav-item" href="hr.html"><div class="nav-icon">&#128101;</div><div class="nav-text">HR &amp; People</div></a>
+    <a class="nav-item" href="legal.html"><div class="nav-icon">&#9878;&#65039;</div><div class="nav-text">Legal</div></a>
+    <a class="nav-item" href="sales.html"><div class="nav-icon">&#128230;</div><div class="nav-text">Sales &amp; CRM</div></a>
+    <a class="nav-item" href="operations.html"><div class="nav-icon">&#127981;</div><div class="nav-text">Operations</div></a>
+    <a class="nav-item" href="risk-grc.html"><div class="nav-icon">&#128737;&#65039;</div><div class="nav-text">Risk &amp; GRC</div></a>
+    <a class="nav-item active" href="marketing.html"><div class="nav-icon">&#128227;</div><div class="nav-text">Marketing</div></a>
+  </div>
+  <div class="nav-section"><div class="nav-label">OrgSystem</div>
+    <a class="nav-item" href="orgexec.html"><div class="nav-icon">&#129302;</div><div class="nav-text">OrgExec / Agents</div></a>
+    <a class="nav-item" href="digital-twin.html"><div class="nav-icon">&#128300;</div><div class="nav-text">Digital Twin</div></a>
+    <a class="nav-item" href="dao.html"><div class="nav-icon">&#128272;</div><div class="nav-text">DAO &amp; DLT</div></a>
+    <a class="nav-item" href="alerts.html"><div class="nav-icon">&#9888;&#65039;</div><div class="nav-text">Alerts</div><div class="nav-badge">3</div></a>
+  </div>
+  <div class="nav-section"><a class="nav-item" href="settings.html"><div class="nav-icon">&#9881;&#65039;</div><div class="nav-text">Settings</div></a></div>
+  <div class="sidebar-footer"><div class="user-row"><div class="user-avatar">AL</div><div><div class="user-name">Ada Lovelace</div><div class="user-role">Owner &middot; CEO</div></div><div style="margin-left:auto;font-size:14px;color:rgba(200,190,255,.2);">&#8943;</div></div></div>
+</div>
+
+<div class="main">
+  <div class="topbar">
+    <div><div class="page-title">Marketing Intelligence</div><div class="topbar-meta">Acme Corp LLC &middot; MDSS Active &middot; 6 Competitors Tracked &middot; Last refresh 14 min ago</div></div>
+    <div class="topbar-right">
+      <button class="tb-btn primary">&#43; Add Signal</button>
+      <button class="tb-btn">&#128229; Export Report</button>
+    </div>
+  </div>
+  <div class="subnav">
+    <a class="snav-item" href="marketing.html">&#127968; Overview</a>
+    <a class="snav-item" href="marketing-strategy.html">&#127919; Strategy</a>
+    <a class="snav-item" href="marketing-campaigns.html">&#128227; Campaigns</a>
+    <a class="snav-item" href="marketing-promotions.html">&#127881; Promotions</a>
+    <a class="snav-item" href="marketing-funnel.html">&#128200; Funnel &amp; Pipeline</a>
+    <a class="snav-item" href="marketing-leads.html">&#127775; Leads &amp; Nurturing</a>
+    <a class="snav-item" href="marketing-personas.html">&#129312; Personas &amp; ICP</a>
+    <a class="snav-item" href="marketing-segmentation.html">&#127829; Segmentation</a>
+    <a class="snav-item" href="marketing-brand.html">&#127775; Brand &amp; Design</a>
+    <a class="snav-item" href="marketing-content.html">&#128221; Content &amp; SEO</a>
+    <a class="snav-item" href="marketing-channels.html">&#128225; Channels &amp; Comms</a>
+    <a class="snav-item" href="marketing-pr.html">&#127908; PR &amp; Reputation</a>
+    <a class="snav-item" href="marketing-analytics.html">&#128202; Analytics &amp; CRM</a>
+    <a class="snav-item" href="marketing-usp.html">&#9889; USP &amp; Positioning</a>
+    <a class="snav-item active" href="marketing-intelligence.html">&#129504; Intelligence</a>
+  </div>
+  <div class="content">
+    <div class="breadcrumb"><a href="dashboard.html">Dashboard</a><span class="breadcrumb-sep">/</span><a href="marketing.html">Marketing</a><span class="breadcrumb-sep">/</span><span>Intelligence</span></div>
+
+    <!-- KPIs -->
+    <div class="kpi-grid c4">
+      <div class="kpi c-orchid"><div class="kpi-label">Competitors Tracked</div><div class="kpi-val">6</div><div class="kpi-sub up">&#8593; 2 added this quarter</div></div>
+      <div class="kpi c-rose"><div class="kpi-label">Market Share (est.)</div><div class="kpi-val">8.4%</div><div class="kpi-sub up">&#8593; +1.2pp YoY</div></div>
+      <div class="kpi c-blue"><div class="kpi-label">Customer Feedback Items</div><div class="kpi-val">214</div><div class="kpi-sub">last 90 days</div></div>
+      <div class="kpi c-emerald"><div class="kpi-label">MDSS Recommendations</div><div class="kpi-val">18</div><div class="kpi-sub warn">5 pending review</div></div>
+    </div>
+
+    <!-- Competitor Intelligence -->
+    <div class="card">
+      <div class="card-header"><div><div class="card-title">&#128269; Competitor Intelligence</div><div class="card-sub">Tracked competitors — pricing, positioning, and recent activity</div></div><button class="tb-btn">&#43; Track Competitor</button></div>
+      <div class="three-col" style="margin-bottom:0;">
+
+        <div class="comp-card">
+          <div class="comp-header">
+            <div class="comp-logo" style="background:linear-gradient(135deg,#1a73e8,#0d47a1);">M</div>
+            <div><div class="comp-name">Monday.com</div><div class="comp-tier">Direct — Workflow SaaS</div></div>
+            <span class="badge b-red" style="margin-left:auto;">High Threat</span>
+          </div>
+          <div class="comp-row"><span class="comp-metric">Est. ARR</span><span class="comp-val">$900M+</span></div>
+          <div class="comp-row"><span class="comp-metric">Pricing from</span><span class="comp-val">$9/seat/mo</span></div>
+          <div class="comp-row"><span class="comp-metric">G2 Rating</span><span class="comp-val">4.7 &#9733;</span></div>
+          <div class="comp-row"><span class="comp-metric">Share of Voice</span><span class="comp-val">31%</span></div>
+          <div class="comp-row"><span class="comp-metric">Recent Activity</span><span class="comp-val" style="color:var(--cherry);">New AI module</span></div>
+        </div>
+
+        <div class="comp-card">
+          <div class="comp-header">
+            <div class="comp-logo" style="background:linear-gradient(135deg,#00a1e0,#007db5);">S</div>
+            <div><div class="comp-name">Salesforce</div><div class="comp-tier">Indirect — CRM/Cloud</div></div>
+            <span class="badge b-amber" style="margin-left:auto;">Med Threat</span>
+          </div>
+          <div class="comp-row"><span class="comp-metric">Est. ARR</span><span class="comp-val">$34B+</span></div>
+          <div class="comp-row"><span class="comp-metric">Pricing from</span><span class="comp-val">$25/user/mo</span></div>
+          <div class="comp-row"><span class="comp-metric">G2 Rating</span><span class="comp-val">4.3 &#9733;</span></div>
+          <div class="comp-row"><span class="comp-metric">Share of Voice</span><span class="comp-val">28%</span></div>
+          <div class="comp-row"><span class="comp-metric">Recent Activity</span><span class="comp-val" style="color:var(--amber);">AgentForce launch</span></div>
+        </div>
+
+        <div class="comp-card">
+          <div class="comp-header">
+            <div class="comp-logo" style="background:linear-gradient(135deg,#ff6900,#cc4e00);">N</div>
+            <div><div class="comp-name">Notion</div><div class="comp-tier">Indirect — Workspace</div></div>
+            <span class="badge b-blue" style="margin-left:auto;">Low Threat</span>
+          </div>
+          <div class="comp-row"><span class="comp-metric">Est. ARR</span><span class="comp-val">$330M+</span></div>
+          <div class="comp-row"><span class="comp-metric">Pricing from</span><span class="comp-val">$10/user/mo</span></div>
+          <div class="comp-row"><span class="comp-metric">G2 Rating</span><span class="comp-val">4.7 &#9733;</span></div>
+          <div class="comp-row"><span class="comp-metric">Share of Voice</span><span class="comp-val">14%</span></div>
+          <div class="comp-row"><span class="comp-metric">Recent Activity</span><span class="comp-val" style="color:var(--blue);">AI writer push</span></div>
+        </div>
+
+      </div>
+      <div style="margin-top:10px;">
+        <table class="mini-table">
+          <thead><tr><th>Competitor</th><th>Category</th><th>ICP Overlap</th><th>Price Diff</th><th>Key Weakness</th><th>Our Edge</th><th>Watch Level</th></tr></thead>
+          <tbody>
+            <tr><td class="hi">SAP S/4HANA</td><td>ERP</td><td>Enterprise 40%</td><td>+320% vs UME</td><td>Complexity, cost, speed</td><td>OrgOS simplicity + AI</td><td><span class="badge b-amber">Monitor</span></td></tr>
+            <tr><td class="hi">HubSpot</td><td>Marketing/CRM</td><td>SMB/Mid 55%</td><td>+80% vs UME</td><td>Not a full OrgOS</td><td>Unified OrgOS scope</td><td><span class="badge b-red">Alert</span></td></tr>
+            <tr><td class="hi">Rippling</td><td>HR/Payroll OS</td><td>Tech SMB 48%</td><td>+60% vs UME</td><td>No SDO/DAO layer</td><td>Full org digital twin</td><td><span class="badge b-red">Alert</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Market Signals + Trend Keywords -->
+    <div class="two-col">
+      <div class="card" style="margin-bottom:0;">
+        <div class="card-header"><div><div class="card-title">&#128268; Live Market Signals</div><div class="card-sub">Competitor news, funding rounds, product launches</div></div><span class="badge b-green">Live Feed</span></div>
+        <div class="signal-item"><div class="signal-dot" style="background:var(--cherry);box-shadow:0 0 6px rgba(255,42,85,.5);"></div><div class="signal-content"><div class="signal-title">Monday.com launches Monday AI — autonomous work agents</div><div class="signal-meta">monday.com blog &middot; 3 days ago &middot; <span class="badge b-red">High Impact</span></div></div></div>
+        <div class="signal-item"><div class="signal-dot" style="background:var(--amber);box-shadow:0 0 6px rgba(245,185,66,.5);"></div><div class="signal-content"><div class="signal-title">Rippling raises $200M Series F at $13.5B valuation</div><div class="signal-meta">TechCrunch &middot; 8 days ago &middot; <span class="badge b-amber">Watch</span></div></div></div>
+        <div class="signal-item"><div class="signal-dot" style="background:var(--blue);"></div><div class="signal-content"><div class="signal-title">HubSpot cuts SMB pricing — new $15 Starter tier</div><div class="signal-meta">HubSpot blog &middot; 12 days ago &middot; <span class="badge b-blue">Monitor</span></div></div></div>
+        <div class="signal-item"><div class="signal-dot" style="background:var(--orchid);"></div><div class="signal-content"><div class="signal-title">SAP announces OrgOS-adjacent "Business OS" marketing rebrand</div><div class="signal-meta">SAP press &middot; 18 days ago &middot; <span class="badge b-orchid">Positioning Risk</span></div></div></div>
+        <div class="signal-item"><div class="signal-dot" style="background:var(--emerald);"></div><div class="signal-content"><div class="signal-title">G2 report: "Unified Business OS" category now growing 38% YoY</div><div class="signal-meta">G2 Research &middot; 22 days ago &middot; <span class="badge b-green">Opportunity</span></div></div></div>
+        <div class="signal-item"><div class="signal-dot" style="background:var(--rose);"></div><div class="signal-content"><div class="signal-title">Notion targets enterprise with new admin controls &amp; SSO tier</div><div class="signal-meta">Notion changelog &middot; 25 days ago &middot; <span class="badge b-rose">Watch</span></div></div></div>
+      </div>
+
+      <div class="card" style="margin-bottom:0;">
+        <div class="card-header"><div><div class="card-title">&#128202; Search Trend Keywords</div><div class="card-sub">30-day search volume trend for target keywords</div></div></div>
+        <div class="trend-row">
+          <div class="trend-keyword">business operating system</div>
+          <div class="trend-bars">
+            <div class="trend-bar" style="height:40%;background:var(--rose);opacity:.4;"></div><div class="trend-bar" style="height:50%;background:var(--rose);opacity:.5;"></div><div class="trend-bar" style="height:55%;background:var(--rose);opacity:.6;"></div><div class="trend-bar" style="height:65%;background:var(--rose);opacity:.7;"></div><div class="trend-bar" style="height:80%;background:var(--rose);opacity:.9;"></div><div class="trend-bar" style="height:100%;background:var(--rose);"></div>
+          </div>
+          <div class="trend-delta delta-up">&#8593; +42%</div>
+        </div>
+        <div class="trend-row">
+          <div class="trend-keyword">org management software</div>
+          <div class="trend-bars">
+            <div class="trend-bar" style="height:60%;background:var(--blue);opacity:.5;"></div><div class="trend-bar" style="height:65%;background:var(--blue);opacity:.6;"></div><div class="trend-bar" style="height:62%;background:var(--blue);opacity:.7;"></div><div class="trend-bar" style="height:70%;background:var(--blue);opacity:.8;"></div><div class="trend-bar" style="height:75%;background:var(--blue);opacity:.9;"></div><div class="trend-bar" style="height:80%;background:var(--blue);"></div>
+          </div>
+          <div class="trend-delta delta-up">&#8593; +18%</div>
+        </div>
+        <div class="trend-row">
+          <div class="trend-keyword">AI workforce management</div>
+          <div class="trend-bars">
+            <div class="trend-bar" style="height:20%;background:var(--emerald);opacity:.4;"></div><div class="trend-bar" style="height:35%;background:var(--emerald);opacity:.5;"></div><div class="trend-bar" style="height:50%;background:var(--emerald);opacity:.6;"></div><div class="trend-bar" style="height:65%;background:var(--emerald);opacity:.75;"></div><div class="trend-bar" style="height:82%;background:var(--emerald);opacity:.9;"></div><div class="trend-bar" style="height:100%;background:var(--emerald);"></div>
+          </div>
+          <div class="trend-delta delta-up">&#8593; +88%</div>
+        </div>
+        <div class="trend-row">
+          <div class="trend-keyword">digital twin organisation</div>
+          <div class="trend-bars">
+            <div class="trend-bar" style="height:55%;background:var(--orchid);opacity:.5;"></div><div class="trend-bar" style="height:60%;background:var(--orchid);opacity:.6;"></div><div class="trend-bar" style="height:58%;background:var(--orchid);opacity:.7;"></div><div class="trend-bar" style="height:66%;background:var(--orchid);opacity:.8;"></div><div class="trend-bar" style="height:72%;background:var(--orchid);opacity:.9;"></div><div class="trend-bar" style="height:78%;background:var(--orchid);"></div>
+          </div>
+          <div class="trend-delta delta-up">&#8593; +29%</div>
+        </div>
+        <div class="trend-row">
+          <div class="trend-keyword">all-in-one business platform</div>
+          <div class="trend-bars">
+            <div class="trend-bar" style="height:90%;background:var(--amber);opacity:.7;"></div><div class="trend-bar" style="height:85%;background:var(--amber);opacity:.7;"></div><div class="trend-bar" style="height:80%;background:var(--amber);opacity:.7;"></div><div class="trend-bar" style="height:75%;background:var(--amber);opacity:.8;"></div><div class="trend-bar" style="height:72%;background:var(--amber);opacity:.9;"></div><div class="trend-bar" style="height:68%;background:var(--amber);"></div>
+          </div>
+          <div class="trend-delta delta-dn">&#8595; -8%</div>
+        </div>
+        <div class="trend-row">
+          <div class="trend-keyword">software defined organisation</div>
+          <div class="trend-bars">
+            <div class="trend-bar" style="height:10%;background:var(--teal);opacity:.4;"></div><div class="trend-bar" style="height:20%;background:var(--teal);opacity:.5;"></div><div class="trend-bar" style="height:32%;background:var(--teal);opacity:.6;"></div><div class="trend-bar" style="height:50%;background:var(--teal);opacity:.75;"></div><div class="trend-bar" style="height:72%;background:var(--teal);opacity:.9;"></div><div class="trend-bar" style="height:100%;background:var(--teal);"></div>
+          </div>
+          <div class="trend-delta delta-up">&#8593; +&#8734;</div>
+        </div>
+      </div>
+    </div>
+
+    <div style="height:14px;"></div>
+
+    <!-- Customer Feedback Intelligence -->
+    <div class="two-col">
+      <div class="card" style="margin-bottom:0;">
+        <div class="card-header"><div><div class="card-title">&#128172; Customer Feedback Intelligence</div><div class="card-sub">Aggregated from G2, Capterra, support tickets, NPS surveys — last 90 days</div></div><span class="badge b-green">214 items</span></div>
+
+        <div style="margin-bottom:12px;">
+          <div style="font-size:11px;font-weight:700;color:var(--text-muted);margin-bottom:8px;">TOP POSITIVE THEMES</div>
+          <div class="bar-row"><div class="bar-label">Ease of deployment</div><div class="bar-track"><div class="bar-fill" style="width:84%;background:linear-gradient(90deg,var(--emerald),var(--teal));"></div></div><div class="bar-val" style="color:var(--emerald);">84%</div></div>
+          <div class="bar-row"><div class="bar-label">Unified OrgOS concept</div><div class="bar-track"><div class="bar-fill" style="width:78%;background:linear-gradient(90deg,var(--emerald),var(--teal));"></div></div><div class="bar-val" style="color:var(--emerald);">78%</div></div>
+          <div class="bar-row"><div class="bar-label">AI agent governance (ODD)</div><div class="bar-track"><div class="bar-fill" style="width:72%;background:linear-gradient(90deg,var(--blue),var(--teal));"></div></div><div class="bar-val" style="color:var(--blue);">72%</div></div>
+          <div class="bar-row"><div class="bar-label">OrgDNA cloning speed</div><div class="bar-track"><div class="bar-fill" style="width:65%;background:linear-gradient(90deg,var(--blue),var(--teal));"></div></div><div class="bar-val" style="color:var(--blue);">65%</div></div>
+        </div>
+
+        <div>
+          <div style="font-size:11px;font-weight:700;color:var(--text-muted);margin-bottom:8px;">TOP NEGATIVE THEMES</div>
+          <div class="bar-row"><div class="bar-label">Mobile app missing</div><div class="bar-track"><div class="bar-fill" style="width:52%;background:linear-gradient(90deg,var(--cherry),var(--coral));"></div></div><div class="bar-val" style="color:var(--cherry);">52%</div></div>
+          <div class="bar-row"><div class="bar-label">Reporting customisation</div><div class="bar-track"><div class="bar-fill" style="width:38%;background:linear-gradient(90deg,var(--amber),var(--coral));"></div></div><div class="bar-val" style="color:var(--amber);">38%</div></div>
+          <div class="bar-row"><div class="bar-label">Onboarding complexity</div><div class="bar-track"><div class="bar-fill" style="width:30%;background:linear-gradient(90deg,var(--amber),var(--coral));"></div></div><div class="bar-val" style="color:var(--amber);">30%</div></div>
+          <div class="bar-row"><div class="bar-label">API docs incomplete</div><div class="bar-track"><div class="bar-fill" style="width:22%;background:linear-gradient(90deg,var(--amber),var(--coral));"></div></div><div class="bar-val" style="color:var(--amber);">22%</div></div>
+        </div>
+      </div>
+
+      <div class="card" style="margin-bottom:0;">
+        <div class="card-header"><div><div class="card-title">&#128172; Recent Verbatim Feedback</div><div class="card-sub">Selected high-signal customer and prospect quotes</div></div></div>
+        <div class="feedback-item"><div class="feedback-score score-hi">9</div><div class="feedback-body"><div class="feedback-source">G2 Review &middot; Scale-Up CEO &middot; SaaS &middot; 52 employees</div><div class="feedback-text">"The OrgDNA cloning feature saved us 6 weeks setting up our second entity. Nothing else on the market comes close."</div></div></div>
+        <div class="feedback-item"><div class="feedback-score score-hi">10</div><div class="feedback-body"><div class="feedback-source">NPS Survey &middot; Tech COO &middot; FinTech &middot; 120 employees</div><div class="feedback-text">"Finally a platform that treats AI agents the same as human employees. The ODD governance is genuinely novel."</div></div></div>
+        <div class="feedback-item"><div class="feedback-score score-mid">7</div><div class="feedback-body"><div class="feedback-source">Capterra &middot; Ops Manager &middot; Logistics &middot; 85 employees</div><div class="feedback-text">"Really powerful but onboarding took longer than expected. Would appreciate a guided setup wizard."</div></div></div>
+        <div class="feedback-item"><div class="feedback-score score-lo">5</div><div class="feedback-body"><div class="feedback-source">Support Ticket &middot; CFO &middot; Professional Services &middot; 40 employees</div><div class="feedback-text">"The reporting module is great but I can't export to our board template format yet. This is blocking wider rollout."</div></div></div>
+        <div class="feedback-item"><div class="feedback-score score-hi">9</div><div class="feedback-body"><div class="feedback-source">G2 Review &middot; Founder &middot; PropTech &middot; 28 employees</div><div class="feedback-text">"The SDO digital twin concept clicked for us immediately. I can see the whole organisation at a glance for the first time."</div></div></div>
+      </div>
+    </div>
+
+    <div style="height:14px;"></div>
+
+    <!-- MDSS + Market Sizing -->
+    <div class="two-col">
+      <div class="card" style="margin-bottom:0;">
+        <div class="card-header"><div><div class="card-title">&#129504; MDSS — Marketing Decision Support</div><div class="card-sub">AI-generated recommendations based on market signals, pipeline data, and competitor moves</div></div><span class="badge b-orchid">AI Active</span></div>
+
+        <div class="mdss-block mdss-rose">
+          <div class="mdss-title">&#9889; Prioritise "AI Workforce Governance" messaging</div>
+          <div class="mdss-desc">Search volume for "AI workforce management" is up 88% in 30 days. Monday.com's AI agent launch signals this is a mainstream conversation. UME's ODD framework is a hard differentiator — increase content and SEM spend here immediately.</div>
+          <div class="mdss-footer"><span class="badge b-red">Urgent</span><span class="badge b-orchid">AI Insight</span><span style="font-size:11px;color:var(--text-muted);">Confidence: 94%</span></div>
+        </div>
+
+        <div class="mdss-block mdss-blue">
+          <div class="mdss-title">&#127919; Launch ABM campaign targeting Rippling customers</div>
+          <div class="mdss-desc">Rippling's recent $200M raise signals aggressive enterprise expansion, but they lack SDO/DAO capabilities. A 20-account ABM sequence targeting their existing SMB customers around "OrgOS vs HR OS" positioning has 3.2x estimated ROAS vs current ABM average.</div>
+          <div class="mdss-footer"><span class="badge b-blue">Recommended</span><span class="badge b-orchid">AI Insight</span><span style="font-size:11px;color:var(--text-muted);">Confidence: 81%</span></div>
+        </div>
+
+        <div class="mdss-block mdss-emerald">
+          <div class="mdss-title">&#128200; Increase bottom-funnel content for CFO persona</div>
+          <div class="mdss-desc">Feedback data shows CFOs are at 30% of negative reviews citing reporting gaps. A 3-piece content series (ROI calculator, board reporting template, CFO case study) is projected to improve CFO-segment close rate by 12–18% based on comparable cohorts.</div>
+          <div class="mdss-footer"><span class="badge b-green">Act Soon</span><span class="badge b-orchid">AI Insight</span><span style="font-size:11px;color:var(--text-muted);">Confidence: 77%</span></div>
+        </div>
+
+        <div class="mdss-block mdss-amber">
+          <div class="mdss-title">&#9888;&#65039; SAP "Business OS" rebrand — counter-positioning alert</div>
+          <div class="mdss-desc">SAP is borrowing "Business OS" language in marketing materials — risk of category dilution. Recommend filing trademark research on "OrgOS" terminology and publishing a clear category definition post to own the narrative before SAP gains traction with that framing.</div>
+          <div class="mdss-footer"><span class="badge b-amber">Monitor</span><span class="badge b-orchid">AI Insight</span><span style="font-size:11px;color:var(--text-muted);">Confidence: 72%</span></div>
+        </div>
+
+        <div class="mdss-block mdss-orchid">
+          <div class="mdss-title">&#128176; Pricing sensitivity signal — SMB tier opportunity</div>
+          <div class="mdss-desc">HubSpot's new $15 Starter tier is pulling price-sensitive leads away mid-funnel. Lost-deal analysis shows 18 deals in 90 days cited "too expensive vs HubSpot" — though those prospects had misaligned ICP. Recommend an SMB Starter bundle at $29/mo to capture and qualify this segment.</div>
+          <div class="mdss-footer"><span class="badge b-purple">Under Review</span><span class="badge b-orchid">AI Insight</span><span style="font-size:11px;color:var(--text-muted);">Confidence: 68%</span></div>
+        </div>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:14px;">
+
+        <!-- Market Sizing -->
+        <div class="card" style="margin-bottom:0;">
+          <div class="card-header"><div><div class="card-title">&#127758; Market Sizing — TAM / SAM / SOM</div><div class="card-sub">FY2025 estimates — OrgOS Factory category</div></div></div>
+          <div class="bar-row"><div class="bar-label">TAM — Total Addressable Market</div><div class="bar-track"><div class="bar-fill" style="width:100%;background:linear-gradient(90deg,var(--orchid),var(--purple));"></div></div><div class="bar-val" style="color:var(--orchid);">$148B</div></div>
+          <div class="bar-row"><div class="bar-label">SAM — Serviceable Addressable</div><div class="bar-track"><div class="bar-fill" style="width:52%;background:linear-gradient(90deg,var(--blue),var(--teal));"></div></div><div class="bar-val" style="color:var(--blue);">$18.4B</div></div>
+          <div class="bar-row"><div class="bar-label">SOM — Serviceable Obtainable</div><div class="bar-track"><div class="bar-fill" style="width:8%;background:linear-gradient(90deg,var(--rose),var(--cherry));"></div></div><div class="bar-val" style="color:var(--rose);">$480M</div></div>
+          <div class="bar-row"><div class="bar-label">Current ARR (UME)</div><div class="bar-track"><div class="bar-fill" style="width:2%;background:linear-gradient(90deg,var(--emerald),var(--teal));"></div></div><div class="bar-val" style="color:var(--emerald);">$2.1M</div></div>
+          <div style="margin-top:10px;font-size:11px;color:var(--text-muted);line-height:1.6;">TAM includes global SMB/mid-market ERP, HCM, workflow, and unified platform markets. SAM scoped to English-speaking, cloud-ready, 10–500 employee organisations. SOM based on 5-year growth plan with Series A funding assumed.</div>
+        </div>
+
+        <!-- Org Market Health Radar -->
+        <div class="card" style="margin-bottom:0;">
+          <div class="card-header"><div><div class="card-title">&#128301; Market Health Radar</div><div class="card-sub">UME's position across key market dimensions</div></div></div>
+          <div class="radar-wrap">
+            <div class="radar-metric"><div class="radar-icon">&#129504;</div><div class="radar-label">Brand Awareness</div><div class="radar-score" style="color:var(--amber);">38/100</div></div>
+            <div class="radar-metric"><div class="radar-icon">&#128270;</div><div class="radar-label">Category Authority</div><div class="radar-score" style="color:var(--blue);">62/100</div></div>
+            <div class="radar-metric"><div class="radar-icon">&#127775;</div><div class="radar-label">Customer Satisfaction</div><div class="radar-score" style="color:var(--emerald);">84/100</div></div>
+            <div class="radar-metric"><div class="radar-icon">&#9889;</div><div class="radar-label">Differentiation</div><div class="radar-score" style="color:var(--emerald);">88/100</div></div>
+            <div class="radar-metric"><div class="radar-icon">&#128176;</div><div class="radar-label">Competitive Pricing</div><div class="radar-score" style="color:var(--blue);">71/100</div></div>
+            <div class="radar-metric"><div class="radar-icon">&#127919;</div><div class="radar-label">Share of Voice</div><div class="radar-score" style="color:var(--amber);">23/100</div></div>
+            <div class="radar-metric"><div class="radar-icon">&#128200;</div><div class="radar-label">Pipeline Velocity</div><div class="radar-score" style="color:var(--blue);">66/100</div></div>
+            <div class="radar-metric"><div class="radar-icon">&#128101;</div><div class="radar-label">Partner Ecosystem</div><div class="radar-score" style="color:var(--amber);">31/100</div></div>
+          </div>
+        </div>
+
+        <!-- Internal Records -->
+        <div class="card" style="margin-bottom:0;">
+          <div class="card-header"><div><div class="card-title">&#128196; Internal Records Feed</div><div class="card-sub">Product &amp; sales data powering intelligence models</div></div><a class="card-action" href="#">View all &#8594;</a></div>
+          <table class="mini-table">
+            <thead><tr><th>Record Type</th><th>Source</th><th>Items</th><th>Last Sync</th><th>Status</th></tr></thead>
+            <tbody>
+              <tr><td class="hi">Product usage events</td><td>OrgRuntime telemetry</td><td>2.4M/day</td><td>Real-time</td><td><span class="badge b-green">Live</span></td></tr>
+              <tr><td class="hi">Won/lost deal data</td><td>Sales CRM</td><td>312 records</td><td>2 hrs ago</td><td><span class="badge b-green">Synced</span></td></tr>
+              <tr><td class="hi">Support ticket themes</td><td>Intercom</td><td>848 tickets</td><td>4 hrs ago</td><td><span class="badge b-green">Synced</span></td></tr>
+              <tr><td class="hi">Feature requests</td><td>Product board</td><td>194 items</td><td>Daily</td><td><span class="badge b-green">Synced</span></td></tr>
+              <tr><td class="hi">Trial-to-paid cohorts</td><td>Stripe + CRM</td><td>88 cohorts</td><td>Daily</td><td><span class="badge b-amber">Delayed 6h</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+
+      </div>
+    </div>
+
+    <div style="height:20px;"></div>
+  </div>
+</div>
+
+</body></html>

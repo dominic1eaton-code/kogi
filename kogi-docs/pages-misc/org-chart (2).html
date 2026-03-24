@@ -1,0 +1,1401 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>UME OrgOS — Org Chart</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#070010;--surface:#0f0820;--surface-2:#150b2c;--surface-3:#1b1038;
+  --border:rgba(255,255,255,.065);--border-mid:rgba(255,255,255,.10);
+  --text:#ede6ff;--text-soft:rgba(215,205,255,.7);--text-muted:rgba(190,175,240,.4);
+  --purple:#6a2fff;--purple-mid:#2d0072;--purple-dim:rgba(106,47,255,.18);
+  --cherry:#ff2a55;--teal:#00e5d8;--amber:#f5b942;--blue:#38b4ff;
+  --emerald:#34e8a0;--coral:#ff6b4a;--orchid:#d855ff;--rose:#ff4c8b;
+  --navy:#1e3a8a;--indigo:#4f46e5;--sky:#0ea5e9;--lime:#84cc16;
+  --orange:#f97316;--yellow:#eab308;--pink:#ec4899;--slate:#64748b;
+  --sidebar-w:210px;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html,body{height:100%;font-family:"Space Grotesk",sans-serif;background:var(--bg);overflow:hidden;color:var(--text);}
+body{display:flex;}
+
+/* ─── SIDEBAR ─────────────────────────────────────────────────────────────── */
+.sidebar{width:var(--sidebar-w);height:100vh;background:#0a0018;display:flex;flex-direction:column;flex-shrink:0;border-right:1px solid rgba(255,255,255,.05);}
+.sidebar-logo{display:flex;align-items:center;gap:9px;padding:16px 16px 14px;border-bottom:1px solid rgba(255,255,255,.06);}
+.s-icon{width:30px;height:30px;border-radius:8px;background:var(--purple-mid);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:15px;color:#fff;box-shadow:0 0 14px 2px rgba(106,47,255,.5);}
+.s-logo-text{font-weight:700;font-size:15px;color:#fff;}.s-logo-text span{color:var(--cherry);}
+.org-selector{margin:10px 10px 4px;padding:8px 10px;border-radius:8px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.07);cursor:pointer;display:flex;align-items:center;gap:8px;}
+.org-dot{width:7px;height:7px;border-radius:50%;background:var(--teal);box-shadow:0 0 6px rgba(0,229,216,.65);}
+.org-name{font-size:12px;font-weight:600;color:rgba(220,210,255,.8);flex:1;}
+.nav-section{padding:0 8px;margin-bottom:2px;}
+.nav-label{font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:rgba(200,190,255,.18);padding:10px 8px 4px;}
+.nav-item{display:flex;align-items:center;gap:9px;padding:7px 10px;border-radius:7px;cursor:pointer;transition:.15s;text-decoration:none;margin-bottom:1px;}
+.nav-item:hover{background:rgba(255,255,255,.06);}
+.nav-icon{font-size:14px;width:20px;text-align:center;}
+.nav-text{font-size:12.5px;font-weight:500;color:rgba(210,200,255,.38);flex:1;}
+.nav-item.active{background:linear-gradient(90deg,rgba(106,47,255,.5),rgba(255,42,85,.22));border:1px solid rgba(255,42,85,.15);}
+.nav-item.active .nav-text{color:#fff;font-weight:600;}
+.sidebar-footer{margin-top:auto;padding:10px;border-top:1px solid rgba(255,255,255,.05);}
+.user-avatar{width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,var(--purple-mid),var(--cherry));display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff;}
+.user-row{display:flex;align-items:center;gap:9px;cursor:pointer;padding:8px;border-radius:8px;}
+.user-name{font-size:12px;font-weight:600;color:rgba(220,210,255,.8);}
+.user-role{font-size:10px;color:rgba(200,190,255,.3);}
+
+/* ─── MAIN ────────────────────────────────────────────────────────────────── */
+.main{flex:1;display:flex;flex-direction:column;height:100vh;overflow:hidden;}
+.topbar{height:52px;background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 18px;gap:10px;flex-shrink:0;}
+.page-title{font-size:15px;font-weight:700;white-space:nowrap;}
+.breadcrumb{font-size:11px;color:var(--text-muted);white-space:nowrap;}
+.topbar-right{margin-left:auto;display:flex;align-items:center;gap:7px;flex-wrap:nowrap;}
+.tb-btn{padding:5px 11px;border:1px solid var(--border-mid);border-radius:7px;font-size:11.5px;font-weight:600;color:var(--text-soft);background:var(--surface-2);cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:4px;transition:.15s;white-space:nowrap;}
+.tb-btn:hover{border-color:rgba(106,47,255,.5);color:var(--text);}
+.tb-btn.primary{background:linear-gradient(135deg,var(--purple),var(--cherry));color:#fff;border:none;}
+.tb-btn.active-btn{background:rgba(106,47,255,.25);border-color:rgba(106,47,255,.5);color:var(--text);}
+
+/* ─── SUBNAV ──────────────────────────────────────────────────────────────── */
+.subnav{height:44px;background:var(--surface-2);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 18px;gap:3px;flex-shrink:0;overflow-x:auto;}
+.subnav::-webkit-scrollbar{height:0;}
+.snav-item{padding:5px 12px;border-radius:6px;font-size:11.5px;font-weight:600;color:rgba(210,200,255,.4);cursor:pointer;transition:.15s;text-decoration:none;white-space:nowrap;border:1px solid transparent;}
+.snav-item:hover{color:var(--text-soft);background:rgba(255,255,255,.04);}
+.snav-item.active{color:var(--text);background:rgba(106,47,255,.22);border-color:rgba(106,47,255,.35);}
+
+/* ─── VIEW TABS BAR ──────────────────────────────────────────────────────── */
+.view-bar{height:40px;background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 18px;gap:3px;flex-shrink:0;overflow-x:auto;}
+.view-bar::-webkit-scrollbar{height:0;}
+.vt-btn{padding:4px 12px;border-radius:5px;font-size:11px;font-weight:700;color:rgba(210,200,255,.4);cursor:pointer;transition:.15s;white-space:nowrap;border:1px solid transparent;display:flex;align-items:center;gap:5px;}
+.vt-btn:hover{color:var(--text-soft);background:rgba(255,255,255,.04);}
+.vt-btn.active{color:var(--text);background:rgba(106,47,255,.22);border-color:rgba(106,47,255,.35);}
+
+/* ─── FILTER/CONTROL BAR ─────────────────────────────────────────────────── */
+.ctrl-bar{height:38px;background:rgba(15,8,32,.8);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 14px;gap:8px;flex-shrink:0;overflow-x:auto;}
+.ctrl-bar::-webkit-scrollbar{height:0;}
+.ctrl-select{background:var(--surface-2);border:1px solid var(--border-mid);border-radius:6px;color:var(--text-soft);font-family:inherit;font-size:11px;font-weight:600;padding:3px 8px;cursor:pointer;outline:none;}
+.ctrl-select:focus{border-color:rgba(106,47,255,.5);}
+.ctrl-sep{width:1px;height:20px;background:var(--border);flex-shrink:0;margin:0 2px;}
+.ctrl-chip{padding:3px 9px;border-radius:5px;font-size:10.5px;font-weight:700;border:1px solid;cursor:pointer;transition:.15s;white-space:nowrap;}
+.ctrl-chip.on{opacity:1;}
+.ctrl-chip.off{opacity:.4;}
+.ctrl-search{background:var(--surface-2);border:1px solid var(--border-mid);border-radius:6px;color:var(--text);font-family:inherit;font-size:11px;padding:3px 10px 3px 28px;outline:none;width:160px;}
+.ctrl-search:focus{border-color:rgba(106,47,255,.5);}
+.search-wrap{position:relative;}
+.search-wrap::before{content:'🔍';position:absolute;left:8px;top:50%;transform:translateY(-50%);font-size:10px;}
+.ctrl-label{font-size:10px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.05em;white-space:nowrap;}
+
+/* ─── CHART OUTER ────────────────────────────────────────────────────────── */
+.chart-outer{flex:1;display:flex;overflow:hidden;}
+.chart-stage{flex:1;position:relative;overflow:hidden;cursor:grab;
+  background:radial-gradient(ellipse at 28% 28%,rgba(106,47,255,.07),transparent 52%),
+             radial-gradient(ellipse at 72% 72%,rgba(0,229,216,.04),transparent 48%);}
+.chart-stage:active{cursor:grabbing;}
+#org-svg{display:block;width:100%;height:100%;}
+
+/* ─── ZOOM CONTROLS ──────────────────────────────────────────────────────── */
+.zoom-controls{position:absolute;bottom:14px;left:14px;display:flex;flex-direction:column;gap:4px;z-index:10;}
+.zoom-btn{width:30px;height:30px;border-radius:7px;background:var(--surface-2);border:1px solid var(--border-mid);color:var(--text-soft);font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:.15s;}
+.zoom-btn:hover{border-color:rgba(106,47,255,.5);color:var(--text);}
+
+/* minimap */
+.minimap{position:absolute;bottom:14px;right:14px;width:140px;height:90px;background:rgba(15,8,32,.85);border:1px solid var(--border-mid);border-radius:8px;overflow:hidden;z-index:10;}
+#minimap-svg{width:100%;height:100%;}
+
+/* ─── RIGHT PANEL ────────────────────────────────────────────────────────── */
+.chart-panel{width:288px;background:var(--surface);border-left:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0;overflow:hidden;}
+.panel-tabs{display:flex;border-bottom:1px solid var(--border);flex-shrink:0;}
+.ptab{flex:1;padding:9px 4px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;text-align:center;color:var(--text-muted);cursor:pointer;transition:.15s;border-bottom:2px solid transparent;}
+.ptab:hover{color:var(--text-soft);}
+.ptab.active{color:var(--text);border-bottom-color:var(--purple);}
+.panel-body{flex:1;overflow-y:auto;padding:14px;}
+.panel-body::-webkit-scrollbar{width:3px;}
+.panel-body::-webkit-scrollbar-thumb{background:rgba(106,47,255,.3);border-radius:2px;}
+.panel-section{margin-bottom:18px;}
+.ps-title{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.09em;color:var(--text-muted);margin-bottom:8px;}
+.stat-row{display:flex;justify-content:space-between;font-size:11.5px;margin-bottom:6px;}
+.legend-row{display:flex;align-items:center;gap:7px;font-size:11px;color:var(--text-soft);margin-bottom:6px;}
+.legend-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.legend-sq{width:8px;height:8px;border-radius:2px;flex-shrink:0;}
+
+/* color-coded dept rows */
+.dept-row{display:flex;align-items:center;gap:8px;padding:6px 8px;border-radius:7px;margin-bottom:4px;cursor:pointer;transition:.15s;}
+.dept-row:hover{background:rgba(255,255,255,.04);}
+.dept-swatch{width:10px;height:10px;border-radius:3px;flex-shrink:0;}
+.dept-name{font-size:11px;font-weight:600;color:var(--text-soft);flex:1;}
+.dept-count{font-size:10px;color:var(--text-muted);}
+
+/* ─── MODALS ─────────────────────────────────────────────────────────────── */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:300;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(5px);}
+.modal{background:var(--surface-2);border:1px solid rgba(106,47,255,.3);border-radius:16px;padding:24px;width:480px;max-height:82vh;overflow-y:auto;}
+.modal-lg{width:620px;}
+.modal::-webkit-scrollbar{width:4px;}
+.modal::-webkit-scrollbar-thumb{background:rgba(106,47,255,.3);border-radius:2px;}
+.modal-title{font-size:15px;font-weight:700;margin-bottom:18px;display:flex;align-items:center;gap:8px;}
+.modal-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.form-group{margin-bottom:0;}
+.form-group.full{grid-column:1/-1;}
+.form-label{font-size:10px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:5px;display:block;}
+.form-input,.form-select,.form-textarea{width:100%;background:rgba(255,255,255,.05);border:1px solid var(--border-mid);border-radius:7px;color:var(--text);font-size:12px;font-family:inherit;padding:7px 10px;outline:none;transition:.15s;}
+.form-input:focus,.form-select:focus,.form-textarea:focus{border-color:rgba(106,47,255,.5);}
+.form-textarea{resize:vertical;min-height:64px;line-height:1.5;}
+.form-actions{display:flex;gap:8px;margin-top:18px;justify-content:flex-end;}
+.color-picker-row{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px;}
+.cp-swatch{width:22px;height:22px;border-radius:50%;cursor:pointer;border:2px solid transparent;transition:.15s;}
+.cp-swatch.selected{border-color:#fff;transform:scale(1.15);}
+
+/* ─── NODE TOOLTIP ───────────────────────────────────────────────────────── */
+#node-tooltip{position:fixed;background:var(--surface-2);border:1px solid rgba(106,47,255,.4);border-radius:10px;padding:12px 14px;pointer-events:none;z-index:200;max-width:240px;display:none;box-shadow:0 8px 32px rgba(0,0,0,.5);}
+
+/* ─── ORG UNIT TYPE BADGES ───────────────────────────────────────────────── */
+.unit-badge{display:inline-flex;align-items:center;padding:1px 6px;border-radius:3px;font-size:8.5px;font-weight:800;letter-spacing:.04em;border:1px solid;text-transform:uppercase;}
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<nav class="sidebar">
+  <div class="sidebar-logo"><div class="s-icon">⬡</div><div class="s-logo-text">UME <span>OS</span></div></div>
+  <div class="org-selector"><div class="org-dot"></div><div class="org-name">Acme Corp OrgOS</div><span style="color:var(--text-muted);font-size:11px;">▾</span></div>
+  <div style="flex:1;overflow-y:auto;padding-top:6px;">
+    <div class="nav-section">
+      <div class="nav-label">Platform</div>
+      <a href="digital-twin.html" class="nav-item"><span class="nav-icon">🔮</span><span class="nav-text">Digital Twin</span></a>
+      <a href="#" class="nav-item"><span class="nav-icon">📊</span><span class="nav-text">Dashboard</span></a>
+    </div>
+    <div class="nav-section">
+      <div class="nav-label">OrgApps</div>
+      <a href="#" class="nav-item"><span class="nav-icon">💰</span><span class="nav-text">Finance</span></a>
+      <a href="#" class="nav-item"><span class="nav-icon">👥</span><span class="nav-text">HR & People</span></a>
+      <a href="#" class="nav-item"><span class="nav-icon">⚖️</span><span class="nav-text">Legal & Risk</span></a>
+    </div>
+    <div class="nav-section">
+      <div class="nav-label">Governance</div>
+      <a href="org-chart.html" class="nav-item active"><span class="nav-icon">🌲</span><span class="nav-text">Org Chart</span></a>
+      <a href="org-dna.html" class="nav-item"><span class="nav-icon">🧬</span><span class="nav-text">OrgDNA</span></a>
+      <a href="#" class="nav-item"><span class="nav-icon">🛡️</span><span class="nav-text">ODD Manager</span></a>
+    </div>
+  </div>
+  <div class="sidebar-footer"><div class="user-row"><div class="user-avatar">AK</div><div><div class="user-name">Alex Kim</div><div class="user-role">OrgOS Admin</div></div></div></div>
+</nav>
+
+<!-- MAIN -->
+<div class="main">
+  <div class="topbar">
+    <div><div class="page-title">🌲 Org Chart</div><div class="breadcrumb">Digital Twin · OrgExec Hierarchy</div></div>
+    <div class="topbar-right">
+      <button class="tb-btn" onclick="fitToView()">⊡ Fit</button>
+      <button class="tb-btn" onclick="autoLayout()">⟳ Layout</button>
+      <button class="tb-btn" id="btn-collapse" onclick="toggleCollapse()">▾ Collapse All</button>
+      <button class="tb-btn" onclick="openImportModal()">⬆ Import</button>
+      <button class="tb-btn">⤓ Export</button>
+      <button class="tb-btn">🖨 Print</button>
+      <button class="tb-btn">🔗 Share</button>
+      <button class="tb-btn" onclick="openAddModal(null)">+ Add Node</button>
+      <button class="tb-btn primary" onclick="openAddModal(null)">+ Add Person</button>
+    </div>
+  </div>
+
+  <!-- SUBNAV -->
+  <nav class="subnav">
+    <a href="digital-twin.html" class="snav-item">⬡ Overview</a>
+    <a href="org-system.html" class="snav-item">🏛 OrgSystem</a>
+    <a href="org-dna.html" class="snav-item">🧬 OrgDNA</a>
+    <a href="network-graph.html" class="snav-item">🕸 Network Graph</a>
+    <a href="org-chart.html" class="snav-item active">🌲 Org Chart</a>
+    <a href="business-model.html" class="snav-item">📐 Business Model</a>
+    <a href="value-proposition.html" class="snav-item">💎 Value Proposition</a>
+    <a href="data-master.html" class="snav-item">🗄 Data Master</a>
+  </nav>
+
+  <!-- VIEW TABS -->
+  <div class="view-bar">
+    <span style="font-size:10px;font-weight:700;color:var(--text-muted);margin-right:4px;text-transform:uppercase;letter-spacing:.06em;">View:</span>
+    <button class="vt-btn active" onclick="setView('hierarchy',this)">🏛 Hierarchy</button>
+    <button class="vt-btn" onclick="setView('flat',this)">⬛ Flat / Matrix</button>
+    <button class="vt-btn" onclick="setView('radial',this)">⬡ Radial</button>
+    <button class="vt-btn" onclick="setView('division',this)">🏢 Divisional</button>
+    <button class="vt-btn" onclick="setView('agile',this)">⚡ Agile / Tribes</button>
+    <button class="vt-btn" onclick="setView('military',this)">🎖 Military Units</button>
+    <button class="vt-btn" onclick="setView('network',this)">🕸 Network</button>
+    <div style="flex:1;"></div>
+    <span style="font-size:10px;font-weight:700;color:var(--text-muted);margin-right:4px;text-transform:uppercase;letter-spacing:.06em;">Color by:</span>
+    <select class="ctrl-select" onchange="setColorMode(this.value)">
+      <option value="dept">Department</option>
+      <option value="type">Actor Type</option>
+      <option value="level">Level</option>
+      <option value="unit">Org Unit</option>
+      <option value="team">Team Type</option>
+    </select>
+  </div>
+
+  <!-- FILTER / CONTROL BAR -->
+  <div class="ctrl-bar">
+    <div class="search-wrap">
+      <input class="ctrl-search" placeholder="Search name, title, code…" oninput="onSearch(this.value)" id="chartSearch">
+    </div>
+    <div class="ctrl-sep"></div>
+    <span class="ctrl-label">Filter:</span>
+    <select class="ctrl-select" onchange="filterByDept(this.value)" id="deptFilter">
+      <option value="">All Departments</option>
+    </select>
+    <select class="ctrl-select" onchange="filterByType(this.value)">
+      <option value="">All Actor Types</option>
+      <option value="human">Human</option>
+      <option value="ai">AI Agent</option>
+      <option value="hybrid">Hybrid</option>
+    </select>
+    <select class="ctrl-select" onchange="filterByTeamType(this.value)">
+      <option value="">All Team Types</option>
+      <option value="squad">Squad</option>
+      <option value="tribe">Tribe</option>
+      <option value="guild">Guild</option>
+      <option value="chapter">Chapter</option>
+      <option value="tiger">Tiger Team</option>
+      <option value="agile">Agile Team</option>
+    </select>
+    <div class="ctrl-sep"></div>
+    <span class="ctrl-label">Show:</span>
+    <span class="ctrl-chip on" style="color:var(--blue);border-color:rgba(56,180,255,.3);background:rgba(56,180,255,.08);" onclick="toggleLayer(this,'jobcode')">Job Codes</span>
+    <span class="ctrl-chip on" style="color:var(--emerald);border-color:rgba(52,232,160,.3);background:rgba(52,232,160,.08);" onclick="toggleLayer(this,'dept')">Dept Tags</span>
+    <span class="ctrl-chip on" style="color:var(--orchid);border-color:rgba(216,85,255,.3);background:rgba(216,85,255,.08);" onclick="toggleLayer(this,'teamtype')">Team Types</span>
+    <span class="ctrl-chip off" style="color:var(--amber);border-color:rgba(245,185,66,.3);background:rgba(245,185,66,.06);" onclick="toggleLayer(this,'headcount')">Headcount</span>
+    <span class="ctrl-chip off" style="color:var(--coral);border-color:rgba(255,107,74,.3);background:rgba(255,107,74,.06);" onclick="toggleLayer(this,'odd')">ODD Status</span>
+    <div class="ctrl-sep"></div>
+    <span class="ctrl-label">Depth:</span>
+    <select class="ctrl-select" onchange="setMaxDepth(this.value)" id="depthSel">
+      <option value="99">All</option>
+      <option value="1">L1 Only</option>
+      <option value="2">L1–L2</option>
+      <option value="3">L1–L3</option>
+      <option value="4">L1–L4</option>
+    </select>
+    <div style="margin-left:auto;display:flex;align-items:center;gap:6px;">
+      <span id="nodeCountBadge" style="font-size:10px;font-weight:700;color:var(--text-muted);padding:2px 8px;background:rgba(255,255,255,.05);border:1px solid var(--border);border-radius:5px;white-space:nowrap;">0 nodes</span>
+    </div>
+  </div>
+
+  <!-- CHART BODY -->
+  <div class="chart-outer">
+    <div class="chart-stage" id="chart-stage">
+      <svg id="org-svg" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <filter id="glow-a" x="-40%" y="-40%" width="180%" height="180%"><feGaussianBlur stdDeviation="5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+          <filter id="glow-b" x="-40%" y="-40%" width="180%" height="180%"><feGaussianBlur stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+          <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="0" dy="3" stdDeviation="6" flood-color="rgba(0,0,0,0.55)"/></filter>
+        </defs>
+        <g id="chart-g"></g>
+      </svg>
+      <div class="zoom-controls">
+        <button class="zoom-btn" onclick="zoomBy(0.15)">+</button>
+        <button class="zoom-btn" onclick="zoomBy(-0.15)">−</button>
+        <button class="zoom-btn" onclick="fitToView()" title="Fit" style="font-size:12px;">⊡</button>
+        <button class="zoom-btn" onclick="resetView()" title="Reset" style="font-size:12px;">↺</button>
+      </div>
+      <div class="minimap"><svg id="minimap-svg"><g id="minimap-g"></g></svg></div>
+    </div>
+
+    <!-- RIGHT PANEL -->
+    <div class="chart-panel">
+      <div class="panel-tabs">
+        <div class="ptab active" onclick="switchPanel(this,'pane-overview')">Overview</div>
+        <div class="ptab" onclick="switchPanel(this,'pane-node')">Node</div>
+        <div class="ptab" onclick="switchPanel(this,'pane-depts')">Depts</div>
+        <div class="ptab" onclick="switchPanel(this,'pane-teams')">Teams</div>
+      </div>
+
+      <!-- PANE: OVERVIEW -->
+      <div class="panel-body" id="pane-overview">
+        <div class="panel-section">
+          <div class="ps-title">Organisation Stats</div>
+          <div class="stat-row"><span style="color:var(--text-soft);">Total Nodes</span><span id="stat-total" style="font-weight:700;color:var(--text);">0</span></div>
+          <div class="stat-row"><span style="color:var(--text-soft);">Human OrgExecs</span><span id="stat-humans" style="font-weight:700;color:var(--blue);">0</span></div>
+          <div class="stat-row"><span style="color:var(--text-soft);">AI Agents</span><span id="stat-ai" style="font-weight:700;color:var(--emerald);">0</span></div>
+          <div class="stat-row"><span style="color:var(--text-soft);">Hybrid</span><span id="stat-hybrid" style="font-weight:700;color:var(--orchid);">0</span></div>
+          <div class="stat-row"><span style="color:var(--text-soft);">Org Units</span><span id="stat-units" style="font-weight:700;color:var(--amber);">0</span></div>
+          <div class="stat-row"><span style="color:var(--text-soft);">Hierarchy Depth</span><span id="stat-depth" style="font-weight:700;color:var(--text);">0</span></div>
+          <div class="stat-row"><span style="color:var(--text-soft);">Span of Control</span><span id="stat-span" style="font-weight:700;color:var(--teal);">—</span></div>
+          <div class="stat-row"><span style="color:var(--text-soft);">Departments</span><span id="stat-depts" style="font-weight:700;color:var(--coral);">0</span></div>
+        </div>
+        <div class="panel-section">
+          <div class="ps-title">Legend — Actor Type</div>
+          <div class="legend-row"><div class="legend-dot" style="background:#7a3fff;box-shadow:0 0 5px #7a3fff;"></div>CEO / CxO Leadership</div>
+          <div class="legend-row"><div class="legend-dot" style="background:var(--blue);"></div>Human OrgExec</div>
+          <div class="legend-row"><div class="legend-dot" style="background:var(--emerald);"></div>AI Agent</div>
+          <div class="legend-row"><div class="legend-dot" style="background:var(--orchid);"></div>Hybrid Worker</div>
+          <div class="legend-row"><div class="legend-dot" style="background:var(--amber);"></div>OrgCPU / Device</div>
+        </div>
+        <div class="panel-section">
+          <div class="ps-title">Legend — Org Unit Type</div>
+          <div class="legend-row"><div class="legend-sq" style="background:rgba(245,185,66,.3);border:1px solid var(--amber);"></div>Division / SBU</div>
+          <div class="legend-row"><div class="legend-sq" style="background:rgba(56,180,255,.3);border:1px solid var(--blue);"></div>Department / Function</div>
+          <div class="legend-row"><div class="legend-sq" style="background:rgba(52,232,160,.3);border:1px solid var(--emerald);"></div>Team / Squad</div>
+          <div class="legend-row"><div class="legend-sq" style="background:rgba(216,85,255,.3);border:1px solid var(--orchid);"></div>Chapter / Guild</div>
+          <div class="legend-row"><div class="legend-sq" style="background:rgba(255,42,85,.3);border:1px solid var(--cherry);"></div>Tiger Team</div>
+          <div class="legend-row"><div class="legend-sq" style="background:rgba(255,107,74,.3);border:1px solid var(--coral);"></div>Tribe</div>
+        </div>
+        <div class="panel-section">
+          <div class="ps-title">Quick Actions</div>
+          <div style="display:flex;flex-direction:column;gap:5px;">
+            <button class="tb-btn" style="width:100%;justify-content:center;font-size:11px;" onclick="openAddModal(null)">+ Add OrgExec / Node</button>
+            <button class="tb-btn" style="width:100%;justify-content:center;font-size:11px;" onclick="openAddOrgUnit()">+ Add Org Unit / Team</button>
+            <button class="tb-btn" style="width:100%;justify-content:center;font-size:11px;color:var(--amber);">⟳ Regenerate from ODD</button>
+            <button class="tb-btn" style="width:100%;justify-content:center;font-size:11px;color:var(--teal);">📤 Sync to OrgDNA</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- PANE: NODE DETAIL -->
+      <div class="panel-body" id="pane-node" style="display:none;">
+        <div id="selected-panel" style="color:var(--text-muted);font-size:12px;text-align:center;padding:30px 0;border:1px dashed rgba(255,255,255,.07);border-radius:10px;">
+          Click a node to inspect
+        </div>
+      </div>
+
+      <!-- PANE: DEPARTMENTS -->
+      <div class="panel-body" id="pane-depts" style="display:none;">
+        <div class="panel-section">
+          <div class="ps-title">Departments & Functions</div>
+          <div id="dept-list"></div>
+        </div>
+      </div>
+
+      <!-- PANE: TEAMS -->
+      <div class="panel-body" id="pane-teams" style="display:none;">
+        <div class="panel-section">
+          <div class="ps-title">Agile / Org Unit Teams</div>
+          <div id="team-list"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- NODE TOOLTIP -->
+<div id="node-tooltip"></div>
+
+<!-- ADD PERSON MODAL -->
+<div class="modal-overlay" id="add-modal" style="display:none;">
+  <div class="modal modal-lg">
+    <div class="modal-title">➕ Add OrgExec / Node</div>
+    <div class="modal-grid">
+      <div class="form-group"><label class="form-label">Full Name / Label</label><input class="form-input" id="add-name" placeholder="e.g. Alex Kim"></div>
+      <div class="form-group"><label class="form-label">Job Code</label><input class="form-input" id="add-code" placeholder="e.g. ENG-L4-001"></div>
+      <div class="form-group"><label class="form-label">Title / Role</label><input class="form-input" id="add-title" placeholder="e.g. Lead Engineer"></div>
+      <div class="form-group"><label class="form-label">Actor Type</label>
+        <select class="form-select" id="add-type">
+          <option value="human">Human OrgExec</option>
+          <option value="ai">AI Agent</option>
+          <option value="hybrid">Hybrid Worker</option>
+          <option value="cpu">OrgCPU / Device</option>
+        </select>
+      </div>
+      <div class="form-group"><label class="form-label">Department</label>
+        <select class="form-select" id="add-dept">
+          <option value="">— Select —</option>
+        </select>
+      </div>
+      <div class="form-group"><label class="form-label">Business Function</label>
+        <select class="form-select" id="add-function">
+          <option value="">— Select —</option>
+          <option>Engineering</option><option>Product</option><option>Finance</option>
+          <option>HR & People</option><option>Legal & Compliance</option><option>Sales & GTM</option>
+          <option>Marketing</option><option>Operations</option><option>Strategy</option>
+          <option>Technology & IT</option><option>Data & Analytics</option><option>Governance & Risk</option>
+        </select>
+      </div>
+      <div class="form-group"><label class="form-label">Team Type</label>
+        <select class="form-select" id="add-teamtype">
+          <option value="">— None —</option>
+          <option value="squad">Squad</option><option value="tribe">Tribe</option>
+          <option value="guild">Guild</option><option value="chapter">Chapter</option>
+          <option value="tiger">Tiger Team</option><option value="agile">Agile Team</option>
+          <option value="scrum">Scrum Team</option><option value="kanban">Kanban Team</option>
+        </select>
+      </div>
+      <div class="form-group"><label class="form-label">Org Unit Class</label>
+        <select class="form-select" id="add-unitclass">
+          <option value="">— None —</option>
+          <option value="division">Division / SBU</option><option value="department">Department</option>
+          <option value="team">Team</option><option value="chapter">Chapter</option>
+          <option value="guild">Guild</option><option value="tribe">Tribe</option>
+          <!-- Military units -->
+          <option value="corps">Corps</option><option value="brigade">Brigade</option>
+          <option value="regiment">Regiment</option><option value="battalion">Battalion</option>
+          <option value="company">Company</option><option value="platoon">Platoon</option>
+          <option value="squad">Squad</option><option value="member">Member</option>
+        </select>
+      </div>
+      <div class="form-group"><label class="form-label">Reports To</label>
+        <select class="form-select" id="add-parent"></select>
+      </div>
+      <div class="form-group"><label class="form-label">ODD Template</label>
+        <select class="form-select" id="add-odd">
+          <option>FTE v2.1</option><option>Contractor v1.8</option>
+          <option>AI Agent v2.0</option><option>Hybrid v1.5</option>
+          <option>IoT Sensor v3.0</option><option>Executive v3.2</option>
+        </select>
+      </div>
+      <div class="form-group"><label class="form-label">Location</label><input class="form-input" id="add-location" placeholder="e.g. San Francisco / Remote"></div>
+      <div class="form-group"><label class="form-label">Node Color</label>
+        <div class="color-picker-row" id="add-color-picker">
+          <div class="cp-swatch selected" style="background:#6a2fff;" data-color="#6a2fff" onclick="pickColor(this)"></div>
+          <div class="cp-swatch" style="background:#38b4ff;" data-color="#38b4ff" onclick="pickColor(this)"></div>
+          <div class="cp-swatch" style="background:#34e8a0;" data-color="#34e8a0" onclick="pickColor(this)"></div>
+          <div class="cp-swatch" style="background:#d855ff;" data-color="#d855ff" onclick="pickColor(this)"></div>
+          <div class="cp-swatch" style="background:#f5b942;" data-color="#f5b942" onclick="pickColor(this)"></div>
+          <div class="cp-swatch" style="background:#ff6b4a;" data-color="#ff6b4a" onclick="pickColor(this)"></div>
+          <div class="cp-swatch" style="background:#ff2a55;" data-color="#ff2a55" onclick="pickColor(this)"></div>
+          <div class="cp-swatch" style="background:#00e5d8;" data-color="#00e5d8" onclick="pickColor(this)"></div>
+          <div class="cp-swatch" style="background:#ff4c8b;" data-color="#ff4c8b" onclick="pickColor(this)"></div>
+          <div class="cp-swatch" style="background:#84cc16;" data-color="#84cc16" onclick="pickColor(this)"></div>
+          <div class="cp-swatch" style="background:#f97316;" data-color="#f97316" onclick="pickColor(this)"></div>
+          <div class="cp-swatch" style="background:#64748b;" data-color="#64748b" onclick="pickColor(this)"></div>
+        </div>
+      </div>
+      <div class="form-group full"><label class="form-label">Responsibilities / Bio</label><textarea class="form-textarea" id="add-bio" placeholder="Key responsibilities, focus areas…"></textarea></div>
+    </div>
+    <div class="form-actions">
+      <button class="tb-btn" onclick="closeAddModal()">Cancel</button>
+      <button class="tb-btn primary" onclick="addNode()">Add to Chart</button>
+    </div>
+  </div>
+</div>
+
+<!-- ADD ORG UNIT MODAL -->
+<div class="modal-overlay" id="add-unit-modal" style="display:none;">
+  <div class="modal">
+    <div class="modal-title">🏢 Add Org Unit / Team</div>
+    <div class="modal-grid">
+      <div class="form-group full"><label class="form-label">Unit Name</label><input class="form-input" id="unit-name" placeholder="e.g. Platform Engineering Tribe"></div>
+      <div class="form-group"><label class="form-label">Unit Type</label>
+        <select class="form-select" id="unit-type">
+          <optgroup label="Business">
+            <option value="division">Division / SBU</option>
+            <option value="department">Department / Function</option>
+            <option value="domain">Business Domain</option>
+            <option value="capability">Capability</option>
+          </optgroup>
+          <optgroup label="Agile">
+            <option value="tribe">Tribe</option>
+            <option value="squad">Squad</option>
+            <option value="chapter">Chapter</option>
+            <option value="guild">Guild</option>
+            <option value="tiger">Tiger Team</option>
+            <option value="agile">Agile Team</option>
+          </optgroup>
+          <optgroup label="Military">
+            <option value="corps">Corps</option>
+            <option value="brigade">Brigade</option>
+            <option value="regiment">Regiment</option>
+            <option value="battalion">Battalion</option>
+            <option value="company">Company</option>
+            <option value="battery">Battery</option>
+            <option value="troop">Troop</option>
+            <option value="platoon">Platoon</option>
+            <option value="squad-m">Squad (Military)</option>
+          </optgroup>
+        </select>
+      </div>
+      <div class="form-group"><label class="form-label">Parent Unit</label>
+        <select class="form-select" id="unit-parent">
+          <option value="">— None (Top Level) —</option>
+        </select>
+      </div>
+      <div class="form-group"><label class="form-label">Color</label>
+        <div class="color-picker-row" id="unit-color-picker">
+          <div class="cp-swatch selected" style="background:#6a2fff;" data-color="#6a2fff" onclick="pickUnitColor(this)"></div>
+          <div class="cp-swatch" style="background:#38b4ff;" data-color="#38b4ff" onclick="pickUnitColor(this)"></div>
+          <div class="cp-swatch" style="background:#34e8a0;" data-color="#34e8a0" onclick="pickUnitColor(this)"></div>
+          <div class="cp-swatch" style="background:#d855ff;" data-color="#d855ff" onclick="pickUnitColor(this)"></div>
+          <div class="cp-swatch" style="background:#f5b942;" data-color="#f5b942" onclick="pickUnitColor(this)"></div>
+          <div class="cp-swatch" style="background:#ff6b4a;" data-color="#ff6b4a" onclick="pickUnitColor(this)"></div>
+          <div class="cp-swatch" style="background:#ff2a55;" data-color="#ff2a55" onclick="pickUnitColor(this)"></div>
+          <div class="cp-swatch" style="background:#00e5d8;" data-color="#00e5d8" onclick="pickUnitColor(this)"></div>
+        </div>
+      </div>
+      <div class="form-group full"><label class="form-label">Mission / Purpose</label><textarea class="form-textarea" id="unit-mission" placeholder="Team mission, goals, focus area…"></textarea></div>
+    </div>
+    <div class="form-actions">
+      <button class="tb-btn" onclick="document.getElementById('add-unit-modal').style.display='none'">Cancel</button>
+      <button class="tb-btn primary" onclick="addOrgUnit()">Add Unit</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ══════════════════════════════════════════════════════════════════════════════
+// DATA MODEL
+// ══════════════════════════════════════════════════════════════════════════════
+
+// Department registry — each has id, name, color, function, domain
+const depts = [
+  {id:'exec',   name:'Executive',            color:'#7a3fff', fn:'Strategy',       domain:'Corporate'},
+  {id:'eng',    name:'Engineering',          color:'#38b4ff', fn:'Technology',     domain:'Product & Tech'},
+  {id:'product',name:'Product',              color:'#00e5d8', fn:'Product',        domain:'Product & Tech'},
+  {id:'data',   name:'Data & AI',            color:'#34e8a0', fn:'Technology',     domain:'Product & Tech'},
+  {id:'fin',    name:'Finance',              color:'#f5b942', fn:'Finance',        domain:'Corporate'},
+  {id:'hr',     name:'HR & People',          color:'#ff4c8b', fn:'HR',             domain:'Corporate'},
+  {id:'legal',  name:'Legal & Compliance',   color:'#d855ff', fn:'Legal',          domain:'Corporate'},
+  {id:'ops',    name:'Operations',           color:'#ff6b4a', fn:'Operations',     domain:'Operations'},
+  {id:'sales',  name:'Sales & GTM',          color:'#eab308', fn:'Sales',          domain:'Revenue'},
+  {id:'mkt',    name:'Marketing',            color:'#ec4899', fn:'Marketing',      domain:'Revenue'},
+  {id:'cx',     name:'Customer Experience',  color:'#06b6d4', fn:'Customer',       domain:'Revenue'},
+  {id:'risk',   name:'Risk & GRC',           color:'#f97316', fn:'Governance',     domain:'Corporate'},
+];
+
+// Org Unit registry (divisions, tribes, squads, etc.)
+let orgUnits = [
+  {id:'u-tech',    name:'Technology Division',    type:'division',   parentId:null,    color:'#38b4ff', mission:'Own all engineering & product capabilities'},
+  {id:'u-biz',     name:'Business Division',      type:'division',   parentId:null,    color:'#f5b942', mission:'Revenue, finance, sales operations'},
+  {id:'u-corp',    name:'Corporate Division',     type:'division',   parentId:null,    color:'#7a3fff', mission:'Corporate governance, HR, legal, risk'},
+  {id:'t-plat',    name:'Platform Tribe',         type:'tribe',      parentId:'u-tech',color:'#00e5d8', mission:'Build & operate core platform services'},
+  {id:'t-growth',  name:'Growth Tribe',           type:'tribe',      parentId:'u-biz', color:'#eab308', mission:'Accelerate customer acquisition & retention'},
+  {id:'sq-api',    name:'API Squad',              type:'squad',      parentId:'t-plat',color:'#38b4ff', mission:'API gateway, integrations, developer experience'},
+  {id:'sq-data',   name:'Data Squad',             type:'squad',      parentId:'t-plat',color:'#34e8a0', mission:'Data pipelines, analytics, ML infrastructure'},
+  {id:'sq-gtm',    name:'GTM Squad',              type:'squad',      parentId:'t-growth',color:'#ec4899',mission:'Go-to-market motions & demand gen'},
+  {id:'ch-fe',     name:'Frontend Chapter',       type:'chapter',    parentId:'u-tech',color:'#d855ff', mission:'Frontend craft & standards across all squads'},
+  {id:'g-security',name:'Security Guild',         type:'guild',      parentId:null,    color:'#f97316', mission:'Security culture, standards, upskilling'},
+  {id:'g-data',    name:'Data Guild',             type:'guild',      parentId:null,    color:'#34e8a0', mission:'Data literacy and governance practices'},
+  {id:'tt-ai',     name:'AI Tiger Team',          type:'tiger',      parentId:null,    color:'#ff2a55', mission:'Fast-track AI integration across all OrgApps'},
+];
+
+// Main people / node data
+let people = [
+  // L0 Executive
+  {id:'ceo',   name:'Sarah Chen',     code:'EXE-001', title:'CEO & Founder',        type:'human',  dept:'exec',  fn:'Strategy',    teamType:'',       unitClass:'',       parentId:null,      initials:'SC', color:'#7a3fff', loc:'San Francisco', odd:'Executive v3.2',  bio:'Founder & CEO driving OrgOS Factory vision.',        orgUnitId:'u-corp', collapsed:false},
+  // L1 C-Suite
+  {id:'cto',   name:'James Park',     code:'EXE-002', title:'CTO',                  type:'human',  dept:'eng',   fn:'Technology',  teamType:'',       unitClass:'',       parentId:'ceo',     initials:'JP', color:'#38b4ff', loc:'San Francisco', odd:'Executive v3.2',  bio:'Leads all engineering & AI platform strategy.',       orgUnitId:'u-tech', collapsed:false},
+  {id:'cfo',   name:'Maria Lopez',    code:'EXE-003', title:'CFO',                  type:'human',  dept:'fin',   fn:'Finance',     teamType:'',       unitClass:'',       parentId:'ceo',     initials:'ML', color:'#f5b942', loc:'New York',       odd:'Executive v3.2',  bio:'Financial strategy, P&L, investor relations.',        orgUnitId:'u-biz',  collapsed:false},
+  {id:'coo',   name:'David Kim',      code:'EXE-004', title:'COO',                  type:'human',  dept:'ops',   fn:'Operations',  teamType:'',       unitClass:'',       parentId:'ceo',     initials:'DK', color:'#ff6b4a', loc:'Chicago',        odd:'Executive v3.2',  bio:'Operations excellence & supply chain.',               orgUnitId:'u-biz',  collapsed:false},
+  {id:'cmo',   name:'Emily Ross',     code:'EXE-005', title:'CMO',                  type:'human',  dept:'mkt',   fn:'Marketing',   teamType:'',       unitClass:'',       parentId:'ceo',     initials:'ER', color:'#ec4899', loc:'London',         odd:'Executive v3.2',  bio:'Brand, demand gen & digital marketing.',              orgUnitId:'u-biz',  collapsed:false},
+  {id:'cpo',   name:'Lena Müller',    code:'EXE-006', title:'CPO',                  type:'human',  dept:'product',fn:'Product',    teamType:'',       unitClass:'',       parentId:'ceo',     initials:'LM', color:'#00e5d8', loc:'Berlin',         odd:'Executive v3.2',  bio:'Product vision & OrgApp roadmap.',                    orgUnitId:'u-tech', collapsed:false},
+  {id:'cro',   name:'Jack Thornton',  code:'EXE-007', title:'CRO',                  type:'human',  dept:'sales', fn:'Sales',       teamType:'',       unitClass:'',       parentId:'ceo',     initials:'JT', color:'#eab308', loc:'Austin',         odd:'Executive v3.2',  bio:'Revenue operations & global sales.',                  orgUnitId:'u-biz',  collapsed:false},
+  {id:'clegal',name:'Elena Rossi',    code:'EXE-008', title:'General Counsel',      type:'human',  dept:'legal', fn:'Legal',       teamType:'',       unitClass:'',       parentId:'ceo',     initials:'ER', color:'#d855ff', loc:'Milan',          odd:'Executive v3.2',  bio:'Legal strategy, compliance & risk.',                  orgUnitId:'u-corp', collapsed:false},
+  // L2 — under CTO
+  {id:'vpe',   name:'Tom Wu',         code:'ENG-L5-001', title:'VP Engineering',    type:'human',  dept:'eng',   fn:'Technology',  teamType:'tribe',  unitClass:'division',parentId:'cto',    initials:'TW', color:'#38b4ff', loc:'Seattle',        odd:'FTE v2.1',        bio:'Leads platform tribe. Owns system reliability.',      orgUnitId:'t-plat', collapsed:false},
+  {id:'vpdata',name:'Rina Patel',     code:'DAT-L5-001', title:'VP Data & AI',      type:'human',  dept:'data',  fn:'Technology',  teamType:'squad',  unitClass:'',       parentId:'cto',     initials:'RP', color:'#34e8a0', loc:'Bangalore',      odd:'FTE v2.1',        bio:'AI/ML strategy, data platforms & governance.',        orgUnitId:'sq-data',collapsed:false},
+  {id:'ai-sched',name:'AI Scheduler', code:'AI-001',  title:'Scheduling Agent',     type:'ai',     dept:'eng',   fn:'Technology',  teamType:'squad',  unitClass:'',       parentId:'cto',     initials:'AS', color:'#34e8a0', loc:'Cloud',          odd:'AI Agent v2.0',   bio:'Automated scheduling across OrgApps.',                orgUnitId:'sq-api', collapsed:false},
+  {id:'ai-analyst',name:'AI Analyst', code:'AI-002',  title:'Data Analysis Agent',  type:'ai',     dept:'data',  fn:'Technology',  teamType:'squad',  unitClass:'',       parentId:'vpdata',  initials:'AA', color:'#34e8a0', loc:'Cloud',          odd:'AI Agent v2.0',   bio:'BI automation & insight generation.',                 orgUnitId:'sq-data',collapsed:false},
+  // L2 — under CPO
+  {id:'pm1',   name:'Carlos Diaz',    code:'PRD-L4-001', title:'Principal PM',      type:'human',  dept:'product',fn:'Product',    teamType:'agile',  unitClass:'',       parentId:'cpo',     initials:'CD', color:'#00e5d8', loc:'Austin',         odd:'FTE v2.1',        bio:'Leads OrgApp roadmap for Finance & HR OrgApps.',      orgUnitId:'sq-api', collapsed:false},
+  {id:'ux1',   name:'Mia Tanaka',     code:'PRD-L4-002', title:'Lead UX Designer',  type:'human',  dept:'product',fn:'Product',    teamType:'chapter',unitClass:'',       parentId:'cpo',     initials:'MT', color:'#00e5d8', loc:'Tokyo',          odd:'FTE v2.1',        bio:'UX systems, design language, accessibility.',         orgUnitId:'ch-fe',  collapsed:false},
+  {id:'ai-ux', name:'AI Wireframe',   code:'AI-003',  title:'UX Generation Agent',  type:'ai',     dept:'product',fn:'Product',    teamType:'agile',  unitClass:'',       parentId:'ux1',     initials:'AW', color:'#34e8a0', loc:'Cloud',          odd:'AI Agent v2.0',   bio:'Generates wireframes & prototypes from specs.',       orgUnitId:'ch-fe',  collapsed:false},
+  // L2 — under CFO
+  {id:'hfin',  name:'Alex Turner',    code:'FIN-L4-001', title:'Head of Finance',   type:'human',  dept:'fin',   fn:'Finance',     teamType:'',       unitClass:'',       parentId:'cfo',     initials:'AT', color:'#f5b942', loc:'New York',       odd:'FTE v2.1',        bio:'Financial operations, treasury & reporting.',         orgUnitId:'u-biz',  collapsed:false},
+  {id:'ai-book',name:'AI Bookkeeper', code:'AI-004',  title:'Finance Agent',        type:'ai',     dept:'fin',   fn:'Finance',     teamType:'',       unitClass:'',       parentId:'hfin',    initials:'AB', color:'#34e8a0', loc:'Cloud',          odd:'AI Agent v2.0',   bio:'Automated bookkeeping, reconciliation & audit.',      orgUnitId:'u-biz',  collapsed:false},
+  {id:'ctrl',  name:'Jin Lee',        code:'FIN-L3-001', title:'Controller',         type:'human',  dept:'fin',   fn:'Finance',     teamType:'',       unitClass:'',       parentId:'hfin',    initials:'JL', color:'#f5b942', loc:'New York',       odd:'FTE v2.1',        bio:'Accounting & regulatory compliance.',                 orgUnitId:'u-biz',  collapsed:false},
+  // L2 — under COO
+  {id:'vpo',   name:'Raj Patel',      code:'OPS-L5-001', title:'VP Operations',     type:'human',  dept:'ops',   fn:'Operations',  teamType:'',       unitClass:'',       parentId:'coo',     initials:'RP', color:'#ff6b4a', loc:'Singapore',      odd:'FTE v2.1',        bio:'Supply chain, logistics & process excellence.',       orgUnitId:'u-biz',  collapsed:false},
+  {id:'scm',   name:'Nina Johal',     code:'OPS-L4-001', title:'Supply Chain Mgr',  type:'human',  dept:'ops',   fn:'Operations',  teamType:'',       unitClass:'',       parentId:'vpo',     initials:'NJ', color:'#ff6b4a', loc:'Dubai',          odd:'FTE v2.1',        bio:'Supplier management & procurement.',                  orgUnitId:'u-biz',  collapsed:false},
+  {id:'ai-ops',name:'AI OpsBot',      code:'AI-005',  title:'Ops Optimiser Agent',  type:'ai',     dept:'ops',   fn:'Operations',  teamType:'squad',  unitClass:'',       parentId:'vpo',     initials:'AO', color:'#34e8a0', loc:'Cloud',          odd:'AI Agent v2.0',   bio:'Automated ops scheduling and inventory optimisation.',orgUnitId:'sq-api', collapsed:false},
+  // L2 — under CMO
+  {id:'brd',   name:'Zoe Hart',       code:'MKT-L4-001', title:'Brand Director',    type:'human',  dept:'mkt',   fn:'Marketing',   teamType:'agile',  unitClass:'',       parentId:'cmo',     initials:'ZH', color:'#ec4899', loc:'London',         odd:'FTE v2.1',        bio:'Brand identity, campaigns & content strategy.',       orgUnitId:'t-growth',collapsed:false},
+  {id:'ai-content',name:'AI Content', code:'AI-006',  title:'Content Agent',        type:'ai',     dept:'mkt',   fn:'Marketing',   teamType:'agile',  unitClass:'',       parentId:'brd',     initials:'AC', color:'#34e8a0', loc:'Cloud',          odd:'AI Agent v2.0',   bio:'Content generation, SEO & multi-channel publishing.', orgUnitId:'sq-gtm', collapsed:false},
+  {id:'gro',   name:'Sam Rivers',     code:'MKT-L4-002', title:'Growth Manager',    type:'human',  dept:'mkt',   fn:'Marketing',   teamType:'squad',  unitClass:'',       parentId:'cmo',     initials:'SR', color:'#ec4899', loc:'Austin',         odd:'FTE v2.1',        bio:'Demand gen, PLG motions & growth experiments.',       orgUnitId:'sq-gtm', collapsed:false},
+  // L2 — under CRO
+  {id:'ae1',   name:'Ben Foster',     code:'SAL-L4-001', title:'Account Executive', type:'human',  dept:'sales', fn:'Sales',       teamType:'',       unitClass:'',       parentId:'cro',     initials:'BF', color:'#eab308', loc:'Boston',         odd:'FTE v2.1',        bio:'Enterprise account management & deals.',              orgUnitId:'t-growth',collapsed:false},
+  {id:'ai-sales',name:'AI Sales SDR', code:'AI-007',  title:'Sales AI Agent',       type:'ai',     dept:'sales', fn:'Sales',       teamType:'tiger',  unitClass:'',       parentId:'cro',     initials:'AS', color:'#34e8a0', loc:'Cloud',          odd:'AI Agent v2.0',   bio:'AI-driven prospecting, outreach & pipeline qual.',    orgUnitId:'tt-ai',  collapsed:false},
+  // L2 — under HR
+  {id:'hr1',   name:'Priya Nair',     code:'HR-L5-001', title:'VP People',          type:'human',  dept:'hr',    fn:'HR',          teamType:'',       unitClass:'',       parentId:'ceo',     initials:'PN', color:'#ff4c8b', loc:'London',         odd:'FTE v2.1',        bio:'Culture, talent, OKRs & organisational health.',      orgUnitId:'u-corp', collapsed:false},
+  {id:'ta1',   name:'Marco Silva',    code:'HR-L3-001', title:'Talent Acquisition', type:'human',  dept:'hr',    fn:'HR',          teamType:'',       unitClass:'',       parentId:'hr1',     initials:'MS', color:'#ff4c8b', loc:'São Paulo',       odd:'FTE v2.1',        bio:'Global talent recruitment & employer branding.',      orgUnitId:'u-corp', collapsed:false},
+  {id:'ai-hr', name:'AI HR Agent',    code:'AI-008',  title:'HR Automation Agent',  type:'ai',     dept:'hr',    fn:'HR',          teamType:'',       unitClass:'',       parentId:'hr1',     initials:'AH', color:'#34e8a0', loc:'Cloud',          odd:'AI Agent v2.0',   bio:'Onboarding automation, HR queries & compliance.',     orgUnitId:'u-corp', collapsed:false},
+  // L3 — under VPE
+  {id:'le1',   name:'Priya Singh',    code:'ENG-L3-001', title:'Lead Engineer',     type:'human',  dept:'eng',   fn:'Technology',  teamType:'squad',  unitClass:'member', parentId:'vpe',     initials:'PS', color:'#38b4ff', loc:'Bangalore',      odd:'FTE v2.1',        bio:'Backend systems & API platform engineering.',         orgUnitId:'sq-api', collapsed:false},
+  {id:'le2',   name:'Carlos Mendez',  code:'ENG-L3-002', title:'Lead Engineer',     type:'human',  dept:'eng',   fn:'Technology',  teamType:'squad',  unitClass:'member', parentId:'vpe',     initials:'CM', color:'#38b4ff', loc:'Mexico City',    odd:'FTE v2.1',        bio:'Infrastructure, DevOps & CI/CD platform.',            orgUnitId:'sq-api', collapsed:false},
+  {id:'hyb1',  name:'Warehouse Bot',  code:'HYB-001', title:'Ops Hybrid Agent',     type:'hybrid', dept:'ops',   fn:'Operations',  teamType:'',       unitClass:'',       parentId:'vpo',     initials:'WB', color:'#d855ff', loc:'Chicago',        odd:'Hybrid v1.5',     bio:'Human-AI hybrid for warehouse operations.',           orgUnitId:'u-biz',  collapsed:false},
+  // Security guild member (cross-cutting)
+  {id:'sec1',  name:'Aisha Okonkwo',  code:'SEC-L4-001', title:'Head of Security',  type:'human',  dept:'risk',  fn:'Governance',  teamType:'guild',  unitClass:'',       parentId:'cto',     initials:'AO', color:'#f97316', loc:'Nairobi',        odd:'FTE v2.1',        bio:'Security posture, threat intel & compliance.',        orgUnitId:'g-security',collapsed:false},
+];
+
+// ══════════════════════════════════════════════════════════════════════════════
+// STATE
+// ══════════════════════════════════════════════════════════════════════════════
+let currentView = 'hierarchy';
+let colorMode = 'dept';
+let selectedId = null;
+let vx = 0, vy = 0, vscale = 1;
+let panning = false, px0=0, py0=0, pvx0=0, pvy0=0;
+let layers = {jobcode:true, dept:true, teamtype:true, headcount:false, odd:false};
+let maxDepth = 99;
+let filterDept = '';
+let filterType = '';
+let filterTeam = '';
+let searchQ = '';
+let collapsedAll = false;
+let selectedNodeColor = '#6a2fff';
+let selectedUnitColor = '#6a2fff';
+
+// ══════════════════════════════════════════════════════════════════════════════
+// NODE DIMENSIONS — vary by view
+// ══════════════════════════════════════════════════════════════════════════════
+const DIMS = {
+  hierarchy: {NW:156, NH:90, HGAP:22, VGAP:56},
+  flat:      {NW:140, NH:72, HGAP:16, VGAP:100},
+  radial:    {NW:140, NH:80, HGAP:0,  VGAP:0},
+  division:  {NW:160, NH:94, HGAP:20, VGAP:60},
+  agile:     {NW:148, NH:86, HGAP:18, VGAP:54},
+  military:  {NW:150, NH:88, HGAP:20, VGAP:56},
+  network:   {NW:130, NH:70, HGAP:0,  VGAP:0},
+};
+
+// ══════════════════════════════════════════════════════════════════════════════
+// COLOURS
+// ══════════════════════════════════════════════════════════════════════════════
+function deptColor(deptId) {
+  const d = depts.find(x=>x.id===deptId);
+  return d ? d.color : '#64748b';
+}
+
+function typeColor(type, isCEO) {
+  if (isCEO) return '#7a3fff';
+  return {ai:'#34e8a0', hybrid:'#d855ff', cpu:'#f5b942', human:'#38b4ff'}[type] || '#38b4ff';
+}
+
+function levelColor(depth) {
+  const cols = ['#7a3fff','#38b4ff','#00e5d8','#34e8a0','#f5b942','#ff6b4a','#ec4899','#d855ff'];
+  return cols[Math.min(depth, cols.length-1)];
+}
+
+const unitTypeColors = {
+  division:'#f5b942', department:'#38b4ff', team:'#34e8a0', chapter:'#d855ff',
+  guild:'#ec4899', tribe:'#ff6b4a', tiger:'#ff2a55', agile:'#00e5d8',
+  corps:'#7a3fff', brigade:'#38b4ff', regiment:'#ff6b4a', battalion:'#f5b942',
+  company:'#34e8a0', battery:'#d855ff', troop:'#00e5d8', platoon:'#ff4c8b',
+  'squad-m':'#64748b', squad:'#34e8a0', member:'#38b4ff', domain:'#eab308', capability:'#06b6d4',
+};
+
+function teamTypeColor(tt) {
+  return {squad:'#34e8a0',tribe:'#ff6b4a',guild:'#ec4899',chapter:'#d855ff',tiger:'#ff2a55',agile:'#00e5d8',scrum:'#38b4ff',kanban:'#f5b942'}[tt] || '#64748b';
+}
+
+function nodeColor(p, depth) {
+  if (colorMode==='dept') return deptColor(p.dept);
+  if (colorMode==='type') return typeColor(p.type, p.id==='ceo');
+  if (colorMode==='level') return levelColor(depth);
+  if (colorMode==='team') return p.teamType ? teamTypeColor(p.teamType) : '#64748b';
+  return p.color || '#38b4ff';
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// LAYOUT ENGINES
+// ══════════════════════════════════════════════════════════════════════════════
+function childMap(nodes) {
+  const m = {};
+  nodes.forEach(p => {
+    const k = p.parentId || '__root__';
+    (m[k] = m[k] || []).push(p.id);
+  });
+  return m;
+}
+
+function visiblePeople() {
+  let nodes = people;
+  if (filterDept) nodes = nodes.filter(p => p.dept === filterDept);
+  if (filterType) nodes = nodes.filter(p => p.type === filterType);
+  if (filterTeam) nodes = nodes.filter(p => p.teamType === filterTeam);
+  if (searchQ) {
+    const q = searchQ.toLowerCase();
+    nodes = nodes.filter(p =>
+      p.name.toLowerCase().includes(q) ||
+      (p.code||'').toLowerCase().includes(q) ||
+      p.title.toLowerCase().includes(q)
+    );
+  }
+  // Ensure parents of visible nodes are included (for connectivity)
+  if (filterDept || filterType || filterTeam || searchQ) {
+    const ids = new Set(nodes.map(p=>p.id));
+    nodes.forEach(p => {
+      let pid = p.parentId;
+      while (pid && !ids.has(pid)) {
+        const par = people.find(x=>x.id===pid);
+        if (par) { ids.add(pid); nodes.push(par); pid = par.parentId; }
+        else break;
+      }
+    });
+    // Deduplicate
+    const seen = new Set();
+    nodes = nodes.filter(p => { if(seen.has(p.id)) return false; seen.add(p.id); return true; });
+  }
+  return nodes;
+}
+
+function treeLayout(nodes) {
+  const d = DIMS[currentView];
+  const cm = childMap(nodes);
+  const pos = {};
+  let md = 0;
+
+  function tw(id) {
+    const ch = (cm[id]||[]).filter(c=>nodes.find(p=>p.id===c));
+    if (!ch.length) return d.NW;
+    return Math.max(d.NW, ch.reduce((s,c)=>s+tw(c),0)+(ch.length-1)*d.HGAP);
+  }
+
+  function place(id, depth, left) {
+    if (depth > maxDepth) return;
+    md = Math.max(md, depth);
+    const ch = (cm[id]||[]).filter(c=>nodes.find(p=>p.id===c));
+    const w = tw(id);
+    pos[id] = {x: left+w/2-d.NW/2, y: depth*(d.NH+d.VGAP), depth};
+    let cursor = left;
+    ch.forEach(cid => {
+      const cw = tw(cid);
+      place(cid, depth+1, cursor);
+      cursor += cw+d.HGAP;
+    });
+  }
+
+  const root = nodes.find(p=>!p.parentId) || nodes[0];
+  if (root) {
+    const w = tw(root.id);
+    place(root.id, 0, -w/2+d.NW/2);
+  }
+  return {pos, maxDepth:md};
+}
+
+function radialLayout(nodes) {
+  const d = DIMS.radial;
+  const pos = {};
+  const cm = childMap(nodes);
+  let md = 0;
+
+  function countLeaves(id) {
+    const ch=(cm[id]||[]).filter(c=>nodes.find(p=>p.id===c));
+    if(!ch.length) return 1;
+    return ch.reduce((s,c)=>s+countLeaves(c),0);
+  }
+
+  function place(id, depth, angleStart, angleEnd) {
+    md = Math.max(md,depth);
+    const radius = depth * 170;
+    const angle = (angleStart+angleEnd)/2;
+    pos[id] = {
+      x: Math.cos(angle)*radius - d.NW/2,
+      y: Math.sin(angle)*radius - d.NH/2,
+      depth, angle, radius
+    };
+    const ch=(cm[id]||[]).filter(c=>nodes.find(p=>p.id===c));
+    if (!ch.length) return;
+    const total = countLeaves(id);
+    let cur = angleStart;
+    ch.forEach(cid=>{
+      const fraction = countLeaves(cid)/total;
+      const span = (angleEnd-angleStart)*fraction;
+      place(cid, depth+1, cur, cur+span);
+      cur += span;
+    });
+  }
+
+  const root = nodes.find(p=>!p.parentId)||nodes[0];
+  if (root) place(root.id, 0, -Math.PI, Math.PI);
+  return {pos, maxDepth:md};
+}
+
+function networkLayout(nodes) {
+  // Force-directed approximation (pre-baked positions using golden spiral)
+  const pos = {};
+  const goldenAngle = 2.399963;
+  nodes.forEach((p,i)=>{
+    const r = 80 + Math.sqrt(i)*85;
+    const a = i * goldenAngle;
+    pos[p.id] = {x: Math.cos(a)*r - 65, y: Math.sin(a)*r - 35, depth:0};
+  });
+  // Override root to center
+  const root = nodes.find(p=>!p.parentId);
+  if(root) pos[root.id] = {x:-65, y:-35, depth:0};
+  return {pos, maxDepth:3};
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// RENDER
+// ══════════════════════════════════════════════════════════════════════════════
+function getLayout(nodes) {
+  if (currentView==='radial')  return radialLayout(nodes);
+  if (currentView==='network') return networkLayout(nodes);
+  return treeLayout(nodes);
+}
+
+function render() {
+  const g = document.getElementById('chart-g');
+  g.innerHTML='';
+
+  const nodes = visiblePeople();
+  const {pos, maxDepth:md} = getLayout(nodes);
+  const d = DIMS[currentView];
+
+  // ── CONNECTORS ─────────────────────────────────────────────────────────────
+  const lg = document.createElementNS('http://www.w3.org/2000/svg','g');
+  nodes.forEach(p=>{
+    if (!p.parentId) return;
+    const fp=pos[p.parentId], tp=pos[p.id];
+    if (!fp||!tp) return;
+
+    const isAI = p.type==='ai';
+    const isTiger = p.teamType==='tiger';
+    const isGuild = p.teamType==='guild'||p.teamType==='chapter';
+
+    if (currentView==='radial' || currentView==='network') {
+      // Straight line
+      const el = document.createElementNS('http://www.w3.org/2000/svg','line');
+      el.setAttribute('x1', fp.x+d.NW/2); el.setAttribute('y1', fp.y+d.NH/2);
+      el.setAttribute('x2', tp.x+d.NW/2); el.setAttribute('y2', tp.y+d.NH/2);
+      el.setAttribute('stroke', isAI?'rgba(52,232,160,.3)':'rgba(106,47,255,.22)');
+      el.setAttribute('stroke-width','1.5');
+      if (isAI) el.setAttribute('stroke-dasharray','4 3');
+      if (isTiger) { el.setAttribute('stroke','rgba(255,42,85,.45)'); el.setAttribute('stroke-dasharray','6 3'); }
+      if (isGuild) { el.setAttribute('stroke','rgba(216,85,255,.35)'); el.setAttribute('stroke-dasharray','2 3'); }
+      lg.appendChild(el);
+    } else {
+      // Curved bezier
+      const x1=fp.x+d.NW/2, y1=fp.y+d.NH;
+      const x2=tp.x+d.NW/2, y2=tp.y;
+      const my=(y1+y2)/2;
+      const el=document.createElementNS('http://www.w3.org/2000/svg','path');
+      el.setAttribute('d',`M${x1},${y1} C${x1},${my} ${x2},${my} ${x2},${y2}`);
+      el.setAttribute('fill','none');
+      let stroke='rgba(106,47,255,.28)';
+      let dash='';
+      if(isAI){stroke='rgba(52,232,160,.35)';dash='5 3';}
+      if(isTiger){stroke='rgba(255,42,85,.45)';dash='6 3';}
+      if(isGuild){stroke='rgba(216,85,255,.32)';dash='2 4';}
+      el.setAttribute('stroke',stroke);
+      el.setAttribute('stroke-width','1.5');
+      if(dash) el.setAttribute('stroke-dasharray',dash);
+      lg.appendChild(el);
+    }
+  });
+  g.appendChild(lg);
+
+  // ── NODES ──────────────────────────────────────────────────────────────────
+  const ng = document.createElementNS('http://www.w3.org/2000/svg','g');
+
+  nodes.forEach(p=>{
+    const position=pos[p.id];
+    if(!position) return;
+    const depth=position.depth||0;
+    const isCEO=p.id==='ceo';
+    const sel=selectedId===p.id;
+    const c=nodeColor(p, depth);
+    const NW=d.NW, NH=d.NH;
+
+    const nodeG=document.createElementNS('http://www.w3.org/2000/svg','g');
+    nodeG.setAttribute('transform',`translate(${position.x},${position.y})`);
+    nodeG.style.cursor='pointer';
+    nodeG.dataset.id=p.id;
+
+    // Department color strip (top edge)
+    const strip=document.createElementNS('http://www.w3.org/2000/svg','rect');
+    strip.setAttribute('x','0'); strip.setAttribute('y','0');
+    strip.setAttribute('width',NW); strip.setAttribute('height','4');
+    strip.setAttribute('rx','10'); strip.setAttribute('fill',c);
+    strip.setAttribute('opacity','0.85');
+
+    // Card body
+    const rect=document.createElementNS('http://www.w3.org/2000/svg','rect');
+    rect.setAttribute('x','0'); rect.setAttribute('y','0');
+    rect.setAttribute('width',NW); rect.setAttribute('height',NH);
+    rect.setAttribute('rx','10');
+    rect.setAttribute('fill',sel?`${c}22`:`${c}11`);
+    rect.setAttribute('stroke',sel?c: (isCEO?'rgba(122,63,255,.8)':p.teamType==='tiger'?'rgba(255,42,85,.5)':p.teamType==='guild'||p.teamType==='chapter'?'rgba(216,85,255,.4)':`${c}45`));
+    rect.setAttribute('stroke-width',sel?'2.5':isCEO?'2':'1');
+    if(isCEO) rect.setAttribute('filter','url(#glow-a)');
+    else if(sel) rect.setAttribute('filter','url(#glow-b)');
+
+    nodeG.appendChild(rect);
+    nodeG.appendChild(strip);
+
+    // Avatar circle
+    const cx=NW/2, cy=24;
+    const circ=document.createElementNS('http://www.w3.org/2000/svg','circle');
+    circ.setAttribute('cx',cx); circ.setAttribute('cy',cy); circ.setAttribute('r','13');
+    circ.setAttribute('fill',`${c}22`); circ.setAttribute('stroke',c);
+    circ.setAttribute('stroke-width',isCEO?'2.2':'1.2');
+    nodeG.appendChild(circ);
+
+    // Initials
+    const it=document.createElementNS('http://www.w3.org/2000/svg','text');
+    it.setAttribute('x',cx); it.setAttribute('y',cy+4);
+    it.setAttribute('text-anchor','middle');
+    it.setAttribute('font-family','Space Grotesk,sans-serif');
+    it.setAttribute('font-size',p.type==='ai'?'10':'10');
+    it.setAttribute('font-weight','700'); it.setAttribute('fill',c);
+    it.textContent = p.type==='ai'?'⬡':p.type==='hybrid'?'◈':p.type==='cpu'?'⚙':p.initials;
+    nodeG.appendChild(it);
+
+    // Name
+    const nt=document.createElementNS('http://www.w3.org/2000/svg','text');
+    nt.setAttribute('x',NW/2); nt.setAttribute('y',45);
+    nt.setAttribute('text-anchor','middle');
+    nt.setAttribute('font-family','Space Grotesk,sans-serif');
+    nt.setAttribute('font-size', isCEO?'11.5':'10.5');
+    nt.setAttribute('font-weight','700'); nt.setAttribute('fill','#ede6ff');
+    nt.textContent=p.name.length>18?p.name.slice(0,17)+'…':p.name;
+    nodeG.appendChild(nt);
+
+    // Title
+    const tt=document.createElementNS('http://www.w3.org/2000/svg','text');
+    tt.setAttribute('x',NW/2); tt.setAttribute('y',57);
+    tt.setAttribute('text-anchor','middle');
+    tt.setAttribute('font-family','Space Grotesk,sans-serif');
+    tt.setAttribute('font-size','8.5'); tt.setAttribute('font-weight','500');
+    tt.setAttribute('fill','rgba(190,175,240,.55)');
+    tt.textContent=p.title.length>24?p.title.slice(0,23)+'…':p.title;
+    nodeG.appendChild(tt);
+
+    // Job Code (if layer on)
+    if(layers.jobcode && p.code){
+      const ct=document.createElementNS('http://www.w3.org/2000/svg','text');
+      ct.setAttribute('x',NW/2); ct.setAttribute('y',67);
+      ct.setAttribute('text-anchor','middle');
+      ct.setAttribute('font-family','Space Grotesk,monospace');
+      ct.setAttribute('font-size','7.5'); ct.setAttribute('font-weight','700');
+      ct.setAttribute('fill',`${c}90`);
+      ct.textContent=p.code;
+      nodeG.appendChild(ct);
+    }
+
+    // Bottom pill row
+    const pillY=layers.jobcode&&p.code ? 73 : 66;
+    let pillX = 6;
+
+    // Dept tag pill
+    if(layers.dept && p.dept){
+      const dname = (depts.find(x=>x.id===p.dept)||{name:p.dept}).name.split(' ')[0];
+      const PW=Math.min(dname.length*5.5+10, NW/2-8);
+      const pb=document.createElementNS('http://www.w3.org/2000/svg','rect');
+      pb.setAttribute('x',pillX); pb.setAttribute('y',pillY);
+      pb.setAttribute('width',PW); pb.setAttribute('height','13');
+      pb.setAttribute('rx','3'); pb.setAttribute('fill',`${c}20`);
+      pb.setAttribute('stroke',`${c}50`); pb.setAttribute('stroke-width','0.7');
+      nodeG.appendChild(pb);
+      const pt=document.createElementNS('http://www.w3.org/2000/svg','text');
+      pt.setAttribute('x',pillX+PW/2); pt.setAttribute('y',pillY+9);
+      pt.setAttribute('text-anchor','middle');
+      pt.setAttribute('font-family','Space Grotesk,sans-serif');
+      pt.setAttribute('font-size','7'); pt.setAttribute('font-weight','800');
+      pt.setAttribute('fill',c); pt.textContent=dname;
+      nodeG.appendChild(pt);
+      pillX += PW+4;
+    }
+
+    // Team type pill
+    if(layers.teamtype && p.teamType){
+      const tc=teamTypeColor(p.teamType);
+      const tlabel=p.teamType.toUpperCase().slice(0,7);
+      const TPW=tlabel.length*5.5+8;
+      const tb=document.createElementNS('http://www.w3.org/2000/svg','rect');
+      tb.setAttribute('x',pillX); tb.setAttribute('y',pillY);
+      tb.setAttribute('width',TPW); tb.setAttribute('height','13');
+      tb.setAttribute('rx','3'); tb.setAttribute('fill',`${tc}20`);
+      tb.setAttribute('stroke',`${tc}55`); tb.setAttribute('stroke-width','0.7');
+      nodeG.appendChild(tb);
+      const tpt=document.createElementNS('http://www.w3.org/2000/svg','text');
+      tpt.setAttribute('x',pillX+TPW/2); tpt.setAttribute('y',pillY+9);
+      tpt.setAttribute('text-anchor','middle');
+      tpt.setAttribute('font-family','Space Grotesk,sans-serif');
+      tpt.setAttribute('font-size','7'); tpt.setAttribute('font-weight','800');
+      tpt.setAttribute('fill',tc); tpt.textContent=tlabel;
+      nodeG.appendChild(tpt);
+    }
+
+    // ODD status dot (if layer on)
+    if(layers.odd){
+      const od=document.createElementNS('http://www.w3.org/2000/svg','circle');
+      od.setAttribute('cx',NW-8); od.setAttribute('cy',8); od.setAttribute('r','4');
+      od.setAttribute('fill','#34e8a0'); od.setAttribute('opacity','0.9');
+      nodeG.appendChild(od);
+    }
+
+    // Headcount badge (if layer on — only for dept head nodes)
+    if(layers.headcount){
+      const kids=people.filter(x=>x.parentId===p.id).length;
+      if(kids>0){
+        const hb=document.createElementNS('http://www.w3.org/2000/svg','rect');
+        hb.setAttribute('x',NW-22); hb.setAttribute('y',NH-16);
+        hb.setAttribute('width','20'); hb.setAttribute('height','13');
+        hb.setAttribute('rx','4'); hb.setAttribute('fill','rgba(245,185,66,.2)');
+        hb.setAttribute('stroke','rgba(245,185,66,.4)');
+        nodeG.appendChild(hb);
+        const ht=document.createElementNS('http://www.w3.org/2000/svg','text');
+        ht.setAttribute('x',NW-12); ht.setAttribute('y',NH-6);
+        ht.setAttribute('text-anchor','middle');
+        ht.setAttribute('font-family','Space Grotesk,sans-serif');
+        ht.setAttribute('font-size','8'); ht.setAttribute('font-weight','800');
+        ht.setAttribute('fill','#f5b942'); ht.textContent=kids;
+        nodeG.appendChild(ht);
+      }
+    }
+
+    nodeG.addEventListener('click',e=>{e.stopPropagation();selectNode(p.id);});
+    nodeG.addEventListener('mouseenter',e=>showTooltip(e,p));
+    nodeG.addEventListener('mouseleave',()=>hideTooltip());
+    ng.appendChild(nodeG);
+  });
+
+  g.appendChild(ng);
+
+  // Stats
+  document.getElementById('stat-total').textContent = nodes.length;
+  document.getElementById('stat-humans').textContent = nodes.filter(p=>p.type==='human').length;
+  document.getElementById('stat-ai').textContent = nodes.filter(p=>p.type==='ai').length;
+  document.getElementById('stat-hybrid').textContent = nodes.filter(p=>p.type==='hybrid'||p.type==='cpu').length;
+  document.getElementById('stat-units').textContent = orgUnits.length;
+  document.getElementById('stat-depth').textContent = md+1;
+  const managers=nodes.filter(p=>nodes.some(c=>c.parentId===p.id));
+  const totalReports=managers.reduce((s,p)=>s+nodes.filter(c=>c.parentId===p.id).length,0);
+  document.getElementById('stat-span').textContent = managers.length>0?(totalReports/managers.length).toFixed(1):'—';
+  document.getElementById('stat-depts').textContent = depts.length;
+  document.getElementById('nodeCountBadge').textContent = nodes.length+' nodes';
+
+  renderMinimap(nodes,pos,d);
+  renderDeptList();
+  renderTeamList();
+}
+
+// ── MINIMAP ──────────────────────────────────────────────────────────────────
+function renderMinimap(nodes,pos,d){
+  const mg=document.getElementById('minimap-g');
+  mg.innerHTML='';
+  const vals=Object.values(pos);
+  if(!vals.length) return;
+  const minX=Math.min(...vals.map(p=>p.x));
+  const minY=Math.min(...vals.map(p=>p.y));
+  const maxX=Math.max(...vals.map(p=>p.x))+d.NW;
+  const maxY=Math.max(...vals.map(p=>p.y))+d.NH;
+  const tw=maxX-minX||1, th=maxY-minY||1;
+  const mw=140,mh=90;
+  const scale=Math.min((mw-8)/tw,(mh-8)/th);
+  nodes.forEach(p=>{
+    const pp=pos[p.id]; if(!pp) return;
+    const c=nodeColor(p,pp.depth||0);
+    const r=document.createElementNS('http://www.w3.org/2000/svg','rect');
+    r.setAttribute('x',4+(pp.x-minX)*scale);
+    r.setAttribute('y',4+(pp.y-minY)*scale);
+    r.setAttribute('width',Math.max(6,d.NW*scale));
+    r.setAttribute('height',Math.max(4,d.NH*scale));
+    r.setAttribute('rx','2'); r.setAttribute('fill',c); r.setAttribute('opacity','0.7');
+    mg.appendChild(r);
+  });
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// DEPT & TEAM PANELS
+// ══════════════════════════════════════════════════════════════════════════════
+function renderDeptList(){
+  const el=document.getElementById('dept-list');
+  const sel=document.getElementById('deptFilter');
+  sel.innerHTML='<option value="">All Departments</option>';
+  depts.forEach(d=>{
+    const count=people.filter(p=>p.dept===d.id).length;
+    el.innerHTML=(el.innerHTML||'');
+    sel.innerHTML+=`<option value="${d.id}">${d.name} (${count})</option>`;
+  });
+  el.innerHTML=depts.map(d=>{
+    const count=people.filter(p=>p.dept===d.id).length;
+    return `<div class="dept-row" onclick="filterByDept('${d.id}');document.getElementById('deptFilter').value='${d.id}'">
+      <div class="dept-swatch" style="background:${d.color};"></div>
+      <div class="dept-name">${d.name}</div>
+      <div class="dept-count">${count}</div>
+    </div>`;
+  }).join('');
+
+  const addDeptSel=document.getElementById('add-dept');
+  if(addDeptSel){
+    addDeptSel.innerHTML='<option value="">— Select —</option>'+
+      depts.map(d=>`<option value="${d.id}">${d.name}</option>`).join('');
+  }
+}
+
+function renderTeamList(){
+  const el=document.getElementById('team-list');
+  const tTypes=['tribe','squad','chapter','guild','tiger','agile','division','department'];
+  el.innerHTML=tTypes.map(tt=>{
+    const members=people.filter(p=>p.teamType===tt);
+    if(!members.length) return '';
+    const c=teamTypeColor(tt);
+    return `<div style="margin-bottom:12px;">
+      <div style="display:flex;align-items:center;gap:6px;margin-bottom:5px;">
+        <div style="width:8px;height:8px;border-radius:2px;background:${c};"></div>
+        <span style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:${c};">${tt}</span>
+        <span style="font-size:10px;color:var(--text-muted);margin-left:auto;">${members.length}</span>
+      </div>
+      ${members.map(p=>`<div style="display:flex;align-items:center;gap:7px;padding:4px 6px;border-radius:6px;margin-bottom:2px;cursor:pointer;transition:.15s;" onclick="selectNode('${p.id}')">
+        <div style="width:20px;height:20px;border-radius:50%;background:${c}22;border:1px solid ${c}55;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:${c};flex-shrink:0;">${p.initials.slice(0,2)}</div>
+        <div><div style="font-size:11px;font-weight:600;color:var(--text-soft);">${p.name}</div><div style="font-size:9.5px;color:var(--text-muted);">${p.title}</div></div>
+      </div>`).join('')}
+    </div>`;
+  }).join('');
+
+  // Org units section
+  const unitEl=document.createElement('div');
+  unitEl.innerHTML='<div style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:var(--text-muted);margin:14px 0 8px;">Org Units</div>'+
+    orgUnits.map(u=>{
+      const c=u.color;
+      const typeC=unitTypeColors[u.type]||c;
+      return `<div style="padding:8px 10px;border-radius:8px;background:${typeC}10;border:1px solid ${typeC}35;margin-bottom:6px;cursor:pointer;">
+        <div style="display:flex;align-items:center;gap:6px;margin-bottom:3px;">
+          <div style="width:8px;height:8px;border-radius:2px;background:${typeC};"></div>
+          <span style="font-size:11.5px;font-weight:700;color:var(--text);">${u.name}</span>
+          <span style="font-size:9px;font-weight:800;color:${typeC};background:${typeC}20;border:1px solid ${typeC}40;border-radius:3px;padding:1px 5px;margin-left:auto;text-transform:uppercase;">${u.type}</span>
+        </div>
+        <div style="font-size:10px;color:var(--text-muted);">${u.mission}</div>
+      </div>`;
+    }).join('');
+  el.appendChild(unitEl);
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// FIT / VIEWPORT
+// ══════════════════════════════════════════════════════════════════════════════
+function fitToView(){
+  const nodes=visiblePeople();
+  const {pos}=getLayout(nodes);
+  const d=DIMS[currentView];
+  const vals=Object.values(pos);
+  if(!vals.length) return;
+  const minX=Math.min(...vals.map(p=>p.x));
+  const minY=Math.min(...vals.map(p=>p.y));
+  const maxX=Math.max(...vals.map(p=>p.x))+d.NW;
+  const maxY=Math.max(...vals.map(p=>p.y))+d.NH;
+  const tw=maxX-minX, th=maxY-minY;
+  const stage=document.getElementById('chart-stage');
+  const sW=stage.clientWidth, sH=stage.clientHeight;
+  const PAD=60;
+  vscale=Math.min((sW-PAD*2)/tw,(sH-PAD*2)/th,1.1);
+  vx=(sW-tw*vscale)/2-minX*vscale;
+  vy=(sH-th*vscale)/2-minY*vscale;
+  applyTransform();
+}
+
+function applyTransform(){
+  document.getElementById('chart-g').setAttribute('transform',`translate(${vx},${vy}) scale(${vscale})`);
+}
+function zoomBy(d){
+  const stage=document.getElementById('chart-stage');
+  const cx=stage.clientWidth/2, cy=stage.clientHeight/2;
+  const ns=Math.max(0.15,Math.min(3,vscale+d));
+  vx=cx-(cx-vx)*(ns/vscale); vy=cy-(cy-vy)*(ns/vscale); vscale=ns;
+  applyTransform();
+}
+function resetView(){ vx=0;vy=0;vscale=1; applyTransform(); }
+function autoLayout(){ render(); fitToView(); }
+
+// ══════════════════════════════════════════════════════════════════════════════
+// PAN & WHEEL
+// ══════════════════════════════════════════════════════════════════════════════
+const stage=document.getElementById('chart-stage');
+stage.addEventListener('mousedown',e=>{
+  if(e.target.closest('[data-id]')) return;
+  panning=true;px0=e.clientX;py0=e.clientY;pvx0=vx;pvy0=vy;
+});
+window.addEventListener('mousemove',e=>{
+  if(!panning) return;
+  vx=pvx0+e.clientX-px0;vy=pvy0+e.clientY-py0;applyTransform();
+});
+window.addEventListener('mouseup',()=>panning=false);
+stage.addEventListener('wheel',e=>{
+  e.preventDefault();
+  const r=stage.getBoundingClientRect();
+  const mx=e.clientX-r.left,my=e.clientY-r.top;
+  const d=e.deltaY<0?0.1:-0.1;
+  const ns=Math.max(0.15,Math.min(3,vscale+d));
+  vx=mx-(mx-vx)*(ns/vscale);vy=my-(my-vy)*(ns/vscale);vscale=ns;
+  applyTransform();
+},{passive:false});
+stage.addEventListener('click',e=>{
+  if(!e.target.closest('[data-id]')){
+    selectedId=null;render();applyTransform();
+    document.getElementById('selected-panel').innerHTML='<span style="color:var(--text-muted);font-size:12px;">Click a node to inspect</span>';
+  }
+});
+
+// ══════════════════════════════════════════════════════════════════════════════
+// TOOLTIP
+// ══════════════════════════════════════════════════════════════════════════════
+function showTooltip(e,p){
+  const tt=document.getElementById('node-tooltip');
+  const c=nodeColor(p,0);
+  const d=depts.find(x=>x.id===p.dept);
+  tt.innerHTML=`
+    <div style="font-size:12px;font-weight:700;color:#ede6ff;margin-bottom:2px;">${p.name}</div>
+    <div style="font-size:10.5px;color:rgba(190,175,240,.6);margin-bottom:6px;">${p.title}</div>
+    <div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:6px;">
+      <span style="font-size:9px;font-weight:800;padding:1px 6px;border-radius:3px;background:${c}22;border:1px solid ${c}50;color:${c};">${p.type.toUpperCase()}</span>
+      ${p.teamType?`<span style="font-size:9px;font-weight:800;padding:1px 6px;border-radius:3px;background:rgba(255,255,255,.08);color:rgba(215,205,255,.6);border:1px solid rgba(255,255,255,.1);">${p.teamType.toUpperCase()}</span>`:''}
+    </div>
+    <div style="font-size:10px;color:rgba(190,175,240,.5);"><b>Code:</b> ${p.code||'—'} &nbsp;|&nbsp; <b>Dept:</b> ${d?d.name:'—'}</div>
+    <div style="font-size:10px;color:rgba(190,175,240,.5);margin-top:2px;"><b>ODD:</b> ${p.odd} &nbsp;|&nbsp; <b>Loc:</b> ${p.loc||'—'}</div>
+  `;
+  tt.style.display='block';
+  tt.style.left=Math.min(e.clientX+12, window.innerWidth-260)+'px';
+  tt.style.top=Math.min(e.clientY-10, window.innerHeight-160)+'px';
+}
+function hideTooltip(){ document.getElementById('node-tooltip').style.display='none'; }
+
+// ══════════════════════════════════════════════════════════════════════════════
+// SELECT NODE
+// ══════════════════════════════════════════════════════════════════════════════
+function selectNode(id){
+  selectedId=id;
+  render();applyTransform();
+  const p=people.find(x=>x.id===id);
+  if(!p) return;
+  const kids=people.filter(x=>x.parentId===id);
+  const parent=p.parentId?people.find(x=>x.id===p.parentId):null;
+  const d=depts.find(x=>x.id===p.dept);
+  const c=nodeColor(p,0);
+  const unit=orgUnits.find(u=>u.id===p.orgUnitId);
+
+  document.getElementById('selected-panel').innerHTML=`
+    <div style="background:var(--surface-3);border:1px solid ${c}40;border-radius:12px;padding:14px;">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
+        <div style="width:36px;height:36px;border-radius:50%;background:${c}22;border:2px solid ${c};display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:${c};flex-shrink:0;">${p.type==='ai'?'⬡':p.type==='hybrid'?'◈':p.initials.slice(0,2)}</div>
+        <div><div style="font-size:13px;font-weight:700;color:var(--text);">${p.name}</div><div style="font-size:10.5px;color:var(--text-muted);">${p.title}</div></div>
+      </div>
+      <div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:10px;">
+        <span style="font-size:9px;font-weight:800;padding:2px 7px;border-radius:3px;background:${c}22;border:1px solid ${c}50;color:${c};">${p.type.toUpperCase()}</span>
+        ${p.teamType?`<span style="font-size:9px;font-weight:800;padding:2px 7px;border-radius:3px;background:rgba(255,255,255,.08);color:rgba(215,205,255,.5);border:1px solid rgba(255,255,255,.1);">${p.teamType.toUpperCase()}</span>`:''}
+        ${p.unitClass?`<span style="font-size:9px;font-weight:800;padding:2px 7px;border-radius:3px;background:rgba(245,185,66,.12);color:var(--amber);border:1px solid rgba(245,185,66,.3);">${p.unitClass.toUpperCase()}</span>`:''}
+      </div>
+      <div style="font-size:11px;color:var(--text-soft);margin-bottom:4px;"><span style="color:var(--text-muted);">Job Code:</span> <b style="color:${c};">${p.code||'—'}</b></div>
+      <div style="font-size:11px;color:var(--text-soft);margin-bottom:4px;"><span style="color:var(--text-muted);">Department:</span> ${d?d.name:'—'}</div>
+      <div style="font-size:11px;color:var(--text-soft);margin-bottom:4px;"><span style="color:var(--text-muted);">Function:</span> ${p.fn||'—'}</div>
+      <div style="font-size:11px;color:var(--text-soft);margin-bottom:4px;"><span style="color:var(--text-muted);">Org Unit:</span> ${unit?unit.name:'—'}</div>
+      <div style="font-size:11px;color:var(--text-soft);margin-bottom:4px;"><span style="color:var(--text-muted);">Reports To:</span> ${parent?parent.name:'— (Root)'}</div>
+      <div style="font-size:11px;color:var(--text-soft);margin-bottom:4px;"><span style="color:var(--text-muted);">Direct Reports:</span> <b>${kids.length}</b></div>
+      <div style="font-size:11px;color:var(--text-soft);margin-bottom:4px;"><span style="color:var(--text-muted);">Location:</span> ${p.loc||'—'}</div>
+      <div style="font-size:11px;color:var(--text-soft);margin-bottom:4px;"><span style="color:var(--text-muted);">ODD:</span> <span style="color:var(--emerald);">● ${p.odd}</span></div>
+      ${p.bio?`<div style="font-size:10.5px;color:var(--text-muted);margin-top:8px;padding-top:8px;border-top:1px solid var(--border);line-height:1.55;">${p.bio}</div>`:''}
+      ${kids.length?`<div style="margin-top:8px;"><div style="font-size:9.5px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:var(--text-muted);margin-bottom:5px;">Direct Reports</div>${kids.map(k=>`<div style="display:flex;align-items:center;gap:6px;padding:4px 0;cursor:pointer;" onclick="selectNode('${k.id}')"><div style="width:16px;height:16px;border-radius:50%;background:${nodeColor(k,1)}22;border:1px solid ${nodeColor(k,1)}55;display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:700;color:${nodeColor(k,1)};">${k.initials.slice(0,2)}</div><div style="font-size:11px;color:var(--text-soft);">${k.name}</div><div style="font-size:10px;color:var(--text-muted);margin-left:auto;">${k.title}</div></div>`).join('')}</div>`:''}
+      <div style="display:flex;gap:5px;margin-top:12px;flex-wrap:wrap;">
+        <button class="tb-btn" style="flex:1;justify-content:center;font-size:10.5px;padding:5px 6px;">View ODD</button>
+        <button class="tb-btn" style="flex:1;justify-content:center;font-size:10.5px;padding:5px 6px;" onclick="openAddModal('${id}')">+ Report</button>
+        <button class="tb-btn" style="flex:1;justify-content:center;font-size:10.5px;padding:5px 6px;color:var(--amber);">✎ Edit</button>
+        <button class="tb-btn" style="flex:1;justify-content:center;font-size:10.5px;padding:5px 6px;color:var(--cherry);" onclick="removeNode('${id}')">✕</button>
+      </div>
+    </div>`;
+
+  // Switch to node panel
+  document.querySelectorAll('.ptab').forEach((t,i)=>t.classList.toggle('active',i===1));
+  document.querySelectorAll('.panel-body').forEach((b,i)=>{b.style.display=i===1?'block':'none';});
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// VIEW / FILTER CONTROLS
+// ══════════════════════════════════════════════════════════════════════════════
+function setView(v,btn){
+  currentView=v;
+  document.querySelectorAll('.vt-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  render();fitToView();
+}
+function setColorMode(v){ colorMode=v; render(); applyTransform(); }
+function filterByDept(v){ filterDept=v; render(); fitToView(); }
+function filterByType(v){ filterType=v; render(); fitToView(); }
+function filterByTeamType(v){ filterTeam=v; render(); fitToView(); }
+function onSearch(q){ searchQ=q; render(); fitToView(); }
+function setMaxDepth(v){ maxDepth=parseInt(v)||99; render(); fitToView(); }
+function toggleLayer(el,key){ layers[key]=!layers[key]; el.classList.toggle('on',layers[key]); el.classList.toggle('off',!layers[key]); render(); applyTransform(); }
+function toggleCollapse(){
+  collapsedAll=!collapsedAll;
+  document.getElementById('btn-collapse').textContent=collapsedAll?'▸ Expand All':'▾ Collapse All';
+  maxDepth=collapsedAll?1:99;
+  document.getElementById('depthSel').value=collapsedAll?'1':'99';
+  render(); fitToView();
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// PANEL TABS
+// ══════════════════════════════════════════════════════════════════════════════
+const paneIds=['pane-overview','pane-node','pane-depts','pane-teams'];
+function switchPanel(tab, paneId){
+  document.querySelectorAll('.ptab').forEach(t=>t.classList.remove('active'));
+  tab.classList.add('active');
+  paneIds.forEach(id=>{ document.getElementById(id).style.display=id===paneId?'block':'none'; });
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// ADD / REMOVE NODES
+// ══════════════════════════════════════════════════════════════════════════════
+function openAddModal(parentId, forceType){
+  const sel=document.getElementById('add-parent');
+  sel.innerHTML=people.map(p=>`<option value="${p.id}"${p.id===parentId?' selected':''}>${p.name} — ${p.title}</option>`).join('');
+  if(forceType) document.getElementById('add-type').value=forceType;
+  document.getElementById('add-name').value='';
+  document.getElementById('add-title').value='';
+  document.getElementById('add-code').value='';
+  document.getElementById('add-modal').style.display='flex';
+  renderDeptList();
+}
+function closeAddModal(){ document.getElementById('add-modal').style.display='none'; }
+
+function pickColor(el){
+  document.querySelectorAll('#add-color-picker .cp-swatch').forEach(s=>s.classList.remove('selected'));
+  el.classList.add('selected');
+  selectedNodeColor=el.dataset.color;
+}
+function pickUnitColor(el){
+  document.querySelectorAll('#unit-color-picker .cp-swatch').forEach(s=>s.classList.remove('selected'));
+  el.classList.add('selected');
+  selectedUnitColor=el.dataset.color;
+}
+
+function addNode(){
+  const name=document.getElementById('add-name').value.trim();
+  const title=document.getElementById('add-title').value.trim();
+  const code=document.getElementById('add-code').value.trim();
+  const type=document.getElementById('add-type').value;
+  const parentId=document.getElementById('add-parent').value;
+  const dept=document.getElementById('add-dept').value;
+  const fn=document.getElementById('add-function').value;
+  const teamType=document.getElementById('add-teamtype').value;
+  const unitClass=document.getElementById('add-unitclass').value;
+  const odd=document.getElementById('add-odd').value;
+  const loc=document.getElementById('add-location').value;
+  const bio=document.getElementById('add-bio').value;
+  if(!name) return;
+  const initials=name.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);
+  people.push({
+    id:'n'+Date.now(), name, code, title:title||'OrgExec', type, dept, fn,
+    teamType, unitClass, parentId, initials, color:selectedNodeColor,
+    loc, odd, bio, orgUnitId:'', collapsed:false
+  });
+  closeAddModal(); render(); fitToView();
+}
+
+function removeNode(id){
+  const removed=people.find(p=>p.id===id);
+  people=people.filter(p=>p.id!==id);
+  if(removed) people.forEach(p=>{ if(p.parentId===id) p.parentId=removed.parentId; });
+  selectedId=null;
+  document.getElementById('selected-panel').innerHTML='<span style="color:var(--text-muted);font-size:12px;">Click a node to inspect</span>';
+  render(); applyTransform();
+}
+
+function openAddOrgUnit(){
+  const sel=document.getElementById('unit-parent');
+  sel.innerHTML='<option value="">— None (Top Level) —</option>'+
+    orgUnits.map(u=>`<option value="${u.id}">${u.name}</option>`).join('');
+  document.getElementById('add-unit-modal').style.display='flex';
+}
+
+function addOrgUnit(){
+  const name=document.getElementById('unit-name').value.trim();
+  const type=document.getElementById('unit-type').value;
+  const parentId=document.getElementById('unit-parent').value;
+  const mission=document.getElementById('unit-mission').value;
+  if(!name) return;
+  orgUnits.push({id:'u'+Date.now(), name, type, parentId:parentId||null, color:selectedUnitColor, mission});
+  document.getElementById('add-unit-modal').style.display='none';
+  render(); renderTeamList();
+}
+
+function openImportModal(){ alert('Import wizard: CSV / JSON / OrgDNA TOML'); }
+
+// ══════════════════════════════════════════════════════════════════════════════
+// INIT
+// ══════════════════════════════════════════════════════════════════════════════
+render();
+requestAnimationFrame(()=>requestAnimationFrame(fitToView));
+window.addEventListener('resize', fitToView);
+</script>
+</body>
+</html>

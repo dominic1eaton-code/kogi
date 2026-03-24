@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KOGI · Portfolio · Resources</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;600;700&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap');
+:root{--bg:#0a0b0f;--bg1:#0f1117;--bg2:#13151e;--bg3:#181c28;--border:rgba(255,255,255,0.06);--border2:rgba(255,255,255,0.1);--text:#c8ccdb;--text2:#7a8099;--text3:#4a5068;--cyan:#00d4aa;--gold:#c8a84b;--violet:#7c5cbf;--rose:#c45c7a;--orange:#c87c3a;--blue:#3a7cc8;--green:#4aab6d;--pink:#bf5ca0;--nav-w:158px;--mono:'IBM Plex Mono',monospace;--sans:'IBM Plex Sans',sans-serif}
+*{box-sizing:border-box;margin:0;padding:0}html,body{width:100%;height:100%;background:var(--bg);font-family:var(--sans);color:var(--text);font-size:10px;overflow:hidden}a{text-decoration:none;color:inherit}
+.screen{display:flex;flex-direction:column;width:100%;height:100vh;overflow:hidden}
+.body-layout{display:flex;flex:1;min-height:0;overflow:hidden}
+.main{flex:1;display:flex;flex-direction:column;min-width:0;overflow:hidden}
+.content{flex:1;overflow:auto;padding:16px;display:flex;flex-direction:column;gap:14px}
+.g-hdr{height:36px;background:var(--bg1);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 12px;gap:10px;flex-shrink:0}
+.g-logo{font-family:var(--mono);font-size:11px;font-weight:700;color:var(--cyan);letter-spacing:.1em}
+.g-bc{display:flex;align-items:center;gap:4px;font-family:var(--mono);font-size:9px;color:var(--text3)}
+.g-bc span{color:var(--text2)}.g-bc .sep{color:var(--text3)}.g-bc .cur{color:var(--text)}
+.g-dot{width:8px;height:8px;border-radius:50%;background:var(--cyan);margin-left:auto;animation:pulse 2s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+.sub-nav{height:30px;background:var(--bg2);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 10px;gap:1px;flex-shrink:0;overflow-x:auto}
+.sub-nav::-webkit-scrollbar{display:none}
+.sn-item{display:flex;align-items:center;padding:4px 10px;font-family:var(--mono);font-size:8px;color:var(--text3);cursor:pointer;border-radius:3px;white-space:nowrap;transition:all .1s;border:1px solid transparent}
+.sn-item:hover{color:var(--text2);background:var(--bg3)}.sn-item.active{color:var(--text);background:var(--bg3);border-color:var(--border2)}
+.sn-sep{width:1px;height:14px;background:var(--border);margin:0 4px;flex-shrink:0}
+.l-nav{width:var(--nav-w);background:var(--bg1);border-right:1px solid var(--border);flex-shrink:0;display:flex;flex-direction:column;padding:10px 0;gap:1px;overflow-y:auto}
+.nav-sec{font-family:var(--mono);font-size:7px;letter-spacing:.14em;text-transform:uppercase;color:var(--text3);padding:8px 12px 3px}
+.nav-it{display:flex;align-items:center;gap:6px;padding:5px 12px;font-family:var(--mono);font-size:9px;color:var(--text3);cursor:pointer;border-left:2px solid transparent;white-space:nowrap;overflow:hidden;transition:all .1s}
+.nav-it:hover{background:var(--bg2);color:var(--text2)}.nav-it.active{background:var(--bg2);color:var(--text);border-left-color:var(--cyan)}
+.nav-it .badge{margin-left:auto;background:var(--bg3);border-radius:2px;padding:1px 4px;font-size:7px;color:var(--text3)}
+.toolbar{height:32px;background:var(--bg1);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 12px;gap:8px;flex-shrink:0}
+.tb-title{font-family:var(--mono);font-size:10px;font-weight:600;color:var(--text)}
+.g-btn{background:var(--bg2);border:1px solid var(--border2);border-radius:3px;padding:3px 8px;font-family:var(--mono);font-size:9px;color:var(--text2);cursor:pointer;transition:all .12s}
+.g-btn:hover{border-color:var(--cyan);color:var(--cyan)}.g-btn.pri{background:var(--cyan);border-color:var(--cyan);color:#000;font-weight:600}
+/* TABS */
+.tab-bar{display:flex;border-bottom:1px solid var(--border);padding:0 16px;background:var(--bg1);flex-shrink:0}
+.tab-it{font-family:var(--mono);font-size:9px;color:var(--text3);padding:7px 12px;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .1s}
+.tab-it.active{color:var(--text);border-bottom-color:var(--cyan)}
+/* RESOURCE TABLES */
+.res-section{background:var(--bg1);border:1px solid var(--border);border-radius:4px;overflow:hidden}
+.rs-hdr{display:flex;align-items:center;gap:8px;padding:10px 14px;border-bottom:1px solid var(--border);background:var(--bg2)}
+.rs-title{font-family:var(--mono);font-size:9px;font-weight:600;color:var(--text)}
+.rs-count{font-family:var(--mono);font-size:7px;color:var(--text3);background:var(--bg3);border:1px solid var(--border);border-radius:2px;padding:1px 5px}
+.res-table{width:100%;border-collapse:collapse}
+.res-table th{font-family:var(--mono);font-size:7px;letter-spacing:.1em;text-transform:uppercase;color:var(--text3);padding:5px 12px;text-align:left;border-bottom:1px solid var(--border);background:var(--bg2)}
+.res-table td{font-family:var(--mono);font-size:8px;color:var(--text2);padding:7px 12px;border-bottom:1px solid var(--border)}
+.res-table tr:last-child td{border-bottom:none}
+.res-table tr:hover td{background:rgba(255,255,255,.02)}
+.r-dot{width:6px;height:6px;border-radius:50%;display:inline-block;margin-right:5px}
+.util-bar{width:80px;height:4px;background:var(--bg3);border-radius:2px;overflow:hidden;display:inline-block;vertical-align:middle;margin-right:5px}
+.util-fill{height:100%;border-radius:2px}
+.type-badge{font-family:var(--mono);font-size:7px;padding:1px 5px;border-radius:2px;border:1px solid}
+.pill{font-family:var(--mono);font-size:7px;padding:1px 5px;border-radius:10px;border:1px solid;font-weight:600}
+/* stat strip */
+.stat-strip{display:flex;background:var(--bg2);border:1px solid var(--border);border-radius:4px;overflow:hidden}
+.ss-cell{flex:1;padding:10px 14px;border-right:1px solid var(--border)}
+.ss-cell:last-child{border-right:none}
+.ss-lbl{font-family:var(--mono);font-size:7px;letter-spacing:.1em;text-transform:uppercase;color:var(--text3);margin-bottom:3px}
+.ss-val{font-family:var(--mono);font-size:18px;font-weight:600;line-height:1}
+.ss-sub{font-family:var(--mono);font-size:7px;color:var(--text3);margin-top:2px}
+/* allocation map */
+.alloc-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:8px}
+.alloc-card{background:var(--bg2);border:1px solid var(--border);border-radius:3px;padding:10px}
+.ac-name{font-family:var(--mono);font-size:9px;font-weight:600;color:var(--text);margin-bottom:2px}
+.ac-role{font-family:var(--mono);font-size:7px;color:var(--text3);margin-bottom:6px}
+.ac-bar-wrap{display:flex;align-items:center;gap:6px}
+.ac-bar{flex:1;height:6px;background:var(--bg3);border-radius:3px;overflow:hidden}
+.ac-fill{height:100%;border-radius:3px}
+.ac-pct{font-family:var(--mono);font-size:8px;font-weight:600}
+.ac-projects{margin-top:6px;display:flex;flex-direction:column;gap:2px}
+.ac-proj{font-family:var(--mono);font-size:7px;color:var(--text3);padding:2px 0;border-bottom:1px solid var(--border)}
+.ac-proj:last-child{border-bottom:none}
+</style>
+</head>
+<body>
+<div class="screen">
+  <div class="g-hdr">
+    <span class="g-logo">KOGI</span>
+    <div class="g-bc"><span>OS</span><span class="sep"> / </span><span>Portfolio</span><span class="sep"> / </span><span class="cur">Resources</span></div>
+    <div class="g-dot"></div>
+  </div>
+  <div class="sub-nav" id="sub-nav"></div>
+  <div class="body-layout">
+    <div class="l-nav">
+      <div class="nav-sec">Navigation</div>
+      <a href="#" class="nav-it">🏠 Home</a>
+      <a href="portfolio-grid.html" class="nav-it">📁 Portfolio</a>
+      <a href="portfolio-programs.html" class="nav-it">📋 Programs</a>
+      <a href="portfolio-resources.html" class="nav-it active">👤 Resources <span class="badge">8</span></a>
+      <div class="nav-sec">Workspace</div>
+      <a href="#" class="nav-it">🗂 Collections</a>
+      <a href="#" class="nav-it">📌 Pinned</a>
+      <a href="#" class="nav-it">🏷 Tags</a>
+      <div class="nav-sec">Tools</div>
+      <a href="portfolio-analytics.html" class="nav-it">📊 Analytics</a>
+      <a href="portfolio-governance.html" class="nav-it">⚙ Governance</a>
+      <a href="portfolio-graph.html" class="nav-it">🔗 Graph</a>
+      <div class="nav-sec">Platform</div>
+      <a href="portfolio-benefits.html" class="nav-it">⊕ Benefits</a>
+      <a href="portfolio-collaboration.html" class="nav-it">⊗ Collab</a>
+    </div>
+    <div class="main">
+      <div class="toolbar">
+        <span class="tb-title">Resources</span>
+        <span style="font-family:var(--mono);font-size:8px;color:var(--text3);margin-left:6px">People · Assets · Budget · Allocation</span>
+        <div style="margin-left:auto;display:flex;gap:6px">
+          <span class="g-btn">Allocate</span>
+          <span class="g-btn pri">+ Add Resource</span>
+        </div>
+      </div>
+      <div class="tab-bar">
+        <span class="tab-it active">People</span>
+        <span class="tab-it">Assets</span>
+        <span class="tab-it">Budget</span>
+        <span class="tab-it">Allocation Map</span>
+      </div>
+      <div class="content">
+        <!-- STAT STRIP -->
+        <div class="stat-strip">
+          <div class="ss-cell"><div class="ss-lbl">People</div><div class="ss-val" style="color:var(--blue)">4</div><div class="ss-sub">3 active · 1 contractor</div></div>
+          <div class="ss-cell"><div class="ss-lbl">Avg Utilization</div><div class="ss-val" style="color:var(--cyan)">82%</div><div class="ss-sub">ResourceUtilization model</div></div>
+          <div class="ss-cell"><div class="ss-lbl">Total Asset Value</div><div class="ss-val" style="color:var(--gold)">$184k</div><div class="ss-sub">4 assets tracked</div></div>
+          <div class="ss-cell"><div class="ss-lbl">Budget Allocated</div><div class="ss-val" style="color:var(--green)">$140k</div><div class="ss-sub">$82k remaining</div></div>
+          <div class="ss-cell"><div class="ss-lbl">Over-Allocated</div><div class="ss-val" style="color:var(--rose)">1</div><div class="ss-sub">Jordan Chen at 88%</div></div>
+        </div>
+
+        <!-- PEOPLE TABLE -->
+        <div class="res-section">
+          <div class="rs-hdr">
+            <span class="rs-title">People Resources</span>
+            <span class="rs-count">4 total</span>
+            <div style="flex:1;height:1px;background:var(--border)"></div>
+            <span style="font-family:var(--mono);font-size:7px;color:var(--text3)">ResourceUtilization Model · v2.1</span>
+          </div>
+          <table class="res-table">
+            <thead><tr>
+              <th>Name</th><th>Type</th><th>Skills</th><th>Rate</th><th>Hrs/Wk</th><th>Utilization</th><th>Assigned To</th><th>Status</th>
+            </tr></thead>
+            <tbody>
+              <tr>
+                <td><span class="r-dot" style="background:#3a7cc8"></span>Jordan Chen</td>
+                <td><span class="type-badge" style="color:#3a7cc8;border-color:#3a7cc830">Human · Lead</span></td>
+                <td style="color:var(--text3)">Design Systems, UX, Motion</td>
+                <td style="color:var(--cyan)">$145/h</td>
+                <td>32</td>
+                <td><div class="util-bar"><div class="util-fill" style="background:#c45c7a;width:88%"></div></div><span style="color:var(--rose)">88%</span></td>
+                <td style="color:var(--text3)">Brand Identity, Design Lib</td>
+                <td><span class="pill" style="color:var(--green);border-color:#4aab6d30;background:#4aab6d12">Active</span></td>
+              </tr>
+              <tr>
+                <td><span class="r-dot" style="background:#7c5cbf"></span>Mia Okafor</td>
+                <td><span class="type-badge" style="color:#7c5cbf;border-color:#7c5cbf30">Human · Dev</span></td>
+                <td style="color:var(--text3)">Rust, Go, Distributed Systems</td>
+                <td style="color:var(--cyan)">$165/h</td>
+                <td>40</td>
+                <td><div class="util-bar"><div class="util-fill" style="background:#4aab6d;width:75%"></div></div><span style="color:var(--green)">75%</span></td>
+                <td style="color:var(--text3)">Alpha Platform, Mobile App</td>
+                <td><span class="pill" style="color:var(--green);border-color:#4aab6d30;background:#4aab6d12">Active</span></td>
+              </tr>
+              <tr>
+                <td><span class="r-dot" style="background:#c8a84b"></span>Kwame Asare</td>
+                <td><span class="type-badge" style="color:#c8a84b;border-color:#c8a84b30">Human · Strategy</span></td>
+                <td style="color:var(--text3)">Product Strategy, OKRs, Research</td>
+                <td style="color:var(--cyan)">$120/h</td>
+                <td>24</td>
+                <td><div class="util-bar"><div class="util-fill" style="background:#4aab6d;width:62%"></div></div><span style="color:var(--green)">62%</span></td>
+                <td style="color:var(--text3)">Community Growth, Strategy</td>
+                <td><span class="pill" style="color:var(--green);border-color:#4aab6d30;background:#4aab6d12">Active</span></td>
+              </tr>
+              <tr>
+                <td><span class="r-dot" style="background:#c45c7a"></span>Legal · External</td>
+                <td><span class="type-badge" style="color:#c45c7a;border-color:#c45c7a30">Service · Legal</span></td>
+                <td style="color:var(--text3)">IP Law, Contracts, Compliance</td>
+                <td style="color:var(--cyan)">$280/h</td>
+                <td>8</td>
+                <td><div class="util-bar"><div class="util-fill" style="background:#4aab6d;width:40%"></div></div><span style="color:var(--green)">40%</span></td>
+                <td style="color:var(--text3)">Legal Compliance Pack</td>
+                <td><span class="pill" style="color:var(--gold);border-color:#c8a84b30;background:#c8a84b12">Contractor</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- ASSETS TABLE -->
+        <div class="res-section">
+          <div class="rs-hdr">
+            <span class="rs-title">Assets</span>
+            <span class="rs-count">4 items</span>
+            <div style="flex:1;height:1px;background:var(--border)"></div>
+            <span style="font-family:var(--mono);font-size:7px;color:var(--text3)">AssetValue Model · Depreciation + ROI tracking</span>
+          </div>
+          <table class="res-table">
+            <thead><tr>
+              <th>Name</th><th>Asset Type</th><th>Valuation</th><th>Acquisition</th><th>Depreciation</th><th>ROI</th><th>Linked To</th><th>Tax Category</th>
+            </tr></thead>
+            <tbody>
+              <tr>
+                <td><span class="r-dot" style="background:#c87c3a"></span>Bloom's Building Fund</td>
+                <td><span class="type-badge" style="color:#c87c3a;border-color:#c87c3a30">Investment</span></td>
+                <td style="color:var(--cyan)">$128,000</td>
+                <td style="color:var(--text3)">Jan 2024</td>
+                <td style="color:var(--text3)">N/A</td>
+                <td style="color:var(--green)">7.2% yield</td>
+                <td style="color:var(--text3)">Finance Program</td>
+                <td><span class="type-badge" style="color:#4aab6d;border-color:#4aab6d30">Investment</span></td>
+              </tr>
+              <tr>
+                <td><span class="r-dot" style="background:#c87c3a"></span>Design System Library</td>
+                <td><span class="type-badge" style="color:#c87c3a;border-color:#c87c3a30">Digital · IP</span></td>
+                <td style="color:var(--cyan)">$28,000</td>
+                <td style="color:var(--text3)">Q3 2024</td>
+                <td style="color:var(--text3)">3-yr linear</td>
+                <td style="color:var(--green)">42× reuse</td>
+                <td style="color:var(--text3)">Brand, Products</td>
+                <td><span class="type-badge" style="color:#7c5cbf;border-color:#7c5cbf30">Business</span></td>
+              </tr>
+              <tr>
+                <td><span class="r-dot" style="background:#5ca8bf"></span>Podcast Equipment Kit</td>
+                <td><span class="type-badge" style="color:#5ca8bf;border-color:#5ca8bf30">Physical</span></td>
+                <td style="color:var(--cyan)">$3,200</td>
+                <td style="color:var(--text3)">Q1 2025</td>
+                <td style="color:var(--text3)">5-yr straight</td>
+                <td style="color:var(--text3)">—</td>
+                <td style="color:var(--text3)">Community, Studio</td>
+                <td><span class="type-badge" style="color:#c8a84b;border-color:#c8a84b30">Business</span></td>
+              </tr>
+              <tr>
+                <td><span class="r-dot" style="background:#a0bf5c"></span>Domain Portfolio</td>
+                <td><span class="type-badge" style="color:#a0bf5c;border-color:#a0bf5c30">IP · Digital</span></td>
+                <td style="color:var(--cyan)">$4,800</td>
+                <td style="color:var(--text3)">Various</td>
+                <td style="color:var(--text3)">N/A</td>
+                <td style="color:var(--text3)">Speculative</td>
+                <td style="color:var(--text3)">Platform</td>
+                <td><span class="type-badge" style="color:#a0bf5c;border-color:#a0bf5c30">Business</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- ALLOCATION MAP -->
+        <div class="res-section" style="padding:12px 14px">
+          <div class="rs-hdr" style="padding:0;margin-bottom:10px;background:transparent;border:none">
+            <span class="rs-title">Capacity Allocation Map</span>
+            <div style="flex:1;height:1px;background:var(--border)"></div>
+            <span style="font-family:var(--mono);font-size:7px;color:var(--text3)">ResourceAllocation Engine</span>
+          </div>
+          <div class="alloc-grid">
+            <div class="alloc-card">
+              <div class="ac-name">Jordan Chen</div><div class="ac-role">Lead Designer</div>
+              <div class="ac-bar-wrap"><div class="ac-bar"><div class="ac-fill" style="background:#c45c7a;width:88%"></div></div><span class="ac-pct" style="color:var(--rose)">88%</span></div>
+              <div class="ac-projects"><div class="ac-proj">↳ Brand Identity System</div><div class="ac-proj">↳ Design System Library</div></div>
+            </div>
+            <div class="alloc-card">
+              <div class="ac-name">Mia Okafor</div><div class="ac-role">Systems Engineer</div>
+              <div class="ac-bar-wrap"><div class="ac-bar"><div class="ac-fill" style="background:#4aab6d;width:75%"></div></div><span class="ac-pct" style="color:var(--green)">75%</span></div>
+              <div class="ac-projects"><div class="ac-proj">↳ Alpha Platform</div><div class="ac-proj">↳ Mobile App MVP</div></div>
+            </div>
+            <div class="alloc-card">
+              <div class="ac-name">Kwame Asare</div><div class="ac-role">Product Strategist</div>
+              <div class="ac-bar-wrap"><div class="ac-bar"><div class="ac-fill" style="background:#4aab6d;width:62%"></div></div><span class="ac-pct" style="color:var(--green)">62%</span></div>
+              <div class="ac-projects"><div class="ac-proj">↳ Community Growth</div><div class="ac-proj">↳ Q3 Strategy Deck</div></div>
+            </div>
+            <div class="alloc-card">
+              <div class="ac-name">Legal · External</div><div class="ac-role">Legal Counsel</div>
+              <div class="ac-bar-wrap"><div class="ac-bar"><div class="ac-fill" style="background:#c8a84b;width:40%"></div></div><span class="ac-pct" style="color:var(--gold)">40%</span></div>
+              <div class="ac-projects"><div class="ac-proj">↳ Legal Compliance Pack</div><div class="ac-proj">↳ Finance Infra review</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<script src="kogi-shared.js"></script>
+<script>buildSubNav('resources');</script>
+</body>
+</html>

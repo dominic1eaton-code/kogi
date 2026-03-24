@@ -1,0 +1,369 @@
+<!DOCTYPE html><html lang="en"><head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>UME OrgOS — Marketing</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#070010;--surface:#0f0820;--surface-2:#150b2c;--surface-3:#1b1038;--border:rgba(255,255,255,.065);--border-mid:rgba(255,255,255,.10);--text:#ede6ff;--text-soft:rgba(215,205,255,.7);--text-muted:rgba(190,175,240,.4);--purple:#6a2fff;--purple-mid:#2d0072;--purple-dim:rgba(106,47,255,.18);--cherry:#ff2a55;--cherry-dim:rgba(255,42,85,.15);--teal:#00e5d8;--teal-dim:rgba(0,229,216,.12);--amber:#f5b942;--amber-dim:rgba(245,185,66,.12);--blue:#38b4ff;--blue-dim:rgba(56,180,255,.13);--emerald:#34e8a0;--emerald-dim:rgba(52,232,160,.11);--coral:#ff6b4a;--coral-dim:rgba(255,107,74,.13);--orchid:#d855ff;--orchid-dim:rgba(216,85,255,.14);--rose:#ff4c8b;--rose-dim:rgba(255,76,139,.13);--sidebar-w:210px;}
+*{margin:0;padding:0;box-sizing:border-box;}html,body{height:100%;font-family:"Space Grotesk",sans-serif;background:var(--bg);overflow:hidden;color:var(--text);}body{display:flex;}
+.sidebar{width:var(--sidebar-w);height:100vh;background:#0a0018;display:flex;flex-direction:column;flex-shrink:0;border-right:1px solid rgba(255,255,255,.05);}
+.sidebar-logo{display:flex;align-items:center;gap:9px;padding:16px 16px 14px;border-bottom:1px solid rgba(255,255,255,.06);}
+.s-icon{width:30px;height:30px;border-radius:8px;background:var(--purple-mid);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:15px;color:#fff;box-shadow:0 0 14px 2px rgba(106,47,255,.5);flex-shrink:0;}
+.s-logo-text{font-weight:700;font-size:15px;color:#fff;}.s-logo-text span{color:var(--cherry);}
+.org-selector{margin:10px 10px 4px;padding:8px 10px;border-radius:8px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.07);cursor:pointer;display:flex;align-items:center;gap:8px;}
+.org-dot{width:7px;height:7px;border-radius:50%;background:var(--teal);flex-shrink:0;box-shadow:0 0 6px rgba(0,229,216,.65);}
+.org-name{font-size:12px;font-weight:600;color:rgba(220,210,255,.8);flex:1;}.org-chevron{color:rgba(200,190,255,.3);font-size:10px;}
+.nav-section{padding:0 8px;margin-bottom:2px;}.nav-label{font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:rgba(200,190,255,.18);padding:10px 8px 4px;}
+.nav-item{display:flex;align-items:center;gap:9px;padding:7px 10px;border-radius:7px;cursor:pointer;transition:.15s;text-decoration:none;margin-bottom:1px;}
+.nav-item:hover{background:rgba(255,255,255,.06);}.nav-item.active{background:linear-gradient(90deg,rgba(106,47,255,.5),rgba(255,42,85,.22));border:1px solid rgba(255,42,85,.15);}
+.nav-icon{font-size:14px;width:20px;text-align:center;flex-shrink:0;}.nav-text{font-size:12.5px;font-weight:500;color:rgba(210,200,255,.38);flex:1;}
+.nav-item.active .nav-text{color:#fff;font-weight:600;}.nav-badge{min-width:18px;height:18px;border-radius:9px;background:var(--cherry);color:#fff;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;padding:0 5px;}
+.sidebar-footer{margin-top:auto;padding:10px;border-top:1px solid rgba(255,255,255,.05);}
+.user-row{display:flex;align-items:center;gap:9px;cursor:pointer;padding:8px;border-radius:8px;}
+.user-avatar{width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,var(--purple-mid),var(--cherry));display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff;flex-shrink:0;}
+.user-name{font-size:12px;font-weight:600;color:rgba(220,210,255,.8);}.user-role{font-size:10px;color:rgba(200,190,255,.3);}
+.main{flex:1;display:flex;flex-direction:column;height:100vh;overflow:hidden;}
+.topbar{height:52px;background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 24px;gap:12px;flex-shrink:0;}
+.page-title{font-size:15px;font-weight:700;color:var(--text);}.topbar-meta{font-size:11.5px;color:var(--text-muted);}
+.topbar-right{margin-left:auto;display:flex;align-items:center;gap:10px;}
+.tb-btn{padding:6px 13px;border:1px solid var(--border-mid);border-radius:7px;font-size:12px;font-weight:600;color:var(--text-soft);background:var(--surface-2);cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:5px;transition:.15s;text-decoration:none;}
+.tb-btn.primary{background:linear-gradient(135deg,var(--rose),var(--cherry));color:#fff;border:none;box-shadow:0 3px 16px rgba(255,76,139,.3);}
+.icon-btn{width:32px;height:32px;border-radius:7px;border:1px solid var(--border-mid);background:var(--surface-2);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:14px;position:relative;}
+.notif-dot{position:absolute;top:5px;right:5px;width:7px;height:7px;border-radius:50%;background:var(--cherry);border:1.5px solid var(--surface);}
+.live-pill{display:flex;align-items:center;gap:5px;padding:4px 11px;border-radius:20px;background:rgba(0,229,216,.09);border:1px solid rgba(0,229,216,.22);font-size:11px;color:var(--teal);font-weight:600;}
+.live-pill::before{content:'';width:6px;height:6px;border-radius:50%;background:var(--teal);display:inline-block;box-shadow:0 0 7px rgba(0,229,216,.8);}
+.subnav{display:flex;align-items:center;gap:2px;padding:0 24px;height:42px;background:var(--surface-2);border-bottom:1px solid var(--border);flex-shrink:0;overflow-x:auto;}
+.subnav::-webkit-scrollbar{height:0;}
+.snav-item{display:inline-flex;align-items:center;gap:5px;padding:6px 12px;border-radius:6px;font-size:12px;font-weight:600;color:rgba(200,185,255,.4);cursor:pointer;text-decoration:none;white-space:nowrap;transition:.15s;border:1px solid transparent;}
+.snav-item:hover{color:rgba(210,200,255,.8);background:rgba(255,255,255,.05);}
+.snav-item.active{color:#fff;background:rgba(255,76,139,.18);border-color:rgba(255,76,139,.32);}
+.content{flex:1;overflow-y:auto;padding:20px 24px;}
+.breadcrumb{font-size:12px;color:var(--text-muted);margin-bottom:14px;display:flex;align-items:center;gap:6px;}
+.breadcrumb a{color:var(--text-muted);text-decoration:none;}.breadcrumb-sep{color:rgba(200,190,255,.2);}
+.card{background:var(--surface);border-radius:14px;border:1px solid var(--border);padding:18px;margin-bottom:14px;}
+.card-sm{background:var(--surface-2);border-radius:10px;border:1px solid var(--border);padding:14px;}
+.card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
+.card-title{font-size:13.5px;font-weight:700;color:var(--text);}.card-sub{font-size:11px;color:var(--text-muted);margin-top:2px;}
+.card-action{font-size:12px;color:var(--rose);font-weight:600;cursor:pointer;text-decoration:none;}
+.kpi-grid{display:grid;gap:12px;margin-bottom:16px;}
+.kpi-grid.c4{grid-template-columns:repeat(4,1fr);}.kpi-grid.c5{grid-template-columns:repeat(5,1fr);}.kpi-grid.c3{grid-template-columns:repeat(3,1fr);}
+.kpi{background:var(--surface);border-radius:12px;border:1px solid var(--border);padding:14px 16px;position:relative;overflow:hidden;cursor:pointer;transition:.18s;}
+.kpi:hover{transform:translateY(-1px);}
+.kpi::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;border-radius:12px 12px 0 0;}
+.kpi::after{content:'';position:absolute;inset:0;pointer-events:none;border-radius:12px;}
+.kpi.c-rose::before{background:linear-gradient(90deg,var(--rose),var(--cherry));}.kpi.c-rose::after{background:radial-gradient(ellipse at 90% 0%,rgba(255,76,139,.11),transparent 65%);}
+.kpi.c-amber::before{background:linear-gradient(90deg,var(--amber),var(--coral));}.kpi.c-amber::after{background:radial-gradient(ellipse at 90% 0%,rgba(245,185,66,.11),transparent 65%);}
+.kpi.c-teal::before{background:linear-gradient(90deg,var(--teal),var(--blue));}.kpi.c-teal::after{background:radial-gradient(ellipse at 90% 0%,rgba(0,229,216,.11),transparent 65%);}
+.kpi.c-emerald::before{background:linear-gradient(90deg,var(--emerald),var(--teal));}.kpi.c-emerald::after{background:radial-gradient(ellipse at 90% 0%,rgba(52,232,160,.11),transparent 65%);}
+.kpi.c-cherry::before{background:linear-gradient(90deg,var(--cherry),var(--rose));}.kpi.c-cherry::after{background:radial-gradient(ellipse at 90% 0%,rgba(255,42,85,.11),transparent 65%);}
+.kpi.c-purple::before{background:linear-gradient(90deg,var(--purple),var(--orchid));}.kpi.c-purple::after{background:radial-gradient(ellipse at 90% 0%,rgba(106,47,255,.11),transparent 65%);}
+.kpi.c-blue::before{background:linear-gradient(90deg,var(--blue),var(--teal));}.kpi.c-blue::after{background:radial-gradient(ellipse at 90% 0%,rgba(56,180,255,.11),transparent 65%);}
+.kpi.c-orchid::before{background:linear-gradient(90deg,var(--orchid),var(--purple));}.kpi.c-orchid::after{background:radial-gradient(ellipse at 90% 0%,rgba(216,85,255,.11),transparent 65%);}
+.kpi-label{font-size:11px;color:var(--text-muted);margin-bottom:6px;font-weight:500;}
+.kpi-val{font-size:22px;font-weight:700;color:var(--text);margin-bottom:4px;}
+.kpi-sub{font-size:11px;color:var(--text-muted);}
+.kpi-sub.up{color:var(--emerald);}.kpi-sub.down{color:var(--cherry);}.kpi-sub.warn{color:var(--amber);}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;}
+.three-col{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:14px;}
+.l75{display:grid;grid-template-columns:3fr 2fr;gap:14px;margin-bottom:14px;}
+.badge{display:inline-flex;align-items:center;padding:2px 8px;border-radius:20px;font-size:10.5px;font-weight:700;}
+.b-green{background:rgba(52,232,160,.12);color:var(--emerald);border:1px solid rgba(52,232,160,.22);}
+.b-red{background:rgba(255,42,85,.14);color:var(--cherry);border:1px solid rgba(255,42,85,.22);}
+.b-amber{background:rgba(245,185,66,.12);color:var(--amber);border:1px solid rgba(245,185,66,.22);}
+.b-blue{background:rgba(56,180,255,.12);color:var(--blue);border:1px solid rgba(56,180,255,.2);}
+.b-purple{background:rgba(106,47,255,.18);color:#a888ff;border:1px solid rgba(106,47,255,.28);}
+.b-teal{background:var(--teal-dim);color:var(--teal);border:1px solid rgba(0,229,216,.2);}
+.b-rose{background:var(--rose-dim);color:var(--rose);border:1px solid rgba(255,76,139,.22);}
+.b-orchid{background:var(--orchid-dim);color:var(--orchid);border:1px solid rgba(216,85,255,.2);}
+.bar-row{display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid var(--border);}
+.bar-row:last-child{border:none;}
+.bar-label{font-size:12px;color:var(--text-soft);min-width:130px;}
+.bar-track{flex:1;height:6px;background:rgba(255,255,255,.06);border-radius:3px;overflow:hidden;}
+.bar-fill{height:100%;border-radius:3px;}
+.bar-val{font-size:12px;font-weight:700;min-width:56px;text-align:right;}
+.row-item{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--border);}
+.row-item:last-child{border:none;}
+.funnel-row{display:flex;align-items:center;gap:12px;padding:8px 0;border-bottom:1px solid var(--border);}
+.funnel-row:last-child{border:none;}
+.funnel-stage{font-size:12px;font-weight:600;color:var(--text-soft);min-width:120px;}
+.funnel-track{flex:1;height:8px;background:rgba(255,255,255,.06);border-radius:4px;overflow:hidden;}
+.funnel-fill{height:100%;border-radius:4px;}
+.funnel-count{font-size:12px;color:var(--text-muted);min-width:60px;text-align:right;}
+.funnel-rate{font-size:11px;color:var(--text-muted);min-width:48px;text-align:right;}
+.activity-item{display:flex;gap:9px;padding:8px 0;border-bottom:1px solid var(--border);}
+.activity-item:last-child{border:none;}
+.act-icon{width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;}
+.section-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text-muted);margin-bottom:10px;}
+.mini-table{width:100%;border-collapse:collapse;}
+.mini-table th{font-size:10.5px;font-weight:700;color:var(--text-muted);text-align:left;padding:5px 8px;border-bottom:1px solid var(--border);}
+.mini-table td{font-size:12px;color:var(--text-soft);padding:7px 8px;border-bottom:1px solid rgba(255,255,255,.035);}
+.mini-table tr:last-child td{border:none;}
+.mini-table td.hi{color:var(--text);font-weight:600;}
+.channel-pill{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:20px;font-size:10.5px;font-weight:600;}
+.cp-rose{background:var(--rose-dim);color:var(--rose);border:1px solid rgba(255,76,139,.2);}
+.cp-blue{background:var(--blue-dim);color:var(--blue);border:1px solid rgba(56,180,255,.2);}
+.cp-teal{background:var(--teal-dim);color:var(--teal);border:1px solid rgba(0,229,216,.18);}
+.cp-amber{background:var(--amber-dim);color:var(--amber);border:1px solid rgba(245,185,66,.2);}
+.cp-orchid{background:var(--orchid-dim);color:var(--orchid);border:1px solid rgba(216,85,255,.18);}
+.cp-emerald{background:var(--emerald-dim);color:var(--emerald);border:1px solid rgba(52,232,160,.18);}
+</style></head><body>
+
+<div class="sidebar">
+  <div class="sidebar-logo"><div class="s-icon">U</div><div class="s-logo-text">UME <span>OrgOS</span></div></div>
+  <div class="org-selector"><div class="org-dot"></div><div class="org-name">Acme Corp LLC</div><div class="org-chevron">&#9662;</div></div>
+  <div class="nav-section"><div class="nav-label">Overview</div><a class="nav-item" href="dashboard.html"><div class="nav-icon">&#127968;</div><div class="nav-text">Dashboard</div></a></div>
+  <div class="nav-section"><div class="nav-label">OrgApps</div>
+    <a class="nav-item" href="finance.html"><div class="nav-icon">&#128176;</div><div class="nav-text">Finance</div></a>
+    <a class="nav-item" href="hr.html"><div class="nav-icon">&#128101;</div><div class="nav-text">HR &amp; People</div></a>
+    <a class="nav-item" href="legal.html"><div class="nav-icon">&#9878;&#65039;</div><div class="nav-text">Legal</div></a>
+    <a class="nav-item" href="sales.html"><div class="nav-icon">&#128230;</div><div class="nav-text">Sales &amp; CRM</div></a>
+    <a class="nav-item" href="operations.html"><div class="nav-icon">&#127981;</div><div class="nav-text">Operations</div></a>
+    <a class="nav-item" href="risk-grc.html"><div class="nav-icon">&#128737;&#65039;</div><div class="nav-text">Risk &amp; GRC</div></a>
+    <a class="nav-item active" href="marketing.html"><div class="nav-icon">&#128227;</div><div class="nav-text">Marketing</div></a>
+  </div>
+  <div class="nav-section"><div class="nav-label">OrgSystem</div>
+    <a class="nav-item" href="orgexec.html"><div class="nav-icon">&#129302;</div><div class="nav-text">OrgExec / Agents</div></a>
+    <a class="nav-item" href="digital-twin.html"><div class="nav-icon">&#128300;</div><div class="nav-text">Digital Twin</div></a>
+    <a class="nav-item" href="dao.html"><div class="nav-icon">&#128272;</div><div class="nav-text">DAO &amp; DLT</div></a>
+    <a class="nav-item" href="alerts.html"><div class="nav-icon">&#9888;&#65039;</div><div class="nav-text">Alerts</div><div class="nav-badge">3</div></a>
+  </div>
+  <div class="nav-section"><a class="nav-item" href="settings.html"><div class="nav-icon">&#9881;&#65039;</div><div class="nav-text">Settings</div></a></div>
+  <div class="sidebar-footer"><div class="user-row"><div class="user-avatar">AL</div><div><div class="user-name">Ada Lovelace</div><div class="user-role">Owner &middot; CEO</div></div><div style="margin-left:auto;font-size:14px;color:rgba(200,190,255,.2);">&#8943;</div></div></div>
+</div>
+
+<div class="main">
+  <div class="topbar">
+    <div><div class="page-title">Marketing</div><div class="topbar-meta">Acme Corp LLC &middot; 3 active campaigns &middot; $8,400 budget remaining &middot; 4.2% avg CTR</div></div>
+    <div class="topbar-right">
+      <div class="live-pill">Live</div>
+      <button class="tb-btn primary">&#43; New Campaign</button>
+      <button class="tb-btn">&#128202; Reports</button>
+      <button class="tb-btn">&#8681; Export</button>
+      <div class="icon-btn">&#128276;<div class="notif-dot"></div></div>
+    </div>
+  </div>
+
+  <div class="subnav">
+    <a class="snav-item active" href="marketing.html">&#127968; Overview</a>
+    <a class="snav-item" href="marketing-strategy.html">&#127919; Strategy</a>
+    <a class="snav-item" href="marketing-campaigns.html">&#128227; Campaigns</a>
+    <a class="snav-item" href="marketing-promotions.html">&#127881; Promotions</a>
+    <a class="snav-item" href="marketing-funnel.html">&#128200; Funnel &amp; Pipeline</a>
+    <a class="snav-item" href="marketing-leads.html">&#127775; Leads &amp; Nurturing</a>
+    <a class="snav-item" href="marketing-personas.html">&#129312; Personas &amp; ICP</a>
+    <a class="snav-item" href="marketing-segmentation.html">&#127829; Segmentation</a>
+    <a class="snav-item" href="marketing-brand.html">&#127775; Brand &amp; Design</a>
+    <a class="snav-item" href="marketing-content.html">&#128221; Content &amp; SEO</a>
+    <a class="snav-item" href="marketing-channels.html">&#128225; Channels &amp; Comms</a>
+    <a class="snav-item" href="marketing-pr.html">&#127908; PR &amp; Reputation</a>
+    <a class="snav-item" href="marketing-analytics.html">&#128202; Analytics &amp; CRM</a>
+    <a class="snav-item" href="marketing-usp.html">&#9889; USP &amp; Positioning</a>
+    <a class="snav-item" href="marketing-intelligence.html">&#129504; Intelligence</a>
+  </div>
+
+  <div class="content">
+    <div class="breadcrumb"><a href="dashboard.html">Dashboard</a><span class="breadcrumb-sep">/</span><span>Marketing</span><span class="breadcrumb-sep">/</span><span>Overview</span></div>
+
+    <!-- KPI Row 1 -->
+    <div class="kpi-grid c4">
+      <div class="kpi c-rose"><div class="kpi-label">Marketing-Sourced Revenue (MTD)</div><div class="kpi-val">$41,200</div><div class="kpi-sub up">&#8593; +18% vs Nov</div></div>
+      <div class="kpi c-teal"><div class="kpi-label">Leads Generated (MTD)</div><div class="kpi-val">312</div><div class="kpi-sub up">&#8593; +27 vs target</div></div>
+      <div class="kpi c-amber"><div class="kpi-label">Budget Spent (MTD)</div><div class="kpi-val">$16,600</div><div class="kpi-sub warn">$8,400 remaining</div></div>
+      <div class="kpi c-emerald"><div class="kpi-label">Blended ROAS</div><div class="kpi-val">2.48x</div><div class="kpi-sub up">&#8593; 0.3x vs Q3</div></div>
+    </div>
+    <div class="kpi-grid c4" style="margin-bottom:18px;">
+      <div class="kpi c-blue"><div class="kpi-label">Avg CTR (All Channels)</div><div class="kpi-val">4.2%</div><div class="kpi-sub up">&#8593; Industry: 2.8%</div></div>
+      <div class="kpi c-cherry"><div class="kpi-label">Cost Per Lead (CPL)</div><div class="kpi-val">$53.21</div><div class="kpi-sub down">&#8595; $4.10 vs last month</div></div>
+      <div class="kpi c-orchid"><div class="kpi-label">Email Open Rate</div><div class="kpi-val">38.4%</div><div class="kpi-sub up">&#8593; Industry avg: 21%</div></div>
+      <div class="kpi c-purple"><div class="kpi-label">Brand Awareness Score</div><div class="kpi-val">72 / 100</div><div class="kpi-sub up">&#8593; +4 pts Q-o-Q</div></div>
+    </div>
+
+    <div class="l75">
+      <!-- Active Campaigns -->
+      <div class="card">
+        <div class="card-header">
+          <div><div class="card-title">Active Campaigns</div><div class="card-sub">3 running · 1 paused · 2 scheduled</div></div>
+          <a class="card-action" href="marketing-campaigns.html">View all →</a>
+        </div>
+        <table class="mini-table">
+          <thead><tr><th>Campaign</th><th>Type</th><th>Budget</th><th>Spend</th><th>Leads</th><th>ROAS</th><th>Status</th></tr></thead>
+          <tbody>
+            <tr><td class="hi">Q4 SaaS Launch</td><td><span class="channel-pill cp-blue">SEM</span></td><td>$6,000</td><td>$4,100</td><td class="hi">84</td><td>3.1x</td><td><span class="badge b-green">Active</span></td></tr>
+            <tr><td class="hi">Holiday Promo Dec</td><td><span class="channel-pill cp-rose">Social</span></td><td>$3,500</td><td>$2,800</td><td class="hi">61</td><td>2.4x</td><td><span class="badge b-green">Active</span></td></tr>
+            <tr><td class="hi">ABM — Enterprise</td><td><span class="channel-pill cp-orchid">ABM</span></td><td>$5,000</td><td>$3,700</td><td class="hi">18</td><td>4.8x</td><td><span class="badge b-green">Active</span></td></tr>
+            <tr><td class="hi">Podcast Sponsorship</td><td><span class="channel-pill cp-amber">PR</span></td><td>$2,000</td><td>$2,000</td><td class="hi">22</td><td>1.9x</td><td><span class="badge b-amber">Paused</span></td></tr>
+            <tr><td class="hi">Jan Inbound Push</td><td><span class="channel-pill cp-teal">Content</span></td><td>$4,000</td><td>—</td><td class="hi">—</td><td>—</td><td><span class="badge b-blue">Scheduled</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Marketing Funnel Snapshot -->
+      <div class="card">
+        <div class="card-header">
+          <div><div class="card-title">Funnel Snapshot</div><div class="card-sub">Last 30 days</div></div>
+          <a class="card-action" href="marketing-funnel.html">Full funnel →</a>
+        </div>
+        <div class="funnel-row">
+          <div class="funnel-stage">&#128272; Awareness</div>
+          <div class="funnel-track"><div class="funnel-fill" style="width:100%;background:linear-gradient(90deg,var(--rose),var(--cherry));"></div></div>
+          <div class="funnel-count">48,200</div>
+          <div class="funnel-rate">—</div>
+        </div>
+        <div class="funnel-row">
+          <div class="funnel-stage">&#128065; Interest</div>
+          <div class="funnel-track"><div class="funnel-fill" style="width:72%;background:linear-gradient(90deg,var(--orchid),var(--rose));"></div></div>
+          <div class="funnel-count">34,700</div>
+          <div class="funnel-rate">72%</div>
+        </div>
+        <div class="funnel-row">
+          <div class="funnel-stage">&#128200; Consideration</div>
+          <div class="funnel-track"><div class="funnel-fill" style="width:32%;background:linear-gradient(90deg,var(--blue),var(--orchid));"></div></div>
+          <div class="funnel-count">15,400</div>
+          <div class="funnel-rate">44%</div>
+        </div>
+        <div class="funnel-row">
+          <div class="funnel-stage">&#127775; Lead / MQL</div>
+          <div class="funnel-track"><div class="funnel-fill" style="width:16%;background:linear-gradient(90deg,var(--teal),var(--blue));"></div></div>
+          <div class="funnel-count">312</div>
+          <div class="funnel-rate">2.0%</div>
+        </div>
+        <div class="funnel-row">
+          <div class="funnel-stage">&#9989; SQL</div>
+          <div class="funnel-track"><div class="funnel-fill" style="width:6%;background:linear-gradient(90deg,var(--emerald),var(--teal));"></div></div>
+          <div class="funnel-count">84</div>
+          <div class="funnel-rate">27%</div>
+        </div>
+        <div class="funnel-row">
+          <div class="funnel-stage">&#128176; Closed / Won</div>
+          <div class="funnel-track"><div class="funnel-fill" style="width:3%;background:linear-gradient(90deg,var(--amber),var(--emerald));"></div></div>
+          <div class="funnel-count">38</div>
+          <div class="funnel-rate">45%</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="two-col">
+      <!-- Channel Performance -->
+      <div class="card">
+        <div class="card-header">
+          <div><div class="card-title">Channel Performance</div><div class="card-sub">Spend vs Leads by channel (MTD)</div></div>
+          <a class="card-action" href="marketing-channels.html">All channels →</a>
+        </div>
+        <div class="bar-row">
+          <div class="bar-label">&#128270; SEO / Organic</div>
+          <div class="bar-track"><div class="bar-fill" style="width:82%;background:linear-gradient(90deg,var(--teal),var(--blue));"></div></div>
+          <div class="bar-val" style="color:var(--teal);">104 leads</div>
+        </div>
+        <div class="bar-row">
+          <div class="bar-label">&#128225; Paid Search (SEM)</div>
+          <div class="bar-track"><div class="bar-fill" style="width:68%;background:linear-gradient(90deg,var(--blue),var(--orchid));"></div></div>
+          <div class="bar-val" style="color:var(--blue);">84 leads</div>
+        </div>
+        <div class="bar-row">
+          <div class="bar-label">&#128241; Social Media</div>
+          <div class="bar-track"><div class="bar-fill" style="width:50%;background:linear-gradient(90deg,var(--rose),var(--cherry));"></div></div>
+          <div class="bar-val" style="color:var(--rose);">61 leads</div>
+        </div>
+        <div class="bar-row">
+          <div class="bar-label">&#128140; Email</div>
+          <div class="bar-track"><div class="bar-fill" style="width:35%;background:linear-gradient(90deg,var(--amber),var(--coral));"></div></div>
+          <div class="bar-val" style="color:var(--amber);">44 leads</div>
+        </div>
+        <div class="bar-row">
+          <div class="bar-label">&#129309; Referral / Word-of-Mouth</div>
+          <div class="bar-track"><div class="bar-fill" style="width:22%;background:linear-gradient(90deg,var(--emerald),var(--teal));"></div></div>
+          <div class="bar-val" style="color:var(--emerald);">19 leads</div>
+        </div>
+      </div>
+
+      <!-- Recent Activity -->
+      <div class="card">
+        <div class="card-header"><div class="card-title">Marketing Activity Feed</div><div class="live-pill" style="font-size:10px;padding:2px 8px;">● Live</div></div>
+        <div class="activity-item">
+          <div class="act-icon" style="background:var(--rose-dim);border:1px solid rgba(255,76,139,.2);">&#128227;</div>
+          <div style="flex:1;"><div style="font-size:12px;color:var(--text-soft);line-height:1.4;"><strong style="color:var(--text);">Q4 SaaS Launch</strong> CTR hit 5.1% — up 0.8%</div><div style="font-size:10.5px;color:var(--text-muted);">10:14 · Campaigns</div></div>
+        </div>
+        <div class="activity-item">
+          <div class="act-icon" style="background:var(--blue-dim);border:1px solid rgba(56,180,255,.2);">&#128221;</div>
+          <div style="flex:1;"><div style="font-size:12px;color:var(--text-soft);line-height:1.4;"><strong style="color:var(--blue);">Blog post published</strong> — "Top 5 OrgOS Benefits"</div><div style="font-size:10.5px;color:var(--text-muted);">09:42 · Content</div></div>
+        </div>
+        <div class="activity-item">
+          <div class="act-icon" style="background:var(--orchid-dim);border:1px solid rgba(216,85,255,.2);">&#129312;</div>
+          <div style="flex:1;"><div style="font-size:12px;color:var(--text-soft);line-height:1.4;">Persona <strong style="color:var(--orchid);">"Scale-Up CEO"</strong> updated · 3 signals added</div><div style="font-size:10.5px;color:var(--text-muted);">09:08 · Personas</div></div>
+        </div>
+        <div class="activity-item">
+          <div class="act-icon" style="background:var(--emerald-dim);border:1px solid rgba(52,232,160,.2);">&#127775;</div>
+          <div style="flex:1;"><div style="font-size:12px;color:var(--text-soft);line-height:1.4;">Lead <strong style="color:var(--text);">TechNova Inc</strong> upgraded to SQL</div><div style="font-size:10.5px;color:var(--text-muted);">08:55 · Leads</div></div>
+        </div>
+        <div class="activity-item">
+          <div class="act-icon" style="background:var(--amber-dim);border:1px solid rgba(245,185,66,.2);">&#9889;</div>
+          <div style="flex:1;"><div style="font-size:12px;color:var(--text-soft);line-height:1.4;"><strong style="color:var(--amber);">USP Workshop</strong> output reviewed · Brand approved</div><div style="font-size:10.5px;color:var(--text-muted);">08:30 · Brand</div></div>
+        </div>
+        <div class="activity-item">
+          <div class="act-icon" style="background:var(--teal-dim);border:1px solid rgba(0,229,216,.2);">&#129504;</div>
+          <div style="flex:1;"><div style="font-size:12px;color:var(--text-soft);line-height:1.4;"><strong style="color:var(--teal);">Competitor intel</strong> — Rival X cut pricing 12%</div><div style="font-size:10.5px;color:var(--text-muted);">08:05 · Intelligence</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bottom Row -->
+    <div class="three-col">
+      <!-- Top Personas -->
+      <div class="card" style="margin-bottom:0;">
+        <div class="card-header"><div class="card-title">Top Personas (Engagement)</div><a class="card-action" href="marketing-personas.html">Manage →</a></div>
+        <div class="row-item"><div style="width:32px;height:32px;border-radius:8px;background:var(--orchid-dim);border:1px solid rgba(216,85,255,.2);display:flex;align-items:center;justify-content:center;font-size:14px;">&#128084;</div><div style="flex:1;margin-left:6px;"><div style="font-size:12px;font-weight:600;color:var(--text);">Scale-Up CEO</div><div style="font-size:10.5px;color:var(--text-muted);">42 matched leads · B2B SaaS</div></div><span class="badge b-orchid">Primary</span></div>
+        <div class="row-item"><div style="width:32px;height:32px;border-radius:8px;background:var(--blue-dim);border:1px solid rgba(56,180,255,.2);display:flex;align-items:center;justify-content:center;font-size:14px;">&#128187;</div><div style="flex:1;margin-left:6px;"><div style="font-size:12px;font-weight:600;color:var(--text);">Tech-Forward COO</div><div style="font-size:10.5px;color:var(--text-muted);">28 matched leads · Enterprise</div></div><span class="badge b-blue">Secondary</span></div>
+        <div class="row-item"><div style="width:32px;height:32px;border-radius:8px;background:var(--rose-dim);border:1px solid rgba(255,76,139,.2);display:flex;align-items:center;justify-content:center;font-size:14px;">&#128200;</div><div style="flex:1;margin-left:6px;"><div style="font-size:12px;font-weight:600;color:var(--text);">Ops-Obsessed CFO</div><div style="font-size:10.5px;color:var(--text-muted);">14 matched leads · Mid-market</div></div><span class="badge b-rose">Emerging</span></div>
+      </div>
+
+      <!-- USP & Positioning -->
+      <div class="card" style="margin-bottom:0;">
+        <div class="card-header"><div class="card-title">USP &amp; Positioning</div><a class="card-action" href="marketing-usp.html">Edit →</a></div>
+        <div style="font-size:12px;color:var(--text-soft);line-height:1.6;padding:4px 0 10px;">
+          <strong style="color:var(--rose);">Core USP:</strong> "Run your entire organisation from one AI-powered operating system."
+        </div>
+        <div class="bar-row">
+          <div class="bar-label">Clarity Score</div>
+          <div class="bar-track"><div class="bar-fill" style="width:88%;background:linear-gradient(90deg,var(--emerald),var(--teal));"></div></div>
+          <div class="bar-val" style="color:var(--emerald);">88%</div>
+        </div>
+        <div class="bar-row">
+          <div class="bar-label">Differentiation</div>
+          <div class="bar-track"><div class="bar-fill" style="width:74%;background:linear-gradient(90deg,var(--rose),var(--cherry));"></div></div>
+          <div class="bar-val" style="color:var(--rose);">74%</div>
+        </div>
+        <div class="bar-row">
+          <div class="bar-label">Resonance (Survey)</div>
+          <div class="bar-track"><div class="bar-fill" style="width:81%;background:linear-gradient(90deg,var(--blue),var(--teal));"></div></div>
+          <div class="bar-val" style="color:var(--blue);">81%</div>
+        </div>
+      </div>
+
+      <!-- PR & Brand Health -->
+      <div class="card" style="margin-bottom:0;">
+        <div class="card-header"><div class="card-title">PR &amp; Brand Health</div><a class="card-action" href="marketing-pr.html">Reputation →</a></div>
+        <div class="row-item">
+          <div style="font-size:12px;color:var(--text-soft);flex:1;">Sentiment Score</div>
+          <strong style="color:var(--emerald);font-size:13px;">Positive 84%</strong>
+        </div>
+        <div class="row-item">
+          <div style="font-size:12px;color:var(--text-soft);flex:1;">Media Mentions (MTD)</div>
+          <strong style="color:var(--text);font-size:13px;">34</strong>
+        </div>
+        <div class="row-item">
+          <div style="font-size:12px;color:var(--text-soft);flex:1;">Press Releases</div>
+          <strong style="color:var(--text);font-size:13px;">2 this month</strong>
+        </div>
+        <div class="row-item">
+          <div style="font-size:12px;color:var(--text-soft);flex:1;">Net Promoter Score</div>
+          <strong style="color:var(--teal);font-size:13px;">NPS 62</strong>
+        </div>
+        <div class="row-item" style="border:none;">
+          <div style="font-size:12px;color:var(--text-soft);flex:1;">Active PR Alerts</div>
+          <strong style="color:var(--amber);font-size:13px;">1 monitoring</strong>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /content -->
+</div><!-- /main -->
+</body></html>

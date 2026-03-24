@@ -1,0 +1,628 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>UME OrgOS — Org Chart</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#070010;--surface:#0f0820;--surface-2:#150b2c;--surface-3:#1b1038;
+  --border:rgba(255,255,255,.065);--border-mid:rgba(255,255,255,.10);
+  --text:#ede6ff;--text-soft:rgba(215,205,255,.7);--text-muted:rgba(190,175,240,.4);
+  --purple:#6a2fff;--purple-mid:#2d0072;
+  --cherry:#ff2a55;--teal:#00e5d8;--amber:#f5b942;--blue:#38b4ff;
+  --emerald:#34e8a0;--coral:#ff6b4a;--orchid:#d855ff;--rose:#ff4c8b;
+  --sidebar-w:210px;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html,body{height:100%;font-family:"Space Grotesk",sans-serif;background:var(--bg);overflow:hidden;color:var(--text);}
+body{display:flex;}
+
+.sidebar{width:var(--sidebar-w);height:100vh;background:#0a0018;display:flex;flex-direction:column;flex-shrink:0;border-right:1px solid rgba(255,255,255,.05);}
+.sidebar-logo{display:flex;align-items:center;gap:9px;padding:16px 16px 14px;border-bottom:1px solid rgba(255,255,255,.06);}
+.s-icon{width:30px;height:30px;border-radius:8px;background:var(--purple-mid);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:15px;color:#fff;box-shadow:0 0 14px 2px rgba(106,47,255,.5);}
+.s-logo-text{font-weight:700;font-size:15px;color:#fff;}.s-logo-text span{color:var(--cherry);}
+.org-selector{margin:10px 10px 4px;padding:8px 10px;border-radius:8px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.07);cursor:pointer;display:flex;align-items:center;gap:8px;}
+.org-dot{width:7px;height:7px;border-radius:50%;background:var(--teal);box-shadow:0 0 6px rgba(0,229,216,.65);}
+.org-name{font-size:12px;font-weight:600;color:rgba(220,210,255,.8);flex:1;}
+.nav-section{padding:0 8px;margin-bottom:2px;}
+.nav-label{font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:rgba(200,190,255,.18);padding:10px 8px 4px;}
+.nav-item{display:flex;align-items:center;gap:9px;padding:7px 10px;border-radius:7px;cursor:pointer;transition:.15s;text-decoration:none;margin-bottom:1px;}
+.nav-item:hover{background:rgba(255,255,255,.06);}
+.nav-icon{font-size:14px;width:20px;text-align:center;}
+.nav-text{font-size:12.5px;font-weight:500;color:rgba(210,200,255,.38);flex:1;}
+.nav-item.active{background:linear-gradient(90deg,rgba(106,47,255,.5),rgba(255,42,85,.22));border:1px solid rgba(255,42,85,.15);}
+.nav-item.active .nav-text{color:#fff;font-weight:600;}
+.sidebar-footer{margin-top:auto;padding:10px;border-top:1px solid rgba(255,255,255,.05);}
+.user-avatar{width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,var(--purple-mid),var(--cherry));display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff;}
+.user-row{display:flex;align-items:center;gap:9px;cursor:pointer;padding:8px;border-radius:8px;}
+.user-name{font-size:12px;font-weight:600;color:rgba(220,210,255,.8);}
+.user-role{font-size:10px;color:rgba(200,190,255,.3);}
+
+.main{flex:1;display:flex;flex-direction:column;height:100vh;overflow:hidden;}
+.topbar{height:52px;background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 24px;gap:12px;flex-shrink:0;}
+.page-title{font-size:15px;font-weight:700;}
+.breadcrumb{font-size:11px;color:var(--text-muted);}
+.topbar-right{margin-left:auto;display:flex;align-items:center;gap:10px;}
+.tb-btn{padding:6px 13px;border:1px solid var(--border-mid);border-radius:7px;font-size:12px;font-weight:600;color:var(--text-soft);background:var(--surface-2);cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:5px;transition:.15s;}
+.tb-btn:hover{border-color:rgba(106,47,255,.5);color:var(--text);}
+.tb-btn.primary{background:linear-gradient(135deg,var(--purple),var(--cherry));color:#fff;border:none;}
+
+.subnav{height:44px;background:var(--surface-2);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 24px;gap:4px;flex-shrink:0;overflow-x:auto;}
+.subnav::-webkit-scrollbar{height:0;}
+.snav-item{padding:6px 14px;border-radius:6px;font-size:12px;font-weight:600;color:rgba(210,200,255,.4);cursor:pointer;transition:.15s;text-decoration:none;white-space:nowrap;border:1px solid transparent;}
+.snav-item:hover{color:var(--text-soft);background:rgba(255,255,255,.04);}
+.snav-item.active{color:var(--text);background:rgba(106,47,255,.22);border-color:rgba(106,47,255,.35);}
+
+.chart-outer{flex:1;display:flex;overflow:hidden;}
+
+/* The panning/zooming canvas */
+.chart-stage{
+  flex:1;position:relative;overflow:hidden;
+  background:
+    radial-gradient(ellipse at 28% 28%, rgba(106,47,255,.07), transparent 52%),
+    radial-gradient(ellipse at 72% 72%, rgba(0,229,216,.04), transparent 48%);
+  cursor:grab;
+}
+.chart-stage:active{cursor:grabbing;}
+#org-svg{display:block;width:100%;height:100%;}
+
+.zoom-controls{position:absolute;bottom:16px;left:16px;display:flex;flex-direction:column;gap:4px;z-index:10;}
+.zoom-btn{width:32px;height:32px;border-radius:8px;background:var(--surface-2);border:1px solid var(--border-mid);color:var(--text-soft);font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:.15s;}
+.zoom-btn:hover{border-color:rgba(106,47,255,.5);color:var(--text);}
+
+.chart-panel{width:270px;background:var(--surface);border-left:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0;overflow-y:auto;}
+.chart-panel::-webkit-scrollbar{width:4px;}
+.chart-panel::-webkit-scrollbar-thumb{background:rgba(106,47,255,.3);border-radius:2px;}
+.panel-inner{padding:16px;}
+.panel-section{margin-bottom:22px;}
+.ps-title{font-size:10.5px;font-weight:800;text-transform:uppercase;letter-spacing:.09em;color:var(--text-muted);margin-bottom:10px;}
+.stat-row{display:flex;justify-content:space-between;font-size:12px;margin-bottom:7px;}
+.legend-row{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--text-soft);margin-bottom:7px;}
+.legend-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0;}
+
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:200;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px);}
+.modal{background:var(--surface-2);border:1px solid rgba(106,47,255,.3);border-radius:16px;padding:24px;width:360px;}
+.modal-title{font-size:15px;font-weight:700;margin-bottom:18px;}
+.form-group{margin-bottom:13px;}
+.form-label{font-size:10.5px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:5px;display:block;}
+.form-input,.form-select{width:100%;background:rgba(255,255,255,.05);border:1px solid var(--border-mid);border-radius:8px;color:var(--text);font-size:12.5px;font-family:inherit;padding:8px 11px;outline:none;transition:.15s;}
+.form-input:focus,.form-select:focus{border-color:rgba(106,47,255,.5);}
+.form-actions{display:flex;gap:8px;margin-top:18px;}
+</style>
+</head>
+<body>
+
+<nav class="sidebar">
+  <div class="sidebar-logo"><div class="s-icon">⬡</div><div class="s-logo-text">UME <span>OS</span></div></div>
+  <div class="org-selector"><div class="org-dot"></div><div class="org-name">Acme Corp OrgOS</div><span style="color:var(--text-muted);font-size:12px;">▾</span></div>
+  <div style="flex:1;overflow-y:auto;padding-top:6px;">
+    <div class="nav-section">
+      <div class="nav-label">Platform</div>
+      <a href="digital-twin.html" class="nav-item"><span class="nav-icon">🔮</span><span class="nav-text">Digital Twin</span></a>
+      <a href="#" class="nav-item"><span class="nav-icon">📊</span><span class="nav-text">Dashboard</span></a>
+    </div>
+    <div class="nav-section">
+      <div class="nav-label">OrgApps</div>
+      <a href="#" class="nav-item"><span class="nav-icon">💰</span><span class="nav-text">Finance</span></a>
+      <a href="#" class="nav-item"><span class="nav-icon">👥</span><span class="nav-text">HR & People</span></a>
+    </div>
+    <div class="nav-section">
+      <div class="nav-label">Governance</div>
+      <a href="org-chart.html" class="nav-item active"><span class="nav-icon">🌲</span><span class="nav-text">Org Chart</span></a>
+      <a href="org-dna.html" class="nav-item"><span class="nav-icon">🧬</span><span class="nav-text">OrgDNA</span></a>
+    </div>
+  </div>
+  <div class="sidebar-footer"><div class="user-row"><div class="user-avatar">AK</div><div><div class="user-name">Alex Kim</div><div class="user-role">OrgOS Admin</div></div></div></div>
+</nav>
+
+<div class="main">
+  <div class="topbar">
+    <div>
+      <div class="page-title">🌲 Org Chart</div>
+      <div class="breadcrumb">Digital Twin · OrgExec Hierarchy · Auto-Generated</div>
+    </div>
+    <div class="topbar-right">
+      <button class="tb-btn" onclick="fitToView()">⊡ Fit to View</button>
+      <button class="tb-btn" onclick="autoLayout()">⟳ Auto Layout</button>
+      <button class="tb-btn">⤓ Export PNG</button>
+      <button class="tb-btn">🧬 Sync to OrgDNA</button>
+      <button class="tb-btn primary" onclick="openAddModal(null)">+ Add Person</button>
+    </div>
+  </div>
+
+  <nav class="subnav">
+    <a href="digital-twin.html" class="snav-item">⬡ Overview</a>
+    <a href="org-system.html" class="snav-item">🏛 OrgSystem</a>
+    <a href="org-dna.html" class="snav-item">🧬 OrgDNA</a>
+    <a href="network-graph.html" class="snav-item">🕸 Network Graph</a>
+    <a href="org-chart.html" class="snav-item active">🌲 Org Chart</a>
+    <a href="business-model.html" class="snav-item">📐 Business Model</a>
+    <a href="value-proposition.html" class="snav-item">💎 Value Proposition</a>
+    <a href="data-master.html" class="snav-item">🗄 Data Master</a>
+  </nav>
+
+  <div class="chart-outer">
+    <div class="chart-stage" id="chart-stage">
+      <svg id="org-svg" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <filter id="glow-purple" x="-40%" y="-40%" width="180%" height="180%">
+            <feGaussianBlur stdDeviation="4" result="blur"/>
+            <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+          </filter>
+          <filter id="glow-green" x="-40%" y="-40%" width="180%" height="180%">
+            <feGaussianBlur stdDeviation="3" result="blur"/>
+            <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+          </filter>
+        </defs>
+        <g id="chart-g"></g>
+      </svg>
+      <div class="zoom-controls">
+        <button class="zoom-btn" onclick="zoomBy(0.15)">+</button>
+        <button class="zoom-btn" onclick="zoomBy(-0.15)">−</button>
+        <button class="zoom-btn" onclick="fitToView()" style="font-size:13px;">⊡</button>
+      </div>
+    </div>
+
+    <div class="chart-panel">
+      <div class="panel-inner">
+        <div class="panel-section">
+          <div class="ps-title">Chart Stats</div>
+          <div class="stat-row"><span style="color:var(--text-soft);">Total OrgExecs</span><span id="stat-total" style="font-weight:700;color:var(--text);">0</span></div>
+          <div class="stat-row"><span style="color:var(--text-soft);">Human</span><span id="stat-humans" style="font-weight:700;color:var(--blue);">0</span></div>
+          <div class="stat-row"><span style="color:var(--text-soft);">AI Agents</span><span id="stat-ai" style="font-weight:700;color:var(--emerald);">0</span></div>
+          <div class="stat-row"><span style="color:var(--text-soft);">Hybrid</span><span id="stat-hybrid" style="font-weight:700;color:var(--orchid);">0</span></div>
+          <div class="stat-row"><span style="color:var(--text-soft);">Hierarchy Depth</span><span id="stat-depth" style="font-weight:700;color:var(--text);">0</span></div>
+        </div>
+
+        <div class="panel-section">
+          <div class="ps-title">Selected Node</div>
+          <div id="selected-panel" style="color:var(--text-muted);font-size:12px;text-align:center;padding:20px 0;border:1px dashed rgba(255,255,255,.07);border-radius:10px;">
+            Click a node to inspect
+          </div>
+        </div>
+
+        <div class="panel-section">
+          <div class="ps-title">Legend</div>
+          <div class="legend-row"><div class="legend-dot" style="background:var(--purple);box-shadow:0 0 6px var(--purple);"></div>CEO / Leadership</div>
+          <div class="legend-row"><div class="legend-dot" style="background:var(--blue);"></div>Human OrgExec</div>
+          <div class="legend-row"><div class="legend-dot" style="background:var(--emerald);"></div>AI Agent</div>
+          <div class="legend-row"><div class="legend-dot" style="background:var(--orchid);"></div>Hybrid</div>
+          <div style="height:1px;background:var(--border);margin:8px 0 10px;"></div>
+          <div class="legend-row">
+            <svg width="22" height="10" style="flex-shrink:0;"><line x1="0" y1="5" x2="22" y2="5" stroke="rgba(106,47,255,.5)" stroke-width="1.5"/></svg>
+            Human reporting line
+          </div>
+          <div class="legend-row">
+            <svg width="22" height="10" style="flex-shrink:0;"><line x1="0" y1="5" x2="22" y2="5" stroke="rgba(52,232,160,.5)" stroke-width="1.5" stroke-dasharray="4 2"/></svg>
+            AI reporting line
+          </div>
+        </div>
+
+        <div class="panel-section">
+          <div class="ps-title">Quick Actions</div>
+          <div style="display:flex;flex-direction:column;gap:6px;">
+            <button class="tb-btn" style="width:100%;justify-content:center;font-size:11.5px;" onclick="openAddModal(null)">+ Add OrgExec</button>
+            <button class="tb-btn" style="width:100%;justify-content:center;font-size:11.5px;" onclick="openAddModal(null,'ai')">+ Add AI Agent</button>
+            <button class="tb-btn" style="width:100%;justify-content:center;font-size:11.5px;color:var(--amber);">⟳ Regenerate from ODD</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ADD MODAL -->
+<div class="modal-overlay" id="add-modal" style="display:none;">
+  <div class="modal">
+    <div class="modal-title">+ Add OrgExec</div>
+    <div class="form-group">
+      <label class="form-label">Name</label>
+      <input class="form-input" id="add-name" placeholder="Full name or agent label">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Title / Role</label>
+      <input class="form-input" id="add-title" placeholder="e.g. Head of Finance">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Type</label>
+      <select class="form-select" id="add-type">
+        <option value="human">Human OrgExec</option>
+        <option value="ai">AI Agent</option>
+        <option value="hybrid">Hybrid</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Reports To</label>
+      <select class="form-select" id="add-parent"></select>
+    </div>
+    <div class="form-actions">
+      <button class="tb-btn primary" style="flex:1;justify-content:center;" onclick="addNode()">Add to Chart</button>
+      <button class="tb-btn" style="flex:1;justify-content:center;" onclick="closeAddModal()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ─── PEOPLE DATA ─────────────────────────────────────────────────────────────
+let people = [
+  // Level 0
+  {id:'ceo',  name:'Sarah Chen',    title:'CEO & Founder',       type:'human',  parentId:null,  initials:'SC'},
+  // Level 1
+  {id:'cto',  name:'James Park',    title:'CTO',                 type:'human',  parentId:'ceo', initials:'JP'},
+  {id:'cfo',  name:'Maria Lopez',   title:'CFO',                 type:'human',  parentId:'ceo', initials:'ML'},
+  {id:'coo',  name:'David Kim',     title:'COO',                 type:'human',  parentId:'ceo', initials:'DK'},
+  {id:'cmo',  name:'Emily Ross',    title:'CMO',                 type:'human',  parentId:'ceo', initials:'ER'},
+  // Level 2 — under CTO
+  {id:'vpe',  name:'Tom Wu',        title:'VP Engineering',      type:'human',  parentId:'cto', initials:'TW'},
+  {id:'ai1',  name:'AI Scheduler',  title:'Scheduling Agent',    type:'ai',     parentId:'cto', initials:'AS'},
+  {id:'ai2',  name:'AI Analyst',    title:'Data Analysis Agent', type:'ai',     parentId:'cto', initials:'AA'},
+  // Level 2 — under CFO
+  {id:'hfin', name:'Alex Turner',   title:'Head of Finance',     type:'human',  parentId:'cfo', initials:'AT'},
+  {id:'ai3',  name:'AI Bookkeeper', title:'Finance Agent',       type:'ai',     parentId:'cfo', initials:'AB'},
+  // Level 2 — under COO
+  {id:'vpo',  name:'Raj Patel',     title:'VP Operations',       type:'human',  parentId:'coo', initials:'RP'},
+  {id:'scm',  name:'Nina Johal',    title:'Supply Chain Mgr',    type:'human',  parentId:'coo', initials:'NJ'},
+  // Level 2 — under CMO
+  {id:'brd',  name:'Zoe Hart',      title:'Brand Director',      type:'human',  parentId:'cmo', initials:'ZH'},
+  {id:'ai5',  name:'AI Content',    title:'Content Agent',       type:'ai',     parentId:'cmo', initials:'AC'},
+  // Level 3 — under VPE
+  {id:'le1',  name:'Priya Nair',    title:'Lead Engineer',       type:'human',  parentId:'vpe', initials:'PN'},
+  {id:'le2',  name:'Carlos Diaz',   title:'Lead Engineer',       type:'human',  parentId:'vpe', initials:'CD'},
+  // Level 3 — under Head of Finance
+  {id:'ctrl', name:'Jin Lee',       title:'Controller',          type:'human',  parentId:'hfin',initials:'JL'},
+  // Level 3 — under VP Operations
+  {id:'ai4',  name:'AI OpsBot',     title:'Ops Optimiser Agent', type:'ai',     parentId:'vpo', initials:'AO'},
+];
+
+// ─── NODE DIMENSIONS ─────────────────────────────────────────────────────────
+const NW   = 148;  // node width
+const NH   = 84;   // node height
+const HGAP = 24;   // horizontal gap between sibling subtrees
+const VGAP = 58;   // vertical gap between rows
+
+// ─── VIEWPORT STATE ──────────────────────────────────────────────────────────
+let vx = 0, vy = 0, vscale = 1;
+let panning = false, px0 = 0, py0 = 0, pvx0 = 0, pvy0 = 0;
+let selectedId = null;
+
+// ─── LAYOUT ──────────────────────────────────────────────────────────────────
+function childMap() {
+  const m = {};
+  people.forEach(p => {
+    const k = p.parentId || '__root__';
+    (m[k] = m[k] || []).push(p.id);
+  });
+  return m;
+}
+
+function treeWidth(id, cm) {
+  const ch = cm[id] || [];
+  if (!ch.length) return NW;
+  return Math.max(NW, ch.reduce((s, c) => s + treeWidth(c, cm), 0) + (ch.length - 1) * HGAP);
+}
+
+function layout() {
+  const cm = childMap();
+  const pos = {};
+  let maxDepth = 0;
+
+  function place(id, depth, left) {
+    maxDepth = Math.max(maxDepth, depth);
+    const ch = cm[id] || [];
+    const tw = treeWidth(id, cm);
+    // Centre node over its subtree span
+    pos[id] = { x: left + tw / 2 - NW / 2, y: depth * (NH + VGAP) };
+    let cursor = left;
+    ch.forEach(cid => {
+      const cw = treeWidth(cid, cm);
+      place(cid, depth + 1, cursor);
+      cursor += cw + HGAP;
+    });
+  }
+
+  const root = people.find(p => !p.parentId);
+  if (root) {
+    const tw = treeWidth(root.id, cm);
+    place(root.id, 0, -tw / 2 + NW / 2);
+  }
+  return { pos, maxDepth };
+}
+
+// ─── COLOUR HELPERS ──────────────────────────────────────────────────────────
+function col(type, isCEO) {
+  if (isCEO) return '#7a3fff';
+  return { ai:'#34e8a0', hybrid:'#d855ff', human:'#38b4ff' }[type] || '#38b4ff';
+}
+function bgFill(type, isCEO) {
+  if (isCEO) return 'rgba(106,47,255,0.22)';
+  return { ai:'rgba(52,232,160,0.09)', hybrid:'rgba(216,85,255,0.09)', human:'rgba(56,180,255,0.08)' }[type];
+}
+function strokeCol(type, isCEO, sel) {
+  const base = isCEO ? 'rgba(122,63,255,0.85)' :
+    { ai:'rgba(52,232,160,0.55)', hybrid:'rgba(216,85,255,0.55)', human:'rgba(56,180,255,0.40)' }[type];
+  return sel ? col(type, isCEO) : base;
+}
+function typeLabel(type) {
+  return { ai:'● AI Agent', hybrid:'◈ Hybrid', human:'● Human' }[type] || '● Human';
+}
+
+// ─── RENDER ──────────────────────────────────────────────────────────────────
+function render() {
+  const g = document.getElementById('chart-g');
+  g.innerHTML = '';
+
+  const { pos, maxDepth } = layout();
+
+  // ── Connector lines (drawn behind nodes) ──────────────────────────────────
+  const linesG = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+  people.forEach(p => {
+    if (!p.parentId) return;
+    const fp = pos[p.parentId], tp = pos[p.id];
+    if (!fp || !tp) return;
+    const x1 = fp.x + NW / 2, y1 = fp.y + NH;
+    const x2 = tp.x + NW / 2, y2 = tp.y;
+    const mid = (y1 + y2) / 2;
+    const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    path.setAttribute('d', `M${x1},${y1} C${x1},${mid} ${x2},${mid} ${x2},${y2}`);
+    path.setAttribute('fill', 'none');
+    path.setAttribute('stroke', p.type === 'ai' ? 'rgba(52,232,160,0.38)' : 'rgba(106,47,255,0.32)');
+    path.setAttribute('stroke-width', '1.5');
+    if (p.type === 'ai') path.setAttribute('stroke-dasharray', '5 3');
+    linesG.appendChild(path);
+  });
+  g.appendChild(linesG);
+
+  // ── Nodes ─────────────────────────────────────────────────────────────────
+  const nodesG = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+
+  people.forEach(p => {
+    const position = pos[p.id];
+    if (!position) return;
+    const isCEO = p.id === 'ceo';
+    const sel = selectedId === p.id;
+    const c   = col(p.type, isCEO);
+    const bg  = bgFill(p.type, isCEO);
+    const sc  = strokeCol(p.type, isCEO, sel);
+
+    const ng = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+    ng.setAttribute('transform', `translate(${position.x},${position.y})`);
+    ng.style.cursor = 'pointer';
+    ng.dataset.id = p.id;
+
+    // Card background
+    const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+    rect.setAttribute('width', NW);
+    rect.setAttribute('height', NH);
+    rect.setAttribute('rx', '10');
+    rect.setAttribute('fill', bg);
+    rect.setAttribute('stroke', sc);
+    rect.setAttribute('stroke-width', sel ? '2' : '1');
+    if (isCEO) rect.setAttribute('filter', 'url(#glow-purple)');
+    else if (sel) rect.setAttribute('filter', p.type === 'ai' ? 'url(#glow-green)' : 'url(#glow-purple)');
+    ng.appendChild(rect);
+
+    // Selected highlight
+    if (sel) {
+      const hl = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+      hl.setAttribute('width', NW); hl.setAttribute('height', NH);
+      hl.setAttribute('rx', '10'); hl.setAttribute('fill', `${c}1a`);
+      ng.appendChild(hl);
+    }
+
+    // Avatar circle
+    const cx = NW / 2, cy = 21;
+    const circ = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+    circ.setAttribute('cx', cx); circ.setAttribute('cy', cy); circ.setAttribute('r', '13');
+    circ.setAttribute('fill', `${c}20`);
+    circ.setAttribute('stroke', c);
+    circ.setAttribute('stroke-width', isCEO ? '2' : '1.2');
+    ng.appendChild(circ);
+
+    // Avatar text (initials or emoji)
+    const at = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+    at.setAttribute('x', cx); at.setAttribute('y', cy + 4);
+    at.setAttribute('text-anchor', 'middle');
+    at.setAttribute('font-family', 'Space Grotesk, sans-serif');
+    at.setAttribute('font-size', p.type === 'ai' ? '12' : '10');
+    at.setAttribute('font-weight', '700');
+    at.setAttribute('fill', c);
+    at.textContent = p.type === 'ai' ? '⬡' : p.initials;
+    ng.appendChild(at);
+
+    // Name
+    const nt = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+    nt.setAttribute('x', NW / 2); nt.setAttribute('y', 44);
+    nt.setAttribute('text-anchor', 'middle');
+    nt.setAttribute('font-family', 'Space Grotesk, sans-serif');
+    nt.setAttribute('font-size', isCEO ? '11.5' : '11');
+    nt.setAttribute('font-weight', '700');
+    nt.setAttribute('fill', '#ede6ff');
+    nt.textContent = p.name.length > 17 ? p.name.slice(0, 16) + '…' : p.name;
+    ng.appendChild(nt);
+
+    // Title
+    const tt = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+    tt.setAttribute('x', NW / 2); tt.setAttribute('y', 57);
+    tt.setAttribute('text-anchor', 'middle');
+    tt.setAttribute('font-family', 'Space Grotesk, sans-serif');
+    tt.setAttribute('font-size', '9');
+    tt.setAttribute('font-weight', '500');
+    tt.setAttribute('fill', 'rgba(190,175,240,0.55)');
+    tt.textContent = p.title.length > 23 ? p.title.slice(0, 22) + '…' : p.title;
+    ng.appendChild(tt);
+
+    // Type badge
+    const BW = 70, BH = 13, BX = (NW - BW) / 2, BY = 64;
+    const br = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+    br.setAttribute('x', BX); br.setAttribute('y', BY);
+    br.setAttribute('width', BW); br.setAttribute('height', BH);
+    br.setAttribute('rx', '4');
+    br.setAttribute('fill', `${c}18`);
+    br.setAttribute('stroke', `${c}45`);
+    br.setAttribute('stroke-width', '0.8');
+    ng.appendChild(br);
+
+    const bt = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+    bt.setAttribute('x', NW / 2); bt.setAttribute('y', BY + 9);
+    bt.setAttribute('text-anchor', 'middle');
+    bt.setAttribute('font-family', 'Space Grotesk, sans-serif');
+    bt.setAttribute('font-size', '8');
+    bt.setAttribute('font-weight', '700');
+    bt.setAttribute('fill', c);
+    bt.textContent = typeLabel(p.type);
+    ng.appendChild(bt);
+
+    ng.addEventListener('click', e => { e.stopPropagation(); selectNode(p.id); });
+    nodesG.appendChild(ng);
+  });
+
+  g.appendChild(nodesG);
+
+  // Stats
+  document.getElementById('stat-total').textContent  = people.length;
+  document.getElementById('stat-humans').textContent = people.filter(p => p.type === 'human').length;
+  document.getElementById('stat-ai').textContent     = people.filter(p => p.type === 'ai').length;
+  document.getElementById('stat-hybrid').textContent = people.filter(p => p.type === 'hybrid').length;
+  document.getElementById('stat-depth').textContent  = maxDepth + 1;
+}
+
+// ─── FIT TO VIEW ─────────────────────────────────────────────────────────────
+function fitToView() {
+  const { pos } = layout();
+  const vals = Object.values(pos);
+  if (!vals.length) return;
+
+  const minX = Math.min(...vals.map(p => p.x));
+  const minY = Math.min(...vals.map(p => p.y));
+  const maxX = Math.max(...vals.map(p => p.x)) + NW;
+  const maxY = Math.max(...vals.map(p => p.y)) + NH;
+  const tW = maxX - minX, tH = maxY - minY;
+
+  const stage = document.getElementById('chart-stage');
+  const sW = stage.clientWidth, sH = stage.clientHeight;
+  const PAD = 56;
+
+  vscale = Math.min((sW - PAD * 2) / tW, (sH - PAD * 2) / tH, 1.15);
+  vx = (sW - tW * vscale) / 2 - minX * vscale;
+  vy = (sH - tH * vscale) / 2 - minY * vscale;
+  applyTransform();
+}
+
+function applyTransform() {
+  document.getElementById('chart-g').setAttribute(
+    'transform', `translate(${vx},${vy}) scale(${vscale})`
+  );
+}
+
+function zoomBy(d) {
+  const stage = document.getElementById('chart-stage');
+  const cx = stage.clientWidth / 2, cy = stage.clientHeight / 2;
+  const ns = Math.max(0.2, Math.min(2.5, vscale + d));
+  vx = cx - (cx - vx) * (ns / vscale);
+  vy = cy - (cy - vy) * (ns / vscale);
+  vscale = ns;
+  applyTransform();
+}
+
+// ─── PAN ─────────────────────────────────────────────────────────────────────
+const stage = document.getElementById('chart-stage');
+stage.addEventListener('mousedown', e => {
+  if (e.target.closest('[data-id]')) return;
+  panning = true; px0 = e.clientX; py0 = e.clientY; pvx0 = vx; pvy0 = vy;
+});
+window.addEventListener('mousemove', e => {
+  if (!panning) return;
+  vx = pvx0 + e.clientX - px0; vy = pvy0 + e.clientY - py0;
+  applyTransform();
+});
+window.addEventListener('mouseup', () => { panning = false; });
+
+stage.addEventListener('wheel', e => {
+  e.preventDefault();
+  const r = stage.getBoundingClientRect();
+  const mx = e.clientX - r.left, my = e.clientY - r.top;
+  const d = e.deltaY < 0 ? 0.1 : -0.1;
+  const ns = Math.max(0.2, Math.min(2.5, vscale + d));
+  vx = mx - (mx - vx) * (ns / vscale);
+  vy = my - (my - vy) * (ns / vscale);
+  vscale = ns;
+  applyTransform();
+}, { passive: false });
+
+stage.addEventListener('click', e => {
+  if (!e.target.closest('[data-id]')) {
+    selectedId = null;
+    render(); applyTransform();
+    document.getElementById('selected-panel').innerHTML =
+      '<span style="color:var(--text-muted);font-size:12px;">Click a node to inspect</span>';
+  }
+});
+
+// ─── SELECT ───────────────────────────────────────────────────────────────────
+function selectNode(id) {
+  selectedId = id;
+  render(); applyTransform();
+  const p = people.find(x => x.id === id);
+  if (!p) return;
+  const kids = people.filter(x => x.parentId === id).length;
+  const c = col(p.type, p.id === 'ceo');
+  document.getElementById('selected-panel').innerHTML = `
+    <div style="background:var(--surface-3);border:1px solid ${c}40;border-radius:10px;padding:14px;text-align:left;">
+      <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:3px;">${p.name}</div>
+      <div style="font-size:11px;color:var(--text-muted);margin-bottom:10px;">${p.title}</div>
+      <div style="font-size:11.5px;color:var(--text-soft);margin-bottom:5px;">Type: <span style="color:${c};font-weight:600;">${typeLabel(p.type)}</span></div>
+      <div style="font-size:11.5px;color:var(--text-soft);margin-bottom:5px;">Direct reports: <strong style="color:var(--text);">${kids}</strong></div>
+      <div style="font-size:11.5px;color:var(--text-soft);margin-bottom:12px;">ODD: <span style="color:var(--emerald);">● Active v2.1</span></div>
+      <div style="display:flex;gap:6px;">
+        <button class="tb-btn" style="flex:1;justify-content:center;font-size:10.5px;padding:5px 8px;">View ODD</button>
+        <button class="tb-btn" style="flex:1;justify-content:center;font-size:10.5px;padding:5px 8px;" onclick="openAddModal('${id}')">+ Report</button>
+        <button class="tb-btn" style="justify-content:center;font-size:10.5px;padding:5px 8px;color:var(--cherry);" onclick="removeNode('${id}')">✕</button>
+      </div>
+    </div>`;
+}
+
+// ─── ADD / REMOVE ─────────────────────────────────────────────────────────────
+function openAddModal(parentId, forceType) {
+  const sel = document.getElementById('add-parent');
+  sel.innerHTML = people.map(p =>
+    `<option value="${p.id}"${p.id === parentId ? ' selected' : ''}>${p.name} — ${p.title}</option>`
+  ).join('');
+  document.getElementById('add-type').value = forceType || 'human';
+  document.getElementById('add-name').value = '';
+  document.getElementById('add-title').value = '';
+  document.getElementById('add-modal').style.display = 'flex';
+}
+function closeAddModal() { document.getElementById('add-modal').style.display = 'none'; }
+
+function addNode() {
+  const name = document.getElementById('add-name').value.trim();
+  const title = document.getElementById('add-title').value.trim();
+  const type = document.getElementById('add-type').value;
+  const parentId = document.getElementById('add-parent').value;
+  if (!name) return;
+  const initials = name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
+  people.push({ id: 'n' + Date.now(), name, title: title || 'OrgExec', type, parentId, initials });
+  closeAddModal(); render(); fitToView();
+}
+
+function removeNode(id) {
+  const removed = people.find(p => p.id === id);
+  people = people.filter(p => p.id !== id);
+  if (removed) people.forEach(p => { if (p.parentId === id) p.parentId = removed.parentId; });
+  selectedId = null;
+  document.getElementById('selected-panel').innerHTML =
+    '<span style="color:var(--text-muted);font-size:12px;">Click a node to inspect</span>';
+  render(); applyTransform();
+}
+
+function autoLayout() { render(); fitToView(); }
+
+// ─── INIT ─────────────────────────────────────────────────────────────────────
+render();
+// Double rAF ensures the stage has painted and has real clientWidth/clientHeight
+requestAnimationFrame(() => requestAnimationFrame(fitToView));
+window.addEventListener('resize', fitToView);
+</script>
+</body>
+</html>

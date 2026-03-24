@@ -1,0 +1,2142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>UME — Organisation Operating System</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0c;
+    --surface: #111116;
+    --border: rgba(255,255,255,0.07);
+    --cyan: #00d4c8;
+    --red: #ff3b3b;
+    --white: #f0f0f2;
+    --muted: rgba(240,240,242,0.45);
+    --font-display: 'Syne', sans-serif;
+    --font-body: 'DM Sans', sans-serif;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--white);
+    font-family: var(--font-body);
+    font-size: 16px;
+    line-height: 1.6;
+    overflow-x: hidden;
+  }
+
+  /* ── NAV ─────────────────────────────────────── */
+  nav {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 22px 48px;
+    background: rgba(10,10,12,0.7);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .nav-logo {
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: 22px;
+    letter-spacing: -0.02em;
+    color: var(--white);
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .nav-logo-mark {
+    width: 28px; height: 28px;
+    background: linear-gradient(135deg, var(--cyan), var(--red));
+    clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+  }
+
+  .nav-links {
+    display: flex;
+    align-items: center;
+    gap: 36px;
+    list-style: none;
+  }
+
+  .nav-links a {
+    color: var(--muted);
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 400;
+    letter-spacing: 0.03em;
+    transition: color 0.2s;
+    cursor: pointer;
+  }
+
+  .nav-links a:hover, .nav-links a.active { color: var(--white); }
+
+  .nav-cta {
+    background: transparent;
+    border: 1px solid rgba(0,212,200,0.4);
+    color: var(--cyan) !important;
+    padding: 8px 20px;
+    border-radius: 2px;
+    font-size: 13px !important;
+    font-weight: 500 !important;
+    letter-spacing: 0.08em !important;
+    text-transform: uppercase;
+    transition: background 0.2s, border-color 0.2s !important;
+  }
+
+  .nav-cta:hover {
+    background: rgba(0,212,200,0.1) !important;
+    border-color: var(--cyan) !important;
+    color: var(--cyan) !important;
+  }
+
+  /* ── PAGE SYSTEM ─────────────────────────────── */
+  .page { display: none; min-height: 100vh; }
+  .page.active { display: block; }
+
+  /* ── HERO ────────────────────────────────────── */
+  .hero {
+    position: relative;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    overflow: hidden;
+    padding: 100px 48px 60px;
+  }
+
+  .hero-bg {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+  }
+
+  /* Fluid gradient orbs */
+  .orb {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(80px);
+    opacity: 0.55;
+  }
+
+  .orb-1 {
+    width: 700px; height: 700px;
+    background: radial-gradient(circle, #00d4c8 0%, transparent 70%);
+    top: -200px; right: -100px;
+    animation: drift1 12s ease-in-out infinite;
+  }
+
+  .orb-2 {
+    width: 500px; height: 600px;
+    background: radial-gradient(circle, #ff3b3b 0%, transparent 70%);
+    bottom: -150px; left: 30%;
+    animation: drift2 15s ease-in-out infinite;
+  }
+
+  .orb-3 {
+    width: 400px; height: 400px;
+    background: radial-gradient(circle, rgba(0,80,200,0.8) 0%, transparent 70%);
+    top: 20%; left: -100px;
+    animation: drift3 18s ease-in-out infinite;
+  }
+
+  @keyframes drift1 {
+    0%, 100% { transform: translate(0, 0) scale(1); }
+    33% { transform: translate(-40px, 30px) scale(1.05); }
+    66% { transform: translate(30px, -20px) scale(0.97); }
+  }
+
+  @keyframes drift2 {
+    0%, 100% { transform: translate(0, 0) scale(1); }
+    50% { transform: translate(-60px, -40px) scale(1.1); }
+  }
+
+  @keyframes drift3 {
+    0%, 100% { transform: translate(0, 0); }
+    40% { transform: translate(40px, 50px) scale(1.08); }
+    80% { transform: translate(-20px, 20px) scale(0.95); }
+  }
+
+  /* Noise overlay */
+  .hero-bg::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+    background-size: 256px;
+    opacity: 0.4;
+    mix-blend-mode: overlay;
+  }
+
+  .hero-content {
+    position: relative;
+    z-index: 2;
+    max-width: 780px;
+  }
+
+  .hero-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--cyan);
+    margin-bottom: 32px;
+    opacity: 0;
+    animation: fadeUp 0.8s 0.2s ease forwards;
+  }
+
+  .hero-tag::before {
+    content: '';
+    display: block;
+    width: 24px; height: 1px;
+    background: var(--cyan);
+  }
+
+  .hero-headline {
+    font-family: var(--font-display);
+    font-size: clamp(52px, 7vw, 96px);
+    font-weight: 800;
+    line-height: 0.95;
+    letter-spacing: -0.04em;
+    margin-bottom: 28px;
+    opacity: 0;
+    animation: fadeUp 0.8s 0.35s ease forwards;
+  }
+
+  .hero-headline span {
+    display: block;
+    background: linear-gradient(90deg, var(--white) 0%, rgba(240,240,242,0.5) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .hero-headline .accent {
+    background: linear-gradient(135deg, var(--cyan) 0%, #00a8a2 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .hero-sub {
+    font-size: 18px;
+    font-weight: 300;
+    color: var(--muted);
+    max-width: 520px;
+    line-height: 1.65;
+    margin-bottom: 48px;
+    opacity: 0;
+    animation: fadeUp 0.8s 0.5s ease forwards;
+  }
+
+  .hero-actions {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    flex-wrap: wrap;
+    opacity: 0;
+    animation: fadeUp 0.8s 0.65s ease forwards;
+  }
+
+  .btn-primary {
+    background: var(--cyan);
+    color: #000;
+    border: none;
+    padding: 14px 32px;
+    font-family: var(--font-body);
+    font-size: 14px;
+    font-weight: 500;
+    letter-spacing: 0.05em;
+    cursor: pointer;
+    border-radius: 2px;
+    transition: opacity 0.2s, transform 0.2s;
+  }
+
+  .btn-primary:hover { opacity: 0.85; transform: translateY(-1px); }
+
+  .btn-ghost {
+    background: transparent;
+    color: var(--muted);
+    border: 1px solid var(--border);
+    padding: 14px 32px;
+    font-family: var(--font-body);
+    font-size: 14px;
+    font-weight: 400;
+    letter-spacing: 0.03em;
+    cursor: pointer;
+    border-radius: 2px;
+    transition: border-color 0.2s, color 0.2s;
+  }
+
+  .btn-ghost:hover { border-color: rgba(255,255,255,0.25); color: var(--white); }
+
+  .hero-stats {
+    position: absolute;
+    bottom: 56px;
+    right: 48px;
+    display: flex;
+    gap: 48px;
+    opacity: 0;
+    animation: fadeUp 0.8s 0.8s ease forwards;
+  }
+
+  .stat-item { text-align: right; }
+  .stat-value {
+    font-family: var(--font-display);
+    font-size: 36px;
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    color: var(--white);
+    line-height: 1;
+  }
+
+  .stat-value span { color: var(--cyan); }
+  .stat-label { font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin-top: 4px; }
+
+  /* Scroll indicator */
+  .scroll-ind {
+    position: absolute;
+    bottom: 32px;
+    left: 48px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  .scroll-line {
+    width: 40px; height: 1px;
+    background: var(--muted);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .scroll-line::after {
+    content: '';
+    position: absolute;
+    top: 0; left: -100%;
+    width: 100%; height: 100%;
+    background: var(--cyan);
+    animation: scanline 2s ease-in-out infinite;
+  }
+
+  @keyframes scanline { 0% { left: -100%; } 100% { left: 100%; } }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ── SECTION COMMON ──────────────────────────── */
+  section {
+    padding: 100px 48px;
+    max-width: 1280px;
+    margin: 0 auto;
+  }
+
+  .section-tag {
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--cyan);
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .section-tag::before {
+    content: '';
+    display: block;
+    width: 20px; height: 1px;
+    background: var(--cyan);
+  }
+
+  .section-title {
+    font-family: var(--font-display);
+    font-size: clamp(32px, 4vw, 52px);
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    line-height: 1.05;
+    margin-bottom: 16px;
+  }
+
+  .section-sub {
+    font-size: 16px;
+    font-weight: 300;
+    color: var(--muted);
+    max-width: 540px;
+    line-height: 1.7;
+  }
+
+  /* ── INTRO STRIP ─────────────────────────────── */
+  .intro-strip {
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    padding: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0;
+    overflow: hidden;
+  }
+
+  .intro-strip-text {
+    font-family: var(--font-display);
+    font-size: clamp(20px, 2.5vw, 30px);
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    color: var(--muted);
+    text-align: center;
+    max-width: 860px;
+  }
+
+  .intro-strip-text strong { color: var(--white); }
+
+  /* ── WHAT IS UME ─────────────────────────────── */
+  .two-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 80px;
+    align-items: start;
+  }
+
+  .what-visual {
+    position: relative;
+    height: 480px;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    overflow: hidden;
+    background: var(--surface);
+  }
+
+  .what-visual-inner {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .kernel-diagram {
+    position: relative;
+    width: 280px;
+    height: 280px;
+  }
+
+  .ring {
+    position: absolute;
+    border-radius: 50%;
+    border: 1px solid;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .ring-outer {
+    inset: 0;
+    border-color: rgba(0,212,200,0.2);
+    animation: spin 20s linear infinite;
+  }
+
+  .ring-mid {
+    inset: 50px;
+    border-color: rgba(255,59,59,0.3);
+    animation: spin 14s linear infinite reverse;
+  }
+
+  .ring-inner {
+    inset: 100px;
+    border-color: rgba(0,212,200,0.5);
+    background: rgba(0,212,200,0.05);
+    animation: spin 8s linear infinite;
+  }
+
+  .ring-core {
+    inset: 130px;
+    border-color: var(--cyan);
+    background: rgba(0,212,200,0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--font-display);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    color: var(--cyan);
+  }
+
+  .ring-dot {
+    position: absolute;
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--cyan);
+  }
+
+  .ring-outer .ring-dot { top: -3px; left: 50%; transform: translateX(-50%); }
+  .ring-mid .ring-dot { bottom: -3px; right: 30%; background: var(--red); }
+
+  @keyframes spin { from { transform: rotate(0); } to { transform: rotate(360deg); } }
+
+  .what-visual-labels {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+  }
+
+  .what-label {
+    position: absolute;
+    font-size: 10px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  .what-label:nth-child(1) { top: 24px; left: 24px; }
+  .what-label:nth-child(2) { top: 24px; right: 24px; text-align: right; }
+  .what-label:nth-child(3) { bottom: 24px; left: 24px; }
+  .what-label:nth-child(4) { bottom: 24px; right: 24px; text-align: right; }
+
+  .what-content { padding-top: 20px; }
+
+  .feature-list {
+    margin-top: 40px;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+  }
+
+  .feature-item {
+    display: flex;
+    gap: 16px;
+    align-items: flex-start;
+  }
+
+  .feature-icon {
+    width: 36px; height: 36px;
+    border: 1px solid var(--border);
+    border-radius: 2px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    font-size: 14px;
+  }
+
+  .feature-text h4 {
+    font-family: var(--font-display);
+    font-size: 15px;
+    font-weight: 600;
+    margin-bottom: 4px;
+    letter-spacing: -0.01em;
+  }
+
+  .feature-text p {
+    font-size: 13px;
+    color: var(--muted);
+    line-height: 1.5;
+    font-weight: 300;
+  }
+
+  /* ── MODULE GRID ─────────────────────────────── */
+  .modules-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    margin-bottom: 52px;
+  }
+
+  .module-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 1px;
+    background: var(--border);
+    border: 1px solid var(--border);
+  }
+
+  .module-cell {
+    background: var(--bg);
+    padding: 24px 20px;
+    transition: background 0.2s;
+    cursor: default;
+  }
+
+  .module-cell:hover { background: var(--surface); }
+
+  .module-cell:hover .module-icon { color: var(--cyan); }
+
+  .module-icon {
+    font-size: 18px;
+    margin-bottom: 10px;
+    transition: color 0.2s;
+  }
+
+  .module-name {
+    font-family: var(--font-display);
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    margin-bottom: 4px;
+  }
+
+  .module-desc {
+    font-size: 11px;
+    color: var(--muted);
+    line-height: 1.4;
+    font-weight: 300;
+  }
+
+  /* ── HOW IT WORKS ────────────────────────────── */
+  .steps-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1px;
+    background: var(--border);
+    border: 1px solid var(--border);
+    margin-top: 60px;
+  }
+
+  .step-cell {
+    background: var(--bg);
+    padding: 48px 36px;
+    position: relative;
+  }
+
+  .step-num {
+    font-family: var(--font-display);
+    font-size: 64px;
+    font-weight: 800;
+    letter-spacing: -0.05em;
+    color: rgba(255,255,255,0.04);
+    line-height: 1;
+    margin-bottom: 24px;
+  }
+
+  .step-title {
+    font-family: var(--font-display);
+    font-size: 20px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    margin-bottom: 12px;
+  }
+
+  .step-body {
+    font-size: 14px;
+    color: var(--muted);
+    line-height: 1.65;
+    font-weight: 300;
+  }
+
+  .step-accent {
+    position: absolute;
+    top: 0; left: 0;
+    width: 3px; height: 40px;
+    background: var(--cyan);
+  }
+
+  /* ── ORGOS FACTORY PAGE ──────────────────────── */
+  .factory-hero {
+    padding: 140px 48px 80px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .factory-hero-bg {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+  }
+
+  .factory-orb-1 {
+    position: absolute;
+    width: 600px; height: 600px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(0,212,200,0.15), transparent 70%);
+    top: -200px; right: -100px;
+  }
+
+  .factory-orb-2 {
+    position: absolute;
+    width: 400px; height: 400px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(255,59,59,0.1), transparent 70%);
+    bottom: 0; left: 20%;
+    filter: blur(60px);
+  }
+
+  .factory-content {
+    position: relative;
+    z-index: 2;
+    max-width: 1280px;
+    margin: 0 auto;
+  }
+
+  .page-eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--cyan);
+    margin-bottom: 24px;
+    padding: 6px 14px;
+    border: 1px solid rgba(0,212,200,0.25);
+    border-radius: 2px;
+  }
+
+  .page-headline {
+    font-family: var(--font-display);
+    font-size: clamp(40px, 5vw, 68px);
+    font-weight: 800;
+    letter-spacing: -0.04em;
+    line-height: 1;
+    margin-bottom: 24px;
+  }
+
+  .page-sub {
+    font-size: 18px;
+    font-weight: 300;
+    color: var(--muted);
+    max-width: 600px;
+    line-height: 1.7;
+  }
+
+  /* Architecture diagram */
+  .arch-visual {
+    margin: 80px 48px;
+    max-width: 1280px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .arch-layers {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    background: var(--border);
+    border: 1px solid var(--border);
+  }
+
+  .arch-layer {
+    background: var(--bg);
+    padding: 28px 36px;
+    display: flex;
+    align-items: center;
+    gap: 32px;
+  }
+
+  .arch-layer:hover { background: var(--surface); }
+
+  .arch-layer-label {
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--muted);
+    width: 120px;
+    flex-shrink: 0;
+  }
+
+  .arch-layer-name {
+    font-family: var(--font-display);
+    font-size: 17px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    width: 220px;
+    flex-shrink: 0;
+  }
+
+  .arch-layer-desc {
+    font-size: 13px;
+    color: var(--muted);
+    font-weight: 300;
+    flex: 1;
+    line-height: 1.5;
+  }
+
+  .arch-layer-badge {
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 4px 10px;
+    border: 1px solid;
+    border-radius: 2px;
+    flex-shrink: 0;
+  }
+
+  .badge-cyan { border-color: rgba(0,212,200,0.4); color: var(--cyan); }
+  .badge-red { border-color: rgba(255,59,59,0.4); color: var(--red); }
+  .badge-white { border-color: var(--border); color: var(--muted); }
+
+  /* concept cards */
+  .concept-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1px;
+    background: var(--border);
+    border: 1px solid var(--border);
+    margin-top: 60px;
+  }
+
+  .concept-card {
+    background: var(--bg);
+    padding: 40px 32px;
+    transition: background 0.2s;
+  }
+
+  .concept-card:hover { background: var(--surface); }
+
+  .concept-tag {
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--cyan);
+    margin-bottom: 16px;
+  }
+
+  .concept-name {
+    font-family: var(--font-display);
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    margin-bottom: 12px;
+  }
+
+  .concept-body {
+    font-size: 13px;
+    color: var(--muted);
+    line-height: 1.65;
+    font-weight: 300;
+  }
+
+  /* ── PLATFORM PAGE ───────────────────────────── */
+  .req-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 40px;
+    font-size: 13px;
+  }
+
+  .req-table th {
+    text-align: left;
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border);
+    font-weight: 400;
+  }
+
+  .req-table td {
+    padding: 16px;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+    vertical-align: top;
+    color: var(--muted);
+    font-weight: 300;
+    line-height: 1.5;
+  }
+
+  .req-table td:first-child {
+    font-family: var(--font-display);
+    font-size: 11px;
+    letter-spacing: 0.05em;
+    color: var(--cyan);
+    font-weight: 600;
+    white-space: nowrap;
+  }
+
+  .req-table td:nth-child(2) {
+    color: var(--white);
+    font-weight: 400;
+    font-size: 13px;
+  }
+
+  .req-table tr:hover td { background: rgba(255,255,255,0.02); }
+
+  .priority-must {
+    display: inline-block;
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 3px 8px;
+    border: 1px solid rgba(0,212,200,0.3);
+    color: var(--cyan);
+    border-radius: 2px;
+    font-weight: 500;
+  }
+
+  .priority-should {
+    display: inline-block;
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 3px 8px;
+    border: 1px solid rgba(255,255,255,0.15);
+    color: var(--muted);
+    border-radius: 2px;
+    font-weight: 500;
+  }
+
+  /* ── PRICING ─────────────────────────────────── */
+  .pricing-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1px;
+    background: var(--border);
+    border: 1px solid var(--border);
+    margin-top: 60px;
+  }
+
+  .pricing-card {
+    background: var(--bg);
+    padding: 48px 36px;
+    position: relative;
+  }
+
+  .pricing-card.featured {
+    background: var(--surface);
+  }
+
+  .pricing-card.featured::before {
+    content: 'MOST POPULAR';
+    position: absolute;
+    top: 0; left: 50%;
+    transform: translateX(-50%);
+    font-size: 9px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    background: var(--cyan);
+    color: #000;
+    padding: 4px 16px;
+    font-weight: 600;
+  }
+
+  .pricing-tier {
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 16px;
+  }
+
+  .pricing-price {
+    font-family: var(--font-display);
+    font-size: 48px;
+    font-weight: 800;
+    letter-spacing: -0.04em;
+    line-height: 1;
+    margin-bottom: 4px;
+  }
+
+  .pricing-price sup {
+    font-size: 24px;
+    vertical-align: super;
+    font-weight: 500;
+  }
+
+  .pricing-period {
+    font-size: 12px;
+    color: var(--muted);
+    margin-bottom: 32px;
+    font-weight: 300;
+  }
+
+  .pricing-features {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 40px;
+  }
+
+  .pricing-features li {
+    font-size: 13px;
+    color: var(--muted);
+    font-weight: 300;
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .pricing-features li::before {
+    content: '—';
+    color: var(--cyan);
+    flex-shrink: 0;
+    font-size: 12px;
+  }
+
+  /* ── ABOUT PAGE ──────────────────────────────── */
+  .about-grid {
+    display: grid;
+    grid-template-columns: 1.2fr 0.8fr;
+    gap: 80px;
+    align-items: start;
+  }
+
+  .about-stat-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1px;
+    background: var(--border);
+    border: 1px solid var(--border);
+  }
+
+  .about-stat-cell {
+    background: var(--bg);
+    padding: 32px 24px;
+  }
+
+  .about-stat-value {
+    font-family: var(--font-display);
+    font-size: 40px;
+    font-weight: 800;
+    letter-spacing: -0.04em;
+    line-height: 1;
+    color: var(--white);
+    margin-bottom: 6px;
+  }
+
+  .about-stat-value .c { color: var(--cyan); }
+
+  .about-stat-label {
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  .mission-block {
+    border-left: 2px solid var(--cyan);
+    padding: 24px 28px;
+    background: rgba(0,212,200,0.04);
+    margin: 48px 0;
+  }
+
+  .mission-block p {
+    font-family: var(--font-display);
+    font-size: 20px;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    line-height: 1.4;
+    color: var(--white);
+  }
+
+  .timeline {
+    position: relative;
+    margin-top: 60px;
+  }
+
+  .timeline::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 1px;
+    background: var(--border);
+  }
+
+  .timeline-item {
+    padding: 0 0 40px 36px;
+    position: relative;
+  }
+
+  .timeline-item::before {
+    content: '';
+    position: absolute;
+    left: -3px; top: 5px;
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: var(--cyan);
+    box-shadow: 0 0 12px var(--cyan);
+  }
+
+  .timeline-date {
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--cyan);
+    margin-bottom: 6px;
+  }
+
+  .timeline-title {
+    font-family: var(--font-display);
+    font-size: 16px;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    margin-bottom: 6px;
+  }
+
+  .timeline-body {
+    font-size: 13px;
+    color: var(--muted);
+    font-weight: 300;
+    line-height: 1.5;
+  }
+
+  /* ── FOOTER ──────────────────────────────────── */
+  footer {
+    border-top: 1px solid var(--border);
+    padding: 60px 48px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .footer-logo {
+    font-family: var(--font-display);
+    font-size: 18px;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .footer-mark {
+    width: 22px; height: 22px;
+    background: linear-gradient(135deg, var(--cyan), var(--red));
+    clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+  }
+
+  .footer-links {
+    display: flex;
+    gap: 32px;
+    list-style: none;
+  }
+
+  .footer-links a {
+    font-size: 12px;
+    color: var(--muted);
+    text-decoration: none;
+    letter-spacing: 0.05em;
+    transition: color 0.2s;
+    cursor: pointer;
+  }
+
+  .footer-links a:hover { color: var(--white); }
+
+  .footer-copy {
+    font-size: 12px;
+    color: rgba(240,240,242,0.25);
+    letter-spacing: 0.03em;
+  }
+
+  /* ── TABS ─────────────────────────────────────── */
+  .tab-bar {
+    display: flex;
+    gap: 0;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 48px;
+    overflow-x: auto;
+  }
+
+  .tab-btn {
+    background: transparent;
+    border: none;
+    border-bottom: 2px solid transparent;
+    padding: 16px 24px;
+    font-family: var(--font-body);
+    font-size: 13px;
+    font-weight: 400;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--muted);
+    cursor: pointer;
+    white-space: nowrap;
+    transition: color 0.2s, border-color 0.2s;
+    margin-bottom: -1px;
+  }
+
+  .tab-btn.active, .tab-btn:hover {
+    color: var(--white);
+    border-bottom-color: var(--cyan);
+  }
+
+  .tab-content { display: none; }
+  .tab-content.active { display: block; }
+
+  /* ── CTA BAND ────────────────────────────────── */
+  .cta-band {
+    margin: 0;
+    padding: 100px 48px;
+    background: var(--surface);
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .cta-band::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse 60% 100% at 50% 100%, rgba(0,212,200,0.08), transparent);
+  }
+
+  .cta-band-title {
+    font-family: var(--font-display);
+    font-size: clamp(36px, 4vw, 56px);
+    font-weight: 800;
+    letter-spacing: -0.04em;
+    line-height: 1.05;
+    margin-bottom: 20px;
+    position: relative;
+  }
+
+  .cta-band-sub {
+    font-size: 16px;
+    color: var(--muted);
+    font-weight: 300;
+    max-width: 500px;
+    margin: 0 auto 40px;
+    position: relative;
+  }
+
+  .cta-band-actions {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    position: relative;
+  }
+
+  /* ── RESPONSIVE ──────────────────────────────── */
+  @media (max-width: 900px) {
+    nav { padding: 18px 24px; }
+    .nav-links { display: none; }
+    section { padding: 60px 24px; }
+    .hero { padding: 80px 24px 60px; }
+    .hero-stats { right: 24px; gap: 28px; }
+    .two-col, .about-grid { grid-template-columns: 1fr; gap: 48px; }
+    .steps-grid, .concept-grid { grid-template-columns: 1fr; }
+    .pricing-grid { grid-template-columns: 1fr; }
+    footer { flex-direction: column; gap: 32px; text-align: center; }
+    .hero-stats { position: static; margin-top: 60px; justify-content: flex-start; }
+    .arch-layer { flex-wrap: wrap; gap: 12px; }
+    .arch-layer-name { width: auto; }
+    .modules-header { flex-direction: column; align-items: flex-start; gap: 16px; }
+    .factory-hero { padding: 100px 24px 60px; }
+    .arch-visual { margin: 40px 24px; }
+    .intro-strip { padding: 32px 24px; }
+    .cta-band { padding: 60px 24px; }
+  }
+
+  /* ── PAGE TRANSITIONS ─────────────────────────── */
+  .page { animation: pageIn 0.4s ease; }
+  @keyframes pageIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+  /* ── HIGHLIGHT SPANS ─────────────────────────── */
+  .hl-cyan { color: var(--cyan); }
+  .hl-red { color: var(--red); }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a class="nav-logo" onclick="showPage('home')">
+    <div class="nav-logo-mark"></div>
+    UME
+  </a>
+  <ul class="nav-links">
+    <li><a onclick="showPage('home')" class="active" id="nav-home">Home</a></li>
+    <li><a onclick="showPage('platform')" id="nav-platform">Platform</a></li>
+    <li><a onclick="showPage('orgos')" id="nav-orgos">OrgOS Factory</a></li>
+    <li><a onclick="showPage('modules')" id="nav-modules">Modules</a></li>
+    <li><a onclick="showPage('pricing')" id="nav-pricing">Pricing</a></li>
+    <li><a onclick="showPage('about')" id="nav-about">About</a></li>
+    <li><a class="nav-cta" onclick="showPage('about')">Get Access</a></li>
+  </ul>
+</nav>
+
+<!-- ═══════════════════════════════════════════════ -->
+<!-- PAGE: HOME                                      -->
+<!-- ═══════════════════════════════════════════════ -->
+<div class="page active" id="page-home">
+
+  <!-- Hero -->
+  <div class="hero">
+    <div class="hero-bg">
+      <div class="orb orb-1"></div>
+      <div class="orb orb-2"></div>
+      <div class="orb orb-3"></div>
+    </div>
+
+    <div class="hero-content">
+      <div class="hero-tag">Organisation Operating System</div>
+      <h1 class="hero-headline">
+        <span>One OS.</span>
+        <span class="accent">Every Org.</span>
+      </h1>
+      <p class="hero-sub">UME replaces the fragmented stack of 12–28 disconnected tools every organisation runs on. One kernel. 42 integrated modules. Complete organisational context — always live, always governed.</p>
+      <div class="hero-actions">
+        <button class="btn-primary" onclick="showPage('platform')">Explore the Platform</button>
+        <button class="btn-ghost" onclick="showPage('about')">Request Access →</button>
+      </div>
+    </div>
+
+    <div class="hero-stats">
+      <div class="stat-item">
+        <div class="stat-value"><span>$380</span>B</div>
+        <div class="stat-label">TAM by 2028</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-value"><span>42</span></div>
+        <div class="stat-label">Domain Modules</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-value"><span>45</span><span style="font-size:20px">+</span></div>
+        <div class="stat-label">Jurisdictions</div>
+      </div>
+    </div>
+
+    <div class="scroll-ind">
+      <div class="scroll-line"></div>
+      Scroll
+    </div>
+  </div>
+
+  <!-- Intro strip -->
+  <div class="intro-strip">
+    <p class="intro-strip-text">
+      Every organisation on Earth runs on <strong>fragmented tools that don't share a model of the organisation.</strong> The result is $4.5 trillion in annual compliance costs. UME changes this — fundamentally.
+    </p>
+  </div>
+
+  <!-- What is UME -->
+  <section>
+    <div class="two-col">
+      <div class="what-visual">
+        <div class="what-visual-inner">
+          <div class="kernel-diagram">
+            <div class="ring ring-outer"><div class="ring-dot"></div></div>
+            <div class="ring ring-mid"><div class="ring-dot"></div></div>
+            <div class="ring ring-inner"></div>
+            <div class="ring ring-core">KERNEL</div>
+          </div>
+        </div>
+        <div class="what-visual-labels">
+          <span class="what-label">OrgApps</span>
+          <span class="what-label">OrgExecs</span>
+          <span class="what-label">OrgCPUs</span>
+          <span class="what-label">ODD Contracts</span>
+        </div>
+      </div>
+
+      <div class="what-content">
+        <div class="section-tag">What is UME</div>
+        <h2 class="section-title">An OS for your organisation</h2>
+        <p class="section-sub">UME is a single Rust-based platform with a unified kernel that mediates all data access, all authorisation, and all cross-domain communication. Not an ERP. Not a suite of tools. A genuine operating system.</p>
+
+        <div class="feature-list">
+          <div class="feature-item">
+            <div class="feature-icon">⬡</div>
+            <div class="feature-text">
+              <h4>Unified Kernel</h4>
+              <p>All 42 modules share a single OrgKernel. Events propagate automatically across domains — no manual integration.</p>
+            </div>
+          </div>
+          <div class="feature-item">
+            <div class="feature-icon">⬡</div>
+            <div class="feature-text">
+              <h4>Actor Governance via ODD</h4>
+              <p>Every human, AI agent, or IoT device is governed by an OrgDeviceDriver contract defining exactly what they can and cannot do.</p>
+            </div>
+          </div>
+          <div class="feature-item">
+            <div class="feature-icon">⬡</div>
+            <div class="feature-text">
+              <h4>Software Defined Organisation</h4>
+              <p>Your organisation as a live digital twin — every OrgApp, every actor, every data flow, every state. Queryable and simulatable.</p>
+            </div>
+          </div>
+          <div class="feature-item">
+            <div class="feature-icon">⬡</div>
+            <div class="feature-text">
+              <h4>OrgDNA Portability</h4>
+              <p>Your entire organisational config in a versioned, exportable package. Clone a subsidiary, onboard a franchise, or deploy anywhere in 90 seconds.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- How it works -->
+  <section style="padding-top: 0;">
+    <div class="section-tag">How it works</div>
+    <h2 class="section-title">From chaos to kernel</h2>
+    <p class="section-sub">Three layers that transform how organisations operate.</p>
+
+    <div class="steps-grid">
+      <div class="step-cell">
+        <div class="step-accent"></div>
+        <div class="step-num">01</div>
+        <div class="step-title">Provision your OrgOS</div>
+        <p class="step-body">Select your jurisdiction policy packs, configure your OrgApps, and define your actor governance via ODD contracts. Your OrgOS is provisioned in under 90 seconds — ready to run your organisation from day one.</p>
+      </div>
+      <div class="step-cell">
+        <div class="step-accent" style="background: var(--red);"></div>
+        <div class="step-num">02</div>
+        <div class="step-title">Connect every actor</div>
+        <p class="step-body">Employees, AI agents, IoT devices, and third-party platforms all connect through ODD contracts. Every action is validated, every event is recorded. The OrgKernel sees everything — always.</p>
+      </div>
+      <div class="step-cell">
+        <div class="step-accent"></div>
+        <div class="step-num">03</div>
+        <div class="step-title">Operate and scale</div>
+        <p class="step-body">Your Software Defined Organisation reflects real-time state. Add subsidiaries, join a DAO, clone your OrgDNA to a franchise — scale without fragmentation. OrgMemory is immutable. The audit chain is always intact.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <div class="cta-band">
+    <h2 class="cta-band-title">The world's first<br><span class="hl-cyan">OrgOS Factory</span></h2>
+    <p class="cta-band-sub">Join organisations already building on UME — the operating system for every org, at every scale.</p>
+    <div class="cta-band-actions">
+      <button class="btn-primary" onclick="showPage('about')">Request Early Access</button>
+      <button class="btn-ghost" onclick="showPage('orgos')">Learn about OrgOS →</button>
+    </div>
+  </div>
+
+  <footer>
+    <div class="footer-logo"><div class="footer-mark"></div> UME</div>
+    <ul class="footer-links">
+      <li><a onclick="showPage('platform')">Platform</a></li>
+      <li><a onclick="showPage('orgos')">OrgOS Factory</a></li>
+      <li><a onclick="showPage('modules')">Modules</a></li>
+      <li><a onclick="showPage('pricing')">Pricing</a></li>
+      <li><a onclick="showPage('about')">About</a></li>
+    </ul>
+    <div class="footer-copy">© 2026 UME Technologies Ltd · London, UK</div>
+  </footer>
+</div>
+
+<!-- ═══════════════════════════════════════════════ -->
+<!-- PAGE: PLATFORM                                  -->
+<!-- ═══════════════════════════════════════════════ -->
+<div class="page" id="page-platform">
+  <div class="factory-hero">
+    <div class="factory-hero-bg">
+      <div class="factory-orb-1"></div>
+      <div class="factory-orb-2"></div>
+    </div>
+    <div class="factory-content">
+      <div class="page-eyebrow">Platform Requirements · v2.0.0</div>
+      <h1 class="page-headline">Built different.<br>At the <span class="hl-cyan">kernel level.</span></h1>
+      <p class="page-sub">UME's architecture starts where other platforms stop. A Rust kernel, cryptographic audit chain, and formal ODD governance that no suite of loosely bolted applications can replicate.</p>
+    </div>
+  </div>
+
+  <!-- Architecture layers -->
+  <div class="arch-visual" style="padding: 0 48px;">
+    <div class="section-tag">Architecture</div>
+    <h2 class="section-title" style="margin-bottom: 40px;">The OrgOS Stack</h2>
+    <div class="arch-layers">
+      <div class="arch-layer">
+        <span class="arch-layer-label">Layer 5</span>
+        <span class="arch-layer-name">DAO / DLT</span>
+        <span class="arch-layer-desc">Multi-organisation cooperation via permissioned distributed ledger. Smart contract governance, cross-org OrgMemory, and OrgDNA broadcasts across all member nodes.</span>
+        <span class="arch-layer-badge badge-red">New · v2.0</span>
+      </div>
+      <div class="arch-layer">
+        <span class="arch-layer-label">Layer 4</span>
+        <span class="arch-layer-name">SDO Engine</span>
+        <span class="arch-layer-desc">Software Defined Organisation — the live digital twin. Topology graph updated within 500ms of any domain event. OrgSimulator for what-if scenario analysis.</span>
+        <span class="arch-layer-badge badge-cyan">New · v2.0</span>
+      </div>
+      <div class="arch-layer">
+        <span class="arch-layer-label">Layer 3</span>
+        <span class="arch-layer-name">ODD Bus</span>
+        <span class="arch-layer-desc">OrgDeviceDriver enforcement bus. Every actor action validated in &lt;5ms p99. All decisions — Allow, Deny, Escalate — recorded in the immutable audit chain.</span>
+        <span class="arch-layer-badge badge-cyan">New · v2.0</span>
+      </div>
+      <div class="arch-layer">
+        <span class="arch-layer-label">Layer 2</span>
+        <span class="arch-layer-name">OrgApps (42 modules)</span>
+        <span class="arch-layer-desc">Finance, HR, Legal, Risk, Compliance, Operations, Sales, and 35 more. Each OrgApp implements domain logic, manages its data, and contributes to the SDO topology graph.</span>
+        <span class="arch-layer-badge badge-white">Core</span>
+      </div>
+      <div class="arch-layer">
+        <span class="arch-layer-label">Layer 1</span>
+        <span class="arch-layer-name">OrgKernel</span>
+        <span class="arch-layer-desc">Rust 1.75+ · Tokio async runtime · SHA-256 hash-chained audit records · Kernel facade pattern (no module can bypass RBAC or audit) · PostgreSQL / SQLite storage.</span>
+        <span class="arch-layer-badge badge-white">Foundation</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Requirements tabs -->
+  <section>
+    <div class="section-tag">Platform Requirements</div>
+    <h2 class="section-title">What UME must deliver</h2>
+
+    <div class="tab-bar">
+      <button class="tab-btn active" onclick="showTab('platform', 'orgos-req')">OrgOS Factory</button>
+      <button class="tab-btn" onclick="showTab('platform', 'odd-req')">ODD Subsystem</button>
+      <button class="tab-btn" onclick="showTab('platform', 'sdo-req')">SDO & Digital Twin</button>
+      <button class="tab-btn" onclick="showTab('platform', 'dna-req')">OrgDNA</button>
+      <button class="tab-btn" onclick="showTab('platform', 'dao-req')">DAO & DLT</button>
+    </div>
+
+    <div class="tab-content active" id="tab-orgos-req">
+      <table class="req-table">
+        <thead><tr><th>ID</th><th>Requirement</th><th>Priority</th></tr></thead>
+        <tbody>
+          <tr><td>PRD-OS-01</td><td>Provision a new OrgOS from an OrgDNA template in less than 90 seconds</td><td><span class="priority-must">MUST</span></td></tr>
+          <tr><td>PRD-OS-02</td><td>Support at least 10,000 concurrent OrgOS instances on shared cloud infrastructure</td><td><span class="priority-must">MUST</span></td></tr>
+          <tr><td>PRD-OS-03</td><td>Full isolation per org_id: no data leakage between OrgOS instances under any conditions</td><td><span class="priority-must">MUST</span></td></tr>
+          <tr><td>PRD-OS-04</td><td>Versioned OrgDNA history for every managed OrgOS instance</td><td><span class="priority-must">MUST</span></td></tr>
+          <tr><td>PRD-OS-05</td><td>OrgOS rollback to any prior OrgDNA version within 5 minutes</td><td><span class="priority-must">MUST</span></td></tr>
+          <tr><td>PRD-OS-06</td><td>OrgApp marketplace with published SDK and ODD integration requirements</td><td><span class="priority-should">SHOULD</span></td></tr>
+          <tr><td>PRD-OS-07</td><td>All four deployment topologies: shared cloud, dedicated cloud, on-premises, hybrid</td><td><span class="priority-must">MUST</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="tab-content" id="tab-odd-req">
+      <table class="req-table">
+        <thead><tr><th>ID</th><th>Requirement</th><th>Priority</th></tr></thead>
+        <tbody>
+          <tr><td>PRD-ODD-01</td><td>ODDBus validates every OrgExec action against its current ODD contract before execution</td><td><span class="priority-must">MUST</span></td></tr>
+          <tr><td>PRD-ODD-02</td><td>ODD validation completes within 5ms at p99 — no database round-trips in the hot path</td><td><span class="priority-must">MUST</span></td></tr>
+          <tr><td>PRD-ODD-03</td><td>Support all four OrgExec types: Human, AI Agent, Hybrid, and OrgCPU</td><td><span class="priority-must">MUST</span></td></tr>
+          <tr><td>PRD-ODD-04</td><td>ODD contracts are versioned; updating a contract does not interrupt in-flight operations</td><td><span class="priority-must">MUST</span></td></tr>
+          <tr><td>PRD-ODD-05</td><td>All ODD violations recorded in audit chain and surfaced in the ODD violation log</td><td><span class="priority-must">MUST</span></td></tr>
+          <tr><td>PRD-ODD-06</td><td>Escalation decisions route to the designated OrgExec within 30 seconds</td><td><span class="priority-must">MUST</span></td></tr>
+          <tr><td>PRD-ODD-07</td><td>AI Agent OrgExecs subject to identical ODD enforcement as human OrgExecs</td><td><span class="priority-must">MUST</span></td></tr>
+          <tr><td>PRD-ODD-08</td><td>OrgCPUs support ODD-governed data reporting at up to 10,000 msg/sec per OrgOS</td><td><span class="priority-should">SHOULD</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="tab-content" id="tab-sdo-req">
+      <table class="req-table">
+        <thead><tr><th>ID</th><th>Requirement</th><th>Priority</th></tr></thead>
+        <tbody>
+          <tr><td>PRD-SDO-01</td><td>SDOEngine updates the digital twin within 500ms of any OrgApp domain event at p95</td><td><span class="priority-must">MUST</span></td></tr>
+          <tr><td>PRD-SDO-02</td><td>SDO topology graph represents all active OrgApps, OrgExecs, OrgCPUs, and data flow edges</td><td><span class="priority-must">MUST</span></td></tr>
+          <tr><td>PRD-SDO-03</td><td>SDO health score computed from KRI breaches, ODD violations, OrgApp errors, and compliance status</td><td><span class="priority-must">MUST</span></td></tr>
+          <tr><td>PRD-SDO-04</td><td>OrgSimulator supports at least 5 parameterisable scenario variables; results in &lt;30 seconds</td><td><span class="priority-should">SHOULD</span></td></tr>
+          <tr><td>PRD-SDO-05</td><td>SDO snapshot exportable as part of the OrgDNA package for cloning and simulation baseline</td><td><span class="priority-must">MUST</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="tab-content" id="tab-dna-req">
+      <table class="req-table">
+        <thead><tr><th>ID</th><th>Requirement</th><th>Priority</th></tr></thead>
+        <tbody>
+          <tr><td>PRD-DNA-01</td><td>Every OrgOS configuration change produces a new immutable OrgDNA version</td><td><span class="priority-must">MUST</span></td></tr>
+          <tr><td>PRD-DNA-02</td><td>An OrgDNA package fully describes the OrgOS — sufficient to provision a new instance from it alone</td><td><span class="priority-must">MUST</span></td></tr>
+          <tr><td>PRD-DNA-03</td><td>Maximum serialised OrgDNA package size: 10MB excluding transactional data</td><td><span class="priority-must">MUST</span></td></tr>
+          <tr><td>PRD-DNA-04</td><td>OrgDNA import applies as a diff against the current version — no full re-provision required</td><td><span class="priority-should">SHOULD</span></td></tr>
+          <tr><td>PRD-DNA-05</td><td>Platform validates OrgDNA integrity before applying — all dependencies satisfied, config valid</td><td><span class="priority-must">MUST</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="tab-content" id="tab-dao-req">
+      <table class="req-table">
+        <thead><tr><th>ID</th><th>Requirement</th><th>Priority</th></tr></thead>
+        <tbody>
+          <tr><td>PRD-DAO-01</td><td>DLT layer uses a permissioned consensus mechanism supporting up to 100 DAO member nodes</td><td><span class="priority-must">MUST</span></td></tr>
+          <tr><td>PRD-DAO-02</td><td>Inter-org DLT transactions confirm within 5 seconds under normal network conditions</td><td><span class="priority-must">MUST</span></td></tr>
+          <tr><td>PRD-DAO-03</td><td>All DLT blocks cryptographically signed by the submitting OrgOS and verifiable by all members</td><td><span class="priority-must">MUST</span></td></tr>
+          <tr><td>PRD-DAO-04</td><td>Smart contracts execute automatically when trigger conditions are met — no manual intervention</td><td><span class="priority-must">MUST</span></td></tr>
+          <tr><td>PRD-DAO-05</td><td>DAO governance engine enforces quorum requirements before executing approved decisions</td><td><span class="priority-must">MUST</span></td></tr>
+          <tr><td>PRD-DAO-06</td><td>OrgDNA broadcasts reach all member OrgOS instances within 60 seconds</td><td><span class="priority-must">MUST</span></td></tr>
+          <tr><td>PRD-DAO-07</td><td>A DAO member leaving triggers smart contract exit terms automatically</td><td><span class="priority-must">MUST</span></td></tr>
+          <tr><td>PRD-DAO-08</td><td>DLT ledger queryable by any DAO member for full transaction history</td><td><span class="priority-must">MUST</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <div class="cta-band">
+    <h2 class="cta-band-title">Ready to run your org<br>on <span class="hl-cyan">real infrastructure?</span></h2>
+    <p class="cta-band-sub">Request early access to UME and be among the first organisations to provision an OrgOS.</p>
+    <div class="cta-band-actions">
+      <button class="btn-primary" onclick="showPage('about')">Request Access</button>
+      <button class="btn-ghost" onclick="showPage('orgos')">OrgOS Factory →</button>
+    </div>
+  </div>
+
+  <footer>
+    <div class="footer-logo"><div class="footer-mark"></div> UME</div>
+    <ul class="footer-links">
+      <li><a onclick="showPage('home')">Home</a></li>
+      <li><a onclick="showPage('orgos')">OrgOS Factory</a></li>
+      <li><a onclick="showPage('modules')">Modules</a></li>
+      <li><a onclick="showPage('pricing')">Pricing</a></li>
+    </ul>
+    <div class="footer-copy">© 2026 UME Technologies Ltd · London, UK</div>
+  </footer>
+</div>
+
+<!-- ═══════════════════════════════════════════════ -->
+<!-- PAGE: ORGOS FACTORY                             -->
+<!-- ═══════════════════════════════════════════════ -->
+<div class="page" id="page-orgos">
+  <div class="factory-hero">
+    <div class="factory-hero-bg">
+      <div class="factory-orb-1" style="background: radial-gradient(circle, rgba(255,59,59,0.15), transparent 70%); top: -100px; right: 0;"></div>
+      <div class="factory-orb-2" style="background: radial-gradient(circle, rgba(0,212,200,0.12), transparent 70%); bottom: 0; left: 40%;"></div>
+    </div>
+    <div class="factory-content">
+      <div class="page-eyebrow">OrgOS Factory · v2.0.0</div>
+      <h1 class="page-headline">A meta-OS that<br>creates <span class="hl-red">operating systems.</span></h1>
+      <p class="page-sub">UME is not just an operating system for your organisation — it's a factory that produces, deploys, and manages OrgOS instances for any organisation, at any scale, in any jurisdiction.</p>
+    </div>
+  </div>
+
+  <!-- Core concepts -->
+  <section>
+    <div class="section-tag">Core Concepts</div>
+    <h2 class="section-title">The OrgOS model</h2>
+    <p class="section-sub">Six interlocking systems that together form a living, governable, scalable Organisation Operating System.</p>
+
+    <div class="concept-grid">
+      <div class="concept-card">
+        <div class="concept-tag">OrgKernel</div>
+        <div class="concept-name">The Core</div>
+        <p class="concept-body">The running instance of the UME kernel for a specific organisation. Composition root, resource manager, and supervisor for all OrgApps. Mediates every data access and every cross-domain event — no module can bypass it.</p>
+      </div>
+      <div class="concept-card">
+        <div class="concept-tag">OrgApps</div>
+        <div class="concept-name">42 Domain Modules</div>
+        <p class="concept-body">Finance, HR, Legal, Compliance, Risk, Sales, Ops, and 35 more. Each OrgApp implements a specific organisational capability and contributes its state to the SDO digital twin. Previously called organisation modules — now with ODD and OrgDNA integration.</p>
+      </div>
+      <div class="concept-card">
+        <div class="concept-tag">ODD — OrgDeviceDriver</div>
+        <div class="concept-name">Actor Governance</div>
+        <p class="concept-body">A formal contract for every actor in the org — human employees, AI agents, IoT devices, and third-party platforms. Defines capabilities, constraints, data access rights, rate limits, escalation triggers, and audit requirements. Validated in &lt;5ms per action.</p>
+      </div>
+      <div class="concept-card">
+        <div class="concept-tag">SDO</div>
+        <div class="concept-name">Digital Twin</div>
+        <p class="concept-body">Software Defined Organisation — the complete runtime representation of your organisation. All OrgApps, all OrgExecs, all OrgCPUs, all data flows, all organisational state. Updated within 500ms of any event. Queryable. Simulatable.</p>
+      </div>
+      <div class="concept-card">
+        <div class="concept-tag">OrgDNA</div>
+        <div class="concept-name">Config as DNA</div>
+        <p class="concept-body">The exportable, versionable master configuration package of a fully configured OrgOS. Captures kernel config, all OrgApps, ODD templates, RBAC policies, chart of accounts, KPIs, and jurisdiction compliance packs. Clone it. Fork it. Franchise it.</p>
+      </div>
+      <div class="concept-card">
+        <div class="concept-tag">DAO / DLT</div>
+        <div class="concept-name">Multi-Org Network</div>
+        <p class="concept-body">Connect independent OrgOS instances into a DAO with shared smart contract governance and a distributed ledger. Cross-org OrgMemory is immutable, cryptographically verified, and replicated across all member nodes. Inter-org transactions confirm in &lt;5 seconds.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- OrgExec types -->
+  <section style="padding-top: 0;">
+    <div class="section-tag">Actor Model</div>
+    <h2 class="section-title">Every actor. One governance model.</h2>
+    <p class="section-sub">ODD contracts apply uniformly to all actor types — no exemptions for AI, no loopholes for devices.</p>
+
+    <div class="steps-grid" style="margin-top: 48px;">
+      <div class="step-cell">
+        <div class="step-accent"></div>
+        <div class="step-title">Human OrgExec</div>
+        <p class="step-body">Natural persons — employees and contractors. Governed by ODD contracts that define exactly which OrgApps they can access, what actions they can take, and what requires escalation. Same enforcement as AI agents.</p>
+      </div>
+      <div class="step-cell">
+        <div class="step-accent" style="background: var(--red);"></div>
+        <div class="step-title">AI Agent OrgExec</div>
+        <p class="step-body">LLM-powered or rule-based autonomous agents. Subject to identical ODD enforcement as human OrgExecs — no AI exemptions. Rate limits, capability grants, and escalation triggers apply without exception.</p>
+      </div>
+      <div class="step-cell">
+        <div class="step-accent"></div>
+        <div class="step-title">OrgCPU</div>
+        <p class="step-body">Machines, IoT devices, sensors, manufacturing equipment, POS terminals, and any non-human device. Governed by ODD device driver contracts. Support data reporting at up to 10,000 messages per second per OrgOS.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ODD Lifecycle -->
+  <section style="padding-top: 0;">
+    <div class="section-tag">ODD Lifecycle</div>
+    <h2 class="section-title">Governed from day one</h2>
+
+    <div style="margin-top: 48px; border: 1px solid var(--border); padding: 40px;">
+      <div style="display: flex; gap: 0; align-items: center; flex-wrap: wrap; justify-content: center;">
+        <div style="text-align: center; padding: 0 24px;">
+          <div style="width: 80px; height: 80px; border: 1px solid var(--border); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 12px; font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted);">Draft</div>
+          <div style="font-size: 11px; color: var(--muted); max-width: 100px;">Signed off by authorised OrgExec</div>
+        </div>
+        <div style="color: var(--cyan); font-size: 20px; padding: 0 8px;">→</div>
+        <div style="text-align: center; padding: 0 24px;">
+          <div style="width: 80px; height: 80px; border: 1px solid var(--cyan); background: rgba(0,212,200,0.08); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 12px; font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--cyan);">Active</div>
+          <div style="font-size: 11px; color: var(--muted); max-width: 100px;">Actor can take permitted actions</div>
+        </div>
+        <div style="color: var(--muted); font-size: 20px; padding: 0 8px;">↔</div>
+        <div style="text-align: center; padding: 0 24px;">
+          <div style="width: 80px; height: 80px; border: 1px solid rgba(255,59,59,0.4); background: rgba(255,59,59,0.05); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 12px; font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--red);">Suspended</div>
+          <div style="font-size: 11px; color: var(--muted); max-width: 100px;">Violation threshold or admin action</div>
+        </div>
+        <div style="color: var(--muted); font-size: 20px; padding: 0 8px;">→</div>
+        <div style="text-align: center; padding: 0 24px;">
+          <div style="width: 80px; height: 80px; border: 1px solid var(--border); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 12px; font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted);">Expired</div>
+          <div style="font-size: 11px; color: var(--muted); max-width: 100px;">expires_at reached; must renew</div>
+        </div>
+        <div style="color: var(--cyan); font-size: 20px; padding: 0 8px;">→</div>
+        <div style="text-align: center; padding: 0 24px;">
+          <div style="width: 80px; height: 80px; border: 1px solid rgba(0,212,200,0.3); background: rgba(0,212,200,0.05); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 12px; font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--cyan);">Superseded</div>
+          <div style="font-size: 11px; color: var(--muted); max-width: 100px;">New ODD version activated; old archived</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="cta-band">
+    <h2 class="cta-band-title">Govern every actor.<br><span class="hl-cyan">Without exception.</span></h2>
+    <p class="cta-band-sub">See the full ODD specification and all 42 OrgApp modules in the platform docs.</p>
+    <div class="cta-band-actions">
+      <button class="btn-primary" onclick="showPage('platform')">View Platform Spec</button>
+      <button class="btn-ghost" onclick="showPage('modules')">42 Modules →</button>
+    </div>
+  </div>
+
+  <footer>
+    <div class="footer-logo"><div class="footer-mark"></div> UME</div>
+    <ul class="footer-links">
+      <li><a onclick="showPage('home')">Home</a></li>
+      <li><a onclick="showPage('platform')">Platform</a></li>
+      <li><a onclick="showPage('modules')">Modules</a></li>
+      <li><a onclick="showPage('pricing')">Pricing</a></li>
+    </ul>
+    <div class="footer-copy">© 2026 UME Technologies Ltd · London, UK</div>
+  </footer>
+</div>
+
+<!-- ═══════════════════════════════════════════════ -->
+<!-- PAGE: MODULES                                   -->
+<!-- ═══════════════════════════════════════════════ -->
+<div class="page" id="page-modules">
+  <div class="factory-hero">
+    <div class="factory-hero-bg">
+      <div class="factory-orb-1" style="background: radial-gradient(circle, rgba(0,80,200,0.2), transparent 70%);"></div>
+      <div class="factory-orb-2" style="background: radial-gradient(circle, rgba(0,212,200,0.12), transparent 70%);"></div>
+    </div>
+    <div class="factory-content">
+      <div class="page-eyebrow">OrgApps · 42 Domain Modules</div>
+      <h1 class="page-headline">Everything<br>your org <span class="hl-cyan">needs.</span></h1>
+      <p class="page-sub">42 domain modules — every OrgApp sharing the same kernel, the same event bus, the same RBAC, and the same audit chain. No integration required. No reconciliation needed.</p>
+    </div>
+  </div>
+
+  <section>
+    <div class="modules-header">
+      <div>
+        <div class="section-tag">All 42 OrgApps</div>
+        <h2 class="section-title">The complete<br>organisational stack</h2>
+      </div>
+      <p class="section-sub" style="max-width: 320px; text-align: right;">Every module governed by ODD. Every event on the audit chain. Every domain contributing to the SDO digital twin.</p>
+    </div>
+
+    <div class="module-grid">
+      <!-- Legal & Governance -->
+      <div class="module-cell"><div class="module-icon">⚖</div><div class="module-name">Legal Entity Mgmt</div><div class="module-desc">Multi-entity, multi-jurisdiction corporate structures</div></div>
+      <div class="module-cell"><div class="module-icon">📜</div><div class="module-name">Contracts</div><div class="module-desc">Drafting, execution, obligations tracking</div></div>
+      <div class="module-cell"><div class="module-icon">🏛</div><div class="module-name">Board Governance</div><div class="module-desc">Board packs, resolutions, minutes</div></div>
+      <div class="module-cell"><div class="module-icon">🛡</div><div class="module-name">Compliance</div><div class="module-desc">Jurisdiction policy packs, deadline tracking</div></div>
+      <div class="module-cell"><div class="module-icon">⚠</div><div class="module-name">Risk Management</div><div class="module-desc">KRI monitoring, risk register, breach alerts</div></div>
+      <div class="module-cell"><div class="module-icon">🔏</div><div class="module-name">IP Management</div><div class="module-desc">Patents, trademarks, copyright portfolios</div></div>
+      <!-- Finance -->
+      <div class="module-cell"><div class="module-icon">💹</div><div class="module-name">Accounting & Finance</div><div class="module-desc">General ledger, chart of accounts, period management</div></div>
+      <div class="module-cell"><div class="module-icon">💰</div><div class="module-name">Treasury</div><div class="module-desc">Cash position, liquidity, FX management</div></div>
+      <div class="module-cell"><div class="module-icon">📊</div><div class="module-name">Financial Reporting</div><div class="module-desc">P&L, balance sheet, management accounts</div></div>
+      <div class="module-cell"><div class="module-icon">🧾</div><div class="module-name">Tax Management</div><div class="module-desc">VAT, corporate tax, Making Tax Digital</div></div>
+      <div class="module-cell"><div class="module-icon">📑</div><div class="module-name">Accounts Payable</div><div class="module-desc">Supplier invoices, payment runs, approval flows</div></div>
+      <div class="module-cell"><div class="module-icon">🧮</div><div class="module-name">Accounts Receivable</div><div class="module-desc">Customer invoicing, collections, reconciliation</div></div>
+      <!-- HR & People -->
+      <div class="module-cell"><div class="module-icon">👥</div><div class="module-name">Human Resources</div><div class="module-desc">Headcount, org charts, HR records</div></div>
+      <div class="module-cell"><div class="module-icon">📋</div><div class="module-name">Payroll</div><div class="module-desc">Multi-jurisdiction payroll with tax compliance</div></div>
+      <div class="module-cell"><div class="module-icon">🎯</div><div class="module-name">Performance Mgmt</div><div class="module-desc">OKRs, reviews, feedback cycles</div></div>
+      <div class="module-cell"><div class="module-icon">📚</div><div class="module-name">Learning & Dev</div><div class="module-desc">Training records, compliance training, certifications</div></div>
+      <div class="module-cell"><div class="module-icon">🔑</div><div class="module-name">Recruitment</div><div class="module-desc">Hiring pipelines, JD management, onboarding</div></div>
+      <div class="module-cell"><div class="module-icon">⏱</div><div class="module-name">Time & Attendance</div><div class="module-desc">Leave management, timesheets, absence tracking</div></div>
+      <!-- Operations -->
+      <div class="module-cell"><div class="module-icon">⚙</div><div class="module-name">Operations</div><div class="module-desc">Process management, operational KPIs</div></div>
+      <div class="module-cell"><div class="module-icon">📦</div><div class="module-name">Supply Chain</div><div class="module-desc">Procurement, vendors, inventory management</div></div>
+      <div class="module-cell"><div class="module-icon">🏭</div><div class="module-name">Asset Management</div><div class="module-desc">Physical assets, depreciation, maintenance</div></div>
+      <div class="module-cell"><div class="module-icon">🔧</div><div class="module-name">Project Management</div><div class="module-desc">Projects, milestones, resource allocation</div></div>
+      <div class="module-cell"><div class="module-icon">🚛</div><div class="module-name">Logistics</div><div class="module-desc">Fulfilment, shipping, last-mile tracking</div></div>
+      <div class="module-cell"><div class="module-icon">🏪</div><div class="module-name">Facilities</div><div class="module-desc">Property portfolio, leases, maintenance requests</div></div>
+      <!-- Sales & Marketing -->
+      <div class="module-cell"><div class="module-icon">📈</div><div class="module-name">Sales Management</div><div class="module-desc">Pipeline, forecasting, quota tracking</div></div>
+      <div class="module-cell"><div class="module-icon">🤝</div><div class="module-name">CRM</div><div class="module-desc">Customer records, relationships, deal tracking</div></div>
+      <div class="module-cell"><div class="module-icon">📣</div><div class="module-name">Marketing</div><div class="module-desc">Campaigns, attribution, marketing spend</div></div>
+      <div class="module-cell"><div class="module-icon">🌐</div><div class="module-name">Partnerships</div><div class="module-desc">Partner programmes, channel management</div></div>
+      <!-- IT & Security -->
+      <div class="module-cell"><div class="module-icon">💻</div><div class="module-name">IT Management</div><div class="module-desc">Device registry, software licences, ITSM</div></div>
+      <div class="module-cell"><div class="module-icon">🔒</div><div class="module-name">Security & Access</div><div class="module-desc">RBAC, access reviews, IAM integration</div></div>
+      <div class="module-cell"><div class="module-icon">🛡</div><div class="module-name">Data Privacy</div><div class="module-desc">GDPR/DPDP records, DSARs, consent management</div></div>
+      <div class="module-cell"><div class="module-icon">🌩</div><div class="module-name">Business Continuity</div><div class="module-desc">BCP, DR plans, incident management</div></div>
+      <!-- Strategy & Reporting -->
+      <div class="module-cell"><div class="module-icon">🎯</div><div class="module-name">Strategy</div><div class="module-desc">Strategic plans, initiatives, KPI dashboards</div></div>
+      <div class="module-cell"><div class="module-icon">📉</div><div class="module-name">ESG Reporting</div><div class="module-desc">CSRD, SFDR, sustainability disclosures</div></div>
+      <div class="module-cell"><div class="module-icon">🔄</div><div class="module-name">Audit Management</div><div class="module-desc">Internal audit, findings, remediation tracking</div></div>
+      <div class="module-cell"><div class="module-icon">📡</div><div class="module-name">Regulatory Affairs</div><div class="module-desc">Filing calendars, regulator communications</div></div>
+      <!-- OrgOS-specific -->
+      <div class="module-cell" style="border: 1px solid rgba(0,212,200,0.15);"><div class="module-icon" style="color: var(--cyan);">🧬</div><div class="module-name">OrgDNA Manager</div><div class="module-desc">Version control, cloning, and franchise deployment</div></div>
+      <div class="module-cell" style="border: 1px solid rgba(0,212,200,0.15);"><div class="module-icon" style="color: var(--cyan);">🤖</div><div class="module-name">AI Agents (ODD)</div><div class="module-desc">Governed AI OrgExecs with full ODD enforcement</div></div>
+      <div class="module-cell" style="border: 1px solid rgba(0,212,200,0.15);"><div class="module-icon" style="color: var(--cyan);">📡</div><div class="module-name">IoT / OrgCPU</div><div class="module-desc">Device registry, ODD contracts, telemetry ingestion</div></div>
+      <div class="module-cell" style="border: 1px solid rgba(0,212,200,0.15);"><div class="module-icon" style="color: var(--cyan);">🔗</div><div class="module-name">DAO / DLT</div><div class="module-desc">Multi-org governance, smart contracts, distributed ledger</div></div>
+      <div class="module-cell" style="border: 1px solid rgba(0,212,200,0.15);"><div class="module-icon" style="color: var(--cyan);">🪞</div><div class="module-name">SDO Digital Twin</div><div class="module-desc">Live org topology, health score, simulation</div></div>
+      <div class="module-cell" style="border: 1px solid rgba(0,212,200,0.15);"><div class="module-icon" style="color: var(--cyan);">🌍</div><div class="module-name">Jurisdiction Packs</div><div class="module-desc">45+ jurisdictions; compliance rules as data</div></div>
+    </div>
+  </section>
+
+  <div class="cta-band">
+    <h2 class="cta-band-title">42 modules. One kernel.<br><span class="hl-cyan">Zero integration.</span></h2>
+    <p class="cta-band-sub">Every OrgApp shares the same event bus, the same audit chain, and the same actor governance. Start with what you need — activate more as you grow.</p>
+    <div class="cta-band-actions">
+      <button class="btn-primary" onclick="showPage('pricing')">See Pricing</button>
+      <button class="btn-ghost" onclick="showPage('about')">Request Access →</button>
+    </div>
+  </div>
+
+  <footer>
+    <div class="footer-logo"><div class="footer-mark"></div> UME</div>
+    <ul class="footer-links">
+      <li><a onclick="showPage('home')">Home</a></li>
+      <li><a onclick="showPage('platform')">Platform</a></li>
+      <li><a onclick="showPage('orgos')">OrgOS Factory</a></li>
+      <li><a onclick="showPage('pricing')">Pricing</a></li>
+    </ul>
+    <div class="footer-copy">© 2026 UME Technologies Ltd · London, UK</div>
+  </footer>
+</div>
+
+<!-- ═══════════════════════════════════════════════ -->
+<!-- PAGE: PRICING                                   -->
+<!-- ═══════════════════════════════════════════════ -->
+<div class="page" id="page-pricing">
+  <div class="factory-hero">
+    <div class="factory-hero-bg">
+      <div class="factory-orb-1" style="background: radial-gradient(circle, rgba(0,212,200,0.12), transparent 70%);"></div>
+      <div class="factory-orb-2"></div>
+    </div>
+    <div class="factory-content">
+      <div class="page-eyebrow">Pricing · Seed Round Access</div>
+      <h1 class="page-headline">Scale with<br>your <span class="hl-cyan">organisation.</span></h1>
+      <p class="page-sub">One platform at every scale — from a sole trader on SQLite to a 500-person enterprise on Kubernetes. Same features, same governance, same audit chain. Zero infrastructure cost to start.</p>
+    </div>
+  </div>
+
+  <section>
+    <div class="section-tag">Plans</div>
+    <h2 class="section-title">Choose your OrgOS tier</h2>
+
+    <div class="pricing-grid">
+      <div class="pricing-card">
+        <div class="pricing-tier">Embedded</div>
+        <div class="pricing-price">Free</div>
+        <div class="pricing-period">Single entity · SQLite · No infrastructure</div>
+        <ul class="pricing-features">
+          <li>1 legal entity, 1 jurisdiction</li>
+          <li>Core OrgApps: Finance, HR, Legal, Ops</li>
+          <li>Up to 5 OrgExecs (human)</li>
+          <li>ODD governance included</li>
+          <li>Full audit chain</li>
+          <li>OrgDNA export (1 version)</li>
+          <li>SQLite storage — single binary</li>
+          <li>Community support</li>
+        </ul>
+        <button class="btn-ghost" style="width: 100%;" onclick="showPage('about')">Get Started Free</button>
+      </div>
+
+      <div class="pricing-card featured">
+        <div class="pricing-tier">Growth</div>
+        <div class="pricing-price"><sup>£</sup>196</div>
+        <div class="pricing-period">per month · billed annually · £2,352/yr</div>
+        <ul class="pricing-features">
+          <li>Up to 5 legal entities</li>
+          <li>Up to 3 jurisdiction packs</li>
+          <li>All 42 OrgApps</li>
+          <li>Up to 50 OrgExecs (human + AI)</li>
+          <li>ODD contracts + AI agent governance</li>
+          <li>SDO digital twin (read-only)</li>
+          <li>OrgDNA versioning (unlimited)</li>
+          <li>PostgreSQL · cloud deployment</li>
+          <li>Email + chat support (48hr SLA)</li>
+        </ul>
+        <button class="btn-primary" style="width: 100%;" onclick="showPage('about')">Start Free Trial</button>
+      </div>
+
+      <div class="pricing-card">
+        <div class="pricing-tier">Enterprise</div>
+        <div class="pricing-price">Custom</div>
+        <div class="pricing-period">Annual contract · bespoke pricing</div>
+        <ul class="pricing-features">
+          <li>Unlimited entities + jurisdictions</li>
+          <li>All 42 OrgApps + custom OrgApps</li>
+          <li>Unlimited OrgExecs (all types)</li>
+          <li>OrgCPU / IoT integration</li>
+          <li>Full SDO with OrgSimulator</li>
+          <li>DAO / DLT for multi-org governance</li>
+          <li>OrgDNA franchise deployment</li>
+          <li>Dedicated cloud or on-premises</li>
+          <li>Dedicated CS + SLA (4hr)</li>
+        </ul>
+        <button class="btn-ghost" style="width: 100%;" onclick="showPage('about')">Talk to Sales</button>
+      </div>
+    </div>
+
+    <!-- Jurisdiction add-ons -->
+    <div style="margin-top: 80px;">
+      <div class="section-tag">Jurisdiction Policy Packs</div>
+      <h3 class="section-title" style="font-size: 28px; margin-bottom: 16px;">Compliance as data, not code</h3>
+      <p class="section-sub">Regulatory changes ship as data updates — not platform releases. Each jurisdiction pack covers corporate compliance, tax filing obligations, employment law, and sector-specific regulations.</p>
+
+      <div style="margin-top: 40px; display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1px; background: var(--border); border: 1px solid var(--border);">
+        <div style="background: var(--bg); padding: 20px 16px;">
+          <div style="font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin-bottom: 8px;">Included</div>
+          <div style="font-family: var(--font-display); font-size: 14px; font-weight: 600;">England & Wales<br>USA Federal<br>EU (DE, FR, NL, IE)</div>
+        </div>
+        <div style="background: var(--bg); padding: 20px 16px;">
+          <div style="font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin-bottom: 8px;">+ Add-on</div>
+          <div style="font-family: var(--font-display); font-size: 14px; font-weight: 600;">Australia · Canada<br>Singapore · Hong Kong<br>Scotland · N. Ireland</div>
+        </div>
+        <div style="background: var(--bg); padding: 20px 16px;">
+          <div style="font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin-bottom: 8px;">Roadmap</div>
+          <div style="font-family: var(--font-display); font-size: 14px; font-weight: 600;">Kenya · Nigeria<br>Japan · UAE (DIFC)<br>India · South Africa</div>
+        </div>
+        <div style="background: var(--bg); padding: 20px 16px;">
+          <div style="font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin-bottom: 8px;">Structures</div>
+          <div style="font-family: var(--font-display); font-size: 14px; font-weight: 600;">Cayman Islands · BVI<br>Jersey · Isle of Man<br>Guernsey · Mauritius</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="cta-band">
+    <h2 class="cta-band-title">Start with embedded.<br><span class="hl-cyan">Scale without limits.</span></h2>
+    <p class="cta-band-sub">Same platform at every scale. The architecture is identical whether you're a sole trader on SQLite or a multi-entity group on Kubernetes.</p>
+    <div class="cta-band-actions">
+      <button class="btn-primary" onclick="showPage('about')">Get Early Access</button>
+      <button class="btn-ghost" onclick="showPage('modules')">See all 42 modules →</button>
+    </div>
+  </div>
+
+  <footer>
+    <div class="footer-logo"><div class="footer-mark"></div> UME</div>
+    <ul class="footer-links">
+      <li><a onclick="showPage('home')">Home</a></li>
+      <li><a onclick="showPage('platform')">Platform</a></li>
+      <li><a onclick="showPage('modules')">Modules</a></li>
+      <li><a onclick="showPage('about')">About</a></li>
+    </ul>
+    <div class="footer-copy">© 2026 UME Technologies Ltd · London, UK</div>
+  </footer>
+</div>
+
+<!-- ═══════════════════════════════════════════════ -->
+<!-- PAGE: ABOUT                                     -->
+<!-- ═══════════════════════════════════════════════ -->
+<div class="page" id="page-about">
+  <div class="factory-hero">
+    <div class="factory-hero-bg">
+      <div class="factory-orb-1" style="background: radial-gradient(circle, rgba(0,212,200,0.1), transparent 70%);"></div>
+      <div class="factory-orb-2" style="background: radial-gradient(circle, rgba(255,59,59,0.08), transparent 70%);"></div>
+    </div>
+    <div class="factory-content">
+      <div class="page-eyebrow">About UME · March 2026</div>
+      <h1 class="page-headline">Built in London.<br>For every <span class="hl-cyan">organisation on Earth.</span></h1>
+      <p class="page-sub">UME Technologies Ltd was founded in 2025 with a single mission: to give every organisation — from a sole trader to a global enterprise — a single operating system for everything they do.</p>
+    </div>
+  </div>
+
+  <!-- Mission & stats -->
+  <section>
+    <div class="about-grid">
+      <div>
+        <div class="section-tag">Mission</div>
+        <h2 class="section-title">Why we're building UME</h2>
+
+        <div class="mission-block">
+          <p>A world where organisational dysfunction is not the norm. Where no compliance deadline is missed because a paralegal forgot to update a spreadsheet. Where an entrepreneur spends their time building — not reconciling tools.</p>
+        </div>
+
+        <p style="font-size: 15px; color: var(--muted); font-weight: 300; line-height: 1.7; margin-bottom: 24px;">Every organisation on Earth runs on a fragmented stack of 12–28 disconnected software tools. None of those tools share a common model of the organisation. A change in HR doesn't automatically propagate to Finance. A compliance deadline in Legal doesn't appear in Operations.</p>
+
+        <p style="font-size: 15px; color: var(--muted); font-weight: 300; line-height: 1.7;">UME changes this at the kernel level — a Rust-based OrgOS where every module shares the same event bus, the same RBAC, and the same immutable audit chain. Not an integration layer. Not a workflow tool. A genuine operating system.</p>
+
+        <div class="timeline" style="margin-top: 52px;">
+          <div class="timeline-item">
+            <div class="timeline-date">2025</div>
+            <div class="timeline-title">Founded</div>
+            <div class="timeline-body">UME Technologies Ltd incorporated in England & Wales. Founding team of 5 begins building the OrgKernel.</div>
+          </div>
+          <div class="timeline-item">
+            <div class="timeline-date">Q1 2026</div>
+            <div class="timeline-title">RFC v2.0.0 Published</div>
+            <div class="timeline-body">OrgOS Factory model formalised. ODD, SDO, OrgDNA, and DAO/DLT specifications published. Seed round open at $2.5M.</div>
+          </div>
+          <div class="timeline-item">
+            <div class="timeline-date">Q2 2026</div>
+            <div class="timeline-title">Seed Close · Platform MVP</div>
+            <div class="timeline-body">Target: $2.5M seed, 20 jurisdiction packs, 100 design customers, team of 12.</div>
+          </div>
+          <div class="timeline-item">
+            <div class="timeline-date">Q4 2026</div>
+            <div class="timeline-title">Series A · GA Launch</div>
+            <div class="timeline-body">Target: $12M Series A, 320 paying organisations, $3.2M ARR, 45+ jurisdictions.</div>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <div class="about-stat-grid">
+          <div class="about-stat-cell">
+            <div class="about-stat-value"><span class="c">$380</span>B</div>
+            <div class="about-stat-label">TAM by 2028</div>
+          </div>
+          <div class="about-stat-cell">
+            <div class="about-stat-value"><span class="c">500</span>M</div>
+            <div class="about-stat-label">Orgs globally</div>
+          </div>
+          <div class="about-stat-cell">
+            <div class="about-stat-value"><span class="c">42</span></div>
+            <div class="about-stat-label">Domain OrgApps</div>
+          </div>
+          <div class="about-stat-cell">
+            <div class="about-stat-value"><span class="c">45</span>+</div>
+            <div class="about-stat-label">Jurisdictions</div>
+          </div>
+          <div class="about-stat-cell">
+            <div class="about-stat-value"><span class="c">78</span>%</div>
+            <div class="about-stat-label">Target gross margin</div>
+          </div>
+          <div class="about-stat-cell">
+            <div class="about-stat-value"><span class="c">115</span>%</div>
+            <div class="about-stat-label">Target NRR</div>
+          </div>
+        </div>
+
+        <div style="margin-top: 40px; padding: 32px; border: 1px solid var(--border); background: var(--surface);">
+          <div class="section-tag" style="margin-bottom: 20px;">The Investment Ask</div>
+          <table style="width: 100%; border-collapse: collapse; font-size: 13px;">
+            <tr style="border-bottom: 1px solid var(--border);">
+              <td style="padding: 10px 0; color: var(--muted); font-weight: 300;">Round</td>
+              <td style="padding: 10px 0; font-family: var(--font-display); font-weight: 600;">Seed</td>
+              <td style="padding: 10px 0; font-family: var(--font-display); font-weight: 600; text-align: right; color: var(--cyan);">$2.5M</td>
+            </tr>
+            <tr style="border-bottom: 1px solid var(--border);">
+              <td style="padding: 10px 0; color: var(--muted); font-weight: 300;">Instrument</td>
+              <td colspan="2" style="padding: 10px 0; color: var(--muted); font-weight: 300;">SAFE · 20% discount · MFN + pro-rata</td>
+            </tr>
+            <tr style="border-bottom: 1px solid var(--border);">
+              <td style="padding: 10px 0; color: var(--muted); font-weight: 300;">Valuation cap</td>
+              <td colspan="2" style="padding: 10px 0; font-family: var(--font-display); font-weight: 600; color: var(--cyan);">$10M</td>
+            </tr>
+            <tr>
+              <td style="padding: 10px 0; color: var(--muted); font-weight: 300;">Target close</td>
+              <td colspan="2" style="padding: 10px 0; color: var(--muted); font-weight: 300;">Q2 2026</td>
+            </tr>
+          </table>
+          <div style="margin-top: 24px; border-top: 1px solid var(--border); padding-top: 24px; font-size: 12px; color: var(--muted); font-weight: 300; line-height: 1.6;">
+            For the data room or to arrange a meeting with the founding team:<br>
+            <span style="color: var(--cyan); font-family: var(--font-display); font-weight: 600;">invest@ume.io</span>
+          </div>
+        </div>
+
+        <!-- Why now -->
+        <div style="margin-top: 32px; padding: 32px; border: 1px solid var(--border);">
+          <div class="section-tag" style="margin-bottom: 20px;">Why 2026</div>
+          <div style="display: flex; flex-direction: column; gap: 16px;">
+            <div style="font-size: 13px; color: var(--muted); font-weight: 300; line-height: 1.6; padding-left: 16px; border-left: 2px solid var(--cyan);"><strong style="color: var(--white); font-weight: 500;">Rust has matured.</strong> Tokio, Axum, SQLx — production-grade and battle-tested. The ecosystem is ready.</div>
+            <div style="font-size: 13px; color: var(--muted); font-weight: 300; line-height: 1.6; padding-left: 16px; border-left: 2px solid rgba(255,59,59,0.6);"><strong style="color: var(--white); font-weight: 500;">Regulatory complexity is rising.</strong> CSRD, DORA, SFDR, Making Tax Digital — the compliance tailwind won't reverse.</div>
+            <div style="font-size: 13px; color: var(--muted); font-weight: 300; line-height: 1.6; padding-left: 16px; border-left: 2px solid var(--cyan);"><strong style="color: var(--white); font-weight: 500;">The SME market is ready.</strong> Founders who built on Notion and Figma have expectations QuickBooks cannot meet.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Get access form area -->
+  <section style="padding-top: 0;">
+    <div style="max-width: 640px;">
+      <div class="section-tag">Early Access</div>
+      <h2 class="section-title">Request your OrgOS</h2>
+      <p class="section-sub" style="margin-bottom: 40px;">We're onboarding design customers now — organisations with 2+ entities, 2+ jurisdictions, and active use of 3+ business tools. Free access for 24 months from GA.</p>
+
+      <div style="display: flex; flex-direction: column; gap: 16px;">
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+          <div>
+            <div style="font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin-bottom: 8px;">Organisation</div>
+            <input type="text" placeholder="Acme Ltd" style="width: 100%; background: var(--surface); border: 1px solid var(--border); color: var(--white); padding: 12px 16px; font-family: var(--font-body); font-size: 14px; border-radius: 2px; outline: none;">
+          </div>
+          <div>
+            <div style="font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin-bottom: 8px;">Email</div>
+            <input type="email" placeholder="ceo@acme.com" style="width: 100%; background: var(--surface); border: 1px solid var(--border); color: var(--white); padding: 12px 16px; font-family: var(--font-body); font-size: 14px; border-radius: 2px; outline: none;">
+          </div>
+        </div>
+        <div>
+          <div style="font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin-bottom: 8px;">Entities & Jurisdictions</div>
+          <input type="text" placeholder="e.g. 3 entities in UK + Ireland + Delaware" style="width: 100%; background: var(--surface); border: 1px solid var(--border); color: var(--white); padding: 12px 16px; font-family: var(--font-body); font-size: 14px; border-radius: 2px; outline: none;">
+        </div>
+        <button class="btn-primary" style="width: 100%; padding: 16px; font-size: 14px; letter-spacing: 0.05em;">Request Access →</button>
+        <p style="font-size: 12px; color: var(--muted); font-weight: 300; text-align: center;">Design customer programme · Free access for 24 months · No credit card required</p>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <div class="footer-logo"><div class="footer-mark"></div> UME</div>
+    <ul class="footer-links">
+      <li><a onclick="showPage('home')">Home</a></li>
+      <li><a onclick="showPage('platform')">Platform</a></li>
+      <li><a onclick="showPage('orgos')">OrgOS Factory</a></li>
+      <li><a onclick="showPage('modules')">Modules</a></li>
+      <li><a onclick="showPage('pricing')">Pricing</a></li>
+    </ul>
+    <div class="footer-copy">© 2026 UME Technologies Ltd · England & Wales · invest@ume.io</div>
+  </footer>
+</div>
+
+<script>
+  function showPage(id) {
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.getElementById('page-' + id).classList.add('active');
+    document.querySelectorAll('.nav-links a[id]').forEach(a => a.classList.remove('active'));
+    const navEl = document.getElementById('nav-' + id);
+    if (navEl) navEl.classList.add('active');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function showTab(page, tabId) {
+    const pageEl = document.getElementById('page-' + page);
+    pageEl.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+    pageEl.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('tab-' + tabId).classList.add('active');
+    event.target.classList.add('active');
+  }
+</script>
+</body>
+</html>

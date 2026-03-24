@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>UME OrgOS — Digital Twin / SDO</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#070010;--surface:#0f0820;--surface-2:#150b2c;--surface-3:#1b1038;
+  --border:rgba(255,255,255,.065);--border-mid:rgba(255,255,255,.10);
+  --text:#ede6ff;--text-soft:rgba(215,205,255,.7);--text-muted:rgba(190,175,240,.4);
+  --purple:#6a2fff;--purple-mid:#2d0072;--purple-dim:rgba(106,47,255,.18);
+  --cherry:#ff2a55;--cherry-dim:rgba(255,42,85,.15);
+  --teal:#00e5d8;--teal-dim:rgba(0,229,216,.12);
+  --amber:#f5b942;--amber-dim:rgba(245,185,66,.12);
+  --blue:#38b4ff;--blue-dim:rgba(56,180,255,.13);
+  --emerald:#34e8a0;--emerald-dim:rgba(52,232,160,.11);
+  --coral:#ff6b4a;--coral-dim:rgba(255,107,74,.13);
+  --orchid:#d855ff;--orchid-dim:rgba(216,85,255,.14);
+  --rose:#ff4c8b;--rose-dim:rgba(255,76,139,.13);
+  --sidebar-w:210px;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html,body{height:100%;font-family:"Space Grotesk",sans-serif;background:var(--bg);overflow:hidden;color:var(--text);}
+body{display:flex;}
+
+/* SIDEBAR */
+.sidebar{width:var(--sidebar-w);height:100vh;background:#0a0018;display:flex;flex-direction:column;flex-shrink:0;border-right:1px solid rgba(255,255,255,.05);}
+.sidebar-logo{display:flex;align-items:center;gap:9px;padding:16px 16px 14px;border-bottom:1px solid rgba(255,255,255,.06);}
+.s-icon{width:30px;height:30px;border-radius:8px;background:var(--purple-mid);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:15px;color:#fff;box-shadow:0 0 14px 2px rgba(106,47,255,.5);flex-shrink:0;}
+.s-logo-text{font-weight:700;font-size:15px;color:#fff;}
+.s-logo-text span{color:var(--cherry);}
+.org-selector{margin:10px 10px 4px;padding:8px 10px;border-radius:8px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.07);cursor:pointer;display:flex;align-items:center;gap:8px;}
+.org-dot{width:7px;height:7px;border-radius:50%;background:var(--teal);flex-shrink:0;box-shadow:0 0 6px rgba(0,229,216,.65);}
+.org-name{font-size:12px;font-weight:600;color:rgba(220,210,255,.8);flex:1;}
+.nav-section{padding:0 8px;margin-bottom:2px;}
+.nav-label{font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:rgba(200,190,255,.18);padding:10px 8px 4px;}
+.nav-item{display:flex;align-items:center;gap:9px;padding:7px 10px;border-radius:7px;cursor:pointer;transition:.15s;text-decoration:none;margin-bottom:1px;}
+.nav-item:hover{background:rgba(255,255,255,.06);}
+.nav-icon{font-size:14px;width:20px;text-align:center;flex-shrink:0;}
+.nav-text{font-size:12.5px;font-weight:500;color:rgba(210,200,255,.38);flex:1;}
+.nav-item.active{background:linear-gradient(90deg,rgba(106,47,255,.5),rgba(255,42,85,.22));border:1px solid rgba(255,42,85,.15);}
+.nav-item.active .nav-text{color:#fff;font-weight:600;}
+.nav-badge{min-width:18px;height:18px;border-radius:9px;background:var(--cherry);color:#fff;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;padding:0 5px;}
+.sidebar-footer{margin-top:auto;padding:10px;border-top:1px solid rgba(255,255,255,.05);}
+.user-avatar{width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,var(--purple-mid),var(--cherry));display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff;flex-shrink:0;}
+.user-row{display:flex;align-items:center;gap:9px;cursor:pointer;padding:8px;border-radius:8px;transition:.15s;}
+.user-row:hover{background:rgba(255,255,255,.05);}
+.user-name{font-size:12px;font-weight:600;color:rgba(220,210,255,.8);}
+.user-role{font-size:10px;color:rgba(200,190,255,.3);}
+
+/* MAIN */
+.main{flex:1;display:flex;flex-direction:column;height:100vh;overflow:hidden;}
+.topbar{height:52px;background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 24px;gap:12px;flex-shrink:0;}
+.page-title{font-size:15px;font-weight:700;color:var(--text);}
+.breadcrumb{font-size:11px;color:var(--text-muted);}
+.topbar-right{margin-left:auto;display:flex;align-items:center;gap:10px;}
+.tb-btn{padding:6px 13px;border:1px solid var(--border-mid);border-radius:7px;font-size:12px;font-weight:600;color:var(--text-soft);background:var(--surface-2);cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:5px;transition:.15s;}
+.tb-btn:hover{border-color:rgba(106,47,255,.5);color:var(--text);}
+.tb-btn.primary{background:linear-gradient(135deg,var(--purple),var(--cherry));color:#fff;border:none;box-shadow:0 3px 16px rgba(106,47,255,.3);}
+.tb-btn.primary:hover{transform:translateY(-1px);}
+.live-pill{background:rgba(52,232,160,.15);border:1px solid rgba(52,232,160,.3);color:var(--emerald);border-radius:20px;font-size:11px;font-weight:700;padding:3px 10px;}
+
+/* SUBNAV */
+.subnav{height:44px;background:var(--surface-2);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 24px;gap:4px;flex-shrink:0;overflow-x:auto;}
+.subnav::-webkit-scrollbar{height:0;}
+.snav-item{padding:6px 14px;border-radius:6px;font-size:12px;font-weight:600;color:rgba(210,200,255,.4);cursor:pointer;transition:.15s;text-decoration:none;white-space:nowrap;border:1px solid transparent;}
+.snav-item:hover{color:var(--text-soft);background:rgba(255,255,255,.04);}
+.snav-item.active{color:var(--text);background:rgba(106,47,255,.22);border-color:rgba(106,47,255,.35);}
+
+/* CONTENT */
+.content{flex:1;overflow-y:auto;padding:28px 28px 40px;}
+.content::-webkit-scrollbar{width:5px;}
+.content::-webkit-scrollbar-track{background:transparent;}
+.content::-webkit-scrollbar-thumb{background:rgba(106,47,255,.3);border-radius:3px;}
+
+/* SDO HERO */
+.sdo-hero{background:linear-gradient(135deg,rgba(106,47,255,.15),rgba(0,229,216,.08));border:1px solid rgba(106,47,255,.25);border-radius:14px;padding:28px 32px;margin-bottom:24px;position:relative;overflow:hidden;}
+.sdo-hero::before{content:'';position:absolute;top:-40px;right:-40px;width:220px;height:220px;border-radius:50%;background:radial-gradient(circle,rgba(106,47,255,.2),transparent 70%);pointer-events:none;}
+.sdo-hero-title{font-size:22px;font-weight:700;color:var(--text);margin-bottom:6px;}
+.sdo-hero-sub{font-size:13px;color:var(--text-soft);max-width:560px;line-height:1.55;}
+.sdo-hero-badges{display:flex;gap:10px;margin-top:16px;flex-wrap:wrap;}
+.sdo-badge{padding:5px 12px;border-radius:20px;font-size:11px;font-weight:700;border:1px solid;}
+
+/* METRIC CARDS */
+.metrics-row{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:14px;margin-bottom:24px;}
+.metric-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px;position:relative;overflow:hidden;}
+.metric-card::after{content:'';position:absolute;inset:0;border-radius:12px;background:var(--accent-dim,var(--purple-dim));pointer-events:none;}
+.metric-label{font-size:10.5px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px;}
+.metric-value{font-size:28px;font-weight:700;color:var(--text);}
+.metric-sub{font-size:11px;color:var(--text-muted);margin-top:4px;}
+.metric-trend{position:absolute;top:14px;right:14px;font-size:11px;font-weight:700;}
+
+/* SUBPAGE GRID */
+.subpage-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px;}
+.subpage-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:22px;cursor:pointer;transition:.2s;text-decoration:none;display:block;position:relative;overflow:hidden;}
+.subpage-card::before{content:'';position:absolute;inset:0;opacity:0;background:linear-gradient(135deg,var(--card-color,rgba(106,47,255,.12)),transparent);transition:.2s;border-radius:14px;}
+.subpage-card:hover{border-color:var(--card-border,rgba(106,47,255,.4));transform:translateY(-2px);box-shadow:0 8px 32px rgba(0,0,0,.35);}
+.subpage-card:hover::before{opacity:1;}
+.sp-icon{width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px;margin-bottom:14px;border:1px solid;}
+.sp-title{font-size:14px;font-weight:700;color:var(--text);margin-bottom:6px;}
+.sp-desc{font-size:12px;color:var(--text-soft);line-height:1.55;}
+.sp-tags{display:flex;gap:6px;margin-top:12px;flex-wrap:wrap;}
+.sp-tag{font-size:10px;font-weight:700;padding:2px 8px;border-radius:4px;border:1px solid;}
+
+/* HEALTH RING */
+.health-section{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px;}
+.health-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:20px;}
+.health-title{font-size:13px;font-weight:700;color:var(--text);margin-bottom:16px;}
+.ring-wrap{display:flex;align-items:center;gap:20px;}
+.ring-label{font-size:11px;color:var(--text-muted);margin-top:4px;}
+.ring-val{font-size:32px;font-weight:700;color:var(--emerald);}
+.health-items{flex:1;}
+.health-row{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
+.health-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.health-name{font-size:12px;color:var(--text-soft);flex:1;}
+.health-bar-wrap{width:80px;height:5px;background:rgba(255,255,255,.06);border-radius:3px;}
+.health-bar{height:100%;border-radius:3px;}
+.health-pct{font-size:11px;color:var(--text-muted);width:28px;text-align:right;}
+
+@media(max-width:900px){.health-section{grid-template-columns:1fr;}}
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<nav class="sidebar">
+  <div class="sidebar-logo">
+    <div class="s-icon">U</div>
+    <div class="s-logo-text">UME <span>OS</span></div>
+  </div>
+  <div class="org-selector">
+    <div class="org-dot"></div>
+    <div class="org-name">Acme Corp</div>
+    <span style="color:rgba(200,190,255,.3);font-size:10px;">▾</span>
+  </div>
+  <div style="flex:1;overflow-y:auto;padding-top:6px;">
+    <div class="nav-section">
+      <div class="nav-label">Core</div>
+      <a href="../dashboard.html" class="nav-item"><span class="nav-icon">⬡</span><span class="nav-text">Dashboard</span></a>
+      <a href="#" class="nav-item active"><span class="nav-icon">🧬</span><span class="nav-text">Digital Twin</span></a>
+      <a href="#" class="nav-item"><span class="nav-icon">🏛️</span><span class="nav-text">OrgApps</span></a>
+      <a href="#" class="nav-item"><span class="nav-icon">👥</span><span class="nav-text">OrgExecs</span></a>
+    </div>
+    <div class="nav-section">
+      <div class="nav-label">Operations</div>
+      <a href="#" class="nav-item"><span class="nav-icon">💰</span><span class="nav-text">Finance</span></a>
+      <a href="#" class="nav-item"><span class="nav-icon">👤</span><span class="nav-text">HR & People</span></a>
+      <a href="#" class="nav-item"><span class="nav-icon">📦</span><span class="nav-text">Sales & CRM</span></a>
+      <a href="#" class="nav-item"><span class="nav-icon">🏭</span><span class="nav-text">Operations</span></a>
+    </div>
+    <div class="nav-section">
+      <div class="nav-label">Governance</div>
+      <a href="#" class="nav-item"><span class="nav-icon">🛡️</span><span class="nav-text">Risk & GRC</span></a>
+      <a href="#" class="nav-item"><span class="nav-icon">🔐</span><span class="nav-text">DAO / DLT</span><span class="nav-badge">2</span></a>
+      <a href="#" class="nav-item"><span class="nav-icon">📋</span><span class="nav-text">Audit</span></a>
+    </div>
+    <div class="nav-section">
+      <div class="nav-label">Intelligence</div>
+      <a href="#" class="nav-item"><span class="nav-icon">🤖</span><span class="nav-text">AI Agents</span></a>
+      <a href="#" class="nav-item"><span class="nav-icon">📊</span><span class="nav-text">Analytics</span></a>
+    </div>
+  </div>
+  <div class="sidebar-footer">
+    <div class="user-row">
+      <div class="user-avatar">JS</div>
+      <div><div class="user-name">J. Smith</div><div class="user-role">OrgExec · Admin</div></div>
+    </div>
+  </div>
+</nav>
+
+<!-- MAIN -->
+<div class="main">
+  <div class="topbar">
+    <div>
+      <div class="page-title">🧬 Digital Twin — SDO</div>
+      <div class="breadcrumb">Software Defined Organisation · Live Runtime</div>
+    </div>
+    <div class="topbar-right">
+      <div class="live-pill">● Live</div>
+      <button class="tb-btn">⤓ Export OrgDNA</button>
+      <button class="tb-btn primary">▶ Simulate</button>
+    </div>
+  </div>
+
+  <!-- SUBNAV -->
+  <div class="subnav">
+    <a href="digital-twin.html" class="snav-item active">⬡ Overview</a>
+    <a href="org-system.html" class="snav-item">🏛 OrgSystem</a>
+    <a href="org-dna.html" class="snav-item">🧬 OrgDNA</a>
+    <a href="network-graph.html" class="snav-item">🕸 Network Graph</a>
+    <a href="org-chart.html" class="snav-item">🌲 Org Chart</a>
+    <a href="business-model.html" class="snav-item">📐 Business Model</a>
+    <a href="value-proposition.html" class="snav-item">💎 Value Proposition</a>
+    <a href="data-master.html" class="snav-item">🗄 Data Master</a>
+  </div>
+
+  <div class="content">
+    <!-- HERO -->
+    <div class="sdo-hero">
+      <div class="sdo-hero-title">Software Defined Organisation</div>
+      <div class="sdo-hero-sub">Your organisation's complete digital twin — all OrgApps, OrgExecs, OrgCPUs, data flows, and organisational state unified in a single live runtime. Operate, simulate, and evolve your organisation from here.</div>
+      <div class="sdo-hero-badges">
+        <span class="sdo-badge" style="background:rgba(52,232,160,.1);border-color:rgba(52,232,160,.3);color:var(--emerald);">● SDO Active</span>
+        <span class="sdo-badge" style="background:rgba(0,229,216,.1);border-color:rgba(0,229,216,.25);color:var(--teal);">OrgDNA v3.4.1</span>
+        <span class="sdo-badge" style="background:rgba(106,47,255,.15);border-color:rgba(106,47,255,.3);color:#a07fff;">12 OrgApps Running</span>
+        <span class="sdo-badge" style="background:rgba(56,180,255,.1);border-color:rgba(56,180,255,.25);color:var(--blue);">47 OrgExecs Active</span>
+        <span class="sdo-badge" style="background:rgba(245,185,66,.1);border-color:rgba(245,185,66,.25);color:var(--amber);">23 OrgCPUs Online</span>
+      </div>
+    </div>
+
+    <!-- METRICS -->
+    <div class="metrics-row">
+      <div class="metric-card" style="--accent-dim:rgba(52,232,160,.07);">
+        <div class="metric-label">SDO Health</div>
+        <div class="metric-value" style="color:var(--emerald);">94<span style="font-size:16px;">%</span></div>
+        <div class="metric-sub">↑ +2 from yesterday</div>
+        <div class="metric-trend" style="color:var(--emerald);">↑</div>
+      </div>
+      <div class="metric-card" style="--accent-dim:rgba(106,47,255,.07);">
+        <div class="metric-label">Active OrgApps</div>
+        <div class="metric-value">12</div>
+        <div class="metric-sub">of 14 installed</div>
+      </div>
+      <div class="metric-card" style="--accent-dim:rgba(56,180,255,.07);">
+        <div class="metric-label">OrgExecs</div>
+        <div class="metric-value">47</div>
+        <div class="metric-sub">34 human · 13 AI</div>
+      </div>
+      <div class="metric-card" style="--accent-dim:rgba(245,185,66,.07);">
+        <div class="metric-label">OrgCPUs</div>
+        <div class="metric-value">23</div>
+        <div class="metric-sub">IoT · machines · APIs</div>
+      </div>
+      <div class="metric-card" style="--accent-dim:rgba(255,42,85,.07);">
+        <div class="metric-label">ODD Violations</div>
+        <div class="metric-value" style="color:var(--cherry);">3</div>
+        <div class="metric-sub">Last 24 hours</div>
+        <div class="metric-trend" style="color:var(--cherry);">!</div>
+      </div>
+      <div class="metric-card" style="--accent-dim:rgba(0,229,216,.07);">
+        <div class="metric-label">Twin Latency</div>
+        <div class="metric-value" style="font-size:22px;">182<span style="font-size:14px;">ms</span></div>
+        <div class="metric-sub">p95 update lag</div>
+      </div>
+    </div>
+
+    <!-- HEALTH -->
+    <div class="health-section">
+      <div class="health-card">
+        <div class="health-title">OrgSystem Health</div>
+        <div class="ring-wrap">
+          <div>
+            <svg width="72" height="72" viewBox="0 0 72 72">
+              <circle cx="36" cy="36" r="28" fill="none" stroke="rgba(255,255,255,.06)" stroke-width="8"/>
+              <circle cx="36" cy="36" r="28" fill="none" stroke="url(#hg)" stroke-width="8" stroke-dasharray="175.9" stroke-dashoffset="10.5" stroke-linecap="round" transform="rotate(-90 36 36)"/>
+              <defs><linearGradient id="hg" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#34e8a0"/><stop offset="100%" stop-color="#00e5d8"/></linearGradient></defs>
+            </svg>
+            <div class="ring-val" style="text-align:center;font-size:18px;margin-top:-48px;line-height:72px;">94%</div>
+            <div class="ring-label" style="text-align:center;">Overall</div>
+          </div>
+          <div class="health-items">
+            <div class="health-row">
+              <div class="health-dot" style="background:var(--emerald);"></div>
+              <div class="health-name">Finance</div>
+              <div class="health-bar-wrap"><div class="health-bar" style="width:98%;background:var(--emerald);"></div></div>
+              <div class="health-pct">98%</div>
+            </div>
+            <div class="health-row">
+              <div class="health-dot" style="background:var(--teal);"></div>
+              <div class="health-name">HR</div>
+              <div class="health-bar-wrap"><div class="health-bar" style="width:95%;background:var(--teal);"></div></div>
+              <div class="health-pct">95%</div>
+            </div>
+            <div class="health-row">
+              <div class="health-dot" style="background:var(--amber);"></div>
+              <div class="health-name">Operations</div>
+              <div class="health-bar-wrap"><div class="health-bar" style="width:81%;background:var(--amber);"></div></div>
+              <div class="health-pct">81%</div>
+            </div>
+            <div class="health-row">
+              <div class="health-dot" style="background:var(--cherry);"></div>
+              <div class="health-name">Risk & GRC</div>
+              <div class="health-bar-wrap"><div class="health-bar" style="width:72%;background:var(--cherry);"></div></div>
+              <div class="health-pct">72%</div>
+            </div>
+            <div class="health-row">
+              <div class="health-dot" style="background:var(--orchid);"></div>
+              <div class="health-name">Legal</div>
+              <div class="health-bar-wrap"><div class="health-bar" style="width:100%;background:var(--orchid);"></div></div>
+              <div class="health-pct">100%</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="health-card">
+        <div class="health-title">OrgDNA Version History</div>
+        <div style="display:flex;flex-direction:column;gap:8px;">
+          <div style="display:flex;align-items:center;gap:10px;padding:8px 10px;background:rgba(106,47,255,.12);border:1px solid rgba(106,47,255,.3);border-radius:8px;">
+            <span style="font-size:11px;font-weight:700;color:var(--purple);background:rgba(106,47,255,.2);padding:2px 7px;border-radius:4px;">CURRENT</span>
+            <span style="font-size:12px;color:var(--text);">v3.4.1</span>
+            <span style="font-size:11px;color:var(--text-muted);margin-left:auto;">Today 09:02</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:10px;padding:8px 10px;background:var(--surface-2);border:1px solid var(--border);border-radius:8px;">
+            <span style="font-size:11px;font-weight:700;color:var(--text-muted);background:rgba(255,255,255,.05);padding:2px 7px;border-radius:4px;">v3.4.0</span>
+            <span style="font-size:12px;color:var(--text-soft);">ODD template update</span>
+            <span style="font-size:11px;color:var(--text-muted);margin-left:auto;">Mar 18</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:10px;padding:8px 10px;background:var(--surface-2);border:1px solid var(--border);border-radius:8px;">
+            <span style="font-size:11px;font-weight:700;color:var(--text-muted);background:rgba(255,255,255,.05);padding:2px 7px;border-radius:4px;">v3.3.2</span>
+            <span style="font-size:12px;color:var(--text-soft);">New OrgApp: Inventory</span>
+            <span style="font-size:11px;color:var(--text-muted);margin-left:auto;">Mar 10</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:10px;padding:8px 10px;background:var(--surface-2);border:1px solid var(--border);border-radius:8px;">
+            <span style="font-size:11px;font-weight:700;color:var(--text-muted);background:rgba(255,255,255,.05);padding:2px 7px;border-radius:4px;">v3.0.0</span>
+            <span style="font-size:12px;color:var(--text-soft);">DAO module enabled</span>
+            <span style="font-size:11px;color:var(--text-muted);margin-left:auto;">Feb 28</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SUBPAGE CARDS -->
+    <div style="font-size:13px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:14px;">Digital Twin Modules</div>
+    <div class="subpage-grid">
+
+      <a href="org-system.html" class="subpage-card" style="--card-color:rgba(106,47,255,.12);--card-border:rgba(106,47,255,.4);">
+        <div class="sp-icon" style="background:rgba(106,47,255,.15);border-color:rgba(106,47,255,.3);">🏛️</div>
+        <div class="sp-title">OrgSystem</div>
+        <div class="sp-desc">Live runtime view of the entire OrgOS — all OrgApps, OrgKernel status, event bus, resource usage, and system topology.</div>
+        <div class="sp-tags">
+          <span class="sp-tag" style="background:rgba(106,47,255,.12);border-color:rgba(106,47,255,.3);color:#a07fff;">Runtime</span>
+          <span class="sp-tag" style="background:rgba(52,232,160,.08);border-color:rgba(52,232,160,.25);color:var(--emerald);">Live</span>
+        </div>
+      </a>
+
+      <a href="org-dna.html" class="subpage-card" style="--card-color:rgba(0,229,216,.1);--card-border:rgba(0,229,216,.35);">
+        <div class="sp-icon" style="background:rgba(0,229,216,.12);border-color:rgba(0,229,216,.3);">🧬</div>
+        <div class="sp-title">OrgDNA</div>
+        <div class="sp-desc">Master configuration package — versioned, exportable, clonable. Manage all OrgApp settings, RBAC policies, ODD templates, KPIs, and compliance packs.</div>
+        <div class="sp-tags">
+          <span class="sp-tag" style="background:rgba(0,229,216,.1);border-color:rgba(0,229,216,.25);color:var(--teal);">Config</span>
+          <span class="sp-tag" style="background:rgba(56,180,255,.1);border-color:rgba(56,180,255,.25);color:var(--blue);">Versioned</span>
+        </div>
+      </a>
+
+      <a href="network-graph.html" class="subpage-card" style="--card-color:rgba(52,232,160,.1);--card-border:rgba(52,232,160,.35);">
+        <div class="sp-icon" style="background:rgba(52,232,160,.12);border-color:rgba(52,232,160,.3);">🕸️</div>
+        <div class="sp-title">Network Graph</div>
+        <div class="sp-desc">Live supply chain, distribution, vendor, and entity relationship graph. Visualise connections between all organisations, resources, and third parties.</div>
+        <div class="sp-tags">
+          <span class="sp-tag" style="background:rgba(52,232,160,.1);border-color:rgba(52,232,160,.25);color:var(--emerald);">Supply Chain</span>
+          <span class="sp-tag" style="background:rgba(255,107,74,.1);border-color:rgba(255,107,74,.25);color:var(--coral);">Vendors</span>
+        </div>
+      </a>
+
+      <a href="org-chart.html" class="subpage-card" style="--card-color:rgba(56,180,255,.1);--card-border:rgba(56,180,255,.35);">
+        <div class="sp-icon" style="background:rgba(56,180,255,.12);border-color:rgba(56,180,255,.3);">🌲</div>
+        <div class="sp-title">Org Chart</div>
+        <div class="sp-desc">Auto-generating, editable organisation and OrgExec hierarchy. Drag-to-reorg, add/remove nodes, export to OrgDNA, and version control your org structure.</div>
+        <div class="sp-tags">
+          <span class="sp-tag" style="background:rgba(56,180,255,.1);border-color:rgba(56,180,255,.25);color:var(--blue);">People</span>
+          <span class="sp-tag" style="background:rgba(216,85,255,.1);border-color:rgba(216,85,255,.25);color:var(--orchid);">AI Agents</span>
+        </div>
+      </a>
+
+      <a href="business-model.html" class="subpage-card" style="--card-color:rgba(245,185,66,.1);--card-border:rgba(245,185,66,.35);">
+        <div class="sp-icon" style="background:rgba(245,185,66,.12);border-color:rgba(245,185,66,.3);">📐</div>
+        <div class="sp-title">Business Model</div>
+        <div class="sp-desc">Design, version, and manage your business model canvas. Track model iterations, run A/B comparisons, and align every OrgApp to your current model.</div>
+        <div class="sp-tags">
+          <span class="sp-tag" style="background:rgba(245,185,66,.1);border-color:rgba(245,185,66,.25);color:var(--amber);">Strategy</span>
+          <span class="sp-tag" style="background:rgba(52,232,160,.1);border-color:rgba(52,232,160,.25);color:var(--emerald);">Versioned</span>
+        </div>
+      </a>
+
+      <a href="value-proposition.html" class="subpage-card" style="--card-color:rgba(216,85,255,.1);--card-border:rgba(216,85,255,.35);">
+        <div class="sp-icon" style="background:rgba(216,85,255,.12);border-color:rgba(216,85,255,.3);">💎</div>
+        <div class="sp-title">Value Proposition</div>
+        <div class="sp-desc">Design and version your value proposition canvas. Map customer jobs, pains, gains, and your products/services. Track evolution over time.</div>
+        <div class="sp-tags">
+          <span class="sp-tag" style="background:rgba(216,85,255,.1);border-color:rgba(216,85,255,.25);color:var(--orchid);">Customer</span>
+          <span class="sp-tag" style="background:rgba(255,76,139,.1);border-color:rgba(255,76,139,.25);color:var(--rose);">Design</span>
+        </div>
+      </a>
+
+      <a href="data-master.html" class="subpage-card" style="--card-color:rgba(255,42,85,.1);--card-border:rgba(255,42,85,.35);">
+        <div class="sp-icon" style="background:rgba(255,42,85,.12);border-color:rgba(255,42,85,.3);">🗄️</div>
+        <div class="sp-title">Data Master</div>
+        <div class="sp-desc">Master organisation data management — entities, schemas, data lineage, master data records, and cross-OrgApp data governance in one unified registry.</div>
+        <div class="sp-tags">
+          <span class="sp-tag" style="background:rgba(255,42,85,.1);border-color:rgba(255,42,85,.25);color:var(--cherry);">MDM</span>
+          <span class="sp-tag" style="background:rgba(106,47,255,.12);border-color:rgba(106,47,255,.3);color:#a07fff;">Governance</span>
+        </div>
+      </a>
+
+    </div>
+  </div>
+</div>
+
+</body></html>

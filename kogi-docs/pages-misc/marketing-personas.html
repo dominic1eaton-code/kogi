@@ -1,0 +1,274 @@
+<!DOCTYPE html><html lang="en"><head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>UME OrgOS — Personas &amp; ICP</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#070010;--surface:#0f0820;--surface-2:#150b2c;--surface-3:#1b1038;--border:rgba(255,255,255,.065);--border-mid:rgba(255,255,255,.10);--text:#ede6ff;--text-soft:rgba(215,205,255,.7);--text-muted:rgba(190,175,240,.4);--purple:#6a2fff;--purple-mid:#2d0072;--purple-dim:rgba(106,47,255,.18);--cherry:#ff2a55;--cherry-dim:rgba(255,42,85,.15);--teal:#00e5d8;--teal-dim:rgba(0,229,216,.12);--amber:#f5b942;--amber-dim:rgba(245,185,66,.12);--blue:#38b4ff;--blue-dim:rgba(56,180,255,.13);--emerald:#34e8a0;--emerald-dim:rgba(52,232,160,.11);--coral:#ff6b4a;--coral-dim:rgba(255,107,74,.13);--orchid:#d855ff;--orchid-dim:rgba(216,85,255,.14);--rose:#ff4c8b;--rose-dim:rgba(255,76,139,.13);--sidebar-w:210px;}
+*{margin:0;padding:0;box-sizing:border-box;}html,body{height:100%;font-family:"Space Grotesk",sans-serif;background:var(--bg);overflow:hidden;color:var(--text);}body{display:flex;}
+.sidebar{width:var(--sidebar-w);height:100vh;background:#0a0018;display:flex;flex-direction:column;flex-shrink:0;border-right:1px solid rgba(255,255,255,.05);}
+.sidebar-logo{display:flex;align-items:center;gap:9px;padding:16px 16px 14px;border-bottom:1px solid rgba(255,255,255,.06);}
+.s-icon{width:30px;height:30px;border-radius:8px;background:var(--purple-mid);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:15px;color:#fff;box-shadow:0 0 14px 2px rgba(106,47,255,.5);flex-shrink:0;}
+.s-logo-text{font-weight:700;font-size:15px;color:#fff;}.s-logo-text span{color:var(--cherry);}
+.org-selector{margin:10px 10px 4px;padding:8px 10px;border-radius:8px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.07);cursor:pointer;display:flex;align-items:center;gap:8px;}
+.org-dot{width:7px;height:7px;border-radius:50%;background:var(--teal);flex-shrink:0;box-shadow:0 0 6px rgba(0,229,216,.65);}
+.org-name{font-size:12px;font-weight:600;color:rgba(220,210,255,.8);flex:1;}.org-chevron{color:rgba(200,190,255,.3);font-size:10px;}
+.nav-section{padding:0 8px;margin-bottom:2px;}.nav-label{font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:rgba(200,190,255,.18);padding:10px 8px 4px;}
+.nav-item{display:flex;align-items:center;gap:9px;padding:7px 10px;border-radius:7px;cursor:pointer;transition:.15s;text-decoration:none;margin-bottom:1px;}
+.nav-item:hover{background:rgba(255,255,255,.06);}.nav-item.active{background:linear-gradient(90deg,rgba(106,47,255,.5),rgba(255,42,85,.22));border:1px solid rgba(255,42,85,.15);}
+.nav-icon{font-size:14px;width:20px;text-align:center;flex-shrink:0;}.nav-text{font-size:12.5px;font-weight:500;color:rgba(210,200,255,.38);flex:1;}
+.nav-item.active .nav-text{color:#fff;font-weight:600;}.nav-badge{min-width:18px;height:18px;border-radius:9px;background:var(--cherry);color:#fff;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;padding:0 5px;}
+.sidebar-footer{margin-top:auto;padding:10px;border-top:1px solid rgba(255,255,255,.05);}
+.user-row{display:flex;align-items:center;gap:9px;cursor:pointer;padding:8px;border-radius:8px;}
+.user-avatar{width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,var(--purple-mid),var(--cherry));display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff;flex-shrink:0;}
+.user-name{font-size:12px;font-weight:600;color:rgba(220,210,255,.8);}.user-role{font-size:10px;color:rgba(200,190,255,.3);}
+.main{flex:1;display:flex;flex-direction:column;height:100vh;overflow:hidden;}
+.topbar{height:52px;background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 24px;gap:12px;flex-shrink:0;}
+.page-title{font-size:15px;font-weight:700;color:var(--text);}.topbar-meta{font-size:11.5px;color:var(--text-muted);}
+.topbar-right{margin-left:auto;display:flex;align-items:center;gap:10px;}
+.tb-btn{padding:6px 13px;border:1px solid var(--border-mid);border-radius:7px;font-size:12px;font-weight:600;color:var(--text-soft);background:var(--surface-2);cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:5px;transition:.15s;text-decoration:none;}
+.tb-btn.primary{background:linear-gradient(135deg,var(--rose),var(--cherry));color:#fff;border:none;box-shadow:0 3px 16px rgba(255,76,139,.3);}
+.subnav{display:flex;align-items:center;gap:2px;padding:0 24px;height:42px;background:var(--surface-2);border-bottom:1px solid var(--border);flex-shrink:0;overflow-x:auto;}
+.subnav::-webkit-scrollbar{height:0;}
+.snav-item{display:inline-flex;align-items:center;gap:5px;padding:6px 12px;border-radius:6px;font-size:12px;font-weight:600;color:rgba(200,185,255,.4);cursor:pointer;text-decoration:none;white-space:nowrap;transition:.15s;border:1px solid transparent;}
+.snav-item:hover{color:rgba(210,200,255,.8);background:rgba(255,255,255,.05);}
+.snav-item.active{color:#fff;background:rgba(255,76,139,.18);border-color:rgba(255,76,139,.32);}
+.content{flex:1;overflow-y:auto;padding:20px 24px;}
+.breadcrumb{font-size:12px;color:var(--text-muted);margin-bottom:14px;display:flex;align-items:center;gap:6px;}
+.breadcrumb a{color:var(--text-muted);text-decoration:none;}.breadcrumb-sep{color:rgba(200,190,255,.2);}
+.card{background:var(--surface);border-radius:14px;border:1px solid var(--border);padding:18px;margin-bottom:14px;}
+.card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
+.card-title{font-size:13.5px;font-weight:700;color:var(--text);}.card-sub{font-size:11px;color:var(--text-muted);margin-top:2px;}
+.card-action{font-size:12px;color:var(--rose);font-weight:600;cursor:pointer;text-decoration:none;}
+.kpi-grid{display:grid;gap:12px;margin-bottom:16px;}
+.kpi-grid.c4{grid-template-columns:repeat(4,1fr);}.kpi-grid.c3{grid-template-columns:repeat(3,1fr);}
+.kpi{background:var(--surface);border-radius:12px;border:1px solid var(--border);padding:14px 16px;position:relative;overflow:hidden;cursor:pointer;transition:.18s;}
+.kpi:hover{transform:translateY(-1px);}
+.kpi::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;border-radius:12px 12px 0 0;}
+.kpi::after{content:'';position:absolute;inset:0;pointer-events:none;border-radius:12px;}
+.kpi.c-orchid::before{background:linear-gradient(90deg,var(--orchid),var(--purple));}.kpi.c-orchid::after{background:radial-gradient(ellipse at 90% 0%,rgba(216,85,255,.11),transparent 65%);}
+.kpi.c-teal::before{background:linear-gradient(90deg,var(--teal),var(--blue));}.kpi.c-teal::after{background:radial-gradient(ellipse at 90% 0%,rgba(0,229,216,.11),transparent 65%);}
+.kpi.c-emerald::before{background:linear-gradient(90deg,var(--emerald),var(--teal));}.kpi.c-emerald::after{background:radial-gradient(ellipse at 90% 0%,rgba(52,232,160,.11),transparent 65%);}
+.kpi.c-rose::before{background:linear-gradient(90deg,var(--rose),var(--cherry));}.kpi.c-rose::after{background:radial-gradient(ellipse at 90% 0%,rgba(255,76,139,.11),transparent 65%);}
+.kpi-label{font-size:11px;color:var(--text-muted);margin-bottom:6px;font-weight:500;}
+.kpi-val{font-size:22px;font-weight:700;color:var(--text);margin-bottom:4px;}
+.kpi-sub{font-size:11px;color:var(--text-muted);}.kpi-sub.up{color:var(--emerald);}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;}
+.three-col{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:14px;}
+.badge{display:inline-flex;align-items:center;padding:2px 8px;border-radius:20px;font-size:10.5px;font-weight:700;}
+.b-green{background:rgba(52,232,160,.12);color:var(--emerald);border:1px solid rgba(52,232,160,.22);}
+.b-amber{background:rgba(245,185,66,.12);color:var(--amber);border:1px solid rgba(245,185,66,.22);}
+.b-blue{background:rgba(56,180,255,.12);color:var(--blue);border:1px solid rgba(56,180,255,.2);}
+.b-orchid{background:var(--orchid-dim);color:var(--orchid);border:1px solid rgba(216,85,255,.2);}
+.b-rose{background:var(--rose-dim);color:var(--rose);border:1px solid rgba(255,76,139,.22);}
+.bar-row{display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid var(--border);}
+.bar-row:last-child{border:none;}
+.bar-label{font-size:12px;color:var(--text-soft);min-width:140px;}
+.bar-track{flex:1;height:6px;background:rgba(255,255,255,.06);border-radius:3px;overflow:hidden;}
+.bar-fill{height:100%;border-radius:3px;}
+.bar-val{font-size:12px;font-weight:700;min-width:56px;text-align:right;}
+/* Persona card */
+.persona-card{background:var(--surface-2);border:1px solid var(--border);border-radius:12px;padding:16px;position:relative;overflow:hidden;}
+.persona-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;}
+.pc-orchid::before{background:linear-gradient(90deg,var(--orchid),var(--purple));}
+.pc-blue::before{background:linear-gradient(90deg,var(--blue),var(--teal));}
+.pc-rose::before{background:linear-gradient(90deg,var(--rose),var(--cherry));}
+.pc-amber::before{background:linear-gradient(90deg,var(--amber),var(--coral));}
+.pc-emerald::before{background:linear-gradient(90deg,var(--emerald),var(--teal));}
+.persona-avatar{width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px;margin-bottom:10px;}
+.persona-name{font-size:13.5px;font-weight:700;color:var(--text);margin-bottom:2px;}
+.persona-role{font-size:11px;color:var(--text-muted);margin-bottom:10px;}
+.persona-tag{display:inline-flex;padding:2px 8px;border-radius:20px;font-size:10px;font-weight:600;margin:2px;}
+.pt-goal{background:rgba(52,232,160,.1);color:var(--emerald);border:1px solid rgba(52,232,160,.2);}
+.pt-pain{background:rgba(255,42,85,.1);color:var(--cherry);border:1px solid rgba(255,42,85,.2);}
+.pt-channel{background:rgba(56,180,255,.1);color:var(--blue);border:1px solid rgba(56,180,255,.2);}
+.persona-metric{display:flex;justify-content:space-between;font-size:11.5px;margin-top:10px;padding-top:8px;border-top:1px solid var(--border);}
+.pm-val{font-weight:700;color:var(--text);}
+/* ICP box */
+.icp-box{background:linear-gradient(135deg,rgba(106,47,255,.12),rgba(255,76,139,.08));border:1px solid rgba(106,47,255,.25);border-radius:12px;padding:16px;margin-bottom:14px;}
+.icp-criteria{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px;}
+.icp-crit{background:rgba(255,255,255,.04);border-radius:8px;padding:10px;}
+.icp-crit-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--text-muted);margin-bottom:4px;}
+.icp-crit-val{font-size:12.5px;font-weight:600;color:var(--text);}
+</style></head><body>
+
+<div class="sidebar">
+  <div class="sidebar-logo"><div class="s-icon">U</div><div class="s-logo-text">UME <span>OrgOS</span></div></div>
+  <div class="org-selector"><div class="org-dot"></div><div class="org-name">Acme Corp LLC</div><div class="org-chevron">&#9662;</div></div>
+  <div class="nav-section"><div class="nav-label">Overview</div><a class="nav-item" href="dashboard.html"><div class="nav-icon">&#127968;</div><div class="nav-text">Dashboard</div></a></div>
+  <div class="nav-section"><div class="nav-label">OrgApps</div>
+    <a class="nav-item" href="finance.html"><div class="nav-icon">&#128176;</div><div class="nav-text">Finance</div></a>
+    <a class="nav-item" href="hr.html"><div class="nav-icon">&#128101;</div><div class="nav-text">HR &amp; People</div></a>
+    <a class="nav-item" href="legal.html"><div class="nav-icon">&#9878;&#65039;</div><div class="nav-text">Legal</div></a>
+    <a class="nav-item" href="sales.html"><div class="nav-icon">&#128230;</div><div class="nav-text">Sales &amp; CRM</div></a>
+    <a class="nav-item" href="operations.html"><div class="nav-icon">&#127981;</div><div class="nav-text">Operations</div></a>
+    <a class="nav-item" href="risk-grc.html"><div class="nav-icon">&#128737;&#65039;</div><div class="nav-text">Risk &amp; GRC</div></a>
+    <a class="nav-item active" href="marketing.html"><div class="nav-icon">&#128227;</div><div class="nav-text">Marketing</div></a>
+  </div>
+  <div class="nav-section"><div class="nav-label">OrgSystem</div>
+    <a class="nav-item" href="orgexec.html"><div class="nav-icon">&#129302;</div><div class="nav-text">OrgExec / Agents</div></a>
+    <a class="nav-item" href="digital-twin.html"><div class="nav-icon">&#128300;</div><div class="nav-text">Digital Twin</div></a>
+    <a class="nav-item" href="dao.html"><div class="nav-icon">&#128272;</div><div class="nav-text">DAO &amp; DLT</div></a>
+    <a class="nav-item" href="alerts.html"><div class="nav-icon">&#9888;&#65039;</div><div class="nav-text">Alerts</div><div class="nav-badge">3</div></a>
+  </div>
+  <div class="nav-section"><a class="nav-item" href="settings.html"><div class="nav-icon">&#9881;&#65039;</div><div class="nav-text">Settings</div></a></div>
+  <div class="sidebar-footer"><div class="user-row"><div class="user-avatar">AL</div><div><div class="user-name">Ada Lovelace</div><div class="user-role">Owner &middot; CEO</div></div><div style="margin-left:auto;font-size:14px;color:rgba(200,190,255,.2);">&#8943;</div></div></div>
+</div>
+
+<div class="main">
+  <div class="topbar">
+    <div><div class="page-title">Personas &amp; ICP</div><div class="topbar-meta">Marketing &middot; 3 primary personas · 5 micro-personas · ICP v3 active</div></div>
+    <div class="topbar-right">
+      <button class="tb-btn primary">&#43; New Persona</button>
+      <button class="tb-btn">&#128202; Reports</button>
+      <button class="tb-btn">&#8681; Export</button>
+    </div>
+  </div>
+
+  <div class="subnav">
+    <a class="snav-item" href="marketing.html">&#127968; Overview</a>
+    <a class="snav-item" href="marketing-strategy.html">&#127919; Strategy</a>
+    <a class="snav-item" href="marketing-campaigns.html">&#128227; Campaigns</a>
+    <a class="snav-item" href="marketing-promotions.html">&#127881; Promotions</a>
+    <a class="snav-item" href="marketing-funnel.html">&#128200; Funnel &amp; Pipeline</a>
+    <a class="snav-item" href="marketing-leads.html">&#127775; Leads &amp; Nurturing</a>
+    <a class="snav-item active" href="marketing-personas.html">&#129312; Personas &amp; ICP</a>
+    <a class="snav-item" href="marketing-segmentation.html">&#127829; Segmentation</a>
+    <a class="snav-item" href="marketing-brand.html">&#127775; Brand &amp; Design</a>
+    <a class="snav-item" href="marketing-content.html">&#128221; Content &amp; SEO</a>
+    <a class="snav-item" href="marketing-channels.html">&#128225; Channels &amp; Comms</a>
+    <a class="snav-item" href="marketing-pr.html">&#127908; PR &amp; Reputation</a>
+    <a class="snav-item" href="marketing-analytics.html">&#128202; Analytics &amp; CRM</a>
+    <a class="snav-item" href="marketing-usp.html">&#9889; USP &amp; Positioning</a>
+    <a class="snav-item" href="marketing-intelligence.html">&#129504; Intelligence</a>
+  </div>
+
+  <div class="content">
+    <div class="breadcrumb"><a href="dashboard.html">Dashboard</a><span class="breadcrumb-sep">/</span><a href="marketing.html">Marketing</a><span class="breadcrumb-sep">/</span><span>Personas &amp; ICP</span></div>
+
+    <!-- ICP Definition -->
+    <div class="icp-box">
+      <div style="display:flex;align-items:center;justify-content:space-between;">
+        <div>
+          <div style="font-size:13.5px;font-weight:700;color:var(--text);margin-bottom:3px;">&#127919; Ideal Customer Profile (ICP) — v3.0</div>
+          <div style="font-size:11px;color:var(--text-muted);">Updated Dec 2025 · Next review: Mar 2026</div>
+        </div>
+        <span class="badge b-green">Active</span>
+      </div>
+      <div class="icp-criteria">
+        <div class="icp-crit"><div class="icp-crit-label">Company Size</div><div class="icp-crit-val">20 – 500 employees</div></div>
+        <div class="icp-crit"><div class="icp-crit-label">Revenue</div><div class="icp-crit-val">$1M – $50M ARR</div></div>
+        <div class="icp-crit"><div class="icp-crit-label">Industry</div><div class="icp-crit-val">B2B SaaS · Professional Services · Tech-enabled businesses</div></div>
+        <div class="icp-crit"><div class="icp-crit-label">Stage</div><div class="icp-crit-val">Scale-up · Series A–C · Post-PMF</div></div>
+        <div class="icp-crit"><div class="icp-crit-label">Buyer</div><div class="icp-crit-val">CEO, COO, CTO · Operational decision-maker</div></div>
+        <div class="icp-crit"><div class="icp-crit-label">Pain Signals</div><div class="icp-crit-val">Tool fragmentation · Compliance overhead · Ops bottlenecks</div></div>
+      </div>
+    </div>
+
+    <div class="kpi-grid c4" style="margin-bottom:18px;">
+      <div class="kpi c-orchid"><div class="kpi-label">Primary Personas</div><div class="kpi-val">3</div><div class="kpi-sub up">Scale-Up CEO, Tech COO, Ops CFO</div></div>
+      <div class="kpi c-teal"><div class="kpi-label">Micro-Personas</div><div class="kpi-val">5</div><div class="kpi-sub">Product VP, HR Lead, FinOps Mgr + 2</div></div>
+      <div class="kpi c-emerald"><div class="kpi-label">ICP-Matched Leads</div><div class="kpi-val">84</div><div class="kpi-sub up">27% of total lead base</div></div>
+      <div class="kpi c-rose"><div class="kpi-label">ICP Win Rate</div><div class="kpi-val">38%</div><div class="kpi-sub up">vs 12% non-ICP</div></div>
+    </div>
+
+    <!-- Primary Personas -->
+    <div class="card">
+      <div class="card-header"><div><div class="card-title">Primary Personas</div><div class="card-sub">Validated by ICP workshop Dec 2025</div></div><button class="tb-btn primary" style="font-size:11px;padding:5px 11px;">&#43; Add Persona</button></div>
+      <div class="three-col" style="margin-bottom:0;">
+        <div class="persona-card pc-orchid">
+          <div class="persona-avatar" style="background:var(--orchid-dim);">&#128084;</div>
+          <div class="persona-name">Scale-Up CEO</div>
+          <div class="persona-role">CEO · B2B SaaS · 30–200 employees</div>
+          <div>
+            <span class="persona-tag pt-goal">Grow fast, stay lean</span>
+            <span class="persona-tag pt-goal">One OS, not 10 tools</span>
+            <span class="persona-tag pt-pain">Time-starved</span>
+            <span class="persona-tag pt-pain">Tool sprawl</span>
+            <span class="persona-tag pt-channel">LinkedIn</span>
+            <span class="persona-tag pt-channel">Peer referral</span>
+          </div>
+          <div class="persona-metric">
+            <div><div style="font-size:10px;color:var(--text-muted);">Matched Leads</div><div class="pm-val" style="color:var(--orchid);">42</div></div>
+            <div><div style="font-size:10px;color:var(--text-muted);">Win Rate</div><div class="pm-val" style="color:var(--emerald);">41%</div></div>
+            <div><div style="font-size:10px;color:var(--text-muted);">Avg Deal $</div><div class="pm-val">$12,400</div></div>
+          </div>
+        </div>
+        <div class="persona-card pc-blue">
+          <div class="persona-avatar" style="background:var(--blue-dim);">&#128187;</div>
+          <div class="persona-name">Tech-Forward COO</div>
+          <div class="persona-role">COO / CTO · Enterprise · 200–1000 employees</div>
+          <div>
+            <span class="persona-tag pt-goal">Automate ops</span>
+            <span class="persona-tag pt-goal">AI-ready org</span>
+            <span class="persona-tag pt-pain">Legacy systems</span>
+            <span class="persona-tag pt-pain">Compliance burden</span>
+            <span class="persona-tag pt-channel">Content / SEO</span>
+            <span class="persona-tag pt-channel">Webinars</span>
+          </div>
+          <div class="persona-metric">
+            <div><div style="font-size:10px;color:var(--text-muted);">Matched Leads</div><div class="pm-val" style="color:var(--blue);">28</div></div>
+            <div><div style="font-size:10px;color:var(--text-muted);">Win Rate</div><div class="pm-val" style="color:var(--emerald);">36%</div></div>
+            <div><div style="font-size:10px;color:var(--text-muted);">Avg Deal $</div><div class="pm-val">$28,000</div></div>
+          </div>
+        </div>
+        <div class="persona-card pc-rose">
+          <div class="persona-avatar" style="background:var(--rose-dim);">&#128200;</div>
+          <div class="persona-name">Ops-Obsessed CFO</div>
+          <div class="persona-role">CFO / Finance Director · Mid-market · 50–500 employees</div>
+          <div>
+            <span class="persona-tag pt-goal">Financial visibility</span>
+            <span class="persona-tag pt-goal">Reduce burn</span>
+            <span class="persona-tag pt-pain">Disconnected data</span>
+            <span class="persona-tag pt-pain">Manual reporting</span>
+            <span class="persona-tag pt-channel">Email</span>
+            <span class="persona-tag pt-channel">Case studies</span>
+          </div>
+          <div class="persona-metric">
+            <div><div style="font-size:10px;color:var(--text-muted);">Matched Leads</div><div class="pm-val" style="color:var(--rose);">14</div></div>
+            <div><div style="font-size:10px;color:var(--text-muted);">Win Rate</div><div class="pm-val" style="color:var(--amber);">29%</div></div>
+            <div><div style="font-size:10px;color:var(--text-muted);">Avg Deal $</div><div class="pm-val">$9,600</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Micro-Personas -->
+    <div class="card" style="margin-bottom:0;">
+      <div class="card-header"><div><div class="card-title">Micro-Personas</div><div class="card-sub">Granular sub-segments for precision targeting</div></div></div>
+      <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:10px;">
+        <div style="background:var(--surface-2);border:1px solid var(--border);border-radius:10px;padding:12px;text-align:center;">
+          <div style="font-size:20px;margin-bottom:6px;">&#128736;</div>
+          <div style="font-size:11.5px;font-weight:700;color:var(--text);margin-bottom:3px;">Product VP</div>
+          <div style="font-size:10px;color:var(--text-muted);">Wants OrgApp marketplace</div>
+          <div style="font-size:12px;font-weight:700;color:var(--teal);margin-top:6px;">8 leads</div>
+        </div>
+        <div style="background:var(--surface-2);border:1px solid var(--border);border-radius:10px;padding:12px;text-align:center;">
+          <div style="font-size:20px;margin-bottom:6px;">&#128101;</div>
+          <div style="font-size:11.5px;font-weight:700;color:var(--text);margin-bottom:3px;">HR Lead</div>
+          <div style="font-size:10px;color:var(--text-muted);">People OrgApp buyer</div>
+          <div style="font-size:12px;font-weight:700;color:var(--orchid);margin-top:6px;">6 leads</div>
+        </div>
+        <div style="background:var(--surface-2);border:1px solid var(--border);border-radius:10px;padding:12px;text-align:center;">
+          <div style="font-size:20px;margin-bottom:6px;">&#128176;</div>
+          <div style="font-size:11.5px;font-weight:700;color:var(--text);margin-bottom:3px;">FinOps Manager</div>
+          <div style="font-size:10px;color:var(--text-muted);">Finance OrgApp focus</div>
+          <div style="font-size:12px;font-weight:700;color:var(--amber);margin-top:6px;">5 leads</div>
+        </div>
+        <div style="background:var(--surface-2);border:1px solid var(--border);border-radius:10px;padding:12px;text-align:center;">
+          <div style="font-size:20px;margin-bottom:6px;">&#9878;&#65039;</div>
+          <div style="font-size:11.5px;font-weight:700;color:var(--text);margin-bottom:3px;">Legal Ops</div>
+          <div style="font-size:10px;color:var(--text-muted);">Compliance + GRC buyer</div>
+          <div style="font-size:12px;font-weight:700;color:var(--blue);margin-top:6px;">4 leads</div>
+        </div>
+        <div style="background:var(--surface-2);border:1px solid var(--border);border-radius:10px;padding:12px;text-align:center;">
+          <div style="font-size:20px;margin-bottom:6px;">&#128293;</div>
+          <div style="font-size:11.5px;font-weight:700;color:var(--text);margin-bottom:3px;">Franchise Owner</div>
+          <div style="font-size:10px;color:var(--text-muted);">DAO / OrgDNA buyer</div>
+          <div style="font-size:12px;font-weight:700;color:var(--emerald);margin-top:6px;">3 leads</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+</body></html>

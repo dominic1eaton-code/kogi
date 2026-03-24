@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KOGI · Portfolio · All Component Types</title>
+<link rel="stylesheet" href="kogi-styles.css">
+<style>
+.content { flex:1; overflow:auto; padding:14px; display:flex; flex-direction:column; gap:14px; }
+.domain-section { background:var(--bg1); border:1px solid var(--border); border-radius:4px; overflow:hidden; }
+.ds-hdr { display:flex; align-items:center; gap:8px; padding:10px 13px; border-bottom:1px solid var(--border); background:var(--bg2); }
+.ds-icon { font-size:14px; }
+.ds-title { font-family:var(--mono); font-size:10px; font-weight:700; color:var(--text); flex:1; }
+.ds-badge { font-family:var(--mono); font-size:7px; color:var(--text3); background:var(--bg3); border:1px solid var(--border); border-radius:2px; padding:1px 5px; }
+.ds-desc { font-family:var(--sans); font-size:8px; color:var(--text3); }
+.ds-body { padding:10px 13px; }
+.type-catalog { display:grid; grid-template-columns:repeat(auto-fill,minmax(148px,1fr)); gap:6px; }
+.type-tile { background:var(--bg2); border:1px solid var(--border); border-radius:3px; padding:9px 10px; cursor:pointer; transition:all .12s; display:flex; flex-direction:column; gap:3px; }
+.type-tile:hover { border-color:var(--border2); background:var(--bg3); transform:translateY(-1px); }
+.tt-type { font-family:var(--mono); font-size:9px; font-weight:600; color:var(--text); }
+.tt-sub  { font-family:var(--mono); font-size:7px; color:var(--text3); line-height:1.4; }
+.tt-pill { display:flex; gap:3px; flex-wrap:wrap; margin-top:3px; }
+.tt-sp   { font-family:var(--mono); font-size:6px; padding:1px 4px; border-radius:8px; border:1px solid; }
+.tt-bar  { height:2px; background:var(--bg3); border-radius:1px; overflow:hidden; margin-top:4px; }
+.tt-barfill { height:100%; border-radius:1px; }
+/* search / filter */
+.filter-bar { display:flex; gap:8px; align-items:center; padding:8px 13px; background:var(--bg2); border-bottom:1px solid var(--border); }
+.filter-input { flex:1; background:var(--bg3); border:1px solid var(--border2); border-radius:3px; padding:5px 10px; font-family:var(--mono); font-size:9px; color:var(--text); outline:none; }
+.filter-input:focus { border-color:var(--cyan); }
+</style>
+</head>
+<body>
+<div class="screen">
+  <div class="g-hdr">
+    <span class="g-logo">KOGI</span>
+    <div class="g-bc"><span>OS</span><span class="sep"> / </span><span>Portfolio</span><span class="sep"> / </span><span class="cur">All Component Types</span></div>
+    <div class="g-dot" style="margin-left:auto"></div>
+  </div>
+  <div class="sub-nav" id="sub-nav"></div>
+  <div class="body-layout">
+    <div class="l-nav">
+      <div class="nav-sec">Portfolio</div>
+      <a href="portfolio-grid.html" class="nav-it">⊞ Grid</a>
+      <a href="portfolio-components.html" class="nav-it active">◫ All Types</a>
+      <a href="portfolio-items.html" class="nav-it">◈ Items</a>
+      <a href="portfolio-containers.html" class="nav-it">▣ Containers</a>
+      <div class="nav-sec">Work</div>
+      <a href="portfolio-programs.html" class="nav-it">◎ Programs</a>
+      <a href="portfolio-resources.html" class="nav-it">⊙ Resources</a>
+      <a href="portfolio-people.html" class="nav-it">◉ People</a>
+      <div class="nav-sec">Commerce</div>
+      <a href="portfolio-commerce.html" class="nav-it">◆ Commerce</a>
+      <a href="portfolio-finance.html" class="nav-it">$ Finance</a>
+      <a href="portfolio-timelines.html" class="nav-it">⌇ Timelines</a>
+      <div class="nav-sec">Tools</div>
+      <a href="portfolio-analytics.html" class="nav-it">∿ Analytics</a>
+      <a href="portfolio-governance.html" class="nav-it">⊛ Governance</a>
+      <a href="portfolio-graph.html" class="nav-it">⋈ Graph</a>
+      <div class="nav-sec">Platform</div>
+      <a href="portfolio-benefits.html" class="nav-it">⊕ Benefits</a>
+      <a href="portfolio-collaboration.html" class="nav-it">⊗ Collab</a>
+    </div>
+    <div class="main">
+      <div class="toolbar">
+        <span class="tb-title">All Component Types</span>
+        <span class="tb-sub" style="margin-left:6px">KOGI-RMS · 8 domains · 80+ types · Universal Resource Data Model</span>
+        <div style="margin-left:auto;display:flex;gap:6px">
+          <span class="g-btn pri">+ New Component</span>
+        </div>
+      </div>
+      <div class="filter-bar">
+        <input class="filter-input" id="type-search" placeholder="⌕  Search component types…" oninput="filterTypes(this.value)"/>
+        <div class="f-chips" id="domain-chips">
+          <span class="chip active" data-d="all">All</span>
+          <span class="chip" data-d="items">Items</span>
+          <span class="chip" data-d="containers">Containers</span>
+          <span class="chip" data-d="work">Work</span>
+          <span class="chip" data-d="commerce">Commerce</span>
+          <span class="chip" data-d="capital">Capital</span>
+          <span class="chip" data-d="people">People</span>
+          <span class="chip" data-d="time">Time</span>
+          <span class="chip" data-d="contributions">Contributions</span>
+        </div>
+      </div>
+      <div class="content" id="main-content"></div>
+    </div>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+<script src="kogi-shared.js"></script>
+<script>
+buildSubNav('components');
+
+const DOMAINS = [
+  {
+    id:'items', icon:'◈', color:'#00d4aa', name:'Portfolio & Work Items',
+    desc:'Root portfolio items — the primary entities in a worker\'s portfolio system.',
+    types:[
+      {n:'Portfolio',     sub:'Personal · Work · Professional · Collective · Public', c:72, color:'#00d4aa'},
+      {n:'SubPortfolio',  sub:'Focus Area · Division · Thematic Cluster', c:12, color:'#00c498'},
+      {n:'Program',       sub:'Standard · Agile · Initiative · Cooperative', c:8, color:'#c8a84b'},
+      {n:'Project',       sub:'Software · Design · Research · Event · Content', c:24, color:'#3a7cc8'},
+      {n:'Resource',      sub:'Human · Equipment · Service · Financial', c:18, color:'#7c5cbf'},
+      {n:'Artifact',      sub:'Document · Design · Code · Media · Report', c:34, color:'#c87c3a'},
+      {n:'Asset',         sub:'Digital · Physical · IP · Brand · Equipment', c:21, color:'#4aab6d'},
+    ]
+  },
+  {
+    id:'containers', icon:'▣', color:'#c8a84b', name:'Containers',
+    desc:'Logical and structural containers that organise and group portfolio items.',
+    types:[
+      {n:'Binder',        sub:'Collection · Curated · Smart · Shared', c:14, color:'#c8a84b'},
+      {n:'Book · Notebook',     sub:'Freeform notes, annotations, ideas', c:9, color:'#5ca8bf'},
+      {n:'Book · Playbook',     sub:'Repeatable process playbooks, checklists', c:6, color:'#5cbf7a'},
+      {n:'Book · Guidebook',    sub:'Documentation sets, structured sections', c:4, color:'#7abf5c'},
+      {n:'Book · Contactbook',  sub:'Structured contact directory + CRM', c:8, color:'#c8a84b'},
+      {n:'Book · Schedulebook', sub:'Scheduling templates, availability rules', c:3, color:'#3a7cc8'},
+      {n:'Book · Planbook',     sub:'Phase gates, milestones, resource plans', c:5, color:'#c87c3a'},
+      {n:'Book · ItemBook',     sub:'Charter · Catalogue · Library · Logs', c:7, color:'#c8a84b'},
+      {n:'Record',        sub:'Formal, auditable, schematised data record', c:12, color:'#7abf5c'},
+      {n:'Folder',        sub:'Standard · Smart · Shared · Archive', c:22, color:'#7c5cbf'},
+      {n:'Dossier',       sub:'Person · Org · Topic · Deal · Case', c:8, color:'#00d4aa'},
+      {n:'Archive',       sub:'Portfolio · Project · Program · Space', c:6, color:'#4a5068'},
+      {n:'Registry',      sub:'Asset · Skill · Grant · Contact · Vendor', c:9, color:'#5c7abf'},
+      {n:'Directory',     sub:'Workspace · Project · Space · Organization', c:5, color:'#bf5ca0'},
+    ]
+  },
+  {
+    id:'work', icon:'⊞', color:'#3a7cc8', name:'Work Execution',
+    desc:'Work breakdown structure items from strategic themes down to atomic tasks.',
+    types:[
+      {n:'Theme',         sub:'Portfolio-level strategic direction', c:4, color:'#c8a84b'},
+      {n:'Strategy',      sub:'Direction-setting approach and trade-offs', c:6, color:'#c8a84b'},
+      {n:'Initiative',    sub:'Coordinated epics advancing a theme', c:8, color:'#3a7cc8'},
+      {n:'Epic',          sub:'Large capability, decomposed into stories', c:18, color:'#3a7cc8'},
+      {n:'Feature',       sub:'User-facing capability within an epic', c:34, color:'#3a7cc8'},
+      {n:'Story',         sub:'Delivery unit within a sprint', c:87, color:'#5c7abf'},
+      {n:'Task',          sub:'Atomic daily execution unit', c:214, color:'#7abf5c'},
+      {n:'Work Package',  sub:'Addressable WBS node', c:42, color:'#5ca8bf'},
+      {n:'Goal',          sub:'Desired outcome, parent of key results', c:8, color:'#c8a84b'},
+      {n:'Objective',     sub:'SAFe / OKR quarterly direction', c:6, color:'#c8a84b'},
+      {n:'Key Result',    sub:'Measurable outcome proving an Objective', c:18, color:'#c8a84b'},
+      {n:'Sprint',        sub:'Time-boxed commitment of stories', c:12, color:'#3a7cc8'},
+      {n:'Release',       sub:'Versioned delivery bundle', c:5, color:'#3a7cc8'},
+      {n:'Milestone',     sub:'Significant checkpoint or decision gate', c:9, color:'#00d4aa'},
+      {n:'Backlog',       sub:'Ordered, prioritised uncommitted items', c:4, color:'#4a5068'},
+      {n:'Risk',          sub:'Identified risk with mitigation plan', c:11, color:'#c45c7a'},
+      {n:'Dependency',    sub:'Explicit cross-item dependency link', c:7, color:'#c8a84b'},
+    ]
+  },
+  {
+    id:'commerce', icon:'◆', color:'#c87c3a', name:'Commerce & Contracts',
+    desc:'Work sourcing, deal flow, agreements, orders, and billing instruments.',
+    types:[
+      {n:'Gig',           sub:'Task · Project · Retainer · Recurring', c:18, color:'#c87c3a'},
+      {n:'Consultation',  sub:'Single · Package · Retainer · Workshop', c:9, color:'#c87c3a'},
+      {n:'Booking',       sub:'Service · Event · Studio · Equipment', c:14, color:'#c87c3a'},
+      {n:'Job',           sub:'Contract · Part-time · Full-time · Project', c:5, color:'#3a7cc8'},
+      {n:'Contract',      sub:'Service · Employment · NDA · License · Revenue-Share', c:12, color:'#c45c7a'},
+      {n:'Agreement',     sub:'MoU · LOI · SLA · Partnership · Grant', c:8, color:'#c45c7a'},
+      {n:'Offer',         sub:'Service · Bundle · Subscription · Custom', c:11, color:'#c87c3a'},
+      {n:'Deal',          sub:'Exchange · Investment · Acquisition · Barter', c:7, color:'#4aab6d'},
+      {n:'Request',       sub:'Work · Resource · Collaboration · Funding', c:16, color:'#5ca8bf'},
+      {n:'Proposal',      sub:'Business · Project · Partnership · Grant', c:9, color:'#7c5cbf'},
+      {n:'Bid',           sub:'Service · Asset · Auction · Reverse-Auction', c:6, color:'#c87c3a'},
+      {n:'Order',         sub:'Product · Service · Subscription · Custom', c:22, color:'#c87c3a'},
+      {n:'Invoice',       sub:'Service · Deposit · Recurring · Credit', c:34, color:'#4aab6d'},
+      {n:'Quote',         sub:'Itemized · Estimate · ROM', c:12, color:'#5ca8bf'},
+      {n:'Subscription',  sub:'SaaS · Service · Content · Membership', c:240, color:'#a0bf5c'},
+    ]
+  },
+  {
+    id:'capital', icon:'$', color:'#4aab6d', name:'Capital & Physical Assets',
+    desc:'Tangible and financial assets, real property, instruments, and value stores.',
+    types:[
+      {n:'Capital',       sub:'Working · Fixed · Investment · Reserve', c:5, color:'#4aab6d'},
+      {n:'Investment',    sub:'Equity · Revenue-Share · SAFE · Loan', c:8, color:'#4aab6d'},
+      {n:'Equity',        sub:'Common · Preferred · Cooperative · Revenue-Share', c:4, color:'#4aab6d'},
+      {n:'Grant',         sub:'Government · Foundation · Platform · Community', c:3, color:'#4aab6d'},
+      {n:'Campaign',      sub:'Crowdfunding · Equity · Resource · Donation', c:6, color:'#00d4aa'},
+      {n:'Fund',          sub:'Investment · Mutual Aid · Grant Pool · PEP', c:5, color:'#4aab6d'},
+      {n:'Loan',          sub:'Microloan · Line of Credit · Convertible Note', c:4, color:'#c45c7a'},
+      {n:'Revenue Share', sub:'Cooperative · Investor · Platform · Partner', c:3, color:'#a0bf5c'},
+      {n:'Real Estate',   sub:'Property · REIT · Development · Fractional', c:4, color:'#bf7c5c'},
+      {n:'Land',          sub:'Residential · Commercial · Agricultural', c:2, color:'#bf7c5c'},
+      {n:'Estate',        sub:'Residential · Commercial · Portfolio · Trust', c:1, color:'#bf7c5c'},
+      {n:'Equipment',     sub:'Owned · Leased · Shared · Rented', c:7, color:'#c87c3a'},
+      {n:'IP',            sub:'Patent · Trademark · Copyright · License', c:6, color:'#c87c3a'},
+      {n:'Benefit Account',sub:'HSA · Retirement · PTO · ProfDev · Savings', c:5, color:'#3a7cc8'},
+      {n:'Donation',      sub:'One-time · Recurring · In-Kind · Anonymous', c:12, color:'#5c7abf'},
+    ]
+  },
+  {
+    id:'people', icon:'◉', color:'#bf5ca0', name:'Users, Roles & Personas',
+    desc:'Human participants, roles, connections, and social relationships in the portfolio system.',
+    types:[
+      {n:'Contact',       sub:'Personal · Professional · Organization', c:38, color:'#3a7cc8'},
+      {n:'Owner',         sub:'Full control — T1 PermissionTier', c:3, color:'#c45c7a'},
+      {n:'Editor',        sub:'Create + Update — T3 PermissionTier', c:5, color:'#c87c3a'},
+      {n:'Contributor',   sub:'Submit contributions; create linked sub-items', c:7, color:'#bf5ca0'},
+      {n:'Viewer',        sub:'Read-only — T5 PermissionTier', c:14, color:'#4a5068'},
+      {n:'Subscriber',    sub:'Notification + platform access', c:240, color:'#a0bf5c'},
+      {n:'Follower',      sub:'Social follow; activity feed updates', c:87, color:'#5ca8bf'},
+      {n:'Watcher',       sub:'All state-change notifications; oversight', c:22, color:'#c8a84b'},
+      {n:'Investor',      sub:'Financial + view — cap table position', c:6, color:'#4aab6d'},
+      {n:'Donor',         sub:'Donation confirmation + impact tracking', c:12, color:'#5c7abf'},
+      {n:'Member',        sub:'Organization, collective, or cooperative member', c:8, color:'#7c5cbf'},
+      {n:'Steward',       sub:'Governance review and approval role', c:3, color:'#c8a84b'},
+      {n:'Mentor',        sub:'Advisory relationship; coaching sessions', c:2, color:'#7c5cbf'},
+      {n:'Persona',       sub:'Developer · Creative · Activist · Architect', c:9, color:'#bf5ca0'},
+    ]
+  },
+  {
+    id:'time', icon:'⌇', color:'#7c5cbf', name:'Time & Planning',
+    desc:'Time-axis visualization and coordination resources for planning and scheduling.',
+    types:[
+      {n:'Timeline',      sub:'Project · Program · Portfolio · Personal', c:8, color:'#7c5cbf'},
+      {n:'Schedule',      sub:'Work · Booking · Crew · Equipment · Recurring', c:12, color:'#3a7cc8'},
+      {n:'Roadmap',       sub:'Product · Platform · Organization · Community', c:5, color:'#7c5cbf'},
+      {n:'Calendar',      sub:'Work · Personal · Team · Org · Booking', c:9, color:'#5ca8bf'},
+      {n:'Gantt',         sub:'Project · Program · Campaign — critical path', c:4, color:'#c87c3a'},
+      {n:'Timebox',       sub:'Sprint · PI · Quarter · Custom Duration', c:6, color:'#3a7cc8'},
+      {n:'Milestone',     sub:'Release · Phase · Goal · Event · Deliverable', c:14, color:'#00d4aa'},
+      {n:'Roadblock',     sub:'Dependency · Blocker · Risk · Constraint', c:7, color:'#c45c7a'},
+    ]
+  },
+  {
+    id:'contributions', icon:'⊗', color:'#5c7abf', name:'Contributions',
+    desc:'All forms of tracked, attributed, and rewarded value transfer.',
+    types:[
+      {n:'Labor Contribution',    sub:'Hours · Tasks · Deliverables · Expertise', c:24, color:'#3a7cc8'},
+      {n:'Skills Contribution',   sub:'Technical · Creative · Strategic · Domain', c:18, color:'#7c5cbf'},
+      {n:'Financial Contribution',sub:'Cash · Crypto · Platform Credits', c:12, color:'#4aab6d'},
+      {n:'Support Contribution',  sub:'Community Moderation · Mentorship · Coaching', c:8, color:'#5ca8bf'},
+      {n:'Marketing Contribution',sub:'Content · SEO · Social · Email', c:6, color:'#c87c3a'},
+      {n:'Advertising Contribution',sub:'Paid Ad · Sponsored Content · Listing Boost', c:4, color:'#c8a84b'},
+      {n:'Endorsement',           sub:'Testimonial · Badge · Certification · Review', c:14, color:'#bf5ca0'},
+      {n:'Donation Contribution', sub:'One-time · Recurring · In-Kind · Matched', c:12, color:'#5c7abf'},
+      {n:'Investment Contribution',sub:'Equity · SAFE · Convertible · Revenue-Share', c:6, color:'#4aab6d'},
+    ]
+  },
+];
+
+let activeDomain = 'all', searchQ = '';
+
+function render(){
+  const con = document.getElementById('main-content');
+  con.innerHTML = '';
+  DOMAINS.forEach(domain => {
+    if(activeDomain !== 'all' && domain.id !== activeDomain) return;
+    const types = domain.types.filter(t =>
+      !searchQ || t.n.toLowerCase().includes(searchQ) || t.sub.toLowerCase().includes(searchQ)
+    );
+    if(!types.length) return;
+    const sec = document.createElement('div');
+    sec.className = 'domain-section';
+    sec.innerHTML = `
+      <div class="ds-hdr">
+        <span class="ds-icon">${domain.icon}</span>
+        <span class="ds-title" style="color:${domain.color}">${domain.name}</span>
+        <span class="ds-badge">${types.length} types</span>
+        <span class="ds-desc" style="margin-left:10px">${domain.desc}</span>
+      </div>
+      <div class="ds-body">
+        <div class="type-catalog" id="cat-${domain.id}"></div>
+      </div>`;
+    con.appendChild(sec);
+    const grid = sec.querySelector('#cat-'+domain.id);
+    types.forEach(tp => {
+      const tile = document.createElement('div');
+      tile.className = 'type-tile';
+      tile.innerHTML = `
+        <div style="display:flex;align-items:center;gap:5px;margin-bottom:1px">
+          <div style="width:7px;height:7px;border-radius:50%;background:${tp.color||domain.color};flex-shrink:0"></div>
+          <span class="tt-type">${tp.n}</span>
+          <span style="font-family:var(--mono);font-size:7px;color:var(--text3);margin-left:auto">${tp.c}</span>
+        </div>
+        <div class="tt-sub">${tp.sub}</div>
+        <div class="tt-bar"><div class="tt-barfill" style="background:${tp.color||domain.color};width:${Math.min(100,tp.c/3)}%"></div></div>`;
+      tile.onclick = () => {
+        const t=document.getElementById('toast');t.textContent=`${tp.n} — ${tp.c} instances`;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2000);
+      };
+      grid.appendChild(tile);
+    });
+  });
+}
+
+function filterTypes(q){
+  searchQ = q.toLowerCase().trim();
+  render();
+}
+
+document.getElementById('domain-chips').addEventListener('click', e => {
+  const chip = e.target.closest('.chip'); if(!chip) return;
+  document.querySelectorAll('#domain-chips .chip').forEach(c=>c.classList.remove('active'));
+  chip.classList.add('active');
+  activeDomain = chip.dataset.d;
+  render();
+});
+
+render();
+</script>
+</body>
+</html>

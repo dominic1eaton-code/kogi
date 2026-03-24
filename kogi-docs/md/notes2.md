@@ -1228,6 +1228,7 @@ wallet
 - bank of america
 - stripe
 - venmo
+- klarna
 - paypal
 - relayfi
 - coinbase
@@ -1249,6 +1250,7 @@ wallet
 - indiegogo
 - kickstarter
 - freshbooks
+- soci.ai
 
 
 marketplace
@@ -1368,6 +1370,7 @@ assistant
 - codex
 - saner.ai
 - zapier
+- integrately
 - castmagic
 - luvable
 - replit
@@ -1433,6 +1436,8 @@ add to  the portfolio component breadcrumb sub portfolio pages/views for the use
 C:\dev\ws\kogi_dev\kogi-docs\screen-pages\01-portfolio-grid.v2.html   read the portfolio-grid html file and create html screen pages for adding, creating, editing, updating, removing, archiving: portfolio components, portfolio items, portfolio containers, projects, programs, artifacts, assets, resources, solutions, investments, land, labor, skills, knowledge, deals, real estate, funds, campaigns, etc...
 
 update C:\dev\ws\kogi_dev\kogi-client\web_client_dev\kogi-ui\src\app\login and all related/connected files so that it matches/implements C:\dev\ws\kogi_dev\kogi-client\pages\login.html, using angular and tailwind
+
+read the uploaded documents and all previous documents and generate more detailed and expanded portfolio grid and portfolio pages for portfolio components, items and containers and data+metadata, connections, tags, labels, categories, types:   e.g. binders, records, dossiers, folders, archives, books, notes, memos, projects, programs, resources, artifacts, contacts, assets, connections, estates, real estate, investments, subportfolios, users, owners, investors, contributors, shares, likes, follows, watches, bookmarks, donors, schedules, timelines, roadmaps, timeblocks+durations,  solutions, land, labor, skills, knowledge, deals, funds, campaigns, offers, bids, requests, proposals, gigs, contracts, jobs, consultations, 
 
 ---
 
@@ -2057,6 +2062,10 @@ qala, ume, qala
   - metadata
   - configturation
 
+qala solution+components social/connections graphs+charts+roadmaps
+ume organization graphs
+kogi portfolio graphs
+
 ---
 
 
@@ -2092,3 +2101,14 @@ qala, ume, qala
               + organization management platform
               + organization is root domain+grid+element
 
+---
+
+read as much of all of the documents as possible and generate a rust implementation of the hypergrid and its HG modules (hypergraph, plugins, the other of the 15 or so modules etc...)
+
+---
+
+read the uploaded documents and all previous documents and generate more detailed and expanded portfolio grid and portfolio pages for portfolio components, items and containers and data+metadata, connections, tags, labels, categories, types:   e.g. binders, records, dossiers, folders, archives, books, notes, memos, projects, programs, resources, artifacts, contacts, assets, connections, estates, real estate, investments, subportfolios, users, owners, investors, contributors, shares, likes, follows, watches, bookmarks, donors, schedules, timelines, roadmaps, timeblocks+durations,  solutions, land, labor, skills, knowledge, deals, funds, campaigns, offers, bids, requests, proposals, gigs, contracts, jobs, consultations, subscriptions/subscribers, members, tasks, work packages, and so on... - all of these things accessible within the portfolio system, portfolio grid and detail pages and navigable from the portfolio pages
+
+READ as much of all of the uploaded documents and the html page as possible and create a series of navigable html pages for a UIUX system for the hypergrid+hypergraph+other HG modules+apapo, for using/editing/managing/controlling/administering/viewing these systems
+
+---

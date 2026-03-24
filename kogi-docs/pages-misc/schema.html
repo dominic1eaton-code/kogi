@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Schema Editor — Hypergrid</title>
+<link rel="stylesheet" href="shared.css">
+<style>
+.schema-layout { display: grid; grid-template-columns: 260px 1fr; height: calc(100vh - 48px); overflow: hidden; }
+.schema-nav { border-right: 0.5px solid var(--rule); overflow-y: auto; background: var(--paper-2); padding: 1rem; }
+.schema-main { overflow-y: auto; padding: 1.5rem 2rem; }
+
+.cube-nav-item {
+  padding: 6px 10px;
+  border-radius: 5px;
+  font-size: 12px;
+  cursor: pointer;
+  color: var(--ink-2);
+  transition: background 0.1s;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-mono);
+}
+.cube-nav-item:hover { background: var(--paper-3); }
+.cube-nav-item.active { background: var(--paper); border: 0.5px solid var(--rule); color: var(--accent); }
+.cube-nav-group { font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--ink-4); padding: 8px 10px 4px; font-weight: 600; }
+
+.attr-table-wrap { overflow-x: auto; }
+.attr-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+.attr-table th { background: var(--paper-2); border-bottom: 1px solid var(--rule); padding: 7px 12px; text-align: left; font-family: var(--font-mono); font-size: 9px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-4); white-space: nowrap; }
+.attr-table td { padding: 8px 12px; border-bottom: 0.5px solid var(--rule); vertical-align: middle; }
+.attr-table tr:last-child td { border-bottom: none; }
+.attr-table tr:hover td { background: var(--paper-2); }
+.attr-key { font-family: var(--font-mono); font-size: 12px; color: var(--accent); font-weight: 500; }
+.attr-key.system { color: var(--purple); }
+.attr-type-badge { display: inline-flex; align-items: center; gap: 3px; }
+
+.dim-block {
+  background: var(--paper-2);
+  border: 0.5px solid var(--rule);
+  border-radius: 8px;
+  padding: 1rem;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+.dim-n { font-family: var(--font-mono); font-size: 20px; font-weight: 500; color: var(--accent); min-width: 40px; }
+.dim-type-box { flex: 1; }
+.dim-type-name { font-weight: 600; font-size: 13px; color: var(--ink); }
+.dim-type-detail { font-size: 11px; color: var(--ink-3); margin-top: 2px; }
+.dim-actions { display: flex; gap: 6px; }
+
+.schema-version-row {
+  background: var(--paper-2);
+  border: 0.5px solid var(--rule);
+  border-radius: 6px;
+  padding: 8px 12px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 12px;
+  margin-bottom: 6px;
+}
+.sv-ver { font-family: var(--font-mono); font-weight: 500; color: var(--accent); }
+.sv-desc { flex: 1; color: var(--ink-2); }
+.sv-ts { font-family: var(--font-mono); font-size: 10px; color: var(--ink-4); }
+</style>
+</head>
+<body>
+<div id="sidebar" class="sidebar"></div>
+
+<div class="main">
+  <div class="topbar">
+    <div class="topbar-breadcrumb">
+      <a href="grids.html">Grids</a>
+      <span class="sep">›</span>
+      <a href="grids.html">kogi-production</a>
+      <span class="sep">›</span>
+      <span class="current">Schema Editor</span>
+    </div>
+    <div class="topbar-spacer"></div>
+    <div class="topbar-actions">
+      <span class="badge badge-gray text-mono">Schema v3</span>
+      <button class="btn btn-ghost btn-sm">Schema History</button>
+      <button class="btn btn-primary btn-sm" onclick="document.getElementById('addAttrModal').classList.add('open')">+ Register Attribute</button>
+    </div>
+  </div>
+
+  <div class="schema-layout">
+    <!-- Left nav: cube list -->
+    <div class="schema-nav">
+      <div class="cube-nav-group">Kogi Cubes</div>
+      <div class="cube-nav-item active" onclick="switchCube(this,'components')">⊞ kogi.portfolio.components</div>
+      <div class="cube-nav-item" onclick="switchCube(this,'kpis')">⊞ kogi.portfolio.kpis</div>
+      <div class="cube-nav-item" onclick="switchCube(this,'finances')">⊞ kogi.portfolio.finances</div>
+      <div class="cube-nav-item" onclick="switchCube(this,'benefits')">⊞ kogi.portfolio.benefits</div>
+      <div class="cube-nav-item" onclick="switchCube(this,'links')">⊞ kogi.portfolio.links</div>
+      <div class="cube-nav-group" style="margin-top:0.5rem">Ume Cubes</div>
+      <div class="cube-nav-item" onclick="switchCube(this,'ume-kernel')">⊞ ume.kernel.modules</div>
+      <div class="cube-nav-item" onclick="switchCube(this,'ume-chombo')">⊞ ume.chombo.entities</div>
+      <div class="cube-nav-item" onclick="switchCube(this,'ume-soko')">⊞ ume.soko.campaigns</div>
+      <div class="cube-nav-group" style="margin-top:0.5rem">Qala Cubes</div>
+      <div class="cube-nav-item" onclick="switchCube(this,'qala-solutions')">⊞ qala.solutions</div>
+      <div class="cube-nav-item" onclick="switchCube(this,'qala-ccrs')">⊞ qala.ccrs</div>
+    </div>
+
+    <!-- Main schema view -->
+    <div class="schema-main">
+      <div class="page-header" style="margin-bottom:1.5rem">
+        <div>
+          <div class="page-eyebrow" id="cubeEyebrow">Primary Hypercube · N=2 · Hybrid Encoding</div>
+          <h1 class="page-title" style="font-size:22px" id="cubeTitle">kogi.portfolio.components</h1>
+          <p class="page-sub" id="cubeSub">The root cube for all Kogi portfolio items and containers. 84.2M HyperRows · 48 attribute keys · Schema v3</p>
+        </div>
+        <div style="display:flex;gap:8px">
+          <a href="hypercube.html?cube=kogi.portfolio.components" class="btn btn-ghost btn-sm">Open Spreadsheet →</a>
+        </div>
+      </div>
+
+      <div class="tabs">
+        <button class="tab-btn active" onclick="showSchemaTab('attrs',this)">Attribute Keys (48)</button>
+        <button class="tab-btn" onclick="showSchemaTab('dims',this)">Dimension Axes (2)</button>
+        <button class="tab-btn" onclick="showSchemaTab('history',this)">Schema History</button>
+        <button class="tab-btn" onclick="showSchemaTab('governance',this)">Governance</button>
+      </div>
+
+      <!-- Attrs tab -->
+      <div id="st-attrs">
+        <div class="callout callout-info" style="margin-bottom:1rem">
+          <span class="callout-icon">INFO</span>
+          <div class="callout-text">Schema changes are <strong>additive and zero-downtime</strong>. Adding or renaming an attribute key is a SchemaEvent replicated to all federation peers. Removing a key requires tombstoning — existing values remain accessible via AS_OF queries.</div>
+        </div>
+
+        <div class="flex-between mb-3">
+          <div class="section-title">Attribute Keys — <span id="attrCount">48</span> registered</div>
+          <div class="flex-center gap-2">
+            <div class="search-bar" style="min-width:200px"><span class="search-icon">🔍</span><input type="text" placeholder="Filter keys…" oninput="filterAttrs(this.value)"></div>
+            <select style="font-size:12px;padding:4px 8px;border:0.5px solid var(--rule);border-radius:5px;background:var(--paper);color:var(--ink-2)">
+              <option>All types</option><option>AI</option><option>Formula</option><option>Text</option><option>Number</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="attr-table-wrap">
+          <table class="attr-table" id="attrTable">
+            <thead>
+              <tr>
+                <th>Key</th>
+                <th>Type</th>
+                <th>CRDT Semantics</th>
+                <th>Write Permission</th>
+                <th>Visibility</th>
+                <th>Computation</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="attrBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Dims tab -->
+      <div id="st-dims" style="display:none">
+        <div class="section-title mb-3">Dimension Axes — N=2</div>
+        <div class="callout callout-ok"><span class="callout-icon">+</span><div class="callout-text">Adding a dimension axis is a zero-downtime schema evolution. Existing cells gain the new dimension with null/default key. All federation peers receive and apply the AddDimension SchemaEvent automatically.</div></div>
+
+        <div class="dim-block">
+          <div class="dim-n">D₁</div>
+          <div class="dim-type-box">
+            <div class="dim-type-name">EntityAxis</div>
+            <div class="dim-type-detail">Key type: UUID · Unordered · Dense · Hash index</div>
+            <div style="margin-top:4px"><span class="badge badge-blue">Primary entity axis</span> <span class="badge badge-gray">84.2M keys</span></div>
+          </div>
+          <div class="dim-actions">
+            <button class="btn btn-ghost btn-sm">Edit</button>
+          </div>
+        </div>
+
+        <div class="dim-block">
+          <div class="dim-n">D₂</div>
+          <div class="dim-type-box">
+            <div class="dim-type-name">PropertyAxis</div>
+            <div class="dim-type-detail">Key type: String · Lexicographic · Sparse · GIN index</div>
+            <div style="margin-top:4px"><span class="badge badge-green">Property/field axis</span> <span class="badge badge-gray">48 registered keys</span></div>
+          </div>
+          <div class="dim-actions">
+            <button class="btn btn-ghost btn-sm">Edit</button>
+          </div>
+        </div>
+
+        <div style="margin-top:1.5rem">
+          <button class="btn btn-primary btn-sm" onclick="document.getElementById('addDimModal').classList.add('open')">+ Add D₃ Axis</button>
+          <span class="text-xs text-muted" style="margin-left:8px">Add a TimeAxis, CategoryAxis, or custom axis to extend this cube</span>
+        </div>
+      </div>
+
+      <!-- History tab -->
+      <div id="st-history" style="display:none">
+        <div class="section-title mb-3">Schema Change History</div>
+        <div class="schema-version-row">
+          <span class="sv-ver">v3</span>
+          <span class="badge badge-green">CURRENT</span>
+          <span class="sv-desc">Registered <code>attribution_weight</code> (Number, LWW) — cross-portfolio attribution tracking</span>
+          <span class="sv-ts">2026-03-22 14:26</span>
+        </div>
+        <div class="schema-version-row">
+          <span class="sv-ver">v2</span>
+          <span class="sv-desc">Renamed <code>budget_remaining_computed</code> → <code>budget_remaining</code> (alias created)</span>
+          <span class="sv-ts">2026-03-10 09:14</span>
+        </div>
+        <div class="schema-version-row">
+          <span class="sv-ver">v2</span>
+          <span class="sv-desc">Registered <code>coverage_gap_flags</code> (Json, AI, kogi-engine) — benefits gap detection</span>
+          <span class="sv-ts">2026-03-10 09:10</span>
+        </div>
+        <div class="schema-version-row">
+          <span class="sv-ver">v1</span>
+          <span class="sv-desc">Initial bootstrap — 44 core attribute keys registered</span>
+          <span class="sv-ts">2026-01-15 09:00</span>
+        </div>
+      </div>
+
+      <!-- Governance tab -->
+      <div id="st-governance" style="display:none">
+        <div class="section-title mb-3">Cube Governance</div>
+        <div class="card mb-3">
+          <div class="card-header"><div class="card-title">Vote Requirements</div></div>
+          <div class="card-body">
+            <div class="flex-between mb-2">
+              <div>Remove attribute key</div>
+              <div class="flex-center gap-2"><span class="badge badge-amber">Vote Required</span><button class="btn btn-ghost btn-sm">Configure</button></div>
+            </div>
+            <div class="flex-between mb-2">
+              <div>Change visibility</div>
+              <div class="flex-center gap-2"><span class="badge badge-amber">Vote Required</span><button class="btn btn-ghost btn-sm">Configure</button></div>
+            </div>
+            <div class="flex-between mb-2">
+              <div>Add dimension axis</div>
+              <div class="flex-center gap-2"><span class="badge badge-green">No vote needed</span><button class="btn btn-ghost btn-sm">Configure</button></div>
+            </div>
+            <div class="flex-between">
+              <div>Register attribute key</div>
+              <div class="flex-center gap-2"><span class="badge badge-green">No vote needed</span><button class="btn btn-ghost btn-sm">Configure</button></div>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header"><div class="card-title">Attached Policy IDs</div></div>
+          <div class="card-body">
+            <div class="flex-between mb-2"><code>policy:budget-cap</code><span class="badge badge-green">Active</span></div>
+            <div class="flex-between"><code>policy:lifecycle-approval</code><span class="badge badge-green">Active</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Add Attr Modal -->
+<div class="modal-overlay" id="addAttrModal">
+  <div class="modal" style="max-width:600px">
+    <div class="modal-header">
+      <span class="modal-title">Register Attribute Key</span>
+      <button class="modal-close" onclick="document.getElementById('addAttrModal').classList.remove('open')">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="callout callout-info"><span class="callout-icon">0-DT</span><div class="callout-text">Registering a key is zero-downtime and idempotent. Existing cells return <code>default_value</code> for the new key. All federation peers receive the SchemaEvent automatically.</div></div>
+      <div class="field-row">
+        <div class="field"><label>Key Name</label><input type="text" placeholder="e.g. sprint_points"><div class="hint">Snake_case, unique within this cube</div></div>
+        <div class="field"><label>Display Name</label><input type="text" placeholder="e.g. Sprint Points"></div>
+      </div>
+      <div class="field-row">
+        <div class="field"><label>Attribute Type</label>
+          <select id="attrTypeSelect" onchange="updateAttrUI()">
+            <option>Text</option><option>Number</option><option>Currency</option><option>Bool</option>
+            <option>Date</option><option>DateTime</option><option>Enum</option>
+            <option>Json</option><option>AI</option><option>Computed (Formula)</option>
+          </select>
+        </div>
+        <div class="field"><label>CRDT Semantics</label>
+          <select id="crdtSelect">
+            <option>LastWriteWins</option><option>OR-Set</option><option>PNCounter</option>
+            <option>GrowOnlyCounter</option><option>MaxRegister</option><option>Lattice</option>
+            <option>AppendOnlyLog</option><option>JsonCrdt</option>
+          </select>
+        </div>
+      </div>
+      <div class="field-row">
+        <div class="field"><label>Write Permission</label>
+          <select>
+            <option value="2">Member (2)</option>
+            <option value="3">Contributor (3)</option>
+            <option value="4" selected>Editor (4)</option>
+            <option value="5">Manager (5)</option>
+            <option value="6">Owner (6)</option>
+            <option value="7">Admin (7)</option>
+            <option value="8">System (8)</option>
+          </select>
+        </div>
+        <div class="field"><label>Visibility</label>
+          <select><option>Public</option><option selected>Tenant</option><option>Identity</option><option>Owner</option></select>
+        </div>
+      </div>
+      <div class="field"><label>Default Value</label><input type="text" placeholder="null"></div>
+      <div id="aiEngineSection" style="display:none">
+        <div class="field"><label>AI Engine ID</label><input type="text" placeholder="e.g. kogi.health_score_engine.v2"></div>
+        <div class="field"><label>Input Attributes (comma-separated)</label><input type="text" placeholder="status, budget_spent, risks"></div>
+        <div class="field"><label>Staleness TTL (seconds)</label><input type="number" value="3600"></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="document.getElementById('addAttrModal').classList.remove('open')">Cancel</button>
+      <button class="btn btn-primary">Register Key</button>
+    </div>
+  </div>
+</div>
+
+<!-- Add Dim Modal -->
+<div class="modal-overlay" id="addDimModal">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title">Add Dimension Axis (N+1)</span>
+      <button class="modal-close" onclick="document.getElementById('addDimModal').classList.remove('open')">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="callout callout-warn"><span class="callout-icon">⚠</span><div class="callout-text">Adding D₃ expands this cube from N=2 to N=3. All existing cells gain the new axis with null key. This is a SchemaEvent replicated to all federation peers. <strong>Never exceed N=6 for user-facing views.</strong></div></div>
+      <div class="field-row">
+        <div class="field"><label>Axis Name</label><input type="text" placeholder="e.g. time_period"></div>
+        <div class="field"><label>Axis Type</label>
+          <select><option>TimeAxis</option><option>CategoryAxis</option><option>GeoAxis</option><option>TenantAxis</option><option>ScenarioAxis</option></select>
+        </div>
+      </div>
+      <div class="field-row">
+        <div class="field"><label>Key Type</label><select><option>Timestamp</option><option>String</option><option>UUID</option></select></div>
+        <div class="field"><label>Cardinality</label><select><option>Sparse</option><option>Dense</option></select></div>
+      </div>
+      <div class="field"><label>Index Strategy</label>
+        <div class="pill-row">
+          <span class="pill-opt sel">BRIN (TimeAxis)</span>
+          <span class="pill-opt">BTree</span>
+          <span class="pill-opt">GIN</span>
+          <span class="pill-opt">Hash</span>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="document.getElementById('addDimModal').classList.remove('open')">Cancel</button>
+      <button class="btn btn-primary">Add Axis</button>
+    </div>
+  </div>
+</div>
+
+<script src="shared-nav.js"></script>
+<script>
+buildSidebar('schema');
+
+const attrs = [
+  { key:'component_id', type:'UUID', crdt:'LWW (System)', perm:'System', vis:'Tenant', comp:'' },
+  { key:'name', type:'Text', crdt:'LWW', perm:'Editor', vis:'Tenant', comp:'' },
+  { key:'description', type:'Text', crdt:'LWW', perm:'Editor', vis:'Tenant', comp:'' },
+  { key:'status', type:'Enum', crdt:'Lattice', perm:'Editor', vis:'Tenant', comp:'Lattice: Draft→Active→Paused→Completed→Archived' },
+  { key:'item_type', type:'Enum', crdt:'LWW', perm:'Editor', vis:'Tenant', comp:'' },
+  { key:'visibility', type:'Enum', crdt:'LWW', perm:'Owner', vis:'Owner', comp:'' },
+  { key:'owners', type:'Json', crdt:'OR-Set', perm:'Owner', vis:'Tenant', comp:'Concurrent adds survive' },
+  { key:'tags', type:'Json', crdt:'OR-Set', perm:'Contributor', vis:'Public', comp:'Concurrent adds survive' },
+  { key:'budget', type:'Currency', crdt:'LWW', perm:'Manager', vis:'Tenant', comp:'' },
+  { key:'budget_spent', type:'Number', crdt:'PNCounter', perm:'Editor', vis:'Tenant', comp:'Concurrent increments commute' },
+  { key:'budget_remaining', type:'Number', crdt:'Formula', perm:'System', vis:'Tenant', comp:'budget − budget_spent' },
+  { key:'version', type:'Text', crdt:'MaxRegister', perm:'Editor', vis:'Tenant', comp:'Always highest value' },
+  { key:'children', type:'Json', crdt:'OR-Set', perm:'Manager', vis:'Tenant', comp:'DAG child IDs' },
+  { key:'dependencies', type:'Json', crdt:'OR-Set', perm:'Editor', vis:'Tenant', comp:'Dependency edge IDs' },
+  { key:'health_score', type:'Number (AI)', crdt:'System LWW', perm:'System', vis:'Tenant', comp:'kogi-engine · KogiHealthScoreEngine' },
+  { key:'risk_score', type:'Number (AI)', crdt:'System LWW', perm:'System', vis:'Tenant', comp:'kogi-engine · KogiRiskEngine' },
+  { key:'alignment_score', type:'Number (AI)', crdt:'System LWW', perm:'System', vis:'Tenant', comp:'kogi-engine · KogiAlignmentEngine' },
+  { key:'anomaly_flag', type:'Json (AI)', crdt:'System LWW', perm:'System', vis:'Tenant', comp:'kogi-engine · KogiAnomalyEngine' },
+  { key:'narrative_summary', type:'Text (AI)', crdt:'System LWW', perm:'System', vis:'Tenant', comp:'kogi-engine · KogiNarrativeEngine' },
+  { key:'income_projection_90d', type:'Currency (AI)', crdt:'System LWW', perm:'System', vis:'Owner', comp:'kogi-engine · KogiIncomeProjectionEngine' },
+  { key:'coverage_gap_flags', type:'Json (AI)', crdt:'System LWW', perm:'System', vis:'Owner', comp:'kogi-engine · KogiCoverageGapEngine' },
+  { key:'namespace_path', type:'Text', crdt:'LWW', perm:'System', vis:'Tenant', comp:'' },
+  { key:'created_at', type:'DateTime', crdt:'LWW', perm:'System', vis:'Tenant', comp:'' },
+  { key:'updated_at', type:'DateTime', crdt:'LWW', perm:'System', vis:'Tenant', comp:'' },
+  { key:'last_actor', type:'Text', crdt:'LWW', perm:'System', vis:'Tenant', comp:'' },
+  { key:'vector_clock', type:'Json', crdt:'LWW', perm:'System', vis:'Tenant', comp:'' },
+  { key:'policy_ids', type:'Json', crdt:'LWW', perm:'Admin', vis:'Owner', comp:'' },
+  { key:'attribution_weight', type:'Number', crdt:'LWW', perm:'Editor', vis:'Tenant', comp:'NEW in schema v3' },
+];
+
+const crdtClass = (c) => {
+  if (c.includes('OR-Set')) return 'crdt-orset';
+  if (c.includes('PNCounter')) return 'crdt-pncounter';
+  if (c.includes('MaxRegister')) return 'crdt-max';
+  if (c.includes('Lattice')) return 'crdt-lattice';
+  if (c.includes('System')) return 'crdt-system';
+  if (c.includes('Formula')) return 'crdt-grow';
+  if (c.includes('GrowOnly')) return 'crdt-grow';
+  if (c.includes('AppendLog')) return 'crdt-append';
+  return 'crdt-lww';
+};
+const permBadge = (p) => {
+  if (p === 'System') return 'badge-dark';
+  if (p === 'Admin') return 'badge-red';
+  if (p === 'Owner') return 'badge-amber';
+  if (p === 'Manager') return 'badge-purple';
+  if (p === 'Editor') return 'badge-blue';
+  return 'badge-gray';
+};
+
+function renderAttrs(list) {
+  document.getElementById('attrBody').innerHTML = list.map(a => {
+    const isAI = a.type.includes('AI');
+    const isSys = a.perm === 'System';
+    return `<tr>
+      <td><span class="attr-key ${isSys?'system':''}">${a.key}</span>${a.comp&&a.comp.includes('NEW')?'<span class="badge badge-teal" style="margin-left:4px;font-size:8px">NEW</span>':''}</td>
+      <td><span class="badge ${isAI?'badge-purple':a.type==='Json'?'badge-gray':a.type.includes('Number')||a.type.includes('Currency')?'badge-teal':'badge-gray'}">${a.type}</span></td>
+      <td><span class="badge ${crdtClass(a.crdt)}">${a.crdt}</span></td>
+      <td><span class="badge ${permBadge(a.perm)}">${a.perm}</span></td>
+      <td><span class="badge badge-gray" style="font-size:9px">${a.vis}</span></td>
+      <td class="text-muted" style="font-size:11px;max-width:200px">${a.comp||'—'}</td>
+      <td>
+        ${!isSys ? `<button class="btn btn-ghost btn-sm" style="padding:2px 7px;font-size:10px" onclick="editAttr('${a.key}')">Edit</button>` : ''}
+        ${!isSys ? `<button class="btn btn-danger btn-sm" style="padding:2px 7px;font-size:10px;margin-left:3px">Tombstone</button>` : ''}
+      </td>
+    </tr>`;
+  }).join('');
+  document.getElementById('attrCount').textContent = list.length;
+}
+
+function filterAttrs(v) {
+  const filtered = v ? attrs.filter(a => a.key.includes(v.toLowerCase()) || a.type.toLowerCase().includes(v.toLowerCase())) : attrs;
+  renderAttrs(filtered);
+}
+
+function showSchemaTab(name, btn) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  ['attrs','dims','history','governance'].forEach(t => {
+    const el = document.getElementById(`st-${t}`);
+    if (el) el.style.display = t === name ? '' : 'none';
+  });
+}
+
+function switchCube(el, id) {
+  document.querySelectorAll('.cube-nav-item').forEach(e => e.classList.remove('active'));
+  el.classList.add('active');
+}
+
+function updateAttrUI() {
+  const v = document.getElementById('attrTypeSelect').value;
+  document.getElementById('aiEngineSection').style.display = v === 'AI' ? '' : 'none';
+  if (v === 'AI') {
+    document.getElementById('crdtSelect').value = 'LastWriteWins';
+  }
+}
+
+function editAttr(key) {
+  alert(`Edit attribute: ${key}`);
+}
+
+renderAttrs(attrs);
+</script>
+</body>
+</html>

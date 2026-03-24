@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>UME OrgOS — Network Graph</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#070010;--surface:#0f0820;--surface-2:#150b2c;--surface-3:#1b1038;
+  --border:rgba(255,255,255,.065);--border-mid:rgba(255,255,255,.10);
+  --text:#ede6ff;--text-soft:rgba(215,205,255,.7);--text-muted:rgba(190,175,240,.4);
+  --purple:#6a2fff;--purple-mid:#2d0072;
+  --cherry:#ff2a55;--teal:#00e5d8;--amber:#f5b942;--blue:#38b4ff;
+  --emerald:#34e8a0;--coral:#ff6b4a;--orchid:#d855ff;--rose:#ff4c8b;
+  --sidebar-w:210px;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html,body{height:100%;font-family:"Space Grotesk",sans-serif;background:var(--bg);overflow:hidden;color:var(--text);}
+body{display:flex;}
+.sidebar{width:var(--sidebar-w);height:100vh;background:#0a0018;display:flex;flex-direction:column;flex-shrink:0;border-right:1px solid rgba(255,255,255,.05);}
+.sidebar-logo{display:flex;align-items:center;gap:9px;padding:16px 16px 14px;border-bottom:1px solid rgba(255,255,255,.06);}
+.s-icon{width:30px;height:30px;border-radius:8px;background:var(--purple-mid);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:15px;color:#fff;box-shadow:0 0 14px 2px rgba(106,47,255,.5);}
+.s-logo-text{font-weight:700;font-size:15px;color:#fff;}
+.s-logo-text span{color:var(--cherry);}
+.org-selector{margin:10px 10px 4px;padding:8px 10px;border-radius:8px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.07);cursor:pointer;display:flex;align-items:center;gap:8px;}
+.org-dot{width:7px;height:7px;border-radius:50%;background:var(--teal);box-shadow:0 0 6px rgba(0,229,216,.65);}
+.org-name{font-size:12px;font-weight:600;color:rgba(220,210,255,.8);flex:1;}
+.nav-section{padding:0 8px;margin-bottom:2px;}
+.nav-label{font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:rgba(200,190,255,.18);padding:10px 8px 4px;}
+.nav-item{display:flex;align-items:center;gap:9px;padding:7px 10px;border-radius:7px;cursor:pointer;transition:.15s;text-decoration:none;margin-bottom:1px;}
+.nav-item:hover{background:rgba(255,255,255,.06);}
+.nav-icon{font-size:14px;width:20px;text-align:center;}
+.nav-text{font-size:12.5px;font-weight:500;color:rgba(210,200,255,.38);flex:1;}
+.nav-item.active{background:linear-gradient(90deg,rgba(106,47,255,.5),rgba(255,42,85,.22));border:1px solid rgba(255,42,85,.15);}
+.nav-item.active .nav-text{color:#fff;font-weight:600;}
+.sidebar-footer{margin-top:auto;padding:10px;border-top:1px solid rgba(255,255,255,.05);}
+.user-avatar{width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,var(--purple-mid),var(--cherry));display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff;}
+.user-row{display:flex;align-items:center;gap:9px;cursor:pointer;padding:8px;border-radius:8px;}
+.user-name{font-size:12px;font-weight:600;color:rgba(220,210,255,.8);}
+.user-role{font-size:10px;color:rgba(200,190,255,.3);}
+.main{flex:1;display:flex;flex-direction:column;height:100vh;overflow:hidden;}
+.topbar{height:52px;background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 24px;gap:12px;flex-shrink:0;}
+.page-title{font-size:15px;font-weight:700;}
+.breadcrumb{font-size:11px;color:var(--text-muted);}
+.topbar-right{margin-left:auto;display:flex;align-items:center;gap:10px;}
+.tb-btn{padding:6px 13px;border:1px solid var(--border-mid);border-radius:7px;font-size:12px;font-weight:600;color:var(--text-soft);background:var(--surface-2);cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:5px;transition:.15s;}
+.tb-btn:hover{border-color:rgba(106,47,255,.5);color:var(--text);}
+.tb-btn.primary{background:linear-gradient(135deg,var(--purple),var(--cherry));color:#fff;border:none;}
+.live-pill{background:rgba(52,232,160,.15);border:1px solid rgba(52,232,160,.3);color:var(--emerald);border-radius:20px;font-size:11px;font-weight:700;padding:3px 10px;}
+.subnav{height:44px;background:var(--surface-2);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 24px;gap:4px;flex-shrink:0;overflow-x:auto;}
+.subnav::-webkit-scrollbar{height:0;}
+.snav-item{padding:6px 14px;border-radius:6px;font-size:12px;font-weight:600;color:rgba(210,200,255,.4);cursor:pointer;transition:.15s;text-decoration:none;white-space:nowrap;border:1px solid transparent;}
+.snav-item:hover{color:var(--text-soft);background:rgba(255,255,255,.04);}
+.snav-item.active{color:var(--text);background:rgba(106,47,255,.22);border-color:rgba(106,47,255,.35);}
+
+/* GRAPH LAYOUT */
+.graph-area{flex:1;display:flex;overflow:hidden;}
+.graph-canvas{flex:1;position:relative;background:radial-gradient(ellipse at center,rgba(106,47,255,.06) 0%,transparent 70%);}
+#graph-svg{width:100%;height:100%;}
+
+/* SIDEBAR PANEL */
+.graph-panel{width:260px;background:var(--surface);border-left:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden;}
+.panel-tabs{display:flex;border-bottom:1px solid var(--border);}
+.panel-tab{flex:1;padding:10px;font-size:11.5px;font-weight:600;color:var(--text-muted);cursor:pointer;text-align:center;transition:.15s;border-bottom:2px solid transparent;}
+.panel-tab.active{color:var(--text);border-bottom-color:var(--purple);}
+.panel-content{flex:1;overflow-y:auto;padding:14px;}
+.panel-content::-webkit-scrollbar{width:4px;}
+.panel-content::-webkit-scrollbar-thumb{background:rgba(106,47,255,.3);border-radius:2px;}
+
+/* NODE DETAIL */
+.node-detail{background:var(--surface-2);border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:12px;}
+.nd-header{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
+.nd-icon{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;}
+.nd-name{font-size:13px;font-weight:700;color:var(--text);}
+.nd-type{font-size:10.5px;color:var(--text-muted);}
+.nd-stat{display:flex;justify-content:space-between;font-size:11.5px;padding:5px 0;border-bottom:1px solid var(--border);}
+.nd-stat:last-child{border-bottom:none;}
+
+/* FILTER CHIPS */
+.filter-bar{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px;}
+.filter-chip{padding:4px 10px;border-radius:20px;font-size:11px;font-weight:700;border:1px solid;cursor:pointer;transition:.15s;}
+.filter-chip.on{opacity:1;}
+.filter-chip.off{opacity:.35;}
+
+/* LEGEND */
+.legend{display:flex;flex-direction:column;gap:7px;}
+.legend-item{display:flex;align-items:center;gap:9px;font-size:11.5px;color:var(--text-soft);}
+.legend-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;}
+
+/* TOOLBAR */
+.graph-toolbar{position:absolute;top:14px;left:14px;display:flex;flex-direction:column;gap:6px;z-index:10;}
+.gt-btn{width:34px;height:34px;border-radius:8px;background:rgba(15,8,32,.85);border:1px solid rgba(255,255,255,.1);color:var(--text-soft);font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:.15s;backdrop-filter:blur(4px);}
+.gt-btn:hover{border-color:rgba(106,47,255,.5);color:var(--text);}
+
+/* SEARCH */
+.graph-search{position:absolute;top:14px;left:60px;z-index:10;}
+.graph-search input{background:rgba(15,8,32,.85);border:1px solid rgba(255,255,255,.1);color:var(--text);font-size:12px;font-family:inherit;padding:7px 12px;border-radius:8px;width:200px;outline:none;backdrop-filter:blur(4px);}
+.graph-search input::placeholder{color:var(--text-muted);}
+.graph-search input:focus{border-color:rgba(106,47,255,.5);}
+
+/* STATS BAR */
+.stats-bar{position:absolute;bottom:14px;left:14px;display:flex;gap:14px;background:rgba(15,8,32,.85);border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:8px 16px;backdrop-filter:blur(6px);}
+.stat-item{text-align:center;}
+.stat-val{font-size:16px;font-weight:700;color:var(--text);}
+.stat-lbl{font-size:10px;color:var(--text-muted);}
+</style>
+</head>
+<body>
+
+<nav class="sidebar">
+  <div class="sidebar-logo">
+    <div class="s-icon">U</div>
+    <div class="s-logo-text">UME <span>OS</span></div>
+  </div>
+  <div class="org-selector">
+    <div class="org-dot"></div>
+    <div class="org-name">Acme Corp</div>
+    <span style="color:rgba(200,190,255,.3);font-size:10px;">▾</span>
+  </div>
+  <div style="flex:1;overflow-y:auto;padding-top:6px;">
+    <div class="nav-section">
+      <div class="nav-label">Core</div>
+      <a href="../dashboard.html" class="nav-item"><span class="nav-icon">⬡</span><span class="nav-text">Dashboard</span></a>
+      <a href="digital-twin.html" class="nav-item active"><span class="nav-icon">🧬</span><span class="nav-text">Digital Twin</span></a>
+    </div>
+    <div class="nav-section">
+      <div class="nav-label">Operations</div>
+      <a href="#" class="nav-item"><span class="nav-icon">💰</span><span class="nav-text">Finance</span></a>
+      <a href="#" class="nav-item"><span class="nav-icon">🚚</span><span class="nav-text">Supply Chain</span></a>
+      <a href="#" class="nav-item"><span class="nav-icon">📦</span><span class="nav-text">Sales & CRM</span></a>
+    </div>
+    <div class="nav-section">
+      <div class="nav-label">Governance</div>
+      <a href="#" class="nav-item"><span class="nav-icon">🔐</span><span class="nav-text">DAO / DLT</span></a>
+    </div>
+  </div>
+  <div class="sidebar-footer">
+    <div class="user-row">
+      <div class="user-avatar">JS</div>
+      <div><div class="user-name">J. Smith</div><div class="user-role">OrgExec · Admin</div></div>
+    </div>
+  </div>
+</nav>
+
+<div class="main">
+  <div class="topbar">
+    <div>
+      <div class="page-title">🕸️ Network Graph</div>
+      <div class="breadcrumb">Digital Twin · Supply Chain · Vendors · Entities · Resources</div>
+    </div>
+    <div class="topbar-right">
+      <div class="live-pill">● Live</div>
+      <button class="tb-btn">⤓ Export</button>
+      <button class="tb-btn primary">+ Add Node</button>
+    </div>
+  </div>
+  <div class="subnav">
+    <a href="digital-twin.html" class="snav-item">⬡ Overview</a>
+    <a href="org-system.html" class="snav-item">🏛 OrgSystem</a>
+    <a href="org-dna.html" class="snav-item">🧬 OrgDNA</a>
+    <a href="network-graph.html" class="snav-item active">🕸 Network Graph</a>
+    <a href="org-chart.html" class="snav-item">🌲 Org Chart</a>
+    <a href="business-model.html" class="snav-item">📐 Business Model</a>
+    <a href="value-proposition.html" class="snav-item">💎 Value Proposition</a>
+    <a href="data-master.html" class="snav-item">🗄 Data Master</a>
+  </div>
+
+  <div class="graph-area">
+    <div class="graph-canvas">
+      <!-- Toolbar -->
+      <div class="graph-toolbar">
+        <button class="gt-btn" id="btn-zoom-in" title="Zoom In">+</button>
+        <button class="gt-btn" id="btn-zoom-out" title="Zoom Out">−</button>
+        <button class="gt-btn" id="btn-reset" title="Reset View">⊙</button>
+        <button class="gt-btn" id="btn-layout" title="Re-layout">⟳</button>
+      </div>
+      <div class="graph-search"><input type="text" placeholder="🔍 Search nodes..." id="search-input"></div>
+
+      <canvas id="graph-canvas" style="width:100%;height:100%;display:block;"></canvas>
+
+      <div class="stats-bar">
+        <div class="stat-item"><div class="stat-val" id="stat-nodes">0</div><div class="stat-lbl">Nodes</div></div>
+        <div class="stat-item"><div class="stat-val" id="stat-edges">0</div><div class="stat-lbl">Edges</div></div>
+        <div class="stat-item"><div class="stat-val" id="stat-clusters">6</div><div class="stat-lbl">Clusters</div></div>
+        <div class="stat-item"><div class="stat-val" style="color:var(--emerald);" id="stat-active">0</div><div class="stat-lbl">Active</div></div>
+      </div>
+    </div>
+
+    <!-- Side Panel -->
+    <div class="graph-panel">
+      <div class="panel-tabs">
+        <div class="panel-tab active" id="tab-filter" onclick="switchTab('filter')">Filters</div>
+        <div class="panel-tab" id="tab-detail" onclick="switchTab('detail')">Detail</div>
+        <div class="panel-tab" id="tab-legend" onclick="switchTab('legend')">Legend</div>
+      </div>
+      <div class="panel-content" id="panel-filter">
+        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text-muted);margin-bottom:8px;">Node Types</div>
+        <div class="filter-bar">
+          <div class="filter-chip on" style="background:rgba(106,47,255,.15);border-color:rgba(106,47,255,.4);color:#a07fff;" onclick="toggleFilter(this,'org')">🏛 Org</div>
+          <div class="filter-chip on" style="background:rgba(255,107,74,.12);border-color:rgba(255,107,74,.35);color:var(--coral);" onclick="toggleFilter(this,'vendor')">🏪 Vendor</div>
+          <div class="filter-chip on" style="background:rgba(52,232,160,.1);border-color:rgba(52,232,160,.3);color:var(--emerald);" onclick="toggleFilter(this,'supplychain')">🚚 Supply</div>
+          <div class="filter-chip on" style="background:rgba(56,180,255,.1);border-color:rgba(56,180,255,.3);color:var(--blue);" onclick="toggleFilter(this,'dist')">📤 Distrib</div>
+          <div class="filter-chip on" style="background:rgba(245,185,66,.1);border-color:rgba(245,185,66,.3);color:var(--amber);" onclick="toggleFilter(this,'resource')">💎 Resource</div>
+          <div class="filter-chip on" style="background:rgba(216,85,255,.1);border-color:rgba(216,85,255,.3);color:var(--orchid);" onclick="toggleFilter(this,'partner')">🤝 Partner</div>
+          <div class="filter-chip on" style="background:rgba(255,42,85,.1);border-color:rgba(255,42,85,.3);color:var(--cherry);" onclick="toggleFilter(this,'3rdparty')">🔗 3rd Party</div>
+          <div class="filter-chip on" style="background:rgba(0,229,216,.1);border-color:rgba(0,229,216,.3);color:var(--teal);" onclick="toggleFilter(this,'dao')">⛓ DAO</div>
+        </div>
+
+        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text-muted);margin-bottom:8px;margin-top:12px;">Edge Types</div>
+        <div class="filter-bar">
+          <div class="filter-chip on" style="background:rgba(52,232,160,.08);border-color:rgba(52,232,160,.25);color:var(--emerald);" onclick="toggleFilter(this,'edge-supply')">Supply Flow</div>
+          <div class="filter-chip on" style="background:rgba(56,180,255,.08);border-color:rgba(56,180,255,.25);color:var(--blue);" onclick="toggleFilter(this,'edge-contract')">Contract</div>
+          <div class="filter-chip on" style="background:rgba(245,185,66,.08);border-color:rgba(245,185,66,.25);color:var(--amber);" onclick="toggleFilter(this,'edge-data')">Data Flow</div>
+          <div class="filter-chip on" style="background:rgba(106,47,255,.1);border-color:rgba(106,47,255,.3);color:#a07fff;" onclick="toggleFilter(this,'edge-dao')">DAO Link</div>
+        </div>
+
+        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text-muted);margin-bottom:8px;margin-top:12px;">Layout</div>
+        <div style="display:flex;flex-direction:column;gap:6px;">
+          <button class="tb-btn" style="width:100%;justify-content:center;font-size:11px;" onclick="setLayout('force')">⚡ Force Directed</button>
+          <button class="tb-btn" style="width:100%;justify-content:center;font-size:11px;" onclick="setLayout('radial')">⊙ Radial</button>
+          <button class="tb-btn" style="width:100%;justify-content:center;font-size:11px;" onclick="setLayout('cluster')">⬡ Cluster</button>
+        </div>
+      </div>
+
+      <div class="panel-content" id="panel-detail" style="display:none;">
+        <div id="node-detail-area" style="color:var(--text-muted);font-size:12px;text-align:center;padding:40px 0;">
+          Click a node to see details
+        </div>
+      </div>
+
+      <div class="panel-content" id="panel-legend" style="display:none;">
+        <div class="legend">
+          <div class="legend-item"><div class="legend-dot" style="background:#6a2fff;box-shadow:0 0 8px rgba(106,47,255,.7);"></div>Organisation (You)</div>
+          <div class="legend-item"><div class="legend-dot" style="background:var(--coral);"></div>Vendor / Supplier</div>
+          <div class="legend-item"><div class="legend-dot" style="background:var(--emerald);"></div>Supply Chain Node</div>
+          <div class="legend-item"><div class="legend-dot" style="background:var(--blue);"></div>Distributor</div>
+          <div class="legend-item"><div class="legend-dot" style="background:var(--amber);"></div>Resource / Asset</div>
+          <div class="legend-item"><div class="legend-dot" style="background:var(--orchid);"></div>Partner Org</div>
+          <div class="legend-item"><div class="legend-dot" style="background:var(--cherry);"></div>3rd Party</div>
+          <div class="legend-item"><div class="legend-dot" style="background:var(--teal);"></div>DAO Member</div>
+        </div>
+        <div style="margin-top:16px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text-muted);margin-bottom:8px;">Edge Colors</div>
+        <div class="legend">
+          <div class="legend-item"><div style="width:24px;height:3px;background:var(--emerald);border-radius:2px;"></div>Supply Flow</div>
+          <div class="legend-item"><div style="width:24px;height:3px;background:var(--blue);border-radius:2px;"></div>Contract</div>
+          <div class="legend-item"><div style="width:24px;height:3px;background:var(--amber);border-radius:2px;opacity:.6;"></div>Data Flow</div>
+          <div class="legend-item"><div style="width:24px;height:2px;background:var(--purple);border-radius:2px;border-top:1px dashed var(--purple);"></div>DAO Link</div>
+        </div>
+        <div style="margin-top:16px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text-muted);margin-bottom:8px;">Node Size</div>
+        <div style="font-size:11.5px;color:var(--text-soft);line-height:1.6;">Node size = connection degree. Larger nodes have more relationships. Core org is always largest.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ─── DATA ───────────────────────────────────────────────────────────────────
+const NODE_TYPES={
+  org:{color:'#6a2fff',glow:'rgba(106,47,255,.8)',label:'Org',size:22},
+  vendor:{color:'#ff6b4a',glow:'rgba(255,107,74,.6)',label:'Vendor',size:14},
+  supplychain:{color:'#34e8a0',glow:'rgba(52,232,160,.6)',label:'Supply',size:13},
+  dist:{color:'#38b4ff',glow:'rgba(56,180,255,.6)',label:'Distrib',size:13},
+  resource:{color:'#f5b942',glow:'rgba(245,185,66,.6)',label:'Resource',size:11},
+  partner:{color:'#d855ff',glow:'rgba(216,85,255,.6)',label:'Partner',size:15},
+  '3rdparty':{color:'#ff2a55',glow:'rgba(255,42,85,.5)',label:'3rd Party',size:11},
+  dao:{color:'#00e5d8',glow:'rgba(0,229,216,.7)',label:'DAO',size:18},
+};
+
+const rawNodes=[
+  {id:'acme',name:'Acme Corp',type:'org',x:0,y:0},
+  // DAO members
+  {id:'dao1',name:'Beta Corp DAO',type:'dao',x:0,y:0},
+  {id:'dao2',name:'Gamma Inc DAO',type:'dao',x:0,y:0},
+  {id:'dao3',name:'Delta LLC DAO',type:'dao',x:0,y:0},
+  // Vendors
+  {id:'v1',name:'TechParts Ltd',type:'vendor',x:0,y:0},
+  {id:'v2',name:'RawMaterial Co',type:'vendor',x:0,y:0},
+  {id:'v3',name:'CloudHost Pro',type:'vendor',x:0,y:0},
+  {id:'v4',name:'PackagingSup',type:'vendor',x:0,y:0},
+  {id:'v5',name:'LogiTrans Co',type:'vendor',x:0,y:0},
+  {id:'v6',name:'LabEquip Inc',type:'vendor',x:0,y:0},
+  {id:'v7',name:'PrintMedia Ltd',type:'vendor',x:0,y:0},
+  {id:'v8',name:'FoodGrade Pkg',type:'vendor',x:0,y:0},
+  // Supply Chain
+  {id:'sc1',name:'Warehouse A',type:'supplychain',x:0,y:0},
+  {id:'sc2',name:'Warehouse B',type:'supplychain',x:0,y:0},
+  {id:'sc3',name:'Mfg Line 1',type:'supplychain',x:0,y:0},
+  {id:'sc4',name:'Mfg Line 2',type:'supplychain',x:0,y:0},
+  {id:'sc5',name:'QA Station',type:'supplychain',x:0,y:0},
+  {id:'sc6',name:'Cross-Dock Hub',type:'supplychain',x:0,y:0},
+  {id:'sc7',name:'Cold Storage',type:'supplychain',x:0,y:0},
+  // Distributors
+  {id:'d1',name:'FastFreight',type:'dist',x:0,y:0},
+  {id:'d2',name:'RegionalDist',type:'dist',x:0,y:0},
+  {id:'d3',name:'LastMile Co',type:'dist',x:0,y:0},
+  {id:'d4',name:'AirCargo Svc',type:'dist',x:0,y:0},
+  // 3rd Parties
+  {id:'tp1',name:'Stripe',type:'3rdparty',x:0,y:0},
+  {id:'tp2',name:'Salesforce',type:'3rdparty',x:0,y:0},
+  {id:'tp3',name:'AWS',type:'3rdparty',x:0,y:0},
+  {id:'tp4',name:'DocuSign',type:'3rdparty',x:0,y:0},
+  {id:'tp5',name:'Shopify',type:'3rdparty',x:0,y:0},
+  // Partners
+  {id:'p1',name:'Acme EU',type:'partner',x:0,y:0},
+  {id:'p2',name:'Franchise #1',type:'partner',x:0,y:0},
+  {id:'p3',name:'Joint Venture',type:'partner',x:0,y:0},
+  // Resources
+  {id:'r1',name:'IP Portfolio',type:'resource',x:0,y:0},
+  {id:'r2',name:'Brand Assets',type:'resource',x:0,y:0},
+  {id:'r3',name:'Data Lake',type:'resource',x:0,y:0},
+  {id:'r4',name:'Patent #A1',type:'resource',x:0,y:0},
+];
+
+const rawEdges=[
+  // DAO links
+  {s:'acme',t:'dao1',type:'dao'},{s:'acme',t:'dao2',type:'dao'},{s:'acme',t:'dao3',type:'dao'},
+  // vendor → supply chain
+  {s:'v1',t:'sc3',type:'supply'},{s:'v2',t:'sc3',type:'supply'},{s:'v2',t:'sc4',type:'supply'},
+  {s:'v3',t:'acme',type:'contract'},{s:'v4',t:'sc1',type:'supply'},{s:'v5',t:'sc6',type:'supply'},
+  {s:'v6',t:'sc3',type:'supply'},{s:'v7',t:'acme',type:'contract'},{s:'v8',t:'sc7',type:'supply'},
+  // supply chain internal
+  {s:'sc1',t:'sc3',type:'supply'},{s:'sc2',t:'sc4',type:'supply'},
+  {s:'sc3',t:'sc5',type:'supply'},{s:'sc4',t:'sc5',type:'supply'},
+  {s:'sc5',t:'sc6',type:'supply'},{s:'sc6',t:'d1',type:'supply'},
+  {s:'sc7',t:'d2',type:'supply'},{s:'sc6',t:'d3',type:'supply'},
+  // acme core connections
+  {s:'acme',t:'sc1',type:'data'},{s:'acme',t:'sc2',type:'data'},
+  {s:'acme',t:'v1',type:'contract'},{s:'acme',t:'v2',type:'contract'},
+  {s:'acme',t:'v5',type:'contract'},
+  // dist → end
+  {s:'d1',t:'acme',type:'data'},{s:'d2',t:'acme',type:'data'},
+  {s:'d3',t:'p2',type:'supply'},{s:'d4',t:'acme',type:'supply'},
+  // 3rd parties
+  {s:'tp1',t:'acme',type:'data'},{s:'tp2',t:'acme',type:'data'},
+  {s:'tp3',t:'acme',type:'contract'},{s:'tp4',t:'acme',type:'contract'},
+  {s:'tp5',t:'acme',type:'data'},
+  // partners
+  {s:'acme',t:'p1',type:'contract'},{s:'acme',t:'p2',type:'contract'},
+  {s:'acme',t:'p3',type:'contract'},{s:'p1',t:'dao1',type:'dao'},
+  // resources
+  {s:'acme',t:'r1',type:'data'},{s:'acme',t:'r2',type:'data'},
+  {s:'acme',t:'r3',type:'data'},{s:'acme',t:'r4',type:'data'},
+  {s:'r3',t:'tp3',type:'data'},
+];
+
+// ─── CANVAS SETUP ─────────────────────────────────────────────────────────
+const canvas=document.getElementById('graph-canvas');
+const ctx=canvas.getContext('2d');
+let W=0,H=0,scale=1,offsetX=0,offsetY=0;
+let dragging=false,dragNode=null,lastMX=0,lastMY=0;
+let selectedNode=null;
+let activeFilters=new Set(['org','vendor','supplychain','dist','resource','partner','3rdparty','dao','edge-supply','edge-contract','edge-data','edge-dao']);
+let layoutMode='force';
+
+// Build node/edge data
+let nodes=rawNodes.map(n=>({...n,...NODE_TYPES[n.type]}));
+let edges=rawEdges.map(e=>({...e,
+  color:e.type==='supply'?'rgba(52,232,160,.55)':
+        e.type==='contract'?'rgba(56,180,255,.5)':
+        e.type==='data'?'rgba(245,185,66,.4)':
+        'rgba(106,47,255,.6)',
+  dash:e.type==='dao'?[5,4]:[]
+}));
+
+function resize(){
+  const rect=canvas.parentElement.getBoundingClientRect();
+  canvas.width=W=rect.width;canvas.height=H=rect.height;
+  if(offsetX===0&&offsetY===0){offsetX=W/2;offsetY=H/2;}
+}
+
+function initPositions(){
+  const cx=W/2,cy=H/2;
+  nodes.forEach((n,i)=>{
+    if(n.id==='acme'){n.x=0;n.y=0;}
+    else{
+      const a=(i/nodes.length)*Math.PI*2;
+      const r=120+Math.random()*200;
+      n.x=Math.cos(a)*r;n.y=Math.sin(a)*r;
+    }
+    n.vx=0;n.vy=0;
+  });
+}
+
+// Force simulation
+let simRunning=true;
+function simulate(){
+  if(!simRunning)return;
+  const alpha=0.015;
+  // repulsion
+  for(let i=0;i<nodes.length;i++)for(let j=i+1;j<nodes.length;j++){
+    const a=nodes[i],b=nodes[j];
+    const dx=b.x-a.x,dy=b.y-a.y;
+    const d=Math.sqrt(dx*dx+dy*dy)||1;
+    const f=800/(d*d);
+    const fx=dx/d*f,fy=dy/d*f;
+    a.vx-=fx;a.vy-=fy;b.vx+=fx;b.vy+=fy;
+  }
+  // attraction along edges
+  edges.forEach(e=>{
+    const a=nodes.find(n=>n.id===e.s),b=nodes.find(n=>n.id===e.t);
+    if(!a||!b)return;
+    const dx=b.x-a.x,dy=b.y-a.y;
+    const d=Math.sqrt(dx*dx+dy*dy)||1;
+    const len=e.type==='dao'?220:130;
+    const f=(d-len)*0.04;
+    const fx=dx/d*f,fy=dy/d*f;
+    a.vx+=fx;a.vy+=fy;b.vx-=fx;b.vy-=fy;
+  });
+  // center pull
+  nodes.forEach(n=>{
+    if(n.id==='acme'){n.vx=0;n.vy=0;return;}
+    n.vx-=n.x*0.006;n.vy-=n.y*0.006;
+    if(dragNode&&dragNode.id===n.id)return;
+    n.x+=n.vx*alpha;n.y+=n.vy*alpha;
+    n.vx*=0.82;n.vy*=0.82;
+  });
+}
+
+function draw(){
+  ctx.clearRect(0,0,W,H);
+  ctx.save();
+  ctx.translate(offsetX,offsetY);
+  ctx.scale(scale,scale);
+
+  // draw edges
+  edges.forEach(e=>{
+    if(!activeFilters.has('edge-'+e.type)&&e.type!=='dao')return;
+    if(e.type==='dao'&&!activeFilters.has('edge-dao'))return;
+    const a=nodes.find(n=>n.id===e.s),b=nodes.find(n=>n.id===e.t);
+    if(!a||!b)return;
+    if(!activeFilters.has(a.type)||!activeFilters.has(b.type))return;
+    ctx.beginPath();
+    ctx.strokeStyle=e.color;
+    ctx.lineWidth=e.type==='dao'?1.5:1;
+    if(e.dash.length){ctx.setLineDash(e.dash);}else{ctx.setLineDash([]);}
+    // slight curve
+    const mx=(a.x+b.x)/2+((b.y-a.y)*0.12);
+    const my=(a.y+b.y)/2-((b.x-a.x)*0.12);
+    ctx.moveTo(a.x,a.y);
+    ctx.quadraticCurveTo(mx,my,b.x,b.y);
+    ctx.stroke();
+    ctx.setLineDash([]);
+    // arrowhead
+    const angle=Math.atan2(b.y-my,b.x-mx);
+    const ar=5;
+    ctx.beginPath();
+    ctx.moveTo(b.x,b.y);
+    ctx.lineTo(b.x-ar*Math.cos(angle-0.4),b.y-ar*Math.sin(angle-0.4));
+    ctx.lineTo(b.x-ar*Math.cos(angle+0.4),b.y-ar*Math.sin(angle+0.4));
+    ctx.closePath();
+    ctx.fillStyle=e.color;
+    ctx.fill();
+  });
+
+  // draw nodes
+  nodes.forEach(n=>{
+    if(!activeFilters.has(n.type))return;
+    const isSelected=selectedNode&&selectedNode.id===n.id;
+    const r=n.size*(isSelected?1.3:1);
+
+    // glow
+    if(isSelected||n.type==='org'||n.type==='dao'){
+      const g=ctx.createRadialGradient(n.x,n.y,r*0.5,n.x,n.y,r*2.5);
+      g.addColorStop(0,n.glow);
+      g.addColorStop(1,'transparent');
+      ctx.beginPath();ctx.arc(n.x,n.y,r*2.5,0,Math.PI*2);
+      ctx.fillStyle=g;ctx.fill();
+    }
+
+    // circle
+    ctx.beginPath();ctx.arc(n.x,n.y,r,0,Math.PI*2);
+    ctx.fillStyle=n.color;ctx.fill();
+    if(isSelected){
+      ctx.strokeStyle='rgba(255,255,255,.8)';ctx.lineWidth=2;ctx.stroke();
+    }
+
+    // label
+    if(scale>0.6){
+      ctx.font=`${Math.max(8,10/scale*scale)}px "Space Grotesk"`;
+      ctx.fillStyle='rgba(237,230,255,.85)';
+      ctx.textAlign='center';
+      ctx.fillText(n.name,n.x,n.y+r+11);
+    }
+  });
+
+  ctx.restore();
+  requestAnimationFrame(()=>{simulate();draw();});
+}
+
+// ─── INTERACTION ──────────────────────────────────────────────────────────
+function worldXY(mx,my){return{x:(mx-offsetX)/scale,y:(my-offsetY)/scale};}
+
+canvas.addEventListener('mousedown',e=>{
+  const {x,y}=worldXY(e.offsetX,e.offsetY);
+  const hit=nodes.find(n=>Math.hypot(n.x-x,n.y-y)<n.size*1.5&&activeFilters.has(n.type));
+  if(hit){dragNode=hit;dragging=true;}
+  else{dragging=true;dragNode=null;}
+  lastMX=e.offsetX;lastMY=e.offsetY;
+});
+canvas.addEventListener('mousemove',e=>{
+  if(!dragging)return;
+  const dx=e.offsetX-lastMX,dy=e.offsetY-lastMY;
+  if(dragNode){dragNode.x+=dx/scale;dragNode.y+=dy/scale;}
+  else{offsetX+=dx;offsetY+=dy;}
+  lastMX=e.offsetX;lastMY=e.offsetY;
+});
+canvas.addEventListener('mouseup',e=>{
+  if(!dragging){return;}
+  const {x,y}=worldXY(e.offsetX,e.offsetY);
+  const hit=nodes.find(n=>Math.hypot(n.x-x,n.y-y)<n.size*1.5&&activeFilters.has(n.type));
+  if(hit&&!dragNode){selectNode(hit);}
+  else if(hit&&dragNode===hit&&Math.hypot(e.offsetX-lastMX,e.offsetY-lastMY)<3){selectNode(hit);}
+  dragging=false;dragNode=null;
+});
+canvas.addEventListener('wheel',e=>{
+  e.preventDefault();
+  const factor=e.deltaY<0?1.1:0.9;
+  const mx=e.offsetX,my=e.offsetY;
+  offsetX=(offsetX-mx)*factor+mx;
+  offsetY=(offsetY-my)*factor+my;
+  scale*=factor;scale=Math.max(.2,Math.min(4,scale));
+},{passive:false});
+
+function selectNode(n){
+  selectedNode=n;
+  switchTab('detail');
+  const connCount=edges.filter(e=>e.s===n.id||e.t===n.id).length;
+  const nt=NODE_TYPES[n.type];
+  document.getElementById('node-detail-area').innerHTML=`
+    <div class="node-detail">
+      <div class="nd-header">
+        <div class="nd-icon" style="background:${nt.color}22;border:1px solid ${nt.color}55;">
+          ${n.type==='org'?'🏛️':n.type==='vendor'?'🏪':n.type==='supplychain'?'🚚':n.type==='dist'?'📤':n.type==='resource'?'💎':n.type==='partner'?'🤝':n.type==='3rdparty'?'🔗':'⛓'}
+        </div>
+        <div><div class="nd-name">${n.name}</div><div class="nd-type">${nt.label}</div></div>
+      </div>
+      <div class="nd-stat"><span style="color:var(--text-muted)">Type</span><span style="color:var(--text-soft)">${nt.label}</span></div>
+      <div class="nd-stat"><span style="color:var(--text-muted)">Connections</span><span style="color:var(--text)">${connCount}</span></div>
+      <div class="nd-stat"><span style="color:var(--text-muted)">Status</span><span style="color:var(--emerald)">● Active</span></div>
+      <div class="nd-stat"><span style="color:var(--text-muted)">Last Updated</span><span style="color:var(--text-soft)">Today</span></div>
+    </div>
+    <div style="font-size:11px;font-weight:700;text-transform:uppercase;color:var(--text-muted);margin-bottom:8px;">Connected To</div>
+    ${edges.filter(e=>e.s===n.id||e.t===n.id).slice(0,8).map(e=>{
+      const other=nodes.find(nn=>nn.id===(e.s===n.id?e.t:e.s));
+      return other?`<div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--border);"><div style="width:8px;height:8px;border-radius:50%;background:${NODE_TYPES[other.type].color};flex-shrink:0;"></div><span style="font-size:12px;color:var(--text-soft);flex:1;">${other.name}</span><span style="font-size:10px;color:var(--text-muted);">${e.type}</span></div>`:'';
+    }).join('')}
+  `;
+}
+
+function toggleFilter(el,type){
+  if(el.classList.contains('on')){el.classList.replace('on','off');activeFilters.delete(type);}
+  else{el.classList.replace('off','on');activeFilters.add(type);}
+}
+function switchTab(t){
+  ['filter','detail','legend'].forEach(id=>{
+    document.getElementById('panel-'+id).style.display=id===t?'block':'none';
+    document.getElementById('tab-'+id).className='panel-tab'+(id===t?' active':'');
+  });
+}
+function setLayout(m){layoutMode=m;initPositions();}
+
+document.getElementById('btn-zoom-in').onclick=()=>scale=Math.min(4,scale*1.2);
+document.getElementById('btn-zoom-out').onclick=()=>scale=Math.max(.2,scale/1.2);
+document.getElementById('btn-reset').onclick=()=>{scale=1;offsetX=W/2;offsetY=H/2;};
+document.getElementById('btn-layout').onclick=()=>initPositions();
+
+document.getElementById('search-input').addEventListener('input',e=>{
+  const q=e.target.value.toLowerCase();
+  if(!q){selectedNode=null;return;}
+  const hit=nodes.find(n=>n.name.toLowerCase().includes(q));
+  if(hit){selectNode(hit);offsetX=W/2-hit.x*scale;offsetY=H/2-hit.y*scale;}
+});
+
+// Update stats
+setInterval(()=>{
+  const vis=nodes.filter(n=>activeFilters.has(n.type)).length;
+  const visE=edges.filter(e=>activeFilters.has(e.s.split('').slice(0,1).join(''))||true).length;
+  document.getElementById('stat-nodes').textContent=vis;
+  document.getElementById('stat-edges').textContent=edges.length;
+  document.getElementById('stat-active').textContent=vis;
+},500);
+
+// Init
+window.addEventListener('resize',()=>{resize();});
+resize();initPositions();
+draw();
+</script>
+</body></html>

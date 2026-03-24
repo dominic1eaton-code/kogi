@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>UME OrgOS — Value Proposition</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#070010;--surface:#0f0820;--surface-2:#150b2c;--surface-3:#1b1038;
+  --border:rgba(255,255,255,.065);--border-mid:rgba(255,255,255,.10);
+  --text:#ede6ff;--text-soft:rgba(215,205,255,.7);--text-muted:rgba(190,175,240,.4);
+  --purple:#6a2fff;--purple-mid:#2d0072;
+  --cherry:#ff2a55;--teal:#00e5d8;--amber:#f5b942;--blue:#38b4ff;
+  --emerald:#34e8a0;--coral:#ff6b4a;--orchid:#d855ff;--rose:#ff4c8b;
+  --sidebar-w:210px;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html,body{height:100%;font-family:"Space Grotesk",sans-serif;background:var(--bg);overflow:hidden;color:var(--text);}
+body{display:flex;}
+.sidebar{width:var(--sidebar-w);height:100vh;background:#0a0018;display:flex;flex-direction:column;flex-shrink:0;border-right:1px solid rgba(255,255,255,.05);}
+.sidebar-logo{display:flex;align-items:center;gap:9px;padding:16px 16px 14px;border-bottom:1px solid rgba(255,255,255,.06);}
+.s-icon{width:30px;height:30px;border-radius:8px;background:var(--purple-mid);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:15px;color:#fff;box-shadow:0 0 14px 2px rgba(106,47,255,.5);}
+.s-logo-text{font-weight:700;font-size:15px;color:#fff;} .s-logo-text span{color:var(--cherry);}
+.org-selector{margin:10px 10px 4px;padding:8px 10px;border-radius:8px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.07);cursor:pointer;display:flex;align-items:center;gap:8px;}
+.org-dot{width:7px;height:7px;border-radius:50%;background:var(--teal);box-shadow:0 0 6px rgba(0,229,216,.65);}
+.org-name{font-size:12px;font-weight:600;color:rgba(220,210,255,.8);flex:1;}
+.nav-section{padding:0 8px;margin-bottom:2px;}
+.nav-label{font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:rgba(200,190,255,.18);padding:10px 8px 4px;}
+.nav-item{display:flex;align-items:center;gap:9px;padding:7px 10px;border-radius:7px;cursor:pointer;transition:.15s;text-decoration:none;margin-bottom:1px;}
+.nav-item:hover{background:rgba(255,255,255,.06);}
+.nav-icon{font-size:14px;width:20px;text-align:center;}
+.nav-text{font-size:12.5px;font-weight:500;color:rgba(210,200,255,.38);flex:1;}
+.nav-item.active{background:linear-gradient(90deg,rgba(106,47,255,.5),rgba(255,42,85,.22));border:1px solid rgba(255,42,85,.15);}
+.nav-item.active .nav-text{color:#fff;font-weight:600;}
+.sidebar-footer{margin-top:auto;padding:10px;border-top:1px solid rgba(255,255,255,.05);}
+.user-avatar{width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,var(--purple-mid),var(--cherry));display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff;}
+.user-row{display:flex;align-items:center;gap:9px;cursor:pointer;padding:8px;border-radius:8px;}
+.user-name{font-size:12px;font-weight:600;color:rgba(220,210,255,.8);}
+.user-role{font-size:10px;color:rgba(200,190,255,.3);}
+.main{flex:1;display:flex;flex-direction:column;height:100vh;overflow:hidden;}
+.topbar{height:52px;background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 24px;gap:12px;flex-shrink:0;}
+.page-title{font-size:15px;font-weight:700;}
+.breadcrumb{font-size:11px;color:var(--text-muted);}
+.topbar-right{margin-left:auto;display:flex;align-items:center;gap:10px;}
+.tb-btn{padding:6px 13px;border:1px solid var(--border-mid);border-radius:7px;font-size:12px;font-weight:600;color:var(--text-soft);background:var(--surface-2);cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:5px;transition:.15s;}
+.tb-btn:hover{border-color:rgba(106,47,255,.5);color:var(--text);}
+.tb-btn.primary{background:linear-gradient(135deg,var(--purple),var(--cherry));color:#fff;border:none;}
+.subnav{height:44px;background:var(--surface-2);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 24px;gap:4px;flex-shrink:0;overflow-x:auto;}
+.subnav::-webkit-scrollbar{height:0;}
+.snav-item{padding:6px 14px;border-radius:6px;font-size:12px;font-weight:600;color:rgba(210,200,255,.4);cursor:pointer;transition:.15s;text-decoration:none;white-space:nowrap;border:1px solid transparent;}
+.snav-item:hover{color:var(--text-soft);background:rgba(255,255,255,.04);}
+.snav-item.active{color:var(--text);background:rgba(106,47,255,.22);border-color:rgba(106,47,255,.35);}
+.content{flex:1;overflow-y:auto;padding:20px 24px;}
+.content::-webkit-scrollbar{width:5px;}
+.content::-webkit-scrollbar-thumb{background:rgba(106,47,255,.3);border-radius:3px;}
+
+/* VPC LAYOUT */
+.vpc-area{display:flex;gap:12px;margin-bottom:20px;align-items:stretch;}
+.vpc-left,.vpc-right{flex:1;display:flex;flex-direction:column;gap:8px;}
+.vpc-center{width:100px;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:6px;}
+.vpc-block{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:16px;flex:1;position:relative;cursor:pointer;transition:.15s;}
+.vpc-block:hover{background:var(--surface-2);}
+.vpc-block-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;margin-bottom:10px;display:flex;align-items:center;gap:6px;}
+.vpc-items{display:flex;flex-direction:column;gap:6px;}
+.vpc-item{display:flex;align-items:flex-start;gap:8px;padding:7px 9px;border-radius:8px;background:var(--surface-2);border:1px solid var(--border);font-size:12px;color:var(--text-soft);line-height:1.4;cursor:pointer;transition:.15s;}
+.vpc-item:hover{border-color:rgba(106,47,255,.25);}
+.vpc-item-icon{font-size:13px;flex-shrink:0;}
+.vpc-item-text{flex:1;}
+.vpc-add{font-size:11px;color:var(--text-muted);display:flex;align-items:center;gap:5px;margin-top:8px;cursor:pointer;padding:6px 9px;border:1px dashed rgba(255,255,255,.1);border-radius:8px;transition:.15s;}
+.vpc-add:hover{border-color:rgba(106,47,255,.35);color:var(--text-soft);}
+.vpc-fit-badge{position:absolute;top:12px;right:12px;font-size:10px;font-weight:700;padding:2px 7px;border-radius:4px;border:1px solid;}
+.vpc-center-badge{width:80px;height:80px;border-radius:50%;border:2px solid;display:flex;align-items:center;justify-content:center;font-size:28px;flex-direction:column;}
+.vpc-center-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;text-align:center;color:var(--text-muted);}
+.fit-line{width:2px;height:40px;background:linear-gradient(to bottom,rgba(52,232,160,.4),transparent);}
+
+/* FIT SCORE */
+.fit-row{display:flex;gap:12px;margin-bottom:20px;}
+.fit-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px;flex:1;}
+.fit-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--text-muted);margin-bottom:12px;}
+.fit-score{font-size:32px;font-weight:700;margin-bottom:4px;}
+.fit-label{font-size:11px;color:var(--text-muted);}
+
+/* SEGMENT TABS */
+.segment-tabs{display:flex;gap:6px;margin-bottom:14px;}
+.seg-tab{padding:5px 14px;border-radius:7px;font-size:12px;font-weight:600;border:1px solid var(--border);color:var(--text-muted);cursor:pointer;transition:.15s;}
+.seg-tab.active{background:rgba(106,47,255,.2);border-color:rgba(106,47,255,.4);color:var(--text);}
+</style>
+</head>
+<body>
+
+<nav class="sidebar">
+  <div class="sidebar-logo"><div class="s-icon">U</div><div class="s-logo-text">UME <span>OS</span></div></div>
+  <div class="org-selector"><div class="org-dot"></div><div class="org-name">Acme Corp</div><span style="color:rgba(200,190,255,.3);font-size:10px;">▾</span></div>
+  <div style="flex:1;overflow-y:auto;padding-top:6px;">
+    <div class="nav-section">
+      <div class="nav-label">Core</div>
+      <a href="../dashboard.html" class="nav-item"><span class="nav-icon">⬡</span><span class="nav-text">Dashboard</span></a>
+      <a href="digital-twin.html" class="nav-item active"><span class="nav-icon">🧬</span><span class="nav-text">Digital Twin</span></a>
+    </div>
+    <div class="nav-section">
+      <div class="nav-label">Strategy</div>
+      <a href="business-model.html" class="nav-item"><span class="nav-icon">📐</span><span class="nav-text">Business Model</span></a>
+      <a href="#" class="nav-item"><span class="nav-icon">💎</span><span class="nav-text">Value Prop</span></a>
+    </div>
+  </div>
+  <div class="sidebar-footer"><div class="user-row"><div class="user-avatar">JS</div><div><div class="user-name">J. Smith</div><div class="user-role">OrgExec · Admin</div></div></div></div>
+</nav>
+
+<div class="main">
+  <div class="topbar">
+    <div><div class="page-title">💎 Value Proposition</div><div class="breadcrumb">Digital Twin · Value Proposition Canvas · v2.0.0</div></div>
+    <div class="topbar-right">
+      <select style="background:var(--surface-2);border:1px solid var(--border-mid);color:var(--text);font-family:inherit;font-size:12px;padding:6px 10px;border-radius:7px;outline:none;cursor:pointer;">
+        <option>v2.0.0 — Current</option>
+        <option>v1.5.0</option>
+        <option>v1.0.0</option>
+      </select>
+      <button class="tb-btn">⊕ New Version</button>
+      <button class="tb-btn">🧬 Sync OrgDNA</button>
+      <button class="tb-btn primary">✎ Edit</button>
+    </div>
+  </div>
+  <div class="subnav">
+    <a href="digital-twin.html" class="snav-item">⬡ Overview</a>
+    <a href="org-system.html" class="snav-item">🏛 OrgSystem</a>
+    <a href="org-dna.html" class="snav-item">🧬 OrgDNA</a>
+    <a href="network-graph.html" class="snav-item">🕸 Network Graph</a>
+    <a href="org-chart.html" class="snav-item">🌲 Org Chart</a>
+    <a href="business-model.html" class="snav-item">📐 Business Model</a>
+    <a href="value-proposition.html" class="snav-item active">💎 Value Proposition</a>
+    <a href="data-master.html" class="snav-item">🗄 Data Master</a>
+  </div>
+
+  <div class="content">
+    <!-- FIT SCORES -->
+    <div class="fit-row">
+      <div class="fit-card">
+        <div class="fit-title">Problem–Solution Fit</div>
+        <div class="fit-score" style="color:var(--emerald);">88%</div>
+        <div class="fit-label">↑ +4% from v1.5.0</div>
+      </div>
+      <div class="fit-card">
+        <div class="fit-title">Product–Market Fit</div>
+        <div class="fit-score" style="color:var(--amber);">71%</div>
+        <div class="fit-label">In progress — 3 gaps identified</div>
+      </div>
+      <div class="fit-card">
+        <div class="fit-title">Gain/Pain Match Score</div>
+        <div class="fit-score" style="color:var(--blue);">82%</div>
+        <div class="fit-label">5 of 6 gains matched</div>
+      </div>
+      <div class="fit-card" style="flex:2;background:linear-gradient(135deg,rgba(106,47,255,.1),rgba(52,232,160,.06));border-color:rgba(106,47,255,.25);">
+        <div class="fit-title">Version Control</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:6px;">
+          <span style="font-size:11px;padding:3px 9px;border-radius:5px;background:rgba(52,232,160,.1);border:1px solid rgba(52,232,160,.3);color:var(--emerald);">v2.0.0 ✓ Current</span>
+          <span style="font-size:11px;padding:3px 9px;border-radius:5px;background:rgba(255,255,255,.05);border:1px solid var(--border);color:var(--text-muted);">v1.5.0 — Superseded</span>
+          <span style="font-size:11px;padding:3px 9px;border-radius:5px;background:rgba(255,255,255,.05);border:1px solid var(--border);color:var(--text-muted);">v1.0.0 — Archived</span>
+        </div>
+        <div style="font-size:11px;color:var(--text-muted);margin-top:8px;">Last edit: Today 08:50 · J. Smith</div>
+      </div>
+    </div>
+
+    <!-- Segment selector -->
+    <div class="segment-tabs">
+      <div class="seg-tab active">Enterprise</div>
+      <div class="seg-tab">Franchise Networks</div>
+      <div class="seg-tab">DAO Organisations</div>
+      <div class="seg-tab">SMB Growth</div>
+      <div class="seg-tab" style="margin-left:auto;border-style:dashed;">+ Add Segment</div>
+    </div>
+
+    <!-- VPC Canvas -->
+    <div class="vpc-area">
+      <!-- Left: Value Map (Products & Services, Gain Creators, Pain Relievers) -->
+      <div class="vpc-left">
+        <div style="font-size:12px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:2px;text-align:center;">Value Map</div>
+
+        <div class="vpc-block" style="border-color:rgba(56,180,255,.25);">
+          <div class="vpc-fit-badge" style="background:rgba(56,180,255,.1);border-color:rgba(56,180,255,.3);color:var(--blue);">Products & Services</div>
+          <div class="vpc-block-title" style="color:var(--blue);margin-top:14px;"><span>📦</span>Products & Services</div>
+          <div class="vpc-items">
+            <div class="vpc-item"><span class="vpc-item-icon">🏛️</span><span class="vpc-item-text">OrgOS Platform (SaaS)</span></div>
+            <div class="vpc-item"><span class="vpc-item-icon">🧬</span><span class="vpc-item-text">OrgDNA Franchise Templates</span></div>
+            <div class="vpc-item"><span class="vpc-item-icon">🤖</span><span class="vpc-item-text">AI Agent Fleet (OrgExecs)</span></div>
+            <div class="vpc-item"><span class="vpc-item-icon">⛓️</span><span class="vpc-item-text">DAO/DLT Infrastructure</span></div>
+            <div class="vpc-item"><span class="vpc-item-icon">🕸️</span><span class="vpc-item-text">Supply Chain Visibility Tool</span></div>
+          </div>
+          <div class="vpc-add">+ Add product/service</div>
+        </div>
+
+        <div class="vpc-block" style="border-color:rgba(52,232,160,.25);">
+          <div class="vpc-fit-badge" style="background:rgba(52,232,160,.1);border-color:rgba(52,232,160,.3);color:var(--emerald);">Gain Creators</div>
+          <div class="vpc-block-title" style="color:var(--emerald);margin-top:14px;"><span>✨</span>Gain Creators</div>
+          <div class="vpc-items">
+            <div class="vpc-item"><span class="vpc-item-icon">⚡</span><span class="vpc-item-text">Real-time SDO reduces decision latency by 60%</span></div>
+            <div class="vpc-item"><span class="vpc-item-icon">📈</span><span class="vpc-item-text">AI optimisation increases throughput 35%</span></div>
+            <div class="vpc-item"><span class="vpc-item-icon">🌍</span><span class="vpc-item-text">OrgDNA cloning enables 10× faster expansion</span></div>
+            <div class="vpc-item"><span class="vpc-item-icon">🔗</span><span class="vpc-item-text">DAO governance reduces inter-org friction</span></div>
+          </div>
+          <div class="vpc-add">+ Add gain creator</div>
+        </div>
+
+        <div class="vpc-block" style="border-color:rgba(255,42,85,.2);">
+          <div class="vpc-fit-badge" style="background:rgba(255,42,85,.1);border-color:rgba(255,42,85,.3);color:var(--cherry);">Pain Relievers</div>
+          <div class="vpc-block-title" style="color:var(--cherry);margin-top:14px;"><span>🩹</span>Pain Relievers</div>
+          <div class="vpc-items">
+            <div class="vpc-item"><span class="vpc-item-icon">🔒</span><span class="vpc-item-text">ODD contracts eliminate unauthorised AI actions</span></div>
+            <div class="vpc-item"><span class="vpc-item-icon">📋</span><span class="vpc-item-text">Unified audit trail → no compliance blind spots</span></div>
+            <div class="vpc-item"><span class="vpc-item-icon">🔄</span><span class="vpc-item-text">OrgDNA rollback eliminates config disasters</span></div>
+            <div class="vpc-item"><span class="vpc-item-icon">🤝</span><span class="vpc-item-text">Smart contracts remove manual inter-org reconciliation</span></div>
+          </div>
+          <div class="vpc-add">+ Add pain reliever</div>
+        </div>
+      </div>
+
+      <!-- Centre connection arrows -->
+      <div class="vpc-center">
+        <div class="fit-line"></div>
+        <div class="vpc-center-badge" style="border-color:rgba(106,47,255,.5);background:rgba(106,47,255,.1);">
+          <span>🎯</span>
+          <span style="font-size:9px;color:var(--purple);font-weight:700;text-align:center;">FIT</span>
+        </div>
+        <div class="vpc-center-label">Value–Customer Fit</div>
+        <div class="fit-line" style="background:linear-gradient(to top,rgba(52,232,160,.4),transparent);"></div>
+      </div>
+
+      <!-- Right: Customer Profile (Jobs, Gains, Pains) -->
+      <div class="vpc-right">
+        <div style="font-size:12px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:2px;text-align:center;">Customer Profile</div>
+
+        <div class="vpc-block" style="border-color:rgba(245,185,66,.25);">
+          <div class="vpc-fit-badge" style="background:rgba(245,185,66,.1);border-color:rgba(245,185,66,.3);color:var(--amber);">Customer Jobs</div>
+          <div class="vpc-block-title" style="color:var(--amber);margin-top:14px;"><span>👤</span>Customer Jobs</div>
+          <div class="vpc-items">
+            <div class="vpc-item"><span class="vpc-item-icon">⚙️</span><span class="vpc-item-text"><strong>Functional:</strong> Run a scalable, compliant organisation</span></div>
+            <div class="vpc-item"><span class="vpc-item-icon">🤝</span><span class="vpc-item-text"><strong>Social:</strong> Be seen as AI-forward by investors</span></div>
+            <div class="vpc-item"><span class="vpc-item-icon">💡</span><span class="vpc-item-text"><strong>Emotional:</strong> Feel in control of complex operations</span></div>
+            <div class="vpc-item"><span class="vpc-item-icon">📊</span><span class="vpc-item-text"><strong>Functional:</strong> Expand into new markets efficiently</span></div>
+          </div>
+          <div class="vpc-add">+ Add customer job</div>
+        </div>
+
+        <div class="vpc-block" style="border-color:rgba(52,232,160,.25);">
+          <div class="vpc-fit-badge" style="background:rgba(52,232,160,.1);border-color:rgba(52,232,160,.3);color:var(--emerald);">Gains</div>
+          <div class="vpc-block-title" style="color:var(--emerald);margin-top:14px;"><span>🌟</span>Gains</div>
+          <div class="vpc-items">
+            <div class="vpc-item"><div style="width:8px;height:8px;border-radius:50%;background:var(--emerald);flex-shrink:0;"></div><span class="vpc-item-text">Single view of entire organisation in real time</span></div>
+            <div class="vpc-item"><div style="width:8px;height:8px;border-radius:50%;background:var(--emerald);flex-shrink:0;"></div><span class="vpc-item-text">Predictable, reproducible expansion via OrgDNA</span></div>
+            <div class="vpc-item"><div style="width:8px;height:8px;border-radius:50%;background:var(--emerald);flex-shrink:0;"></div><span class="vpc-item-text">AI agents handle routine work autonomously</span></div>
+            <div class="vpc-item"><div style="width:8px;height:8px;border-radius:50%;background:var(--emerald);flex-shrink:0;"></div><span class="vpc-item-text">Trusted partner network via DAO governance</span></div>
+            <div class="vpc-item"><div style="width:8px;height:8px;border-radius:50%;background:var(--amber);flex-shrink:0;opacity:.7;"></div><span class="vpc-item-text" style="opacity:.7;">Public DLT verification (v2.1 roadmap)</span></div>
+          </div>
+          <div class="vpc-add">+ Add gain</div>
+        </div>
+
+        <div class="vpc-block" style="border-color:rgba(255,42,85,.2);">
+          <div class="vpc-fit-badge" style="background:rgba(255,42,85,.1);border-color:rgba(255,42,85,.3);color:var(--cherry);">Pains</div>
+          <div class="vpc-block-title" style="color:var(--cherry);margin-top:14px;"><span>😤</span>Pains</div>
+          <div class="vpc-items">
+            <div class="vpc-item"><div style="width:8px;height:8px;border-radius:50%;background:var(--cherry);flex-shrink:0;"></div><span class="vpc-item-text">Fragmented tools = siloed data and manual reconciliation</span></div>
+            <div class="vpc-item"><div style="width:8px;height:8px;border-radius:50%;background:var(--cherry);flex-shrink:0;"></div><span class="vpc-item-text">AI agents acting without governance → audit risk</span></div>
+            <div class="vpc-item"><div style="width:8px;height:8px;border-radius:50%;background:var(--cherry);flex-shrink:0;"></div><span class="vpc-item-text">Franchise/partner management is manual and slow</span></div>
+            <div class="vpc-item"><div style="width:8px;height:8px;border-radius:50%;background:var(--cherry);flex-shrink:0;"></div><span class="vpc-item-text">Compliance errors from config drift across sites</span></div>
+          </div>
+          <div class="vpc-add">+ Add pain</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Version notes -->
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px;">
+      <div style="font-size:13px;font-weight:700;margin-bottom:10px;">Version Notes — v2.0.0</div>
+      <div style="font-size:12px;color:var(--text-soft);line-height:1.6;">Added DAO-related gains and pain relievers to reflect enterprise segment expansion. Added "Public DLT verification" as a future gain. Fit score improved from 80% to 88% following customer validation interviews in Q1 2026. Next iteration (v2.1): complete IoT/OrgCPU use cases for industrial segment.</div>
+    </div>
+  </div>
+</div>
+</body></html>

@@ -1,0 +1,1391 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Strategic Roadmap — Kogi Office</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg-deep:    #091419;
+  --bg-card:    #0f1f26;
+  --bg-raised:  #101e24;
+  --bg-hover:   #162630;
+  --border:     rgba(255,255,255,0.06);
+  --border-md:  rgba(255,255,255,0.10);
+  --text-1:     #e2edf0;
+  --text-2:     #8ea6ad;
+  --text-3:     #5d747c;
+  --green:      #10b981;
+  --green-bg:   rgba(16,185,129,0.12);
+  --green-bdr:  rgba(16,185,129,0.35);
+  --blue:       #60a5fa;
+  --blue-bg:    rgba(59,130,246,0.12);
+  --blue-bdr:   rgba(59,130,246,0.35);
+  --amber:      #f59e0b;
+  --amber-bg:   rgba(245,158,11,0.12);
+  --amber-bdr:  rgba(245,158,11,0.35);
+  --purple:     #a855f7;
+  --purple-bg:  rgba(168,85,247,0.12);
+  --purple-bdr: rgba(168,85,247,0.35);
+  --red:        #f87171;
+  --red-bg:     rgba(248,113,113,0.12);
+  --red-bdr:    rgba(248,113,113,0.35);
+  --cyan:       #22d3ee;
+  --cyan-bg:    rgba(34,211,238,0.12);
+  --cyan-bdr:   rgba(34,211,238,0.35);
+  --mono:       'JetBrains Mono', monospace;
+  --sans:       'Outfit', sans-serif;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: var(--bg-deep); color: var(--text-1); font-family: var(--sans); font-size: 13px; min-height: 100vh; }
+button { cursor: pointer; font-family: var(--mono); border: none; background: none; color: inherit; }
+input, textarea, select { font-family: var(--sans); background: var(--bg-raised); color: var(--text-1); border: 1px solid var(--border-md); border-radius: 6px; padding: 6px 10px; font-size: 12px; outline: none; }
+input:focus, textarea:focus, select:focus { border-color: var(--blue-bdr); box-shadow: 0 0 0 2px rgba(59,130,246,0.15); }
+
+/* ── Layout ───────────────────────────────────────────────────────── */
+#app { max-width: 1400px; margin: 0 auto; padding: 20px 16px; }
+
+/* ── Breadcrumb + header bar ──────────────────────────────────────── */
+.top-bar {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 10px;
+  border: 1px solid var(--border); background: var(--bg-card);
+  border-radius: 12px; padding: 12px 16px; margin-bottom: 14px;
+}
+.top-bar-left { display: flex; flex-direction: column; gap: 3px; }
+.top-bar-label { font-family: var(--mono); font-size: 10px; letter-spacing: .3em; text-transform: uppercase; color: var(--text-3); }
+.top-bar-sub { font-size: 11px; color: var(--text-2); }
+.top-bar-actions { margin-left: auto; display: flex; flex-wrap: wrap; gap: 8px; }
+.btn { display: inline-flex; align-items: center; gap: 6px; border-radius: 8px; padding: 6px 12px; font-size: 10px; font-family: var(--mono); transition: all .15s; }
+.btn-ghost { border: 1px solid var(--border-md); background: var(--bg-raised); color: var(--text-2); }
+.btn-ghost:hover { background: var(--bg-hover); color: var(--text-1); }
+.btn-blue { border: 1px solid var(--blue-bdr); background: var(--blue-bg); color: var(--blue); }
+.btn-blue:hover { background: rgba(59,130,246,0.2); }
+.btn-green { background: linear-gradient(135deg, #10b981, #059669); color: #fff; font-weight: 600; }
+.btn-green:hover { opacity: .9; }
+.btn-red { border: 1px solid var(--red-bdr); background: var(--red-bg); color: var(--red); }
+.btn-red:hover { background: rgba(248,113,113,0.2); }
+.btn-sm { padding: 4px 8px; font-size: 9px; }
+.btn-icon { padding: 5px 8px; }
+
+/* ── Stats row ────────────────────────────────────────────────────── */
+.stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 14px; }
+.stat-card { border: 1px solid var(--border); background: var(--bg-card); border-radius: 10px; padding: 12px; }
+.stat-num { font-size: 22px; font-weight: 600; line-height: 1; }
+.stat-label { font-family: var(--mono); font-size: 9px; letter-spacing: .3em; text-transform: uppercase; color: var(--text-3); margin-top: 4px; }
+
+/* ── Main layout ──────────────────────────────────────────────────── */
+.main-grid { display: grid; grid-template-columns: 1fr 280px; gap: 12px; }
+@media (max-width: 900px) { .main-grid { grid-template-columns: 1fr; } }
+
+/* ── Roadmap section ──────────────────────────────────────────────── */
+.roadmap-section { display: flex; flex-direction: column; gap: 0; border: 1px solid var(--border); background: var(--bg-card); border-radius: 12px; overflow: hidden; }
+
+/* Toolbar */
+.roadmap-toolbar {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 8px;
+  padding: 10px 14px; border-bottom: 1px solid var(--border);
+  background: var(--bg-raised);
+}
+.roadmap-title-input { background: transparent; border: none; border-radius: 6px; font-size: 12px; font-weight: 600; color: var(--text-1); padding: 2px 6px; width: 240px; }
+.roadmap-title-input:focus { background: var(--bg-card); border: 1px solid var(--border-md); }
+.toolbar-sep { width: 1px; height: 18px; background: var(--border-md); margin: 0 4px; }
+.toolbar-right { margin-left: auto; display: flex; gap: 6px; }
+
+/* Time ruler */
+.time-ruler-wrap { overflow-x: auto; overflow-y: hidden; }
+.time-ruler-wrap::-webkit-scrollbar { height: 0; }
+.time-ruler {
+  display: flex; align-items: center; padding: 0 0 0 160px;
+  border-bottom: 1px solid var(--border); background: var(--bg-deep);
+  position: sticky; top: 0; z-index: 10; height: 36px;
+}
+.quarter-col {
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--mono); font-size: 9px; letter-spacing: .15em; text-transform: uppercase;
+  color: var(--text-3); border-right: 1px solid var(--border); height: 100%; flex-shrink: 0;
+}
+.quarter-col:last-child { border-right: none; }
+
+/* Canvas viewport */
+.roadmap-viewport {
+  position: relative; overflow-x: auto; overflow-y: hidden;
+  min-height: 280px;
+}
+.roadmap-viewport::-webkit-scrollbar { height: 5px; }
+.roadmap-viewport::-webkit-scrollbar-track { background: var(--bg-deep); }
+.roadmap-viewport::-webkit-scrollbar-thumb { background: #1e3540; border-radius: 99px; }
+
+.roadmap-canvas {
+  position: relative; overflow: visible;
+}
+
+/* Track lanes */
+.track-lane {
+  display: flex; align-items: center; position: relative;
+  border-bottom: 1px solid var(--border); height: 80px;
+}
+.track-lane:last-child { border-bottom: none; }
+.track-lane:nth-child(even) { background: rgba(0,0,0,.08); }
+.track-label-col {
+  width: 160px; flex-shrink: 0; padding: 0 12px; display: flex;
+  align-items: center; gap: 8px; position: sticky; left: 0; z-index: 5;
+  background: var(--bg-card); border-right: 1px solid var(--border);
+  height: 100%;
+}
+.track-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.track-name-input {
+  background: transparent; border: none; font-size: 10px; font-family: var(--mono);
+  color: var(--text-2); width: 100px; padding: 1px 3px; border-radius: 4px;
+}
+.track-name-input:focus { background: var(--bg-raised); color: var(--text-1); outline: none; border: 1px solid var(--border-md); }
+.track-del { margin-left: auto; opacity: 0; font-size: 14px; color: var(--text-3); transition: opacity .15s; }
+.track-lane:hover .track-del { opacity: .7; }
+.track-del:hover { opacity: 1 !important; color: var(--red); }
+.track-content { position: relative; flex: 1; height: 100%; }
+
+/* SVG layer */
+.roadmap-svg { position: absolute; top: 0; left: 0; pointer-events: none; overflow: visible; }
+
+/* Node chips */
+.node-chip {
+  position: absolute; transform: translate(-50%, -50%);
+  display: flex; flex-direction: column; align-items: center; gap: 4px;
+  cursor: pointer; z-index: 4; user-select: none;
+}
+.node-circle {
+  width: 24px; height: 24px; border-radius: 50%; border: 2px solid;
+  display: flex; align-items: center; justify-content: center; font-size: 10px;
+  transition: transform .15s, box-shadow .15s; background: var(--bg-card);
+  position: relative;
+}
+.node-chip:hover .node-circle { transform: scale(1.2); }
+.node-chip.selected .node-circle {
+  box-shadow: 0 0 0 3px rgba(96,165,250,0.4), 0 0 12px rgba(96,165,250,0.3);
+  transform: scale(1.15);
+}
+.node-chip.dragging .node-circle { box-shadow: 0 4px 16px rgba(0,0,0,.5); transform: scale(1.25); cursor: grabbing; }
+.node-label {
+  font-family: var(--mono); font-size: 9px; color: var(--text-2);
+  white-space: nowrap; max-width: 90px; overflow: hidden; text-overflow: ellipsis; text-align: center;
+  line-height: 1.2;
+}
+.node-date { font-family: var(--mono); font-size: 8px; color: var(--text-3); white-space: nowrap; }
+.node-chip.selected .node-label { color: var(--text-1); }
+.node-type-icon { font-size: 10px; }
+
+/* Add node ghost */
+.add-node-ghost {
+  position: absolute; transform: translate(-50%, -50%);
+  width: 20px; height: 20px; border-radius: 50%; border: 1.5px dashed var(--text-3);
+  opacity: 0; transition: opacity .15s; cursor: pointer; z-index: 3;
+  display: flex; align-items: center; justify-content: center; font-size: 12px; color: var(--text-3);
+}
+.add-node-ghost:hover { opacity: 1; border-color: var(--blue); color: var(--blue); }
+
+/* ── Right panel ─────────────────────────────────────────────────── */
+.right-panel { display: flex; flex-direction: column; gap: 10px; }
+
+.panel-card { border: 1px solid var(--border); background: var(--bg-card); border-radius: 12px; padding: 14px; }
+.panel-title { font-family: var(--mono); font-size: 10px; letter-spacing: .3em; text-transform: uppercase; color: var(--text-3); margin-bottom: 12px; }
+
+/* Edit panel */
+.edit-form { display: flex; flex-direction: column; gap: 10px; }
+.form-field { display: flex; flex-direction: column; gap: 4px; }
+.form-label { font-family: var(--mono); font-size: 9px; text-transform: uppercase; letter-spacing: .15em; color: var(--text-3); }
+.form-field input, .form-field select, .form-field textarea { width: 100%; }
+.form-field textarea { height: 60px; resize: none; }
+
+/* Status selector */
+.status-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; }
+.status-btn {
+  padding: 5px 6px; border-radius: 6px; font-family: var(--mono); font-size: 9px;
+  text-align: center; border: 1px solid var(--border); background: var(--bg-raised);
+  color: var(--text-3); cursor: pointer; transition: all .1s;
+}
+.status-btn.active-complete { border-color: var(--green-bdr); background: var(--green-bg); color: var(--green); }
+.status-btn.active-in-progress { border-color: var(--blue-bdr); background: var(--blue-bg); color: var(--blue); }
+.status-btn.active-upcoming { border-color: var(--amber-bdr); background: var(--amber-bg); color: var(--amber); }
+.status-btn.active-blocked { border-color: var(--red-bdr); background: var(--red-bg); color: var(--red); }
+
+/* Type selector */
+.type-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 4px; }
+.type-btn {
+  padding: 5px 6px; border-radius: 6px; font-family: var(--mono); font-size: 9px;
+  text-align: center; border: 1px solid var(--border); background: var(--bg-raised);
+  color: var(--text-3); cursor: pointer; transition: all .1s;
+}
+.type-btn.active { border-color: var(--purple-bdr); background: var(--purple-bg); color: var(--purple); }
+
+/* Track list in panel */
+.track-list-item {
+  display: flex; align-items: center; gap: 8px; padding: 6px 8px; border-radius: 8px;
+  border: 1px solid var(--border); background: var(--bg-raised); margin-bottom: 5px;
+  cursor: pointer; transition: background .1s;
+}
+.track-list-item:hover { background: var(--bg-hover); }
+.track-list-item.active { border-color: var(--blue-bdr); background: var(--blue-bg); }
+.track-node-count { margin-left: auto; font-family: var(--mono); font-size: 9px; color: var(--text-3); }
+
+/* Legend */
+.legend-items { display: flex; flex-direction: column; gap: 5px; }
+.legend-row { display: flex; align-items: center; gap: 8px; font-size: 10px; color: var(--text-2); }
+.legend-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+.legend-icon { width: 16px; text-align: center; font-size: 11px; }
+
+/* Add branch panel */
+.add-branch-form { display: flex; flex-direction: column; gap: 8px; }
+
+/* Progress bar */
+.progress-wrap { background: var(--bg-deep); border-radius: 99px; height: 4px; overflow: hidden; }
+.progress-bar { height: 100%; border-radius: 99px; transition: width .3s; }
+
+/* Completion ring */
+.completion-circle { position: relative; display: inline-flex; }
+.completion-circle svg { transform: rotate(-90deg); }
+.completion-pct { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 600; }
+
+/* Oba banner */
+.oba-banner {
+  background: linear-gradient(135deg, #0f2730 0%, #132830 100%);
+  border: 1px solid var(--border); border-radius: 12px; padding: 14px;
+  display: flex; align-items: center; gap: 12px; margin-bottom: 14px;
+}
+.oba-text { flex: 1; }
+.oba-title { font-size: 14px; font-weight: 600; margin-bottom: 2px; }
+.oba-sub { font-size: 11px; color: var(--text-2); }
+
+/* Modal overlay */
+.modal-overlay {
+  display: none; position: fixed; inset: 0; background: rgba(0,0,0,.6);
+  z-index: 100; align-items: center; justify-content: center; backdrop-filter: blur(4px);
+}
+.modal-overlay.open { display: flex; }
+.modal-box {
+  background: var(--bg-card); border: 1px solid var(--border-md); border-radius: 14px;
+  padding: 20px; width: 340px; max-width: 95vw;
+}
+.modal-title { font-size: 13px; font-weight: 600; margin-bottom: 14px; }
+.modal-actions { display: flex; gap: 8px; margin-top: 14px; justify-content: flex-end; }
+
+/* Tooltip */
+.tooltip { position: relative; }
+.tooltip::after {
+  content: attr(data-tip); position: absolute; bottom: calc(100% + 6px); left: 50%;
+  transform: translateX(-50%); background: #0a1a20; border: 1px solid var(--border-md);
+  border-radius: 6px; padding: 4px 8px; font-family: var(--mono); font-size: 9px;
+  color: var(--text-2); white-space: nowrap; pointer-events: none;
+  opacity: 0; transition: opacity .15s; z-index: 50;
+}
+.tooltip:hover::after { opacity: 1; }
+
+/* Status badge pill */
+.status-pill {
+  display: inline-flex; align-items: center; gap: 4px; padding: 2px 7px;
+  border-radius: 99px; font-family: var(--mono); font-size: 8px; font-weight: 500;
+  border: 1px solid;
+}
+
+/* Zoom controls */
+.zoom-bar { display: flex; align-items: center; gap: 6px; }
+.zoom-val { font-family: var(--mono); font-size: 9px; color: var(--text-3); min-width: 32px; text-align: center; }
+
+/* drag handle */
+.drag-handle { cursor: grab; padding: 2px; color: var(--text-3); font-size: 12px; }
+.drag-handle:active { cursor: grabbing; }
+
+/* Scrollsync ruler */
+.scroll-sync { overflow-x: auto; }
+.scroll-sync::-webkit-scrollbar { height: 0; }
+
+/* Node connection add button */
+.connect-btn {
+  position: absolute; background: var(--bg-card); border: 1px solid var(--border-md);
+  border-radius: 50%; width: 18px; height: 18px; display: flex; align-items: center;
+  justify-content: center; font-size: 11px; color: var(--text-3); cursor: pointer; z-index: 6;
+  transform: translate(-50%, -50%); transition: all .15s; opacity: 0;
+}
+.track-lane:hover .connect-btn { opacity: 1; }
+.connect-btn:hover { background: var(--blue-bg); color: var(--blue); border-color: var(--blue-bdr); }
+
+/* Animations */
+@keyframes fadeIn { from { opacity:0; transform: translateY(6px); } to { opacity:1; transform: none; } }
+.node-chip { animation: fadeIn .2s both; }
+@keyframes pulse { 0%,100% { box-shadow: 0 0 0 0 rgba(96,165,250,.5); } 50% { box-shadow: 0 0 0 6px rgba(96,165,250,0); } }
+.node-chip.selected .node-circle { animation: pulse 1.8s ease infinite; }
+
+/* Mobile */
+@media (max-width: 600px) {
+  .stats-row { grid-template-columns: 1fr 1fr; }
+  .top-bar-actions .btn span { display: none; }
+}
+</style>
+</head>
+<body>
+<div id="app">
+
+  <!-- Oba banner -->
+  <div class="oba-banner">
+    <div>
+      <div style="font-size:22px">🗺</div>
+    </div>
+    <div class="oba-text">
+      <div class="oba-title">Strategic Roadmap &nbsp;·&nbsp; <span id="roadmap-title-display" style="cursor:pointer; border-bottom: 1px dashed var(--text-3);" onclick="editTitle()">Portfolio Roadmap 2026</span></div>
+      <div class="oba-sub">Branching milestones, releases, and strategic initiatives across tracks.</div>
+    </div>
+    <button class="btn btn-green" onclick="openAddNode()">+ Add Milestone</button>
+  </div>
+
+  <!-- Stats row -->
+  <div class="stats-row" id="stats-row"></div>
+
+  <!-- Header bar -->
+  <div class="top-bar" style="margin-bottom:12px">
+    <div class="top-bar-left">
+      <div class="top-bar-label">Office / Strategic</div>
+      <div class="top-bar-sub">Roadmap · Milestones · Branch management</div>
+    </div>
+    <div class="top-bar-actions">
+      <div class="zoom-bar">
+        <button class="btn btn-ghost btn-sm btn-icon tooltip" data-tip="Zoom out" onclick="setZoom(-0.15)">−</button>
+        <span class="zoom-val" id="zoom-display">100%</span>
+        <button class="btn btn-ghost btn-sm btn-icon tooltip" data-tip="Zoom in" onclick="setZoom(0.15)">+</button>
+        <button class="btn btn-ghost btn-sm tooltip" data-tip="Reset zoom" onclick="resetZoom()">⟳</button>
+      </div>
+      <div class="toolbar-sep"></div>
+      <button class="btn btn-blue" onclick="openAddTrackModal()"><span>＋ Branch</span></button>
+      <button class="btn btn-ghost" onclick="exportData()"><span>↓ Export</span></button>
+    </div>
+  </div>
+
+  <!-- Main grid -->
+  <div class="main-grid">
+
+    <!-- LEFT: Roadmap -->
+    <div class="roadmap-section">
+      <!-- Toolbar -->
+      <div class="roadmap-toolbar">
+        <input class="roadmap-title-input" id="roadmap-title-input" value="Portfolio Roadmap 2026" oninput="updateTitle(this.value)" />
+        <div class="toolbar-sep"></div>
+        <button class="btn btn-ghost btn-sm tooltip" data-tip="Scroll left" onclick="scrollRoadmap(-200)">◀</button>
+        <button class="btn btn-ghost btn-sm tooltip" data-tip="Scroll right" onclick="scrollRoadmap(200)">▶</button>
+        <div class="toolbar-sep"></div>
+        <span style="font-family:var(--mono);font-size:9px;color:var(--text-3)">Click node to edit · Double-click track to add · Drag to reorder</span>
+        <div class="toolbar-right">
+          <button class="btn btn-ghost btn-sm tooltip" data-tip="Fit to view" onclick="fitToView()">⊡ Fit</button>
+          <button class="btn btn-ghost btn-sm" onclick="toggleLegend()">Legend</button>
+        </div>
+      </div>
+
+      <!-- Time ruler (synced scroll) -->
+      <div class="scroll-sync" id="ruler-scroll">
+        <div class="time-ruler" id="time-ruler" style="min-width:1300px"></div>
+      </div>
+
+      <!-- Viewport -->
+      <div class="roadmap-viewport" id="roadmap-viewport" style="min-height:320px">
+        <div class="roadmap-canvas" id="roadmap-canvas"></div>
+      </div>
+
+      <!-- Legend (collapsible) -->
+      <div id="legend-panel" style="padding:12px 14px; border-top:1px solid var(--border); display:none;">
+        <div style="display:flex; gap:32px; flex-wrap:wrap;">
+          <div>
+            <div style="font-family:var(--mono);font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--text-3);margin-bottom:8px">Status</div>
+            <div class="legend-items">
+              <div class="legend-row"><div class="legend-dot" style="background:var(--green)"></div>Complete</div>
+              <div class="legend-row"><div class="legend-dot" style="background:var(--blue)"></div>In Progress</div>
+              <div class="legend-row"><div class="legend-dot" style="background:var(--amber)"></div>Upcoming</div>
+              <div class="legend-row"><div class="legend-dot" style="background:var(--red)"></div>Blocked</div>
+            </div>
+          </div>
+          <div>
+            <div style="font-family:var(--mono);font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--text-3);margin-bottom:8px">Node Type</div>
+            <div class="legend-items">
+              <div class="legend-row"><span class="legend-icon">◆</span>Milestone</div>
+              <div class="legend-row"><span class="legend-icon">▲</span>Release</div>
+              <div class="legend-row"><span class="legend-icon">●</span>Checkpoint</div>
+              <div class="legend-row"><span class="legend-icon">■</span>Task</div>
+            </div>
+          </div>
+          <div>
+            <div style="font-family:var(--mono);font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--text-3);margin-bottom:8px">Lines</div>
+            <div class="legend-items">
+              <div class="legend-row">
+                <svg width="36" height="12"><line x1="0" y1="6" x2="36" y2="6" stroke="var(--blue)" stroke-width="2"/></svg>Main track
+              </div>
+              <div class="legend-row">
+                <svg width="36" height="12"><path d="M 0 2 C 12 2, 24 10, 36 10" stroke="var(--green)" stroke-width="1.5" fill="none" stroke-dasharray="4,2"/></svg>Branch
+              </div>
+              <div class="legend-row">
+                <svg width="36" height="12"><path d="M 0 10 C 12 10, 24 2, 36 2" stroke="var(--purple)" stroke-width="1.5" fill="none" stroke-dasharray="4,2"/></svg>Merge
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT panel -->
+    <div class="right-panel">
+
+      <!-- Node editor -->
+      <div class="panel-card" id="node-editor" style="display:none">
+        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:12px;">
+          <div class="panel-title" style="margin:0">Edit Node</div>
+          <button class="btn btn-ghost btn-sm btn-icon" onclick="clearSelection()" style="font-size:14px">✕</button>
+        </div>
+        <div class="edit-form" id="edit-form"></div>
+        <div style="margin-top:12px; padding-top:12px; border-top:1px solid var(--border); display:flex; gap:6px; flex-wrap:wrap;">
+          <button class="btn btn-blue btn-sm" onclick="branchFromSelected()">⑂ Branch Here</button>
+          <button class="btn btn-ghost btn-sm" onclick="duplicateSelected()">⊕ Duplicate</button>
+          <button class="btn btn-red btn-sm" onclick="deleteSelected()">⊖ Delete</button>
+        </div>
+      </div>
+
+      <!-- No selection prompt -->
+      <div class="panel-card" id="no-selection-panel">
+        <div class="panel-title">Node Inspector</div>
+        <div style="text-align:center; padding:16px 0; color:var(--text-3);">
+          <div style="font-size:28px; margin-bottom:8px;">◉</div>
+          <div style="font-size:11px; line-height:1.5;">Click any node on the roadmap to inspect and edit it.</div>
+          <div style="font-size:10px; margin-top:8px; color:var(--text-3);">Double-click a track lane to add a new node at that position.</div>
+        </div>
+      </div>
+
+      <!-- Tracks panel -->
+      <div class="panel-card">
+        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:10px;">
+          <div class="panel-title" style="margin:0">Tracks</div>
+          <button class="btn btn-blue btn-sm" onclick="openAddTrackModal()">+ Track</button>
+        </div>
+        <div id="tracks-list"></div>
+      </div>
+
+      <!-- Progress summary -->
+      <div class="panel-card">
+        <div class="panel-title">Progress</div>
+        <div id="progress-summary"></div>
+      </div>
+
+      <!-- Legend toggle (small) -->
+      <div class="panel-card">
+        <div class="panel-title">Quick Actions</div>
+        <div style="display:flex; flex-direction:column; gap:6px;">
+          <button class="btn btn-ghost btn-sm" style="justify-content:flex-start; width:100%" onclick="openAddNode()">＋ Add Milestone</button>
+          <button class="btn btn-ghost btn-sm" style="justify-content:flex-start; width:100%" onclick="openAddTrackModal()">⑂ New Branch Track</button>
+          <button class="btn btn-ghost btn-sm" style="justify-content:flex-start; width:100%" onclick="autoLayout()">⊞ Auto-Layout</button>
+          <button class="btn btn-ghost btn-sm" style="justify-content:flex-start; width:100%" onclick="clearAll()">✕ Clear All</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- Add Track Modal -->
+<div class="modal-overlay" id="add-track-modal">
+  <div class="modal-box">
+    <div class="modal-title">Add New Track</div>
+    <div style="display:flex;flex-direction:column;gap:10px;">
+      <div class="form-field">
+        <div class="form-label">Track Name</div>
+        <input id="new-track-name" placeholder="e.g. Mobile Apps, API v2, Infrastructure..." />
+      </div>
+      <div class="form-field">
+        <div class="form-label">Color</div>
+        <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:6px;" id="color-picker"></div>
+      </div>
+      <div class="form-field">
+        <div class="form-label">Branch From Track</div>
+        <select id="new-track-parent">
+          <option value="">None (standalone)</option>
+        </select>
+      </div>
+      <div class="form-field" id="branch-node-field" style="display:none">
+        <div class="form-label">Branch From Node</div>
+        <select id="new-track-branch-node">
+          <option value="">Select node...</option>
+        </select>
+      </div>
+      <div class="form-field" id="merge-track-field">
+        <div class="form-label">Merge Back Into</div>
+        <select id="new-track-merge-parent">
+          <option value="">None (open branch)</option>
+        </select>
+      </div>
+      <div class="form-field" id="merge-node-field" style="display:none">
+        <div class="form-label">Merge Into Node</div>
+        <select id="new-track-merge-node">
+          <option value="">Select merge target...</option>
+        </select>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeAddTrackModal()">Cancel</button>
+      <button class="btn btn-green" onclick="confirmAddTrack()">Create Track</button>
+    </div>
+  </div>
+</div>
+
+<!-- Add Node Modal -->
+<div class="modal-overlay" id="add-node-modal">
+  <div class="modal-box">
+    <div class="modal-title">Add New Milestone</div>
+    <div style="display:flex;flex-direction:column;gap:10px;">
+      <div class="form-field">
+        <div class="form-label">Label</div>
+        <input id="new-node-label" placeholder="Milestone name..." />
+      </div>
+      <div class="form-field">
+        <div class="form-label">Track</div>
+        <select id="new-node-track"></select>
+      </div>
+      <div class="form-field">
+        <div class="form-label">Quarter</div>
+        <select id="new-node-quarter">
+          <option value="0.15">Q1 2026 — Jan</option>
+          <option value="0.35">Q1 2026 — Feb</option>
+          <option value="0.55">Q1 2026 — Mar</option>
+          <option value="1.15">Q2 2026 — Apr</option>
+          <option value="1.35">Q2 2026 — May</option>
+          <option value="1.55">Q2 2026 — Jun</option>
+          <option value="2.15">Q3 2026 — Jul</option>
+          <option value="2.35">Q3 2026 — Aug</option>
+          <option value="2.55">Q3 2026 — Sep</option>
+          <option value="3.15">Q4 2026 — Oct</option>
+          <option value="3.35">Q4 2026 — Nov</option>
+          <option value="3.55">Q4 2026 — Dec</option>
+        </select>
+      </div>
+      <div class="form-field">
+        <div class="form-label">Type</div>
+        <select id="new-node-type">
+          <option value="milestone">◆ Milestone</option>
+          <option value="release">▲ Release</option>
+          <option value="checkpoint">● Checkpoint</option>
+          <option value="task">■ Task</option>
+        </select>
+      </div>
+      <div class="form-field">
+        <div class="form-label">Status</div>
+        <select id="new-node-status">
+          <option value="upcoming">Upcoming</option>
+          <option value="in-progress">In Progress</option>
+          <option value="complete">Complete</option>
+          <option value="blocked">Blocked</option>
+        </select>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeAddNodeModal()">Cancel</button>
+      <button class="btn btn-green" onclick="confirmAddNode()">Add Node</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════════════
+// DATA MODEL
+// ═══════════════════════════════════════════════════════════════
+const TRACK_COLORS = ['#60a5fa','#10b981','#a855f7','#f59e0b','#22d3ee','#f87171','#fb923c','#34d399','#818cf8','#e879f9'];
+
+let state = {
+  title: 'Portfolio Roadmap 2026',
+  zoom: 1,
+  selected: null, // { trackId, nodeId }
+  legendVisible: false,
+  nextId: 100,
+  tracks: [
+    {
+      id: 'main', name: 'Main / Release', color: '#60a5fa', type: 'main',
+      branchFrom: null, mergeInto: null, collapsed: false,
+      nodes: [
+        { id:'n1', label:'Foundation', type:'milestone', status:'complete', q:0.15, desc:'Platform foundation sprint' },
+        { id:'n2', label:'Alpha v0.1', type:'release', status:'complete', q:0.9, desc:'First internal alpha release' },
+        { id:'n3', label:'Beta Launch', type:'release', status:'in-progress', q:1.6, desc:'Public beta with core features' },
+        { id:'n4', label:'v1.0 Release', type:'release', status:'upcoming', q:2.4, desc:'General availability launch' },
+        { id:'n5', label:'v2.0 Vision', type:'milestone', status:'upcoming', q:3.5, desc:'Next major version planning' },
+      ]
+    },
+    {
+      id: 'api', name: 'API Platform', color: '#10b981', type: 'feature',
+      branchFrom: { trackId: 'main', nodeId: 'n2' },
+      mergeInto: { trackId: 'main', nodeId: 'n4' }, collapsed: false,
+      nodes: [
+        { id:'a1', label:'API Design', type:'checkpoint', status:'complete', q:1.1, desc:'REST + GraphQL spec finalized' },
+        { id:'a2', label:'v1 Endpoints', type:'task', status:'in-progress', q:1.6, desc:'Core CRUD endpoints' },
+        { id:'a3', label:'Rate Limiting', type:'task', status:'upcoming', q:2.0, desc:'Throttling + quota system' },
+        { id:'a4', label:'SDK Release', type:'release', status:'upcoming', q:2.3, desc:'Public SDK for developers' },
+      ]
+    },
+    {
+      id: 'mobile', name: 'Mobile Apps', color: '#a855f7', type: 'feature',
+      branchFrom: { trackId: 'main', nodeId: 'n3' },
+      mergeInto: null, collapsed: false,
+      nodes: [
+        { id:'m1', label:'iOS Prototype', type:'checkpoint', status:'upcoming', q:1.9, desc:'Initial iOS prototype build' },
+        { id:'m2', label:'Android Beta', type:'task', status:'upcoming', q:2.2, desc:'Android companion app' },
+        { id:'m3', label:'App Store', type:'release', status:'upcoming', q:2.8, desc:'App Store + Play Store launch' },
+      ]
+    },
+    {
+      id: 'infra', name: 'Infrastructure', color: '#f59e0b', type: 'feature',
+      branchFrom: { trackId: 'main', nodeId: 'n1' },
+      mergeInto: null, collapsed: false,
+      nodes: [
+        { id:'i1', label:'DB Migration', type:'task', status:'complete', q:0.4, desc:'PostgreSQL → distributed setup' },
+        { id:'i2', label:'K8s Deploy', type:'checkpoint', status:'complete', q:0.8, desc:'Kubernetes cluster live' },
+        { id:'i3', label:'Multi-region', type:'milestone', status:'in-progress', q:1.5, desc:'US + EU regions active' },
+        { id:'i4', label:'99.99% SLA', type:'milestone', status:'upcoming', q:2.5, desc:'Enterprise SLA target' },
+        { id:'i5', label:'Edge Network', type:'task', status:'upcoming', q:3.2, desc:'CDN + edge compute rollout' },
+      ]
+    }
+  ]
+};
+
+// ═══════════════════════════════════════════════════════════════
+// CONSTANTS & HELPERS
+// ═══════════════════════════════════════════════════════════════
+const CANVAS_LEFT_MARGIN = 160;
+const TRACK_H = 80;
+const QUARTERS = 4;
+const QUARTER_LABELS = ['Q1 2026', 'Q2 2026', 'Q3 2026', 'Q4 2026'];
+const MONTH_LABELS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
+function getZoomedWidth() { return Math.max(1100, 1100 * state.zoom); }
+function getQuarterWidth() { return getZoomedWidth() / QUARTERS; }
+function qToX(q) { return q * getQuarterWidth(); } // relative to track content
+function xToQ(x) { return x / getQuarterWidth(); }
+function uid() { return 'id_' + (++state.nextId); }
+
+function getTrack(trackId) { return state.tracks.find(t => t.id === trackId); }
+function getNode(trackId, nodeId) {
+  const t = getTrack(trackId);
+  return t ? t.nodes.find(n => n.id === nodeId) : null;
+}
+
+function statusColor(s) {
+  if (s === 'complete')    return 'var(--green)';
+  if (s === 'in-progress') return 'var(--blue)';
+  if (s === 'blocked')     return 'var(--red)';
+  return 'var(--amber)';
+}
+
+function typeIcon(t) {
+  if (t === 'milestone')  return '◆';
+  if (t === 'release')    return '▲';
+  if (t === 'checkpoint') return '●';
+  return '■';
+}
+
+function computeStats() {
+  const allNodes = state.tracks.flatMap(t => t.nodes);
+  const total = allNodes.length;
+  const complete = allNodes.filter(n => n.status === 'complete').length;
+  const inProgress = allNodes.filter(n => n.status === 'in-progress').length;
+  const milestones = allNodes.filter(n => n.type === 'milestone').length;
+  return { total, complete, inProgress, milestones, tracks: state.tracks.length };
+}
+
+// ═══════════════════════════════════════════════════════════════
+// RENDERING
+// ═══════════════════════════════════════════════════════════════
+function render() {
+  renderStats();
+  renderTimeRuler();
+  renderCanvas();
+  renderTracksList();
+  renderProgressSummary();
+  renderNodeEditor();
+  document.getElementById('zoom-display').textContent = Math.round(state.zoom * 100) + '%';
+  document.getElementById('roadmap-title-display').textContent = state.title;
+  document.getElementById('roadmap-title-input').value = state.title;
+}
+
+function renderStats() {
+  const s = computeStats();
+  const pct = s.total ? Math.round(s.complete / s.total * 100) : 0;
+  document.getElementById('stats-row').innerHTML = `
+    <div class="stat-card">
+      <div class="stat-num" style="color:var(--blue)">${s.tracks}</div>
+      <div class="stat-label">Tracks</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-num" style="color:var(--purple)">${s.milestones}</div>
+      <div class="stat-label">Milestones</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-num" style="color:var(--green)">${pct}%</div>
+      <div class="stat-label">Complete</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-num" style="color:var(--amber)">${s.inProgress}</div>
+      <div class="stat-label">In Progress</div>
+    </div>
+  `;
+}
+
+function renderTimeRuler() {
+  const qw = getQuarterWidth();
+  const ruler = document.getElementById('time-ruler');
+  ruler.style.minWidth = (CANVAS_LEFT_MARGIN + getZoomedWidth()) + 'px';
+  let html = '';
+  QUARTER_LABELS.forEach(q => {
+    html += `<div class="quarter-col" style="width:${qw}px">${q}</div>`;
+  });
+  ruler.innerHTML = html;
+}
+
+function renderCanvas() {
+  const canvas = document.getElementById('roadmap-canvas');
+  const totalW = CANVAS_LEFT_MARGIN + getZoomedWidth();
+  const totalH = state.tracks.length * TRACK_H;
+  canvas.style.width = totalW + 'px';
+  canvas.style.height = totalH + 'px';
+
+  // Build HTML
+  let html = '';
+
+  // SVG for connections
+  html += `<svg class="roadmap-svg" id="conn-svg" width="${totalW}" height="${totalH}" xmlns="http://www.w3.org/2000/svg">`;
+  // Quarter separator lines
+  const qw = getQuarterWidth();
+  for (let i = 1; i < QUARTERS; i++) {
+    const x = CANVAS_LEFT_MARGIN + i * qw;
+    html += `<line x1="${x}" y1="0" x2="${x}" y2="${totalH}" stroke="rgba(255,255,255,0.04)" stroke-width="1"/>`;
+  }
+  // Month lines
+  const monthW = getZoomedWidth() / 12;
+  for (let i = 1; i < 12; i++) {
+    if (i % 3 !== 0) {
+      const x = CANVAS_LEFT_MARGIN + i * monthW;
+      html += `<line x1="${x}" y1="0" x2="${x}" y2="${totalH}" stroke="rgba(255,255,255,0.02)" stroke-width="1" stroke-dasharray="2,4"/>`;
+    }
+  }
+
+  // Track lines and branch connections
+  state.tracks.forEach((track, ti) => {
+    const cy = ti * TRACK_H + TRACK_H / 2;
+    const nodes = [...track.nodes].sort((a,b) => a.q - b.q);
+
+    // Track horizontal line segments
+    if (nodes.length > 0) {
+      const firstX = CANVAS_LEFT_MARGIN + qToX(nodes[0].q);
+      const lastX  = CANVAS_LEFT_MARGIN + qToX(nodes[nodes.length-1].q);
+      // Line from first to last node
+      html += `<line x1="${firstX}" y1="${cy}" x2="${lastX}" y2="${cy}" stroke="${track.color}" stroke-width="2" opacity="0.7"/>`;
+      // Extend slightly past last node
+      html += `<line x1="${lastX}" y1="${cy}" x2="${lastX+20}" y2="${cy}" stroke="${track.color}" stroke-width="1.5" stroke-dasharray="3,4" opacity="0.4"/>`;
+    }
+
+    // Branch from parent
+    if (track.branchFrom) {
+      const parentTrack = getTrack(track.branchFrom.trackId);
+      const parentNode  = getNode(track.branchFrom.trackId, track.branchFrom.nodeId);
+      if (parentTrack && parentNode) {
+        const pti = state.tracks.indexOf(parentTrack);
+        const pcy = pti * TRACK_H + TRACK_H / 2;
+        const px  = CANVAS_LEFT_MARGIN + qToX(parentNode.q);
+        const firstChildNode = [...track.nodes].sort((a,b) => a.q-b.q)[0];
+        if (firstChildNode) {
+          const cx2 = CANVAS_LEFT_MARGIN + qToX(firstChildNode.q);
+          // Bezier branch curve
+          const dx = Math.abs(cx2 - px) * 0.5;
+          html += `<path d="M ${px} ${pcy} C ${px+dx} ${pcy}, ${cx2-dx} ${cy}, ${cx2} ${cy}" stroke="${track.color}" stroke-width="1.5" fill="none" stroke-dasharray="5,3" opacity="0.7"/>`;
+          // Arrow at child
+          html += `<circle cx="${cx2-2}" cy="${cy}" r="3" fill="${track.color}" opacity="0.5"/>`;
+        }
+      }
+    }
+
+    // Merge into parent
+    if (track.mergeInto) {
+      const parentTrack = getTrack(track.mergeInto.trackId);
+      const parentNode  = getNode(track.mergeInto.trackId, track.mergeInto.nodeId);
+      if (parentTrack && parentNode) {
+        const pti = state.tracks.indexOf(parentTrack);
+        const pcy = pti * TRACK_H + TRACK_H / 2;
+        const px  = CANVAS_LEFT_MARGIN + qToX(parentNode.q);
+        const lastChildNode = [...track.nodes].sort((a,b) => b.q-a.q)[0];
+        if (lastChildNode) {
+          const cx1 = CANVAS_LEFT_MARGIN + qToX(lastChildNode.q);
+          const dx = Math.abs(px - cx1) * 0.5;
+          html += `<path d="M ${cx1} ${cy} C ${cx1+dx} ${cy}, ${px-dx} ${pcy}, ${px} ${pcy}" stroke="${track.color}" stroke-width="1.5" fill="none" stroke-dasharray="5,3" opacity="0.6"/>`;
+          // Merge arrowhead
+          html += `<polygon points="${px},${pcy} ${px-6},${pcy-4} ${px-6},${pcy+4}" fill="${track.color}" opacity="0.6"/>`;
+        }
+      }
+    }
+  });
+
+  html += `</svg>`;
+
+  // Track lanes + nodes
+  state.tracks.forEach((track, ti) => {
+    const nodes = [...track.nodes].sort((a,b) => a.q - b.q);
+    html += `
+      <div class="track-lane" style="width:${totalW}px; top:${ti*TRACK_H}px; position:absolute;"
+           ondblclick="onTrackDblClick(event,'${track.id}')">
+        <div class="track-label-col">
+          <div class="track-dot" style="background:${track.color}"></div>
+          <input class="track-name-input" value="${esc(track.name)}"
+                 oninput="updateTrackName('${track.id}',this.value)"
+                 onclick="event.stopPropagation()" style="color:${track.color}"/>
+          <button class="track-del tooltip" data-tip="Delete track"
+                  onclick="deleteTrack('${track.id}')" style="font-size:13px;">✕</button>
+        </div>
+        <div class="track-content">`;
+
+    nodes.forEach(node => {
+      const x = qToX(node.q);
+      const cy = TRACK_H / 2;
+      const sc = statusColor(node.status);
+      const isSelected = state.selected?.nodeId === node.id;
+      const icon = typeIcon(node.type);
+      html += `
+        <div class="node-chip ${isSelected ? 'selected' : ''}"
+             style="left:${x}px; top:${cy}px;"
+             id="nc_${node.id}"
+             onclick="selectNode('${track.id}','${node.id}')"
+             onmousedown="startDrag(event,'${track.id}','${node.id}')"
+             title="${esc(node.label)} · ${node.status}">
+          <div class="node-circle" style="border-color:${track.color}; background:${sc}22;">
+            <span class="node-type-icon" style="color:${sc}; font-size:9px;">${icon}</span>
+          </div>
+          <div class="node-label" style="color:${sc}">${esc(node.label)}</div>
+          <div class="node-date" style="color:${track.color}55">${qToLabel(node.q)}</div>
+        </div>`;
+    });
+
+    // Ghost add button at end
+    const lastQ = nodes.length ? nodes[nodes.length-1].q + 0.4 : 0.5;
+    const ghostX = Math.min(qToX(lastQ), getZoomedWidth() - 20);
+    html += `
+          <div class="add-node-ghost" style="left:${ghostX}px; top:${TRACK_H/2}px;"
+               onclick="addNodeAfterLast('${track.id}')" title="Add node">+</div>
+        </div>
+      </div>`;
+  });
+
+  canvas.innerHTML = html;
+  syncScroll();
+}
+
+function qToLabel(q) {
+  const month = Math.floor(q * 3);
+  return MONTH_LABELS[Math.min(month, 11)] + " '26";
+}
+
+function esc(s) { return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+function renderTracksList() {
+  const el = document.getElementById('tracks-list');
+  let html = '';
+  state.tracks.forEach(t => {
+    const isSelected = state.selected && getNode(t.id, state.selected.nodeId);
+    html += `
+      <div class="track-list-item ${isSelected?'active':''}" onclick="scrollToTrack('${t.id}')">
+        <div class="track-dot" style="background:${t.color}"></div>
+        <span style="font-size:11px; color:${t.color}">${esc(t.name)}</span>
+        <span class="track-node-count">${t.nodes.length}</span>
+      </div>`;
+  });
+  el.innerHTML = html;
+}
+
+function renderProgressSummary() {
+  const el = document.getElementById('progress-summary');
+  let html = '';
+  state.tracks.forEach(t => {
+    const total = t.nodes.length;
+    const done = t.nodes.filter(n => n.status === 'complete').length;
+    const pct = total ? Math.round(done/total*100) : 0;
+    html += `
+      <div style="margin-bottom:10px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+          <span style="font-size:10px; color:${t.color}; font-family:var(--mono)">${esc(t.name)}</span>
+          <span style="font-size:9px; font-family:var(--mono); color:var(--text-3)">${done}/${total}</span>
+        </div>
+        <div class="progress-wrap">
+          <div class="progress-bar" style="width:${pct}%; background:${t.color};"></div>
+        </div>
+      </div>`;
+  });
+  el.innerHTML = html;
+}
+
+function renderNodeEditor() {
+  const editorEl = document.getElementById('node-editor');
+  const noSelEl  = document.getElementById('no-selection-panel');
+
+  if (!state.selected) {
+    editorEl.style.display = 'none';
+    noSelEl.style.display = 'block';
+    return;
+  }
+
+  const { trackId, nodeId } = state.selected;
+  const node  = getNode(trackId, nodeId);
+  const track = getTrack(trackId);
+  if (!node || !track) { editorEl.style.display = 'none'; noSelEl.style.display = 'block'; return; }
+
+  editorEl.style.display = 'block';
+  noSelEl.style.display  = 'none';
+
+  const qIdx = Math.round(node.q * 3);
+  const monthOpts = MONTH_LABELS.map((m,i) =>
+    `<option value="${((i/3)+0.15).toFixed(2)}" ${Math.round(node.q*3)===i?'selected':''}>${m} '26</option>`
+  ).join('');
+
+  const statusBtns = ['complete','in-progress','upcoming','blocked'].map(s =>
+    `<button class="status-btn ${node.status===s?'active-'+s:''}" onclick="setNodeProp('status','${s}')">${s}</button>`
+  ).join('');
+
+  const typeBtns = ['milestone','release','checkpoint','task'].map(t =>
+    `<button class="type-btn ${node.type===t?'active':''}" onclick="setNodeProp('type','${t}')">${typeIcon(t)} ${t}</button>`
+  ).join('');
+
+  document.getElementById('edit-form').innerHTML = `
+    <div class="form-field">
+      <div class="form-label">Label</div>
+      <input value="${esc(node.label)}" oninput="setNodeProp('label',this.value)" />
+    </div>
+    <div class="form-field">
+      <div class="form-label">Description</div>
+      <textarea oninput="setNodeProp('desc',this.value)">${esc(node.desc||'')}</textarea>
+    </div>
+    <div class="form-field">
+      <div class="form-label">Month</div>
+      <select onchange="setNodeProp('q',parseFloat(this.value))">${monthOpts}</select>
+    </div>
+    <div class="form-field">
+      <div class="form-label">Status</div>
+      <div class="status-grid">${statusBtns}</div>
+    </div>
+    <div class="form-field">
+      <div class="form-label">Type</div>
+      <div class="type-grid">${typeBtns}</div>
+    </div>
+    <div style="font-size:9px; font-family:var(--mono); color:var(--text-3); padding-top:6px; border-top:1px solid var(--border);">
+      Track: <span style="color:${track.color}">${esc(track.name)}</span>
+    </div>
+  `;
+}
+
+// ═══════════════════════════════════════════════════════════════
+// INTERACTIONS
+// ═══════════════════════════════════════════════════════════════
+function selectNode(trackId, nodeId) {
+  state.selected = { trackId, nodeId };
+  render();
+}
+
+function clearSelection() {
+  state.selected = null;
+  render();
+}
+
+function setNodeProp(key, value) {
+  if (!state.selected) return;
+  const node = getNode(state.selected.trackId, state.selected.nodeId);
+  if (node) { node[key] = value; render(); }
+}
+
+function updateTrackName(trackId, name) {
+  const t = getTrack(trackId);
+  if (t) { t.name = name; renderTracksList(); renderProgressSummary(); renderStats(); }
+}
+
+function updateTitle(v) { state.title = v; document.getElementById('roadmap-title-display').textContent = v; }
+function editTitle() { document.getElementById('roadmap-title-input').focus(); document.getElementById('roadmap-title-input').select(); }
+
+// ─── Drag to reorder ──────────────────────────────────────────
+let drag = null;
+function startDrag(e, trackId, nodeId) {
+  e.preventDefault();
+  e.stopPropagation();
+  const node = getNode(trackId, nodeId);
+  if (!node) return;
+  const viewport = document.getElementById('roadmap-viewport');
+  const vpRect   = viewport.getBoundingClientRect();
+  drag = { trackId, nodeId, startClientX: e.clientX, startQ: node.q, scrollLeft: viewport.scrollLeft };
+  document.getElementById('nc_'+nodeId)?.classList.add('dragging');
+  document.addEventListener('mousemove', onDrag);
+  document.addEventListener('mouseup', stopDrag);
+}
+function onDrag(e) {
+  if (!drag) return;
+  const node = getNode(drag.trackId, drag.nodeId);
+  if (!node) return;
+  const dx = e.clientX - drag.startClientX;
+  const dq = dx / getQuarterWidth();
+  node.q = Math.max(0, Math.min(QUARTERS - 0.05, drag.startQ + dq));
+  // Update only the node position (fast path)
+  const chip = document.getElementById('nc_' + drag.nodeId);
+  if (chip) {
+    chip.style.left = qToX(node.q) + 'px';
+    chip.querySelector('.node-date').textContent = qToLabel(node.q);
+  }
+  // Redraw SVG
+  renderSVGOnly();
+}
+function stopDrag() {
+  if (drag) {
+    document.getElementById('nc_'+drag.nodeId)?.classList.remove('dragging');
+    drag = null;
+    render();
+  }
+  document.removeEventListener('mousemove', onDrag);
+  document.removeEventListener('mouseup', stopDrag);
+}
+
+function onTrackDblClick(e, trackId) {
+  const viewport = document.getElementById('roadmap-viewport');
+  const vpRect   = viewport.getBoundingClientRect();
+  const trackContent = e.currentTarget.querySelector('.track-content');
+  const tcRect = trackContent.getBoundingClientRect();
+  const x = e.clientX - tcRect.left;
+  const q = xToQ(x);
+  const node = {
+    id: uid(), label: 'New Milestone', type: 'milestone', status: 'upcoming',
+    q: Math.max(0, Math.min(QUARTERS-0.1, q)), desc: ''
+  };
+  getTrack(trackId).nodes.push(node);
+  state.selected = { trackId, nodeId: node.id };
+  render();
+}
+
+// Fast SVG-only redraw during drag
+function renderSVGOnly() {
+  const totalW = CANVAS_LEFT_MARGIN + getZoomedWidth();
+  const totalH = state.tracks.length * TRACK_H;
+  let svg = `<svg class="roadmap-svg" id="conn-svg" width="${totalW}" height="${totalH}" xmlns="http://www.w3.org/2000/svg">`;
+  const qw = getQuarterWidth();
+  for (let i = 1; i < QUARTERS; i++) {
+    const x = CANVAS_LEFT_MARGIN + i * qw;
+    svg += `<line x1="${x}" y1="0" x2="${x}" y2="${totalH}" stroke="rgba(255,255,255,0.04)" stroke-width="1"/>`;
+  }
+  state.tracks.forEach((track, ti) => {
+    const cy = ti * TRACK_H + TRACK_H / 2;
+    const nodes = [...track.nodes].sort((a,b) => a.q - b.q);
+    if (nodes.length > 0) {
+      const firstX = CANVAS_LEFT_MARGIN + qToX(nodes[0].q);
+      const lastX  = CANVAS_LEFT_MARGIN + qToX(nodes[nodes.length-1].q);
+      svg += `<line x1="${firstX}" y1="${cy}" x2="${lastX}" y2="${cy}" stroke="${track.color}" stroke-width="2" opacity="0.7"/>`;
+      svg += `<line x1="${lastX}" y1="${cy}" x2="${lastX+20}" y2="${cy}" stroke="${track.color}" stroke-width="1.5" stroke-dasharray="3,4" opacity="0.4"/>`;
+    }
+    if (track.branchFrom) {
+      const parentTrack = getTrack(track.branchFrom.trackId);
+      const parentNode  = getNode(track.branchFrom.trackId, track.branchFrom.nodeId);
+      if (parentTrack && parentNode) {
+        const pti = state.tracks.indexOf(parentTrack);
+        const pcy = pti * TRACK_H + TRACK_H / 2;
+        const px  = CANVAS_LEFT_MARGIN + qToX(parentNode.q);
+        const firstChildNode = [...track.nodes].sort((a,b) => a.q-b.q)[0];
+        if (firstChildNode) {
+          const cx2 = CANVAS_LEFT_MARGIN + qToX(firstChildNode.q);
+          const dx = Math.abs(cx2 - px) * 0.5;
+          svg += `<path d="M ${px} ${pcy} C ${px+dx} ${pcy}, ${cx2-dx} ${cy}, ${cx2} ${cy}" stroke="${track.color}" stroke-width="1.5" fill="none" stroke-dasharray="5,3" opacity="0.7"/>`;
+        }
+      }
+    }
+    if (track.mergeInto) {
+      const parentTrack = getTrack(track.mergeInto.trackId);
+      const parentNode  = getNode(track.mergeInto.trackId, track.mergeInto.nodeId);
+      if (parentTrack && parentNode) {
+        const pti = state.tracks.indexOf(parentTrack);
+        const pcy = pti * TRACK_H + TRACK_H / 2;
+        const px  = CANVAS_LEFT_MARGIN + qToX(parentNode.q);
+        const lastChildNode = [...track.nodes].sort((a,b) => b.q-a.q)[0];
+        if (lastChildNode) {
+          const cx1 = CANVAS_LEFT_MARGIN + qToX(lastChildNode.q);
+          const dx = Math.abs(px - cx1) * 0.5;
+          svg += `<path d="M ${cx1} ${cy} C ${cx1+dx} ${cy}, ${px-dx} ${pcy}, ${px} ${pcy}" stroke="${track.color}" stroke-width="1.5" fill="none" stroke-dasharray="5,3" opacity="0.6"/>`;
+        }
+      }
+    }
+  });
+  svg += `</svg>`;
+  const old = document.getElementById('conn-svg');
+  if (old) old.outerHTML = svg;
+}
+
+// ─── Scroll sync ──────────────────────────────────────────────
+function syncScroll() {
+  const vp    = document.getElementById('roadmap-viewport');
+  const ruler = document.getElementById('ruler-scroll');
+  if (!vp || !ruler) return;
+  vp.onscroll = () => { ruler.scrollLeft = vp.scrollLeft; };
+  ruler.onscroll = () => { vp.scrollLeft = ruler.scrollLeft; };
+}
+
+function scrollRoadmap(dx) {
+  const vp = document.getElementById('roadmap-viewport');
+  if (vp) vp.scrollLeft += dx;
+}
+
+// ─── Zoom ─────────────────────────────────────────────────────
+function setZoom(delta) { state.zoom = Math.max(0.5, Math.min(2.5, state.zoom + delta)); render(); }
+function resetZoom() { state.zoom = 1; render(); }
+function fitToView() {
+  const vp = document.getElementById('roadmap-viewport');
+  if (!vp) return;
+  const vpW = vp.clientWidth - CANVAS_LEFT_MARGIN;
+  state.zoom = Math.max(0.5, vpW / 1100);
+  render();
+}
+
+// ─── Track operations ─────────────────────────────────────────
+function deleteTrack(trackId) {
+  if (state.tracks.length <= 1) { alert('Cannot delete the last track.'); return; }
+  if (!confirm('Delete this track and all its nodes?')) return;
+  // Remove branch/merge references to this track
+  state.tracks.forEach(t => {
+    if (t.branchFrom?.trackId === trackId) t.branchFrom = null;
+    if (t.mergeInto?.trackId  === trackId) t.mergeInto  = null;
+  });
+  state.tracks = state.tracks.filter(t => t.id !== trackId);
+  if (state.selected?.trackId === trackId) state.selected = null;
+  render();
+}
+
+function scrollToTrack(trackId) {
+  const ti = state.tracks.findIndex(t => t.id === trackId);
+  const viewport = document.getElementById('roadmap-viewport');
+  if (viewport && ti >= 0) viewport.scrollTop = ti * TRACK_H;
+}
+
+// ─── Node operations ──────────────────────────────────────────
+function addNodeAfterLast(trackId) {
+  const t = getTrack(trackId);
+  if (!t) return;
+  const sorted = [...t.nodes].sort((a,b) => b.q - a.q);
+  const q = sorted.length ? Math.min(QUARTERS - 0.1, sorted[0].q + 0.4) : 0.5;
+  const node = { id: uid(), label: 'New Node', type: 'checkpoint', status: 'upcoming', q, desc: '' };
+  t.nodes.push(node);
+  state.selected = { trackId, nodeId: node.id };
+  render();
+}
+
+function deleteSelected() {
+  if (!state.selected) return;
+  const { trackId, nodeId } = state.selected;
+  const t = getTrack(trackId);
+  if (!t) return;
+  t.nodes = t.nodes.filter(n => n.id !== nodeId);
+  // Remove branch/merge refs to this node
+  state.tracks.forEach(tr => {
+    if (tr.branchFrom?.nodeId === nodeId) tr.branchFrom = null;
+    if (tr.mergeInto?.nodeId  === nodeId) tr.mergeInto  = null;
+  });
+  state.selected = null;
+  render();
+}
+
+function duplicateSelected() {
+  if (!state.selected) return;
+  const { trackId, nodeId } = state.selected;
+  const node = getNode(trackId, nodeId);
+  if (!node) return;
+  const newNode = { ...node, id: uid(), label: node.label + ' (copy)', q: Math.min(QUARTERS-0.1, node.q + 0.3) };
+  getTrack(trackId).nodes.push(newNode);
+  state.selected = { trackId, nodeId: newNode.id };
+  render();
+}
+
+function branchFromSelected() {
+  if (!state.selected) { openAddTrackModal(); return; }
+  document.getElementById('new-track-parent').value = state.selected.trackId;
+  updateBranchNodeOptions();
+  document.getElementById('new-track-branch-node').value = state.selected.nodeId;
+  openAddTrackModal();
+}
+
+// ─── Legend toggle ────────────────────────────────────────────
+function toggleLegend() {
+  state.legendVisible = !state.legendVisible;
+  document.getElementById('legend-panel').style.display = state.legendVisible ? 'block' : 'none';
+}
+
+// ─── Auto layout ──────────────────────────────────────────────
+function autoLayout() {
+  state.tracks.forEach(track => {
+    track.nodes.sort((a,b) => a.q - b.q);
+    const range = QUARTERS * 0.8;
+    const step  = range / Math.max(1, track.nodes.length + 1);
+    track.nodes.forEach((n, i) => { n.q = 0.1 + step * (i+1); });
+  });
+  render();
+}
+
+function clearAll() {
+  if (!confirm('Clear all nodes from all tracks?')) return;
+  state.tracks.forEach(t => t.nodes = []);
+  state.selected = null;
+  render();
+}
+
+// ─── Export ───────────────────────────────────────────────────
+function exportData() {
+  const json = JSON.stringify(state, null, 2);
+  const blob = new Blob([json], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'kogi-roadmap.json';
+  a.click();
+}
+
+// ═══════════════════════════════════════════════════════════════
+// ADD TRACK MODAL
+// ═══════════════════════════════════════════════════════════════
+let selectedColor = TRACK_COLORS[4];
+
+function openAddTrackModal() {
+  selectedColor = TRACK_COLORS[state.tracks.length % TRACK_COLORS.length];
+  renderColorPicker();
+  populateTrackParentOptions();
+  document.getElementById('new-track-name').value = '';
+  document.getElementById('branch-node-field').style.display = 'none';
+  document.getElementById('merge-node-field').style.display = 'none';
+  document.getElementById('add-track-modal').classList.add('open');
+  setTimeout(() => document.getElementById('new-track-name').focus(), 50);
+}
+
+function closeAddTrackModal() {
+  document.getElementById('add-track-modal').classList.remove('open');
+}
+
+function renderColorPicker() {
+  const el = document.getElementById('color-picker');
+  el.innerHTML = TRACK_COLORS.map(c =>
+    `<div onclick="pickColor('${c}')" style="width:28px;height:28px;border-radius:50%;background:${c};cursor:pointer;border:2px solid ${c===selectedColor?'#fff':'transparent'};transition:border .1s;" title="${c}"></div>`
+  ).join('');
+}
+
+function pickColor(c) { selectedColor = c; renderColorPicker(); }
+
+function populateTrackParentOptions() {
+  const sel = document.getElementById('new-track-parent');
+  const mergeSel = document.getElementById('new-track-merge-parent');
+  let opts = '<option value="">None (standalone)</option>';
+  let mergeOpts = '<option value="">None (open branch)</option>';
+  state.tracks.forEach(t => {
+    opts += `<option value="${t.id}">${t.name}</option>`;
+    mergeOpts += `<option value="${t.id}">${t.name}</option>`;
+  });
+  sel.innerHTML = opts;
+  mergeSel.innerHTML = mergeOpts;
+  sel.onchange = () => { updateBranchNodeOptions(); updateMergeOptions(); };
+  document.getElementById('new-track-merge-parent').onchange = updateMergeNodeOptions;
+}
+
+function updateBranchNodeOptions() {
+  const parentId = document.getElementById('new-track-parent').value;
+  const nodeField = document.getElementById('branch-node-field');
+  const nodeSel   = document.getElementById('new-track-branch-node');
+  if (!parentId) { nodeField.style.display = 'none'; return; }
+  const t = getTrack(parentId);
+  if (!t) return;
+  nodeField.style.display = 'flex';
+  nodeSel.innerHTML = '<option value="">— branch from start —</option>' +
+    [...t.nodes].sort((a,b)=>a.q-b.q).map(n =>
+      `<option value="${n.id}">${n.label} (${qToLabel(n.q)})</option>`
+    ).join('');
+}
+
+function updateMergeOptions() {
+  const parentId = document.getElementById('new-track-parent').value;
+  const mergeSel = document.getElementById('new-track-merge-parent');
+  if (!parentId) return;
+  // Default to merging back into same parent
+  const opts = ['<option value="">None</option>'];
+  state.tracks.forEach(t => { opts.push(`<option value="${t.id}" ${t.id===parentId?'selected':''}>${t.name}</option>`); });
+  mergeSel.innerHTML = opts.join('');
+  updateMergeNodeOptions();
+}
+
+function updateMergeNodeOptions() {
+  const mergeParentId = document.getElementById('new-track-merge-parent').value;
+  const mergeNodeField = document.getElementById('merge-node-field');
+  const mergeNodeSel   = document.getElementById('new-track-merge-node');
+  if (!mergeParentId) { mergeNodeField.style.display = 'none'; return; }
+  const t = getTrack(mergeParentId);
+  if (!t) return;
+  mergeNodeField.style.display = 'flex';
+  mergeNodeSel.innerHTML = '<option value="">— open end —</option>' +
+    [...t.nodes].sort((a,b)=>a.q-b.q).map(n =>
+      `<option value="${n.id}">${n.label} (${qToLabel(n.q)})</option>`
+    ).join('');
+}
+
+function confirmAddTrack() {
+  const name = document.getElementById('new-track-name').value.trim();
+  if (!name) { document.getElementById('new-track-name').focus(); return; }
+  const parentId  = document.getElementById('new-track-parent').value;
+  const branchNodeId = document.getElementById('new-track-branch-node').value;
+  const mergeParentId = document.getElementById('new-track-merge-parent').value;
+  const mergeNodeId   = document.getElementById('new-track-merge-node').value;
+
+  const newTrack = {
+    id: uid(), name, color: selectedColor, type: parentId ? 'feature' : 'main',
+    branchFrom: parentId ? { trackId: parentId, nodeId: branchNodeId || null } : null,
+    mergeInto:  mergeParentId ? { trackId: mergeParentId, nodeId: mergeNodeId || null } : null,
+    collapsed: false,
+    nodes: []
+  };
+  state.tracks.push(newTrack);
+  closeAddTrackModal();
+  render();
+}
+
+// ═══════════════════════════════════════════════════════════════
+// ADD NODE MODAL
+// ═══════════════════════════════════════════════════════════════
+function openAddNode() {
+  const sel = document.getElementById('new-node-track');
+  sel.innerHTML = state.tracks.map(t => `<option value="${t.id}">${t.name}</option>`).join('');
+  document.getElementById('new-node-label').value = '';
+  document.getElementById('add-node-modal').classList.add('open');
+  setTimeout(() => document.getElementById('new-node-label').focus(), 50);
+}
+function closeAddNodeModal() { document.getElementById('add-node-modal').classList.remove('open'); }
+function confirmAddNode() {
+  const label = document.getElementById('new-node-label').value.trim();
+  if (!label) return;
+  const trackId = document.getElementById('new-node-track').value;
+  const q = parseFloat(document.getElementById('new-node-quarter').value);
+  const type   = document.getElementById('new-node-type').value;
+  const status = document.getElementById('new-node-status').value;
+  const node = { id: uid(), label, type, status, q, desc: '' };
+  const t = getTrack(trackId);
+  if (t) t.nodes.push(node);
+  state.selected = { trackId, nodeId: node.id };
+  closeAddNodeModal();
+  render();
+}
+
+// Close modals on overlay click
+document.getElementById('add-track-modal').addEventListener('click', e => {
+  if (e.target === document.getElementById('add-track-modal')) closeAddTrackModal();
+});
+document.getElementById('add-node-modal').addEventListener('click', e => {
+  if (e.target === document.getElementById('add-node-modal')) closeAddNodeModal();
+});
+
+// Keyboard shortcuts
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') { clearSelection(); closeAddTrackModal(); closeAddNodeModal(); }
+  if (e.key === 'Delete' && state.selected && !['INPUT','TEXTAREA','SELECT'].includes(document.activeElement.tagName)) {
+    deleteSelected();
+  }
+});
+
+// ═══════════════════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════════════════
+render();
+</script>
+</body>
+</html>

@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Event Log — Hypergrid</title>
+<link rel="stylesheet" href="shared.css">
+<style>
+.log-layout { display: grid; grid-template-columns: 1fr 320px; height: calc(100vh - 48px); overflow: hidden; }
+.log-main { overflow: hidden; display: flex; flex-direction: column; }
+.log-sidebar { border-left: 0.5px solid var(--rule); overflow-y: auto; background: var(--paper); }
+
+.log-toolbar {
+  padding: 8px 1.5rem;
+  background: var(--paper-2);
+  border-bottom: 0.5px solid var(--rule);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+.log-stream { overflow-y: auto; flex: 1; }
+
+.event-row {
+  display: grid;
+  grid-template-columns: 24px 130px 110px 160px 160px 1fr 80px;
+  align-items: center;
+  padding: 7px 1.5rem;
+  border-bottom: 0.5px solid var(--rule);
+  font-size: 12px;
+  cursor: pointer;
+  transition: background 0.1s;
+  gap: 12px;
+}
+.event-row:hover { background: var(--paper-2); }
+.event-row.selected { background: var(--accent-d); }
+.event-row.header {
+  background: var(--paper-2);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-4);
+  cursor: default;
+  position: sticky; top: 0; z-index: 5;
+  border-bottom: 1px solid var(--rule);
+}
+.event-row:hover.header { background: var(--paper-2); }
+
+.ev-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.ev-ts { font-family: var(--font-mono); font-size: 10px; color: var(--ink-3); white-space: nowrap; }
+.ev-kind { }
+.ev-actor { font-family: var(--font-mono); font-size: 11px; color: var(--accent); }
+.ev-cube { font-family: var(--font-mono); font-size: 10px; color: var(--ink-3); }
+.ev-detail { color: var(--ink-2); }
+.ev-detail code { font-size: 10px; }
+.ev-vc { font-family: var(--font-mono); font-size: 9px; color: var(--ink-4); }
+
+/* Time travel panel */
+.timetravel-panel {
+  padding: 1rem;
+  background: var(--accent-d);
+  border-bottom: 0.5px solid var(--accent);
+}
+.tt-title { font-size: 12px; font-weight: 600; color: var(--accent); margin-bottom: 8px; }
+.tt-slider { width: 100%; margin: 8px 0; accent-color: var(--accent); }
+.tt-timestamps { display: flex; justify-content: space-between; font-family: var(--font-mono); font-size: 9px; color: var(--ink-3); }
+
+.detail-panel-section { padding: 1rem; border-bottom: 0.5px solid var(--rule); }
+.detail-panel-section:last-child { border-bottom: none; }
+.dp-title { font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--ink-4); margin-bottom: 8px; font-weight: 600; }
+.dp-field { margin-bottom: 8px; }
+.dp-label { font-size: 10px; color: var(--ink-4); margin-bottom: 2px; }
+.dp-val { font-size: 12px; color: var(--ink-2); }
+.dp-val.mono { font-family: var(--font-mono); font-size: 11px; color: var(--ink-3); }
+
+.diff-block {
+  background: var(--paper-2);
+  border-radius: 6px;
+  padding: 8px 10px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  line-height: 1.6;
+}
+.diff-before { color: var(--red); }
+.diff-after  { color: var(--green); }
+.diff-label  { font-size: 9px; color: var(--ink-4); margin-bottom: 4px; }
+
+.log-stats-bar {
+  padding: 5px 1.5rem;
+  background: var(--paper-2);
+  border-top: 0.5px solid var(--rule);
+  display: flex;
+  gap: 1.5rem;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--ink-4);
+  flex-shrink: 0;
+}
+</style>
+</head>
+<body>
+<div id="sidebar" class="sidebar"></div>
+
+<div class="main">
+  <div class="topbar">
+    <div class="topbar-breadcrumb">
+      <a href="grids.html">Grids</a>
+      <span class="sep">›</span>
+      <span class="current">Event Log</span>
+    </div>
+    <div class="topbar-spacer"></div>
+    <div class="topbar-actions">
+      <button class="btn btn-ghost btn-sm" id="ttBtn" onclick="toggleTimeTravel()">⏪ Time Travel</button>
+      <button class="btn btn-ghost btn-sm" onclick="toggleLive()">⚡ Live Stream</button>
+      <button class="btn btn-ghost btn-sm">↓ Export</button>
+    </div>
+  </div>
+
+  <div class="log-layout">
+    <div class="log-main">
+
+      <!-- Time travel bar (hidden by default) -->
+      <div id="timeTravelPanel" style="display:none">
+        <div class="timetravel-panel">
+          <div class="tt-title">⏪ AS_OF Time Travel — Replay EventLog to any point</div>
+          <div style="display:flex;align-items:center;gap:10px">
+            <span style="font-family:var(--font-mono);font-size:10px;color:var(--accent)">2026-01-01</span>
+            <input type="range" class="tt-slider" min="0" max="100" value="100" id="ttSlider" oninput="updateTT(this.value)">
+            <span style="font-family:var(--font-mono);font-size:10px;color:var(--accent)" id="ttLabel">NOW</span>
+          </div>
+          <div class="tt-timestamps">
+            <span>Jan 2026</span><span>Feb 2026</span><span>Mar 2026</span><span>NOW</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;margin-top:8px">
+            <span style="font-size:12px;color:var(--accent)">Jump to: </span>
+            <input type="text" style="font-family:var(--font-mono);font-size:11px;background:var(--paper);border:0.5px solid var(--accent);border-radius:4px;padding:3px 8px;color:var(--ink);outline:none;flex:1" value="2026-03-22T14:30:00Z" id="ttInput">
+            <button class="btn btn-accent btn-sm" onclick="applyTimeTravel()">Apply AS_OF</button>
+            <button class="btn btn-ghost btn-sm" onclick="toggleTimeTravel()">Exit</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Toolbar -->
+      <div class="log-toolbar">
+        <div class="search-bar" style="flex:1;max-width:300px">
+          <span class="search-icon">🔍</span>
+          <input type="text" placeholder="Search events, actors, cubes…">
+        </div>
+        <div class="pill-row">
+          <span class="pill-opt sel" id="allEvPill" onclick="filterEvt(this,'all')">All</span>
+          <span class="pill-opt" onclick="filterEvt(this,'mutation')">Cell Mutations</span>
+          <span class="pill-opt" onclick="filterEvt(this,'graph')">Graph</span>
+          <span class="pill-opt" onclick="filterEvt(this,'schema')">Schema</span>
+          <span class="pill-opt" onclick="filterEvt(this,'ai')">AI Signals</span>
+          <span class="pill-opt" onclick="filterEvt(this,'federation')">Federation</span>
+        </div>
+        <select style="font-family:var(--font-mono);font-size:11px;background:var(--paper);border:0.5px solid var(--rule);border-radius:4px;padding:3px 8px;color:var(--ink-2)">
+          <option>All cubes</option>
+          <option>kogi.portfolio.components</option>
+          <option>qala.ccrs</option>
+          <option>ume.kernel.modules</option>
+        </select>
+        <div style="display:flex;align-items:center;gap:4px">
+          <div class="dot green" id="liveDot"></div>
+          <span style="font-size:11px;color:var(--ink-3)" id="liveLabel">Live</span>
+        </div>
+      </div>
+
+      <!-- Event stream -->
+      <div class="log-stream" id="logStream">
+        <div class="event-row header">
+          <div></div>
+          <div>Timestamp</div>
+          <div>Kind</div>
+          <div>Actor</div>
+          <div>Cube</div>
+          <div>Detail</div>
+          <div>Version</div>
+        </div>
+        <div id="eventRows"></div>
+      </div>
+
+      <div class="log-stats-bar">
+        <span>TOTAL EVENTS: 48,291,882</span>
+        <span>THIS HOUR: 48,732</span>
+        <span>HOT BUFFER: 2,841 entries</span>
+        <span>S3 ARCHIVE: up to 2026-02-28</span>
+        <span style="margin-left:auto">VECTOR CLOCK: {us-east-1: 8420414, eu-west-1: 6201003}</span>
+      </div>
+    </div>
+
+    <!-- Right: Event detail panel -->
+    <div class="log-sidebar">
+      <div class="detail-panel-section" style="background:var(--paper-2)">
+        <div class="dp-title">Event Detail</div>
+        <div id="eventDetail" style="color:var(--ink-4);font-size:12px">Select an event to inspect</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="shared-nav.js"></script>
+<script>
+buildSidebar('eventlog');
+
+const events = [
+  { id:'e001', ts:'2026-03-22T14:32:01.042Z', kind:'CellMutation', actor:'kogi-engine', cube:'kogi.portfolio.components', attr:'health_score', before:'82.1', after:'87.4', crdt:'LWW', vc:'8420414', dot:'purple' },
+  { id:'e002', ts:'2026-03-22T14:31:58.812Z', kind:'CellMutation', actor:'@alice-dev', cube:'kogi.portfolio.components', attr:'budget_spent', before:'8100', after:'8420', crdt:'PNCounter', vc:'8420413', dot:'blue' },
+  { id:'e003', ts:'2026-03-22T14:30:44.201Z', kind:'GraphEdgeAdded', actor:'@alice-dev', cube:'Hypergraph', attr:'CrossGridLink', before:'—', after:'Pending consent', crdt:'OR-Set', vc:'8420410', dot:'purple' },
+  { id:'e004', ts:'2026-03-22T14:29:22.003Z', kind:'LatticeTransition', actor:'@bob', cube:'qala.ccrs', attr:'status', before:'InReview', after:'Approved', crdt:'Lattice', vc:'6201003', dot:'green' },
+  { id:'e005', ts:'2026-03-22T14:28:55.889Z', kind:'CellMutation', actor:'ume-engine', cube:'ume.kernel.modules', attr:'health_score', before:'78.2', after:'81.4', crdt:'LWW (AI)', vc:'6201001', dot:'purple' },
+  { id:'e006', ts:'2026-03-22T14:27:01.114Z', kind:'FederationSync', actor:'node-eu-west-1', cube:'CrdtLog', attr:'delta sync', before:'VC: 6200990', after:'VC: 6201003', crdt:'—', vc:'8420401', dot:'amber' },
+  { id:'e007', ts:'2026-03-22T14:26:40.003Z', kind:'SchemaEvent', actor:'@admin', cube:'kogi.portfolio.links', attr:'RegisterAttrKey', before:'—', after:'attribution_weight (Number, LWW)', crdt:'—', vc:'8420399', dot:'teal' },
+  { id:'e008', ts:'2026-03-22T14:25:12.441Z', kind:'CellMutation', actor:'@alice-dev', cube:'kogi.portfolio.components', attr:'name', before:'Brand Identity', after:'Brand Identity — Client A', crdt:'LWW', vc:'8420395', dot:'blue' },
+  { id:'e009', ts:'2026-03-22T14:24:08.002Z', kind:'CellMutation', actor:'@carol', cube:'kogi.portfolio.components', attr:'owners', before:'["@alice-dev"]', after:'["@alice-dev","@carol"]', crdt:'OR-Set add', vc:'8420390', dot:'teal' },
+  { id:'e010', ts:'2026-03-22T14:22:19.893Z', kind:'CellMutation', actor:'@alice-dev', cube:'kogi.portfolio.components', attr:'status', before:'Paused', after:'Active', crdt:'Lattice', vc:'8420384', dot:'green' },
+  { id:'e011', ts:'2026-03-22T14:20:04.221Z', kind:'PermissionDenied', actor:'@viewer-1', cube:'kogi.portfolio.finances', attr:'budget_allocated', before:'—', after:'—', crdt:'—', vc:'8420381', dot:'red' },
+  { id:'e012', ts:'2026-03-22T14:18:42.100Z', kind:'ShadowCellUpdated', actor:'federation', cube:'ShadowCell', attr:'health_score (mirror)', before:'79.0', after:'81.4', crdt:'LWW (shadow)', vc:'6200995', dot:'purple' },
+];
+
+const dotColors = { blue:'#2a5cff', green:'#2d6a1a', amber:'#c06a00', red:'#c0281a', teal:'#007a5e', purple:'#6b21a8' };
+const kindBadge = {
+  CellMutation: 'badge-blue',
+  LatticeTransition: 'badge-teal',
+  GraphEdgeAdded: 'badge-purple',
+  FederationSync: 'badge-amber',
+  SchemaEvent: 'badge-gray',
+  PermissionDenied: 'badge-red',
+  ShadowCellUpdated: 'badge-purple',
+};
+
+function renderEvents(evs) {
+  document.getElementById('eventRows').innerHTML = evs.map(e => `
+    <div class="event-row" onclick="showEventDetail('${e.id}')">
+      <div class="ev-dot" style="background:${dotColors[e.dot]||'#9c9c97'}"></div>
+      <div class="ev-ts">${e.ts.replace('T',' ').split('.')[0]}</div>
+      <div class="ev-kind"><span class="badge ${kindBadge[e.kind]||'badge-gray'}" style="font-size:9px">${e.kind}</span></div>
+      <div class="ev-actor">${e.actor}</div>
+      <div class="ev-cube">${e.cube}</div>
+      <div class="ev-detail"><code>${e.attr}</code>: ${e.before} → ${e.after}</div>
+      <div class="ev-vc">vc:${e.vc}</div>
+    </div>`).join('');
+}
+
+function showEventDetail(id) {
+  const e = events.find(x => x.id === id);
+  if (!e) return;
+  document.querySelectorAll('.event-row').forEach(r => r.classList.remove('selected'));
+  document.getElementById('eventDetail').innerHTML = `
+    <div class="dp-field"><div class="dp-label">Event ID</div><div class="dp-val mono">${e.id}</div></div>
+    <div class="dp-field"><div class="dp-label">Timestamp (UTC)</div><div class="dp-val mono">${e.ts}</div></div>
+    <div class="dp-field"><div class="dp-label">Kind</div><div class="dp-val"><span class="badge ${kindBadge[e.kind]||'badge-gray'}">${e.kind}</span></div></div>
+    <div class="dp-field"><div class="dp-label">Actor</div><div class="dp-val mono">${e.actor}</div></div>
+    <div class="dp-field"><div class="dp-label">Cube / Target</div><div class="dp-val mono">${e.cube}</div></div>
+    <div class="dp-field"><div class="dp-label">Attribute Key</div><div class="dp-val mono">${e.attr}</div></div>
+    <div class="dp-field"><div class="dp-label">CRDT Operation</div><div class="dp-val"><span class="badge badge-gray">${e.crdt}</span></div></div>
+    <div class="dp-field">
+      <div class="dp-label">Before → After</div>
+      <div class="diff-block">
+        <div class="diff-label">BEFORE</div>
+        <div class="diff-before">- ${e.before}</div>
+        <div class="diff-label" style="margin-top:6px">AFTER</div>
+        <div class="diff-after">+ ${e.after}</div>
+      </div>
+    </div>
+    <div class="dp-field"><div class="dp-label">VectorClock</div><div class="dp-val mono">{"node-us-east-1": ${e.vc}}</div></div>
+    <div style="display:flex;flex-direction:column;gap:6px;margin-top:12px">
+      <button class="btn btn-ghost btn-sm">⏪ AS_OF this moment</button>
+      <button class="btn btn-ghost btn-sm">◎ View node in graph</button>
+      <button class="btn btn-ghost btn-sm">⊞ Open in Hypercube</button>
+    </div>
+  `;
+}
+
+function toggleTimeTravel() {
+  const p = document.getElementById('timeTravelPanel');
+  p.style.display = p.style.display === 'none' ? '' : 'none';
+}
+
+function updateTT(v) {
+  const months = ['Jan 01','Feb 01','Mar 01','Mar 22 NOW'];
+  document.getElementById('ttLabel').textContent = v == 100 ? 'NOW' : `Mar ${Math.round(v/10)+1}`;
+}
+
+function applyTimeTravel() {
+  const ts = document.getElementById('ttInput').value;
+  alert(`AS_OF applied: ${ts}\nEventLog replayed — all data now shows state as of that timestamp.`);
+}
+
+function toggleLive() {
+  const dot = document.getElementById('liveDot');
+  const lbl = document.getElementById('liveLabel');
+  if (dot.classList.contains('green')) {
+    dot.classList.remove('green'); dot.classList.add('gray');
+    lbl.textContent = 'Paused';
+  } else {
+    dot.classList.remove('gray'); dot.classList.add('green');
+    lbl.textContent = 'Live';
+  }
+}
+
+function filterEvt(el, type) {
+  document.querySelectorAll('.log-toolbar .pill-opt').forEach(p => p.classList.remove('sel'));
+  el.classList.add('sel');
+  const filtered = type === 'all' ? events :
+    type === 'mutation' ? events.filter(e => e.kind === 'CellMutation' || e.kind === 'LatticeTransition') :
+    type === 'graph' ? events.filter(e => e.kind.includes('Graph') || e.kind.includes('Shadow')) :
+    type === 'schema' ? events.filter(e => e.kind === 'SchemaEvent') :
+    type === 'ai' ? events.filter(e => e.actor.includes('engine')) :
+    type === 'federation' ? events.filter(e => e.kind === 'FederationSync' || e.kind === 'ShadowCellUpdated') : events;
+  renderEvents(filtered);
+}
+
+renderEvents(events);
+
+// Simulate live updates
+let liveInterval = setInterval(() => {
+  if (!document.getElementById('liveDot').classList.contains('green')) return;
+  const fake = {
+    id: 'e' + Date.now(),
+    ts: new Date().toISOString(),
+    kind: ['CellMutation','LatticeTransition','FederationSync'][Math.floor(Math.random()*3)],
+    actor: ['@alice-dev','kogi-engine','@bob','ume-engine'][Math.floor(Math.random()*4)],
+    cube: 'kogi.portfolio.components',
+    attr: ['health_score','budget_spent','status','name'][Math.floor(Math.random()*4)],
+    before: (Math.random()*100).toFixed(1),
+    after: (Math.random()*100).toFixed(1),
+    crdt: 'LWW',
+    vc: String(8420414 + Math.floor(Math.random()*10)),
+    dot: ['blue','green','purple','amber'][Math.floor(Math.random()*4)],
+  };
+  events.unshift(fake);
+  if (events.length > 50) events.pop();
+  renderEvents(events);
+}, 4000);
+</script>
+</body>
+</html>

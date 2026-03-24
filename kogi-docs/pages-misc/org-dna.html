@@ -1,0 +1,689 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>UME OrgOS — OrgDNA</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#070010;--surface:#0f0820;--surface-2:#150b2c;--surface-3:#1b1038;
+  --border:rgba(255,255,255,.065);--border-mid:rgba(255,255,255,.10);
+  --text:#ede6ff;--text-soft:rgba(215,205,255,.7);--text-muted:rgba(190,175,240,.4);
+  --purple:#6a2fff;--purple-mid:#2d0072;--purple-dim:rgba(106,47,255,.18);
+  --cherry:#ff2a55;--teal:#00e5d8;--amber:#f5b942;--blue:#38b4ff;
+  --emerald:#34e8a0;--coral:#ff6b4a;--orchid:#d855ff;--rose:#ff4c8b;
+  --sidebar-w:210px;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html,body{height:100%;font-family:"Space Grotesk",sans-serif;background:var(--bg);overflow:hidden;color:var(--text);}
+body{display:flex;}
+.sidebar{width:var(--sidebar-w);height:100vh;background:#0a0018;display:flex;flex-direction:column;flex-shrink:0;border-right:1px solid rgba(255,255,255,.05);}
+.sidebar-logo{display:flex;align-items:center;gap:9px;padding:16px 16px 14px;border-bottom:1px solid rgba(255,255,255,.06);}
+.s-icon{width:30px;height:30px;border-radius:8px;background:var(--purple-mid);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:15px;color:#fff;box-shadow:0 0 14px 2px rgba(106,47,255,.5);}
+.s-logo-text{font-weight:700;font-size:15px;color:#fff;}
+.s-logo-text span{color:var(--cherry);}
+.org-selector{margin:10px 10px 4px;padding:8px 10px;border-radius:8px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.07);cursor:pointer;display:flex;align-items:center;gap:8px;}
+.org-dot{width:7px;height:7px;border-radius:50%;background:var(--teal);box-shadow:0 0 6px rgba(0,229,216,.65);}
+.org-name{font-size:12px;font-weight:600;color:rgba(220,210,255,.8);flex:1;}
+.nav-section{padding:0 8px;margin-bottom:2px;}
+.nav-label{font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:rgba(200,190,255,.18);padding:10px 8px 4px;}
+.nav-item{display:flex;align-items:center;gap:9px;padding:7px 10px;border-radius:7px;cursor:pointer;transition:.15s;text-decoration:none;margin-bottom:1px;}
+.nav-item:hover{background:rgba(255,255,255,.06);}
+.nav-icon{font-size:14px;width:20px;text-align:center;}
+.nav-text{font-size:12.5px;font-weight:500;color:rgba(210,200,255,.38);flex:1;}
+.nav-item.active{background:linear-gradient(90deg,rgba(106,47,255,.5),rgba(255,42,85,.22));border:1px solid rgba(255,42,85,.15);}
+.nav-item.active .nav-text{color:#fff;font-weight:600;}
+.sidebar-footer{margin-top:auto;padding:10px;border-top:1px solid rgba(255,255,255,.05);}
+.user-avatar{width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,var(--purple-mid),var(--cherry));display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff;}
+.user-row{display:flex;align-items:center;gap:9px;cursor:pointer;padding:8px;border-radius:8px;}
+.user-name{font-size:12px;font-weight:600;color:rgba(220,210,255,.8);}
+.user-role{font-size:10px;color:rgba(200,190,255,.3);}
+.main{flex:1;display:flex;flex-direction:column;height:100vh;overflow:hidden;}
+.topbar{height:52px;background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 24px;gap:12px;flex-shrink:0;}
+.page-title{font-size:15px;font-weight:700;}
+.breadcrumb{font-size:11px;color:var(--text-muted);}
+.topbar-right{margin-left:auto;display:flex;align-items:center;gap:10px;}
+.tb-btn{padding:6px 13px;border:1px solid var(--border-mid);border-radius:7px;font-size:12px;font-weight:600;color:var(--text-soft);background:var(--surface-2);cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:5px;transition:.15s;}
+.tb-btn:hover{border-color:rgba(106,47,255,.5);color:var(--text);}
+.tb-btn.primary{background:linear-gradient(135deg,var(--purple),var(--cherry));color:#fff;border:none;}
+.subnav{height:44px;background:var(--surface-2);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 24px;gap:4px;flex-shrink:0;overflow-x:auto;}
+.subnav::-webkit-scrollbar{height:0;}
+.snav-item{padding:6px 14px;border-radius:6px;font-size:12px;font-weight:600;color:rgba(210,200,255,.4);cursor:pointer;transition:.15s;text-decoration:none;white-space:nowrap;border:1px solid transparent;}
+.snav-item:hover{color:var(--text-soft);background:rgba(255,255,255,.04);}
+.snav-item.active{color:var(--text);background:rgba(106,47,255,.22);border-color:rgba(106,47,255,.35);}
+.content{flex:1;overflow-y:auto;padding:24px;}
+.content::-webkit-scrollbar{width:5px;}
+.content::-webkit-scrollbar-thumb{background:rgba(106,47,255,.3);border-radius:3px;}
+
+/* LAYOUT */
+.dna-layout{display:grid;grid-template-columns:300px 1fr;gap:16px;height:100%;}
+.panel{background:var(--surface);border:1px solid var(--border);border-radius:14px;overflow:hidden;}
+.panel-head{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid var(--border);flex-shrink:0;}
+.panel-title{font-size:13px;font-weight:700;color:var(--text);}
+.panel-body{padding:0;overflow-y:auto;height:calc(100% - 48px);}
+.panel-body::-webkit-scrollbar{width:4px;}
+.panel-body::-webkit-scrollbar-thumb{background:rgba(106,47,255,.3);border-radius:2px;}
+
+/* VERSION LIST */
+.ver-item{padding:14px 16px;border-bottom:1px solid var(--border);cursor:pointer;transition:.15s;position:relative;}
+.ver-item:hover{background:rgba(255,255,255,.03);}
+.ver-item.active{background:rgba(106,47,255,.12);border-left:3px solid var(--purple);}
+.ver-tag{font-size:13px;font-weight:700;color:var(--text);}
+.ver-date{font-size:10px;color:var(--text-muted);margin-top:2px;}
+.ver-msg{font-size:11px;color:var(--text-soft);margin-top:5px;line-height:1.4;}
+.ver-badges{display:flex;gap:5px;margin-top:7px;flex-wrap:wrap;}
+.ver-badge{font-size:9.5px;font-weight:700;padding:2px 7px;border-radius:4px;border:1px solid;}
+.ver-current{position:absolute;top:14px;right:14px;font-size:9px;font-weight:800;letter-spacing:.06em;color:var(--emerald);background:rgba(52,232,160,.1);border:1px solid rgba(52,232,160,.25);border-radius:4px;padding:2px 6px;}
+
+/* DNA EDITOR */
+.dna-editor{display:flex;flex-direction:column;height:100%;}
+.dna-header{padding:20px 24px 0;flex-shrink:0;}
+.dna-title-row{display:flex;align-items:center;gap:12px;margin-bottom:6px;}
+.dna-ver-badge{font-size:11px;font-weight:800;color:var(--orchid);background:rgba(216,85,255,.1);border:1px solid rgba(216,85,255,.3);border-radius:6px;padding:3px 10px;}
+.dna-ts{font-size:11px;color:var(--text-muted);}
+.dna-tabs{display:flex;gap:2px;padding:16px 24px 0;border-bottom:1px solid var(--border);flex-shrink:0;}
+.dna-tab{padding:8px 16px;border-radius:6px 6px 0 0;font-size:12px;font-weight:600;color:rgba(210,200,255,.4);cursor:pointer;transition:.15s;border:1px solid transparent;border-bottom:none;margin-bottom:-1px;}
+.dna-tab.active{color:var(--text);background:var(--surface-2);border-color:var(--border);}
+.dna-tab:hover:not(.active){color:var(--text-soft);}
+.dna-content{flex:1;overflow-y:auto;padding:20px 24px;}
+.dna-content::-webkit-scrollbar{width:4px;}
+.dna-content::-webkit-scrollbar-thumb{background:rgba(106,47,255,.3);border-radius:2px;}
+
+/* SPREADSHEET TABLE */
+.dna-section{margin-bottom:28px;}
+.dna-section-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
+.dna-section-title{font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:.07em;color:var(--text-muted);}
+.dna-section-add{font-size:11px;font-weight:700;color:var(--purple);cursor:pointer;padding:3px 9px;border:1px solid rgba(106,47,255,.3);border-radius:5px;background:rgba(106,47,255,.08);transition:.15s;}
+.dna-section-add:hover{background:rgba(106,47,255,.18);}
+.dna-table{width:100%;border-collapse:collapse;font-size:12px;}
+.dna-table th{padding:7px 10px;text-align:left;font-size:10px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--text-muted);background:var(--surface-2);border-bottom:1px solid var(--border);}
+.dna-table td{padding:9px 10px;border-bottom:1px solid rgba(255,255,255,.04);color:var(--text-soft);vertical-align:middle;}
+.dna-table tr:hover td{background:rgba(255,255,255,.02);}
+.dna-table tr:last-child td{border-bottom:none;}
+.dna-input{background:transparent;border:none;color:var(--text-soft);font-family:inherit;font-size:12px;width:100%;outline:none;cursor:pointer;}
+.dna-input:focus{color:var(--text);background:rgba(106,47,255,.1);border-radius:4px;padding:2px 4px;cursor:text;}
+.tag-pill{display:inline-flex;align-items:center;padding:2px 8px;border-radius:4px;font-size:10.5px;font-weight:700;border:1px solid;}
+.row-actions{display:flex;gap:4px;opacity:0;transition:.15s;}
+.dna-table tr:hover .row-actions{opacity:1;}
+.row-btn{width:22px;height:22px;border-radius:5px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);cursor:pointer;font-size:12px;display:flex;align-items:center;justify-content:center;transition:.15s;}
+.row-btn:hover{background:rgba(255,42,85,.15);border-color:rgba(255,42,85,.3);}
+
+/* KPI CARDS */
+.kpi-row{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px;margin-bottom:20px;}
+.kpi-card{background:var(--surface-2);border:1px solid var(--border);border-radius:10px;padding:14px;}
+.kpi-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--text-muted);margin-bottom:5px;}
+.kpi-val{font-size:22px;font-weight:700;}
+.kpi-sub{font-size:10px;color:var(--text-muted);margin-top:3px;}
+
+/* DIFF VIEW */
+.diff-wrap{background:var(--surface-2);border:1px solid var(--border);border-radius:8px;overflow:hidden;font-size:11.5px;font-family:"SF Mono","Fira Code",monospace;}
+.diff-line{padding:4px 14px;line-height:1.6;display:flex;gap:10px;}
+.diff-line.add{background:rgba(52,232,160,.07);color:var(--emerald);}
+.diff-line.rem{background:rgba(255,42,85,.07);color:var(--cherry);}
+.diff-line.ctx{color:var(--text-muted);}
+.diff-sym{width:12px;flex-shrink:0;}
+
+/* ODD TEMPLATES */
+.odd-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px;}
+.odd-card{background:var(--surface-2);border:1px solid var(--border);border-radius:10px;padding:14px;cursor:pointer;transition:.15s;}
+.odd-card:hover{border-color:rgba(106,47,255,.4);background:rgba(106,47,255,.06);}
+.odd-icon{font-size:22px;margin-bottom:8px;}
+.odd-name{font-size:12px;font-weight:700;color:var(--text);margin-bottom:3px;}
+.odd-type{font-size:10px;font-weight:700;padding:2px 7px;border-radius:4px;border:1px solid;display:inline-block;margin-bottom:6px;}
+.odd-caps{font-size:10.5px;color:var(--text-muted);line-height:1.5;}
+
+/* COMPLIANCE */
+.compliance-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px;}
+.comp-card{background:var(--surface-2);border:1px solid var(--border);border-radius:10px;padding:14px;}
+.comp-flag{font-size:20px;margin-bottom:6px;}
+.comp-name{font-size:12px;font-weight:700;color:var(--text);margin-bottom:2px;}
+.comp-status{display:flex;align-items:center;gap:6px;font-size:11px;font-weight:600;margin-bottom:6px;}
+.comp-dot{width:6px;height:6px;border-radius:50%;}
+.comp-items{font-size:10.5px;color:var(--text-muted);line-height:1.6;}
+
+/* MODAL */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);display:none;align-items:center;justify-content:center;z-index:1000;backdrop-filter:blur(4px);}
+.modal-overlay.show{display:flex;}
+.modal{background:var(--surface-2);border:1px solid rgba(106,47,255,.3);border-radius:16px;padding:28px;width:480px;max-height:80vh;overflow-y:auto;}
+.modal-title{font-size:16px;font-weight:700;color:var(--text);margin-bottom:20px;}
+.modal-field{margin-bottom:16px;}
+.modal-label{font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px;}
+.modal-input{width:100%;padding:9px 12px;background:var(--surface-3);border:1px solid var(--border-mid);border-radius:8px;color:var(--text);font-family:inherit;font-size:13px;outline:none;transition:.15s;}
+.modal-input:focus{border-color:rgba(106,47,255,.5);}
+.modal-textarea{resize:vertical;min-height:80px;line-height:1.5;}
+.modal-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:20px;}
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <div class="s-icon">⬡</div>
+    <div class="s-logo-text">UME <span>OS</span></div>
+  </div>
+  <div class="org-selector">
+    <div class="org-dot"></div>
+    <div class="org-name">Acme Corp OrgOS</div>
+    <span style="color:var(--text-muted);font-size:12px;">▾</span>
+  </div>
+  <nav class="nav-section" style="margin-top:8px;">
+    <div class="nav-label">Platform</div>
+    <a href="digital-twin.html" class="nav-item"><span class="nav-icon">🔮</span><span class="nav-text">Digital Twin</span></a>
+    <a href="#" class="nav-item"><span class="nav-icon">📊</span><span class="nav-text">Dashboard</span></a>
+    <a href="#" class="nav-item"><span class="nav-icon">🏪</span><span class="nav-text">OrgApp Market</span></a>
+  </nav>
+  <nav class="nav-section">
+    <div class="nav-label">OrgApps</div>
+    <a href="#" class="nav-item"><span class="nav-icon">💰</span><span class="nav-text">Finance</span></a>
+    <a href="#" class="nav-item"><span class="nav-icon">👥</span><span class="nav-text">HR & People</span></a>
+    <a href="#" class="nav-item"><span class="nav-icon">⚖️</span><span class="nav-text">Legal & Risk</span></a>
+    <a href="#" class="nav-item"><span class="nav-icon">📦</span><span class="nav-text">Operations</span></a>
+  </nav>
+  <nav class="nav-section">
+    <div class="nav-label">Governance</div>
+    <a href="#" class="nav-item active"><span class="nav-icon">🧬</span><span class="nav-text">OrgDNA</span></a>
+    <a href="#" class="nav-item"><span class="nav-icon">🛡️</span><span class="nav-text">ODD Manager</span></a>
+    <a href="#" class="nav-item"><span class="nav-icon">🏛️</span><span class="nav-text">DAO / DLT</span></a>
+  </nav>
+  <div class="sidebar-footer">
+    <div class="user-row">
+      <div class="user-avatar">AK</div>
+      <div><div class="user-name">Alex Kim</div><div class="user-role">OrgOS Admin</div></div>
+    </div>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<div class="main">
+  <header class="topbar">
+    <span class="page-title">🧬 OrgDNA</span>
+    <span class="breadcrumb">Digital Twin › OrgDNA</span>
+    <div class="topbar-right">
+      <button class="tb-btn" onclick="openModal('commitModal')">⬆ Commit Changes</button>
+      <button class="tb-btn" onclick="openModal('exportModal')">📦 Export Package</button>
+      <button class="tb-btn primary">⚙ Apply to OrgOS</button>
+    </div>
+  </header>
+
+  <!-- SUBNAV -->
+  <nav class="subnav">
+    <a href="digital-twin.html" class="snav-item">⬡ Overview</a>
+    <a href="org-system.html" class="snav-item">🏛 OrgSystem</a>
+    <a href="org-dna.html" class="snav-item active">🧬 OrgDNA</a>
+    <a href="network-graph.html" class="snav-item">🕸 Network Graph</a>
+    <a href="org-chart.html" class="snav-item">🌲 Org Chart</a>
+    <a href="business-model.html" class="snav-item">📐 Business Model</a>
+    <a href="value-proposition.html" class="snav-item">💎 Value Proposition</a>
+    <a href="data-master.html" class="snav-item">🗄 Data Master</a>
+  </nav>
+
+  <div class="content">
+    <!-- KPI ROW -->
+    <div class="kpi-row">
+      <div class="kpi-card">
+        <div class="kpi-label">Current Version</div>
+        <div class="kpi-val" style="color:var(--orchid);font-size:18px;">v3.2.1</div>
+        <div class="kpi-sub">Released 2 days ago</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Total Versions</div>
+        <div class="kpi-val" style="color:var(--blue);">47</div>
+        <div class="kpi-sub">Since deployment</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">OrgApps Configured</div>
+        <div class="kpi-val" style="color:var(--emerald);">12</div>
+        <div class="kpi-sub">All healthy</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">ODD Templates</div>
+        <div class="kpi-val" style="color:var(--amber);">18</div>
+        <div class="kpi-sub">6 actor types</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Package Size</div>
+        <div class="kpi-val" style="color:var(--teal);font-size:18px;">2.4 MB</div>
+        <div class="kpi-sub">of 10 MB limit</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Compliance Packs</div>
+        <div class="kpi-val" style="color:var(--coral);">4</div>
+        <div class="kpi-sub">3 jurisdictions</div>
+      </div>
+    </div>
+
+    <!-- MAIN LAYOUT -->
+    <div class="dna-layout" style="height:calc(100vh - 220px);">
+      <!-- VERSION SIDEBAR -->
+      <div class="panel">
+        <div class="panel-head">
+          <span class="panel-title">Version History</span>
+          <button class="tb-btn" style="font-size:10px;padding:4px 9px;" onclick="openModal('commitModal')">+ Tag</button>
+        </div>
+        <div class="panel-body" id="versionList"></div>
+      </div>
+
+      <!-- DNA EDITOR PANEL -->
+      <div class="panel dna-editor">
+        <div class="dna-header">
+          <div class="dna-title-row">
+            <h2 style="font-size:15px;font-weight:700;">Acme Corp OrgOS</h2>
+            <span class="dna-ver-badge" id="activeBadge">v3.2.1 (current)</span>
+            <span class="dna-ts" id="activeTs">Modified 2 days ago</span>
+          </div>
+          <p style="font-size:12px;color:var(--text-soft);margin-bottom:0;">Added SDO simulation config, updated Finance OrgApp KPIs, refreshed AI Agent ODD templates</p>
+        </div>
+
+        <div class="dna-tabs">
+          <div class="dna-tab active" onclick="switchTab(this,'orgapps')">OrgApps</div>
+          <div class="dna-tab" onclick="switchTab(this,'orgexecs')">OrgExecs &amp; ODDs</div>
+          <div class="dna-tab" onclick="switchTab(this,'kpis')">KPIs &amp; KRIs</div>
+          <div class="dna-tab" onclick="switchTab(this,'rbac')">RBAC Policies</div>
+          <div class="dna-tab" onclick="switchTab(this,'compliance')">Compliance</div>
+          <div class="dna-tab" onclick="switchTab(this,'diff')">Diff</div>
+        </div>
+
+        <div class="dna-content" id="tabContent"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODALS -->
+<div class="modal-overlay" id="commitModal">
+  <div class="modal">
+    <div class="modal-title">🧬 Commit OrgDNA Changes</div>
+    <div class="modal-field">
+      <div class="modal-label">Version Tag</div>
+      <input class="modal-input" placeholder="e.g. v3.3.0" />
+    </div>
+    <div class="modal-field">
+      <div class="modal-label">Commit Message</div>
+      <textarea class="modal-input modal-textarea" placeholder="Describe what changed in this version..."></textarea>
+    </div>
+    <div class="modal-field">
+      <div class="modal-label">Change Type</div>
+      <select class="modal-input" style="cursor:pointer;">
+        <option>Minor update (non-breaking)</option>
+        <option>Major update (breaking change)</option>
+        <option>Patch (bug fix / correction)</option>
+      </select>
+    </div>
+    <div class="modal-actions">
+      <button class="tb-btn" onclick="closeModal('commitModal')">Cancel</button>
+      <button class="tb-btn primary" onclick="closeModal('commitModal')">Commit Version</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="exportModal">
+  <div class="modal">
+    <div class="modal-title">📦 Export OrgDNA Package</div>
+    <div class="modal-field">
+      <div class="modal-label">Export Format</div>
+      <select class="modal-input" style="cursor:pointer;">
+        <option>TOML (human-readable)</option>
+        <option>Binary (compact transfer)</option>
+        <option>JSON (developer)</option>
+      </select>
+    </div>
+    <div class="modal-field">
+      <div class="modal-label">Include</div>
+      <label style="display:flex;align-items:center;gap:8px;font-size:12px;color:var(--text-soft);margin-bottom:8px;cursor:pointer;">
+        <input type="checkbox" checked style="accent-color:var(--purple);"> OrgApp configurations
+      </label>
+      <label style="display:flex;align-items:center;gap:8px;font-size:12px;color:var(--text-soft);margin-bottom:8px;cursor:pointer;">
+        <input type="checkbox" checked style="accent-color:var(--purple);"> ODD templates
+      </label>
+      <label style="display:flex;align-items:center;gap:8px;font-size:12px;color:var(--text-soft);margin-bottom:8px;cursor:pointer;">
+        <input type="checkbox" checked style="accent-color:var(--purple);"> RBAC policies
+      </label>
+      <label style="display:flex;align-items:center;gap:8px;font-size:12px;color:var(--text-soft);cursor:pointer;">
+        <input type="checkbox" style="accent-color:var(--purple);"> Transactional data (excluded by default)
+      </label>
+    </div>
+    <div class="modal-actions">
+      <button class="tb-btn" onclick="closeModal('exportModal')">Cancel</button>
+      <button class="tb-btn primary" onclick="closeModal('exportModal')">Download Package</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const versions = [
+  {tag:'v3.2.1',date:'18 Mar 2026, 14:22',msg:'Added SDO simulation config, updated Finance KPIs, refreshed AI Agent ODD templates',badges:[{l:'Minor',c:'var(--blue)',b:'rgba(56,180,255,.2)'}],current:true},
+  {tag:'v3.2.0',date:'12 Mar 2026, 09:05',msg:'OrgApp marketplace integration, new Legal & Compliance app added',badges:[{l:'Feature',c:'var(--orchid)',b:'rgba(216,85,255,.15)'}]},
+  {tag:'v3.1.2',date:'5 Mar 2026, 11:42',msg:'ODD constraint updates for AI Agent actors, rate limit adjustments',badges:[{l:'Patch',c:'var(--emerald)',b:'rgba(52,232,160,.12)'}]},
+  {tag:'v3.1.1',date:'28 Feb 2026, 16:00',msg:'RBAC policy fix: Finance read permission corrected for Contractor type',badges:[{l:'Fix',c:'var(--amber)',b:'rgba(245,185,66,.12)'}]},
+  {tag:'v3.1.0',date:'20 Feb 2026, 10:30',msg:'Franchise replication feature enabled, new OrgDNA export flow',badges:[{l:'Feature',c:'var(--orchid)',b:'rgba(216,85,255,.15)'}]},
+  {tag:'v3.0.0',date:'1 Feb 2026, 08:00',msg:'Major upgrade: ODD v2 contracts, SDO engine v3, DAO module enabled',badges:[{l:'Major',c:'var(--cherry)',b:'rgba(255,42,85,.15)'}]},
+  {tag:'v2.4.3',date:'15 Jan 2026, 13:15',msg:'Compliance pack update: GDPR v2.3 jurisdiction refresh',badges:[{l:'Patch',c:'var(--emerald)',b:'rgba(52,232,160,.12)'}]},
+  {tag:'v2.4.0',date:'8 Jan 2026, 09:00',msg:'HR OrgApp added, OrgCPU IoT driver templates expanded',badges:[{l:'Feature',c:'var(--orchid)',b:'rgba(216,85,255,.15)'}]},
+];
+
+let activeVer = 0;
+const verList = document.getElementById('versionList');
+
+function renderVersions(){
+  verList.innerHTML = versions.map((v,i)=>`
+    <div class="ver-item${i===activeVer?' active':''}" onclick="selectVersion(${i})">
+      ${v.current?'<span class="ver-current">CURRENT</span>':''}
+      <div class="ver-tag">${v.tag}</div>
+      <div class="ver-date">${v.date}</div>
+      <div class="ver-msg">${v.msg}</div>
+      <div class="ver-badges">
+        ${v.badges.map(b=>`<span class="ver-badge" style="color:${b.c};background:${b.b};border-color:${b.c}40;">${b.l}</span>`).join('')}
+        ${v.current?'<span class="ver-badge" style="color:var(--emerald);background:rgba(52,232,160,.1);border-color:rgba(52,232,160,.3);">Live</span>':''}
+      </div>
+    </div>
+  `).join('');
+}
+
+function selectVersion(i){
+  activeVer = i;
+  renderVersions();
+  document.getElementById('activeBadge').textContent = versions[i].tag+(versions[i].current?' (current)':'');
+  document.getElementById('activeTs').textContent = versions[i].date;
+}
+
+// TABS DATA
+const tabs = {
+  orgapps: ()=>`
+    <div class="dna-section">
+      <div class="dna-section-head">
+        <span class="dna-section-title">Active OrgApps</span>
+        <span class="dna-section-add" onclick="addRow('orgapps')">+ Add OrgApp</span>
+      </div>
+      <table class="dna-table">
+        <thead><tr><th>App Name</th><th>Category</th><th>Version</th><th>Status</th><th>ODD Caps</th><th></th></tr></thead>
+        <tbody id="orgappsBody">${orgappsRows()}</tbody>
+      </table>
+    </div>
+    <div class="dna-section">
+      <div class="dna-section-head">
+        <span class="dna-section-title">OrgApp Settings</span>
+      </div>
+      <table class="dna-table">
+        <thead><tr><th>OrgApp</th><th>Config Key</th><th>Value</th><th>Type</th><th></th></tr></thead>
+        <tbody id="settingsBody">${settingsRows()}</tbody>
+      </table>
+    </div>
+  `,
+  orgexecs: ()=>`
+    <div class="dna-section">
+      <div class="dna-section-head">
+        <span class="dna-section-title">ODD Templates</span>
+        <span class="dna-section-add">+ New Template</span>
+      </div>
+      <div class="odd-grid">${oddCards()}</div>
+    </div>
+    <div class="dna-section">
+      <div class="dna-section-head">
+        <span class="dna-section-title">OrgExec Registry</span>
+        <span class="dna-section-add">+ Register Actor</span>
+      </div>
+      <table class="dna-table">
+        <thead><tr><th>Name</th><th>Type</th><th>ODD Template</th><th>Status</th><th>ODD Version</th><th></th></tr></thead>
+        <tbody>${orgexecRows()}</tbody>
+      </table>
+    </div>
+  `,
+  kpis: ()=>`
+    <div class="dna-section">
+      <div class="dna-section-head">
+        <span class="dna-section-title">Key Performance Indicators (KPIs)</span>
+        <span class="dna-section-add">+ Add KPI</span>
+      </div>
+      <table class="dna-table">
+        <thead><tr><th>KPI Name</th><th>OrgApp</th><th>Target</th><th>Current</th><th>Unit</th><th>Direction</th><th></th></tr></thead>
+        <tbody>${kpiRows()}</tbody>
+      </table>
+    </div>
+    <div class="dna-section">
+      <div class="dna-section-head">
+        <span class="dna-section-title">Key Risk Indicators (KRIs)</span>
+        <span class="dna-section-add">+ Add KRI</span>
+      </div>
+      <table class="dna-table">
+        <thead><tr><th>KRI Name</th><th>Threshold</th><th>Current</th><th>Alert Level</th><th>Action</th><th></th></tr></thead>
+        <tbody>${kriRows()}</tbody>
+      </table>
+    </div>
+  `,
+  rbac: ()=>`
+    <div class="dna-section">
+      <div class="dna-section-head">
+        <span class="dna-section-title">Roles</span>
+        <span class="dna-section-add">+ Add Role</span>
+      </div>
+      <table class="dna-table">
+        <thead><tr><th>Role Name</th><th>Actor Type</th><th>Permissions</th><th>Scope</th><th></th></tr></thead>
+        <tbody>${rbacRows()}</tbody>
+      </table>
+    </div>
+  `,
+  compliance: ()=>`
+    <div class="dna-section">
+      <div class="dna-section-head">
+        <span class="dna-section-title">Jurisdiction Compliance Packs</span>
+        <span class="dna-section-add">+ Add Pack</span>
+      </div>
+      <div class="compliance-grid">${complianceCards()}</div>
+    </div>
+  `,
+  diff: ()=>`
+    <div class="dna-section">
+      <div class="dna-section-head">
+        <span class="dna-section-title">Diff: v3.2.1 vs v3.2.0</span>
+        <select style="background:var(--surface-2);border:1px solid var(--border);color:var(--text-soft);border-radius:6px;font-size:11px;padding:4px 8px;cursor:pointer;">
+          <option>v3.2.1 vs v3.2.0</option>
+          <option>v3.2.0 vs v3.1.2</option>
+          <option>v3.1.0 vs v3.0.0</option>
+        </select>
+      </div>
+      <div class="diff-wrap">${diffLines()}</div>
+    </div>
+  `
+};
+
+function orgappsRows(){
+  const apps=[
+    ['Finance Pro','Finance','2.4.1','Active','12','var(--emerald)','rgba(52,232,160,.12)'],
+    ['HR & People','Human Resources','1.8.0','Active','8','var(--emerald)','rgba(52,232,160,.12)'],
+    ['Legal Shield','Legal & Compliance','3.1.0','Active','6','var(--emerald)','rgba(52,232,160,.12)'],
+    ['Supply Chain','Operations','2.0.3','Active','15','var(--emerald)','rgba(52,232,160,.12)'],
+    ['Sales CRM','Sales & Marketing','1.5.2','Active','9','var(--emerald)','rgba(52,232,160,.12)'],
+    ['Inventory Mgr','Operations','2.1.0','Active','11','var(--emerald)','rgba(52,232,160,.12)'],
+    ['Analytics Hub','Intelligence','1.2.0','Beta','4','var(--amber)','rgba(245,185,66,.12)'],
+    ['DAO Governance','Governance','1.0.0','Active','7','var(--emerald)','rgba(52,232,160,.12)'],
+  ];
+  return apps.map(a=>`<tr>
+    <td><input class="dna-input" value="${a[0]}"></td>
+    <td><span class="tag-pill" style="color:var(--blue);background:rgba(56,180,255,.1);border-color:rgba(56,180,255,.25);">${a[1]}</span></td>
+    <td><input class="dna-input" value="${a[2]}"></td>
+    <td><span class="tag-pill" style="color:${a[5]};background:${a[6]};border-color:${a[5]}60;">${a[3]}</span></td>
+    <td>${a[4]}</td>
+    <td><div class="row-actions"><button class="row-btn">✎</button><button class="row-btn">⚙</button><button class="row-btn">✕</button></div></td>
+  </tr>`).join('');
+}
+
+function settingsRows(){
+  const sets=[
+    ['Finance Pro','fiscal_year_start','January','string'],
+    ['Finance Pro','currency_default','USD','string'],
+    ['Finance Pro','tax_jurisdiction','US-CA','string'],
+    ['HR & People','probation_days','90','integer'],
+    ['Supply Chain','default_lead_time_days','14','integer'],
+    ['Supply Chain','reorder_threshold_pct','20','float'],
+    ['Sales CRM','deal_stages_count','6','integer'],
+    ['Analytics Hub','refresh_interval_s','300','integer'],
+  ];
+  return sets.map(s=>`<tr>
+    <td style="color:var(--text-muted);">${s[0]}</td>
+    <td><input class="dna-input" value="${s[1]}"></td>
+    <td><input class="dna-input" value="${s[2]}"></td>
+    <td><span class="tag-pill" style="color:var(--orchid);background:rgba(216,85,255,.1);border-color:rgba(216,85,255,.25);">${s[3]}</span></td>
+    <td><div class="row-actions"><button class="row-btn">✎</button><button class="row-btn">✕</button></div></td>
+  </tr>`).join('');
+}
+
+function oddCards(){
+  const odds=[
+    {icon:'👤',name:'Full-Time Employee',type:'Human',typeC:'var(--blue)',typeBg:'rgba(56,180,255,.12)',caps:'Read/write own dept • Approve up to $10k • Access HR profile'},
+    {icon:'🤝',name:'Contractor',type:'Human',typeC:'var(--blue)',typeBg:'rgba(56,180,255,.12)',caps:'Read own tasks only • No financial access • Audit all actions'},
+    {icon:'🤖',name:'AI Agent',type:'AI Agent',typeC:'var(--orchid)',typeBg:'rgba(216,85,255,.12)',caps:'Execute tasks in scope • No direct approvals • Human escalation required'},
+    {icon:'🔀',name:'Hybrid Worker',type:'Hybrid',typeC:'var(--teal)',typeBg:'rgba(0,229,216,.12)',caps:'Human+AI capabilities • Dual audit trail • Override via human'},
+    {icon:'📡',name:'IoT Sensor',type:'OrgCPU',typeC:'var(--amber)',typeBg:'rgba(245,185,66,.12)',caps:'Data publish only • 10k msg/s rate limit • No read access'},
+    {icon:'🏪',name:'POS Terminal',type:'OrgCPU',typeC:'var(--amber)',typeBg:'rgba(245,185,66,.12)',caps:'Sales data write • Inventory read • No config access'},
+  ];
+  return odds.map(o=>`
+    <div class="odd-card">
+      <div class="odd-icon">${o.icon}</div>
+      <div class="odd-name">${o.name}</div>
+      <span class="odd-type" style="color:${o.typeC};background:${o.typeBg};border-color:${o.typeC}50;">${o.type}</span>
+      <div class="odd-caps">${o.caps}</div>
+    </div>
+  `).join('');
+}
+
+function orgexecRows(){
+  const execs=[
+    ['Alex Kim','Human','Full-Time Employee','Active','v2.1'],
+    ['Sarah Chen','Human','Full-Time Employee','Active','v2.1'],
+    ['Mike Torres','Human','Contractor','Active','v1.8'],
+    ['Aria-7 (AI)','AI Agent','AI Agent','Active','v2.0'],
+    ['Nexus Finance AI','AI Agent','AI Agent','Suspended','v2.0'],
+    ['Warehouse Bot #1','Hybrid','Hybrid Worker','Active','v1.5'],
+    ['Sensor Grid Alpha','OrgCPU','IoT Sensor','Active','v3.0'],
+    ['POS-Terminal-001','OrgCPU','POS Terminal','Active','v2.2'],
+  ];
+  const colors={'Human':'var(--blue)','AI Agent':'var(--orchid)','Hybrid':'var(--teal)','OrgCPU':'var(--amber)'};
+  const bgs={'Human':'rgba(56,180,255,.12)','AI Agent':'rgba(216,85,255,.12)','Hybrid':'rgba(0,229,216,.12)','OrgCPU':'rgba(245,185,66,.12)'};
+  return execs.map(e=>`<tr>
+    <td>${e[0]}</td>
+    <td><span class="tag-pill" style="color:${colors[e[1]]};background:${bgs[e[1]]};border-color:${colors[e[1]]}50;">${e[1]}</span></td>
+    <td style="color:var(--text-muted);">${e[2]}</td>
+    <td><span class="tag-pill" style="color:${e[3]==='Active'?'var(--emerald)':'var(--cherry)'};background:${e[3]==='Active'?'rgba(52,232,160,.1)':'rgba(255,42,85,.1)'};border-color:${e[3]==='Active'?'rgba(52,232,160,.3)':'rgba(255,42,85,.3)'};">${e[3]}</span></td>
+    <td>${e[4]}</td>
+    <td><div class="row-actions"><button class="row-btn">✎</button><button class="row-btn">✕</button></div></td>
+  </tr>`).join('');
+}
+
+function kpiRows(){
+  const kpis=[
+    ['Monthly Revenue','Finance','$2.4M','$2.1M','$USD','↑'],
+    ['Gross Margin','Finance','65%','61%','%','↑'],
+    ['Headcount','HR & People','120','108','persons','↑'],
+    ['Attrition Rate','HR & People','< 5%','3.2%','%','↓'],
+    ['Order Fulfillment','Supply Chain','< 2 days','1.8 days','days','↓'],
+    ['Supplier On-Time %','Supply Chain','> 95%','91%','%','↑'],
+    ['Pipeline Value','Sales CRM','$8M','$7.2M','$USD','↑'],
+    ['Deal Win Rate','Sales CRM','> 30%','28%','%','↑'],
+  ];
+  return kpis.map(k=>`<tr>
+    <td><input class="dna-input" value="${k[0]}"></td>
+    <td style="color:var(--text-muted);">${k[1]}</td>
+    <td><input class="dna-input" value="${k[2]}"></td>
+    <td style="color:var(--blue);">${k[3]}</td>
+    <td style="color:var(--text-muted);">${k[4]}</td>
+    <td style="font-size:16px;">${k[5]}</td>
+    <td><div class="row-actions"><button class="row-btn">✎</button><button class="row-btn">✕</button></div></td>
+  </tr>`).join('');
+}
+
+function kriRows(){
+  const kris=[
+    ['ODD Violation Rate','>5/day','3/day','🟡 Warning','Escalate to OrgAdmin'],
+    ['Cash Runway','<3 months','8.2 months','🟢 Normal','Monitor'],
+    ['Supplier Concentration','>40% single vendor','31%','🟡 Watch','Review Q2'],
+    ['Compliance Overdue','>0 items','0 items','🟢 Clear','N/A'],
+    ['AI Agent Error Rate','>1%','0.3%','🟢 Normal','Monitor'],
+  ];
+  return kris.map(k=>`<tr>
+    <td><input class="dna-input" value="${k[0]}"></td>
+    <td style="color:var(--text-muted);">${k[1]}</td>
+    <td style="color:var(--blue);">${k[2]}</td>
+    <td>${k[3]}</td>
+    <td style="color:var(--text-muted);font-size:11px;">${k[4]}</td>
+    <td><div class="row-actions"><button class="row-btn">✎</button></div></td>
+  </tr>`).join('');
+}
+
+function rbacRows(){
+  const roles=[
+    ['OrgAdmin','Human','Full read/write all OrgApps, ODD management, OrgDNA commit','Global'],
+    ['Finance Lead','Human','Full Finance OrgApp, read HR & Ops','Finance'],
+    ['HR Manager','Human','Full HR & People, read all, no Finance write','HR'],
+    ['AI Operator','AI Agent','Execute assigned tasks, read task scope, no writes','Task scope'],
+    ['Data Analyst','Human','Read-only all OrgApps, export allowed','Read-only'],
+    ['Contractor','Human','Own tasks read/write, no cross-dept access','Department'],
+    ['IoT Device','OrgCPU','Data publish only to assigned topics','Sensor scope'],
+  ];
+  return roles.map(r=>`<tr>
+    <td><input class="dna-input" value="${r[0]}"></td>
+    <td><span class="tag-pill" style="color:var(--blue);background:rgba(56,180,255,.1);border-color:rgba(56,180,255,.25);">${r[1]}</span></td>
+    <td style="color:var(--text-soft);font-size:11px;">${r[2]}</td>
+    <td><span class="tag-pill" style="color:var(--orchid);background:rgba(216,85,255,.1);border-color:rgba(216,85,255,.25);">${r[3]}</span></td>
+    <td><div class="row-actions"><button class="row-btn">✎</button><button class="row-btn">✕</button></div></td>
+  </tr>`).join('');
+}
+
+function complianceCards(){
+  const packs=[
+    {flag:'🇺🇸',name:'United States — CCPA',status:'Active',sc:'var(--emerald)',items:'Data privacy, Consumer rights, Right to deletion, Opt-out mechanisms'},
+    {flag:'🇪🇺',name:'European Union — GDPR',status:'Active',sc:'var(--emerald)',items:'Data processing, Consent management, DPA requirements, Cross-border transfer'},
+    {flag:'🇬🇧',name:'United Kingdom — UK GDPR',status:'Active',sc:'var(--emerald)',items:'Post-Brexit data rules, ICO registration, Data transfers to EU'},
+    {flag:'🌏',name:'International — ISO 27001',status:'Pending',sc:'var(--amber)',items:'Information security, Risk management, Controls audit — certification Q3 2026'},
+  ];
+  return packs.map(p=>`
+    <div class="comp-card">
+      <div class="comp-flag">${p.flag}</div>
+      <div class="comp-name">${p.name}</div>
+      <div class="comp-status"><div class="comp-dot" style="background:${p.sc};"></div><span style="color:${p.sc};">${p.status}</span></div>
+      <div class="comp-items">${p.items}</div>
+    </div>
+  `).join('');
+}
+
+function diffLines(){
+  const lines=[
+    {t:'ctx',s:'  ',c:'[orgapp.finance_pro]'},
+    {t:'ctx',s:'  ',c:'  version = "2.4.0"'},
+    {t:'rem',s:'-',c:'  kpi_refresh_interval = 600'},
+    {t:'add',s:'+',c:'  kpi_refresh_interval = 300'},
+    {t:'ctx',s:'  ',c:''},
+    {t:'ctx',s:'  ',c:'[orgexec.odd_templates.ai_agent]'},
+    {t:'ctx',s:'  ',c:'  version = "1.9"'},
+    {t:'rem',s:'-',c:'  max_actions_per_hour = 200'},
+    {t:'rem',s:'-',c:'  escalation_timeout_s = 60'},
+    {t:'add',s:'+',c:'  max_actions_per_hour = 500'},
+    {t:'add',s:'+',c:'  escalation_timeout_s = 30'},
+    {t:'ctx',s:'  ',c:''},
+    {t:'ctx',s:'  ',c:'[sdo.simulation]'},
+    {t:'rem',s:'-',c:'  # (not configured)'},
+    {t:'add',s:'+',c:'  scenario_variables = ["headcount","revenue_target","supplier_count","ai_ratio","expansion_markets"]'},
+    {t:'add',s:'+',c:'  max_run_time_s = 28'},
+  ];
+  return lines.map(l=>`<div class="diff-line ${l.t}"><span class="diff-sym">${l.s}</span><span>${l.c}</span></div>`).join('');
+}
+
+let currentTab = 'orgapps';
+function switchTab(el, tab){
+  document.querySelectorAll('.dna-tab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+  currentTab = tab;
+  document.getElementById('tabContent').innerHTML = tabs[tab]();
+}
+
+function openModal(id){ document.getElementById(id).classList.add('show'); }
+function closeModal(id){ document.getElementById(id).classList.remove('show'); }
+document.querySelectorAll('.modal-overlay').forEach(m=>m.addEventListener('click',e=>{if(e.target===m)m.classList.remove('show');}));
+
+function addRow(type){ alert(`Add new ${type} row — form would open here`); }
+
+renderVersions();
+document.getElementById('tabContent').innerHTML = tabs.orgapps();
+</script>
+</body>
+</html>

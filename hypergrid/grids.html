@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Grids — Hypergrid</title>
+<link rel="stylesheet" href="shared.css">
+<style>
+.grid-card {
+  background: var(--paper);
+  border: 0.5px solid var(--rule);
+  border-radius: 10px;
+  overflow: hidden;
+  cursor: pointer;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+.grid-card:hover { border-color: var(--accent); box-shadow: 0 2px 12px rgba(42,92,255,0.08); }
+.grid-card-top {
+  padding: 1.25rem;
+  border-bottom: 0.5px solid var(--rule);
+}
+.grid-card-name { font-size: 15px; font-weight: 600; color: var(--ink); margin-bottom: 3px; }
+.grid-card-path { font-family: var(--font-mono); font-size: 11px; color: var(--accent); }
+.grid-card-meta { display: flex; gap: 1.5rem; margin-top: 0.875rem; }
+.gcm { }
+.gcm-v { font-family: var(--font-mono); font-size: 18px; font-weight: 500; color: var(--ink); }
+.gcm-l { font-size: 10px; color: var(--ink-4); text-transform: uppercase; letter-spacing: 0.06em; }
+.grid-card-bottom {
+  padding: 0.75rem 1.25rem;
+  background: var(--paper-2);
+  display: flex; align-items: center; gap: 8px;
+  font-size: 11px; color: var(--ink-3);
+}
+
+.cube-row {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1fr 100px;
+  align-items: center;
+  padding: 9px 12px;
+  border-bottom: 0.5px solid var(--rule);
+  font-size: 13px;
+  transition: background 0.1s;
+}
+.cube-row:hover { background: var(--paper-2); }
+.cube-row:last-child { border-bottom: none; }
+.cube-row.header {
+  background: var(--paper-2);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-4);
+  font-weight: 400;
+}
+.cube-name a { color: var(--accent); text-decoration: none; font-weight: 500; }
+.cube-name a:hover { text-decoration: underline; }
+.cube-dims { font-family: var(--font-mono); font-size: 12px; color: var(--ink-3); }
+.cube-enc { }
+.cube-rows-count { font-family: var(--font-mono); font-size: 12px; }
+</style>
+</head>
+<body>
+<div id="sidebar" class="sidebar"></div>
+
+<div class="main">
+  <div class="topbar">
+    <div class="topbar-breadcrumb">
+      <span class="current">Grids</span>
+    </div>
+    <div class="topbar-spacer"></div>
+    <div class="topbar-actions">
+      <div class="search-bar">
+        <span class="search-icon">🔍</span>
+        <input type="text" placeholder="Search grids, cubes…">
+      </div>
+      <button class="btn btn-primary btn-sm" onclick="document.getElementById('newGridModal').classList.add('open')">+ Provision Grid</button>
+    </div>
+  </div>
+
+  <div class="content">
+    <div class="page-header">
+      <div>
+        <div class="page-eyebrow">Hypergrid Substrate</div>
+        <h1 class="page-title">Grids & Hypercubes</h1>
+        <p class="page-sub">All Grid deployments and their registered Hypercubes. Each Grid is an isolated data substrate for one domain system.</p>
+      </div>
+    </div>
+
+    <!-- Grid overview cards -->
+    <div class="grid-3 mb-4">
+      <div class="grid-card" onclick="showGrid('kogi')">
+        <div class="grid-card-top">
+          <div class="flex-between">
+            <div class="grid-card-name">kogi-production</div>
+            <span class="badge badge-green">Active</span>
+          </div>
+          <div class="grid-card-path">kogi://  ·  node-us-east-1</div>
+          <div class="grid-card-meta">
+            <div class="gcm"><div class="gcm-v">8</div><div class="gcm-l">Cubes</div></div>
+            <div class="gcm"><div class="gcm-v">84.2M</div><div class="gcm-l">HyperRows</div></div>
+            <div class="gcm"><div class="gcm-v">48</div><div class="gcm-l">Attr Keys</div></div>
+          </div>
+        </div>
+        <div class="grid-card-bottom">
+          <span class="dot green"></span> kogi (IW-OS) · 2 federation peers · Hybrid encoding
+        </div>
+      </div>
+      <div class="grid-card" onclick="showGrid('ume')">
+        <div class="grid-card-top">
+          <div class="flex-between">
+            <div class="grid-card-name">ume-production</div>
+            <span class="badge badge-green">Active</span>
+          </div>
+          <div class="grid-card-path">ume://  ·  node-us-east-1</div>
+          <div class="grid-card-meta">
+            <div class="gcm"><div class="gcm-v">44</div><div class="gcm-l">Cubes</div></div>
+            <div class="gcm"><div class="gcm-v">62.1M</div><div class="gcm-l">HyperRows</div></div>
+            <div class="gcm"><div class="gcm-v">312</div><div class="gcm-l">Attr Keys</div></div>
+          </div>
+        </div>
+        <div class="grid-card-bottom">
+          <span class="dot green"></span> ume (B-OS) · 42-module system · N=2–4
+        </div>
+      </div>
+      <div class="grid-card" onclick="showGrid('qala')">
+        <div class="grid-card-top">
+          <div class="flex-between">
+            <div class="grid-card-name">qala-production</div>
+            <span class="badge badge-amber">Degraded</span>
+          </div>
+          <div class="grid-card-path">qala://  ·  node-eu-west-1</div>
+          <div class="grid-card-meta">
+            <div class="gcm"><div class="gcm-v">12</div><div class="gcm-l">Cubes</div></div>
+            <div class="gcm"><div class="gcm-v">37.9M</div><div class="gcm-l">HyperRows</div></div>
+            <div class="gcm"><div class="gcm-v">189</div><div class="gcm-l">Attr Keys</div></div>
+          </div>
+        </div>
+        <div class="grid-card-bottom">
+          <span class="dot amber"></span> qala (SF-OS) · Self-governing · Root Factory
+        </div>
+      </div>
+    </div>
+
+    <!-- Cube explorer -->
+    <div class="card">
+      <div class="card-header">
+        <div>
+          <div class="card-title" id="cubeListTitle">Kogi Hypercubes</div>
+          <div class="card-sub" id="cubeListSub">kogi-production · 8 cubes · N=2 to N=3</div>
+        </div>
+        <div class="flex-center gap-2">
+          <div class="pill-row" id="gridPills">
+            <span class="pill-opt sel" onclick="switchGrid(this,'kogi')">Kogi</span>
+            <span class="pill-opt" onclick="switchGrid(this,'ume')">Ume</span>
+            <span class="pill-opt" onclick="switchGrid(this,'qala')">Qala</span>
+          </div>
+          <button class="btn btn-primary btn-sm" onclick="document.getElementById('newCubeModal').classList.add('open')">+ New Cube</button>
+        </div>
+      </div>
+
+      <div id="cubeList">
+        <div class="cube-row header">
+          <div>Cube Name</div>
+          <div>Dimensions</div>
+          <div>Encoding</div>
+          <div>HyperRows</div>
+          <div>Actions</div>
+        </div>
+        <div class="cube-row">
+          <div class="cube-name"><a href="hypercube.html?cube=kogi.portfolio.components">kogi.portfolio.components</a> <span class="badge badge-blue" style="margin-left:6px">PRIMARY</span></div>
+          <div class="cube-dims">N=2 · EntityAxis × PropertyAxis</div>
+          <div class="cube-enc"><span class="badge badge-gray">Hybrid</span></div>
+          <div class="cube-rows-count">84,241,802</div>
+          <div class="flex-center gap-1">
+            <a href="hypercube.html?cube=kogi.portfolio.components" class="btn btn-ghost btn-sm">Open</a>
+          </div>
+        </div>
+        <div class="cube-row">
+          <div class="cube-name"><a href="hypercube.html?cube=kogi.portfolio.kpis">kogi.portfolio.kpis</a></div>
+          <div class="cube-dims">N=3 · Entity × Metric × TimeAxis</div>
+          <div class="cube-enc"><span class="badge badge-gray">Sparse</span></div>
+          <div class="cube-rows-count">12,084,002</div>
+          <div class="flex-center gap-1"><a href="hypercube.html?cube=kogi.portfolio.kpis" class="btn btn-ghost btn-sm">Open</a></div>
+        </div>
+        <div class="cube-row">
+          <div class="cube-name"><a href="hypercube.html?cube=kogi.portfolio.finances">kogi.portfolio.finances</a></div>
+          <div class="cube-dims">N=3 · Account × Field × Period</div>
+          <div class="cube-enc"><span class="badge badge-gray">Hybrid</span></div>
+          <div class="cube-rows-count">8,921,440</div>
+          <div class="flex-center gap-1"><a href="hypercube.html?cube=kogi.portfolio.finances" class="btn btn-ghost btn-sm">Open</a></div>
+        </div>
+        <div class="cube-row">
+          <div class="cube-name"><a href="#">kogi.portfolio.benefits</a></div>
+          <div class="cube-dims">N=2 · Entity × Property</div>
+          <div class="cube-enc"><span class="badge badge-gray">Dense</span></div>
+          <div class="cube-rows-count">3,102,009</div>
+          <div class="flex-center gap-1"><a href="#" class="btn btn-ghost btn-sm">Open</a></div>
+        </div>
+        <div class="cube-row">
+          <div class="cube-name"><a href="#">kogi.portfolio.actions</a></div>
+          <div class="cube-dims">N=2 · Entity × Property</div>
+          <div class="cube-enc"><span class="badge badge-gray">Sparse</span></div>
+          <div class="cube-rows-count">1,420,887</div>
+          <div class="flex-center gap-1"><a href="#" class="btn btn-ghost btn-sm">Open</a></div>
+        </div>
+        <div class="cube-row">
+          <div class="cube-name"><a href="#">kogi.portfolio.approvals</a></div>
+          <div class="cube-dims">N=2 · Entity × Property</div>
+          <div class="cube-enc"><span class="badge badge-gray">Sparse</span></div>
+          <div class="cube-rows-count">890,443</div>
+          <div class="flex-center gap-1"><a href="#" class="btn btn-ghost btn-sm">Open</a></div>
+        </div>
+        <div class="cube-row">
+          <div class="cube-name"><a href="#">kogi.portfolio.links</a></div>
+          <div class="cube-dims">N=2 · LinkEdge × Property</div>
+          <div class="cube-enc"><span class="badge badge-gray">Dense</span></div>
+          <div class="cube-rows-count">5,204,113</div>
+          <div class="flex-center gap-1"><a href="#" class="btn btn-ghost btn-sm">Open</a></div>
+        </div>
+        <div class="cube-row">
+          <div class="cube-name"><a href="#">kogi.portfolio.snapshots</a></div>
+          <div class="cube-dims">N=2 · Snapshot × Property</div>
+          <div class="cube-enc"><span class="badge badge-gray">Sparse</span></div>
+          <div class="cube-rows-count">204,781</div>
+          <div class="flex-center gap-1"><a href="#" class="btn btn-ghost btn-sm">Open</a></div>
+        </div>
+      </div>
+      <div class="card-footer">8 cubes · last schema change 41 min ago · schema v3</div>
+    </div>
+
+  </div>
+</div>
+
+<!-- New Grid Modal -->
+<div class="modal-overlay" id="newGridModal">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title">Provision New Grid</span>
+      <button class="modal-close" onclick="document.getElementById('newGridModal').classList.remove('open')">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="callout callout-info"><span class="callout-icon">INFO</span><div class="callout-text">Grid provisioning bootstraps the full substrate — PostgreSQL tables, Redis cache, Kafka topics, CRDT log, EventLog, and optional AI engine connections.</div></div>
+      <div class="field"><label>Grid Name</label><input type="text" placeholder="e.g. healthcare-os-prod"></div>
+      <div class="field-row">
+        <div class="field">
+          <label>Domain System</label>
+          <select>
+            <option>kogi</option><option>ume</option><option>qala</option><option>standalone</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Region</label>
+          <select><option>us-east-1</option><option>eu-west-1</option><option>ap-southeast-1</option></select>
+        </div>
+      </div>
+      <div class="field">
+        <label>Default Encoding</label>
+        <div class="pill-row">
+          <span class="pill-opt sel">Hybrid</span>
+          <span class="pill-opt">Dense</span>
+          <span class="pill-opt">Sparse</span>
+        </div>
+      </div>
+      <div class="field"><label>Description</label><textarea placeholder="Describe this grid's purpose…"></textarea></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="document.getElementById('newGridModal').classList.remove('open')">Cancel</button>
+      <button class="btn btn-primary">Provision Grid</button>
+    </div>
+  </div>
+</div>
+
+<!-- New Cube Modal -->
+<div class="modal-overlay" id="newCubeModal">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title">Create New Hypercube</span>
+      <button class="modal-close" onclick="document.getElementById('newCubeModal').classList.remove('open')">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="field"><label>Cube Name</label><input type="text" placeholder="e.g. myapp.entities" value="kogi."></div>
+      <div class="field">
+        <label>Dimensionality (N)</label>
+        <div class="pill-row" id="dimPills">
+          <span class="pill-opt sel">N=2 (entity × property)</span>
+          <span class="pill-opt">N=3 (+ TimeAxis)</span>
+          <span class="pill-opt">N=4 (+ CategoryAxis)</span>
+        </div>
+      </div>
+      <div class="field">
+        <label>Storage Encoding</label>
+        <div class="pill-row">
+          <span class="pill-opt sel">Hybrid (recommended)</span>
+          <span class="pill-opt">Dense</span>
+          <span class="pill-opt">Sparse</span>
+        </div>
+        <div class="hint">Hybrid: O(1) D₁×D₂ base + O(log n) extension for D₃+</div>
+      </div>
+      <div class="field"><label>Visibility</label>
+        <select><option>Tenant</option><option>Public</option><option>Private</option></select>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="document.getElementById('newCubeModal').classList.remove('open')">Cancel</button>
+      <button class="btn btn-primary">Create Cube</button>
+    </div>
+  </div>
+</div>
+
+<script src="shared-nav.js"></script>
+<script>
+buildSidebar('grids');
+
+const cubeData = {
+  kogi: {
+    title: 'Kogi Hypercubes',
+    sub: 'kogi-production · 8 cubes · N=2 to N=3',
+    cubes: [
+      ['kogi.portfolio.components', 'N=2 · EntityAxis × PropertyAxis', 'Hybrid', '84,241,802', true],
+      ['kogi.portfolio.kpis', 'N=3 · Entity × Metric × TimeAxis', 'Sparse', '12,084,002', false],
+      ['kogi.portfolio.finances', 'N=3 · Account × Field × Period', 'Hybrid', '8,921,440', false],
+      ['kogi.portfolio.benefits', 'N=2 · Entity × Property', 'Dense', '3,102,009', false],
+      ['kogi.portfolio.actions', 'N=2 · Entity × Property', 'Sparse', '1,420,887', false],
+      ['kogi.portfolio.approvals', 'N=2 · Entity × Property', 'Sparse', '890,443', false],
+      ['kogi.portfolio.links', 'N=2 · LinkEdge × Property', 'Dense', '5,204,113', false],
+      ['kogi.portfolio.snapshots', 'N=2 · Snapshot × Property', 'Sparse', '204,781', false],
+    ]
+  },
+  ume: {
+    title: 'Ume Hypercubes',
+    sub: 'ume-production · 44 cubes · N=2 to N=4 (42 modules + kernel + templates)',
+    cubes: [
+      ['ume.kernel.modules', 'N=2 · Module × Property', 'Dense', '42', true],
+      ['ume.hr.employees', 'N=3 · Employee × Field × Period', 'Hybrid', '4,840,003', false],
+      ['ume.finance.ledger', 'N=3 · Entry × Field × Period', 'Sparse', '18,291,040', false],
+      ['ume.chombo.entities', 'N=3 · Entity × Field × Jurisdiction', 'Hybrid', '1,204,882', false],
+      ['ume.soko.campaigns', 'N=4 · Campaign × KPI × Period × Segment', 'Sparse', '8,402,201', false],
+      ['ume.grc.risks', 'N=2 · Risk × Property', 'Dense', '290,441', false],
+      ['ume.strategy.okrs', 'N=3 · OKR × Field × Quarter', 'Hybrid', '840,002', false],
+      ['ume.sales.opportunities', 'N=3 · Opp × Field × Stage', 'Hybrid', '3,401,009', false],
+      ['… + 36 more modules', '', '', '', false],
+    ]
+  },
+  qala: {
+    title: 'Qala Hypercubes',
+    sub: 'qala-production · 12 cubes · N=2 to N=4 + Domain Pack extensions',
+    cubes: [
+      ['qala.solutions', 'N=2 · Solution × Property', 'Hybrid', '8,420,884', true],
+      ['qala.sdes', 'N=3 · SDE × Field × Version', 'Hybrid', '2,841,002', false],
+      ['qala.ccrs', 'N=2 · CCR × Property', 'Dense', '491,043', false],
+      ['qala.releases', 'N=2 · Release × Property', 'Dense', '1,204,002', false],
+      ['qala.solutions.metrics', 'N=4 · Solution × Metric × Period × Env', 'Sparse', '12,940,081', false],
+      ['qala.domain_packs', 'N=2 · Pack × Property', 'Dense', '48', false],
+      ['qala.factories', 'N=2 · Factory × Property', 'Dense', '12,003', false],
+      ['qala.artifacts', 'N=2 · Artifact × Property', 'Sparse', '8,901,441', false],
+    ]
+  }
+};
+
+function switchGrid(el, grid) {
+  document.querySelectorAll('#gridPills .pill-opt').forEach(p => p.classList.remove('sel'));
+  el.classList.add('sel');
+  const d = cubeData[grid];
+  document.getElementById('cubeListTitle').textContent = d.title;
+  document.getElementById('cubeListSub').textContent = d.sub;
+  let html = `<div class="cube-row header"><div>Cube Name</div><div>Dimensions</div><div>Encoding</div><div>HyperRows</div><div>Actions</div></div>`;
+  d.cubes.forEach(([name, dims, enc, rows, primary]) => {
+    const href = (name.startsWith('…')) ? '#' : `hypercube.html?cube=${name}`;
+    html += `<div class="cube-row">
+      <div class="cube-name"><a href="${href}">${name}</a>${primary ? '<span class="badge badge-blue" style="margin-left:6px">PRIMARY</span>' : ''}</div>
+      <div class="cube-dims">${dims}</div>
+      <div class="cube-enc">${enc ? `<span class="badge badge-gray">${enc}</span>` : ''}</div>
+      <div class="cube-rows-count">${rows}</div>
+      <div class="flex-center gap-1"><a href="${href}" class="btn btn-ghost btn-sm">Open</a></div>
+    </div>`;
+  });
+  document.getElementById('cubeList').innerHTML = html;
+}
+
+document.querySelectorAll('#dimPills .pill-opt').forEach(p => {
+  p.addEventListener('click', () => {
+    document.querySelectorAll('#dimPills .pill-opt').forEach(x => x.classList.remove('sel'));
+    p.classList.add('sel');
+  });
+});
+</script>
+</body>
+</html>

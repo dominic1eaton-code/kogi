@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>COMPANY — Creative</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Outfit:wght@300;400;500&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --bg: #0a0a0b;
+      --cyan: #00c8c8;
+      --red: #e8203a;
+      --white: #f0f0f0;
+      --muted: #888;
+      --nav-gap: 48px;
+    }
+
+    html, body {
+      width: 100%; height: 100%;
+      background: #1a1a1a;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Outfit', sans-serif;
+    }
+
+    .browser-frame {
+      width: 92vw;
+      max-width: 1280px;
+      aspect-ratio: 16 / 9;
+      background: var(--bg);
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 40px 120px rgba(0,0,0,0.8);
+    }
+
+    /* ── GRADIENT BLOBS ── */
+    .blobs {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .blob {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(80px);
+      opacity: 0.85;
+    }
+
+    /* top-right cyan blob */
+    .blob-cyan-tr {
+      width: 28%;
+      aspect-ratio: 1;
+      background: radial-gradient(circle, #00e5e5 0%, #008080 55%, transparent 100%);
+      top: -6%;
+      right: -4%;
+    }
+
+    /* center-left dark sphere */
+    .blob-dark {
+      width: 22%;
+      aspect-ratio: 1;
+      background: radial-gradient(circle, #1a2a35 30%, #0d1a20 70%, transparent 100%);
+      top: 18%;
+      left: 32%;
+      filter: blur(40px);
+      opacity: 1;
+    }
+
+    /* flowing red/orange streak */
+    .blob-red {
+      width: 38%;
+      height: 80%;
+      background: radial-gradient(ellipse 60% 100% at 50% 80%,
+        #ff2200 0%, #cc1100 30%, #880000 60%, transparent 100%);
+      bottom: -15%;
+      left: 26%;
+      border-radius: 40% 60% 70% 30% / 30% 50% 50% 70%;
+      filter: blur(55px);
+      opacity: 0.9;
+    }
+
+    /* bottom-right dark teal blob */
+    .blob-teal-br {
+      width: 24%;
+      aspect-ratio: 1;
+      background: radial-gradient(circle, #003d3d 20%, #002828 60%, transparent 100%);
+      bottom: 0;
+      right: 5%;
+      filter: blur(60px);
+      opacity: 0.8;
+    }
+
+    /* subtle purple center haze */
+    .blob-purple {
+      width: 30%;
+      aspect-ratio: 1;
+      background: radial-gradient(circle, #1a1030 30%, transparent 80%);
+      top: 20%;
+      left: 38%;
+      filter: blur(70px);
+      opacity: 0.6;
+    }
+
+    /* ── NAVBAR ── */
+    nav {
+      position: relative;
+      z-index: 10;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 3% 5%;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: var(--white);
+      font-family: 'Syne', sans-serif;
+      font-weight: 700;
+      font-size: clamp(10px, 1.4vw, 16px);
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+
+    .logo-icon {
+      width: clamp(14px, 2vw, 22px);
+      height: clamp(14px, 2vw, 22px);
+    }
+
+    .logo-icon polygon {
+      fill: none;
+      stroke: var(--white);
+      stroke-width: 1.5;
+    }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: clamp(16px, 3vw, 48px);
+      list-style: none;
+    }
+
+    .nav-links a {
+      color: var(--white);
+      text-decoration: none;
+      font-size: clamp(8px, 1.1vw, 13px);
+      letter-spacing: 0.05em;
+      opacity: 0.85;
+      transition: opacity 0.2s;
+    }
+
+    .nav-links a.active {
+      opacity: 1;
+      text-decoration: underline;
+      text-underline-offset: 4px;
+    }
+
+    .nav-links a:hover { opacity: 1; }
+
+    .btn-signin {
+      border: 1px solid rgba(255,255,255,0.6);
+      border-radius: 50px;
+      padding: clamp(4px, 0.6vw, 8px) clamp(12px, 1.8vw, 24px);
+      font-size: clamp(8px, 1.1vw, 13px);
+      letter-spacing: 0.05em;
+      color: var(--white);
+      cursor: pointer;
+      background: transparent;
+      font-family: 'Outfit', sans-serif;
+      transition: background 0.2s, color 0.2s;
+    }
+
+    .btn-signin:hover {
+      background: rgba(255,255,255,0.1);
+    }
+
+    /* ── MAIN CONTENT ── */
+    main {
+      position: relative;
+      z-index: 5;
+      display: flex;
+      padding: 2% 5% 4%;
+      gap: 4%;
+      height: calc(100% - 80px);
+    }
+
+    /* LEFT COLUMN */
+    .left-col {
+      flex: 0 0 38%;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .hero-number {
+      display: flex;
+      align-items: flex-end;
+      gap: clamp(6px, 1vw, 14px);
+    }
+
+    .bar-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      margin-bottom: 6px;
+    }
+
+    .bar {
+      background: var(--cyan);
+    }
+
+    .bar-tall {
+      width: clamp(8px, 1.2vw, 14px);
+      height: clamp(40px, 7vw, 88px);
+    }
+
+    .bar-short {
+      width: clamp(16px, 2.4vw, 28px);
+      height: clamp(10px, 1.5vw, 18px);
+    }
+
+    .number-01 {
+      font-family: 'Syne', sans-serif;
+      font-size: clamp(40px, 8vw, 110px);
+      font-weight: 800;
+      color: var(--cyan);
+      line-height: 1;
+      letter-spacing: -0.02em;
+    }
+
+    .left-bottom {
+      margin-top: auto;
+    }
+
+    .eyebrow {
+      font-size: clamp(6px, 0.85vw, 10px);
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--cyan);
+      margin-bottom: 2px;
+    }
+
+    .eyebrow-sub {
+      font-size: clamp(6px, 0.85vw, 10px);
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--cyan);
+      margin-bottom: clamp(8px, 1.5vw, 20px);
+    }
+
+    .headline {
+      font-family: 'Syne', sans-serif;
+      font-size: clamp(14px, 2.8vw, 38px);
+      font-weight: 700;
+      color: var(--white);
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      line-height: 1;
+    }
+
+    .tagline {
+      font-size: clamp(8px, 1.1vw, 14px);
+      color: var(--white);
+      opacity: 0.75;
+      font-style: italic;
+      margin-top: 4px;
+      letter-spacing: 0.05em;
+    }
+
+    .divider { height: 1px; background: rgba(255,255,255,0.1); margin: clamp(8px, 1.2vw, 16px) 0; }
+
+    .link-block { margin-top: clamp(8px, 1.2vw, 16px); }
+
+    .link-label {
+      font-size: clamp(6px, 0.85vw, 10px);
+      color: var(--cyan);
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+
+    .link-sub {
+      font-size: clamp(6px, 0.85vw, 10px);
+      color: var(--cyan);
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+
+    .poster-block {
+      margin-top: clamp(8px, 1.2vw, 16px);
+    }
+
+    .poster-label {
+      font-size: clamp(8px, 1vw, 12px);
+      color: var(--white);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .poster-sub {
+      font-size: clamp(8px, 1vw, 12px);
+      color: var(--white);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    /* RIGHT COLUMN */
+    .right-col {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      padding-bottom: 6%;
+      padding-left: 4%;
+    }
+
+    .right-title {
+      font-family: 'Syne', sans-serif;
+      font-size: clamp(20px, 4.5vw, 62px);
+      font-weight: 700;
+      color: var(--white);
+      line-height: 1.05;
+      margin-bottom: clamp(8px, 1.2vw, 18px);
+    }
+
+    .right-body {
+      font-size: clamp(7px, 0.95vw, 12px);
+      color: rgba(255,255,255,0.7);
+      line-height: 1.6;
+      max-width: 90%;
+    }
+
+    /* ── ANIMATIONS ── */
+    @keyframes floatY {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-12px); }
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 0.85; }
+      50% { opacity: 1; }
+    }
+
+    .blob-cyan-tr { animation: floatY 7s ease-in-out infinite, pulse 5s ease-in-out infinite; }
+    .blob-red     { animation: floatY 9s ease-in-out infinite 1s; }
+    .blob-teal-br { animation: floatY 8s ease-in-out infinite 2s; }
+  </style>
+</head>
+<body>
+  <div class="browser-frame">
+
+    <!-- BLOBS -->
+    <div class="blobs">
+      <div class="blob blob-cyan-tr"></div>
+      <div class="blob blob-dark"></div>
+      <div class="blob blob-purple"></div>
+      <div class="blob blob-red"></div>
+      <div class="blob blob-teal-br"></div>
+    </div>
+
+    <!-- NAVBAR -->
+    <nav>
+      <div class="logo">
+        <svg class="logo-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <polygon points="12,2 22,7 22,17 12,22 2,17 2,7"/>
+        </svg>
+        COMPANY
+      </div>
+      <ul class="nav-links">
+        <li><a href="#" class="active">HOME</a></li>
+        <li><a href="#">ABOUT US</a></li>
+        <li><a href="#">CONTACT US</a></li>
+        <li><a href="#">FAQ</a></li>
+        <li><button class="btn-signin">SIGN IN</button></li>
+      </ul>
+    </nav>
+
+    <!-- MAIN -->
+    <main>
+      <!-- LEFT -->
+      <div class="left-col">
+        <div class="hero-number">
+          <div class="bar-group">
+            <div class="bar bar-tall"></div>
+            <div class="bar bar-short"></div>
+          </div>
+          <div class="number-01">01</div>
+        </div>
+
+        <div class="left-bottom">
+          <div class="eyebrow">POSTER COVER DESIGN</div>
+          <div class="eyebrow-sub">CREATIVE</div>
+
+          <div class="headline">CREATIVE</div>
+          <div class="tagline">Innovative inspiration</div>
+
+          <div class="divider"></div>
+
+          <div class="link-block">
+            <div class="link-label">LOREM</div>
+            <div class="link-sub">IPSUM DOLOR</div>
+          </div>
+
+          <div class="poster-block">
+            <div class="poster-label">POSTER COVER DESIGN</div>
+            <div class="poster-sub">CREATIVE</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- RIGHT -->
+      <div class="right-col">
+        <div class="right-title">Lorem Ipsum</div>
+        <p class="right-body">
+          Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut
+          labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco
+          laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in
+          voluptate velit esse cillum dolore eu fugiat nulla pariatur
+        </p>
+      </div>
+    </main>
+
+  </div>
+</body>
+</html>

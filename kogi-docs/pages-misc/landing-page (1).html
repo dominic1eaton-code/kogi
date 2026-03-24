@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>COMPANY — Creative</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Outfit:wght@300;400;500&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    :root { --bg:#080a0c; --cyan:#00bfbf; --white:#efefef; }
+
+    html, body {
+      width:100%; height:100%;
+      background:#161616;
+      display:flex; align-items:center; justify-content:center;
+      font-family:'Outfit',sans-serif;
+    }
+
+    .frame {
+      width:92vw; max-width:1300px;
+      aspect-ratio:16/9;
+      background:var(--bg);
+      position:relative; overflow:hidden;
+      box-shadow:0 40px 130px rgba(0,0,0,0.85);
+    }
+
+    canvas.bg {
+      position:absolute; inset:0;
+      width:100%; height:100%;
+      pointer-events:none; z-index:1;
+    }
+
+    nav {
+      position:relative; z-index:20;
+      display:flex; align-items:center; justify-content:space-between;
+      padding:2.8% 5%;
+    }
+
+    .logo {
+      display:flex; align-items:center; gap:9px;
+      color:var(--white);
+      font-family:'Syne',sans-serif; font-weight:700;
+      font-size:clamp(9px,1.3vw,15px); letter-spacing:.14em; text-transform:uppercase;
+    }
+    .logo svg { width:clamp(13px,1.8vw,20px); height:clamp(13px,1.8vw,20px); }
+    .logo svg polygon { fill:none; stroke:var(--white); stroke-width:1.6; }
+
+    .nav-links { display:flex; align-items:center; gap:clamp(14px,2.8vw,44px); list-style:none; }
+    .nav-links a {
+      color:var(--white); text-decoration:none;
+      font-size:clamp(7px,1vw,12px); letter-spacing:.06em; opacity:.82; transition:opacity .2s;
+    }
+    .nav-links a.active { opacity:1; text-decoration:underline; text-underline-offset:4px; }
+    .nav-links a:hover { opacity:1; }
+
+    .btn-signin {
+      border:1px solid rgba(255,255,255,.55); border-radius:50px;
+      padding:clamp(3px,.5vw,7px) clamp(10px,1.6vw,22px);
+      font-size:clamp(7px,1vw,12px); letter-spacing:.06em;
+      color:var(--white); cursor:pointer; background:transparent;
+      font-family:'Outfit',sans-serif; transition:background .2s;
+    }
+    .btn-signin:hover { background:rgba(255,255,255,.09); }
+
+    main {
+      position:relative; z-index:10;
+      display:flex; padding:1% 5% 4%; gap:3%;
+      height:calc(100% - 80px);
+    }
+
+    .left-col {
+      flex:0 0 36%;
+      display:flex; flex-direction:column; justify-content:space-between;
+    }
+
+    .hero-number { display:flex; align-items:flex-end; gap:clamp(4px,.8vw,10px); }
+
+    .bar-group { display:flex; align-items:flex-end; gap:4px; margin-bottom:6px; }
+
+    .bar-v {
+      width:clamp(6px,1vw,12px);
+      height:clamp(42px,7.5vw,94px);
+      background:#0e1a22;
+      border-left:clamp(3px,.45vw,5px) solid var(--cyan);
+    }
+
+    .bar-h { display:flex; flex-direction:column; justify-content:flex-end; margin-bottom:4px; }
+    .bar-h-piece {
+      width:clamp(16px,2.6vw,34px);
+      height:clamp(8px,1.3vw,15px);
+      background:var(--cyan);
+    }
+
+    .number-01 {
+      font-family:'Syne',sans-serif; font-size:clamp(40px,8.5vw,116px);
+      font-weight:800; color:var(--cyan); line-height:1; letter-spacing:-.02em;
+    }
+
+    .eyebrow {
+      font-size:clamp(5px,.78vw,9px); letter-spacing:.13em;
+      text-transform:uppercase; color:var(--cyan); line-height:1.55;
+    }
+
+    .headline {
+      font-family:'Syne',sans-serif; font-size:clamp(12px,2.6vw,36px);
+      font-weight:700; color:var(--white); letter-spacing:.2em;
+      text-transform:uppercase; margin-top:clamp(5px,.9vw,13px);
+    }
+
+    .tagline {
+      font-size:clamp(6px,1vw,12px); color:rgba(255,255,255,.7);
+      font-style:italic; margin-top:3px; letter-spacing:.04em;
+    }
+
+    .divider { height:1px; background:rgba(255,255,255,.12); margin:clamp(7px,1.1vw,15px) 0; }
+
+    .link-label {
+      font-size:clamp(5px,.78vw,9px); color:var(--cyan);
+      letter-spacing:.13em; text-transform:uppercase; line-height:1.6;
+    }
+
+    .poster-block { margin-top:clamp(7px,1.1vw,14px); }
+    .poster-label {
+      font-size:clamp(6px,.88vw,11px); color:var(--white);
+      letter-spacing:.08em; text-transform:uppercase; line-height:1.55;
+    }
+
+    .right-col {
+      flex:1; display:flex; flex-direction:column;
+      justify-content:flex-end; padding-bottom:5%; padding-left:6%;
+    }
+
+    .right-title {
+      font-family:'Syne',sans-serif; font-size:clamp(20px,4.8vw,66px);
+      font-weight:700; color:var(--white); line-height:1.05;
+      margin-bottom:clamp(8px,1.2vw,18px);
+    }
+
+    .right-body {
+      font-size:clamp(6px,.9vw,11.5px); color:rgba(255,255,255,.65);
+      line-height:1.65; max-width:88%;
+    }
+  </style>
+</head>
+<body>
+<div class="frame" id="frame">
+  <canvas class="bg" id="bg"></canvas>
+
+  <nav>
+    <div class="logo">
+      <svg viewBox="0 0 24 24"><polygon points="12,2 22,7 22,17 12,22 2,17 2,7"/></svg>
+      COMPANY
+    </div>
+    <ul class="nav-links">
+      <li><a href="#" class="active">HOME</a></li>
+      <li><a href="#">ABOUT US</a></li>
+      <li><a href="#">CONTACT US</a></li>
+      <li><a href="#">FAQ</a></li>
+      <li><button class="btn-signin">SIGN IN</button></li>
+    </ul>
+  </nav>
+
+  <main>
+    <div class="left-col">
+      <div class="hero-number">
+        <div class="bar-group">
+          <div class="bar-v"></div>
+          <div class="bar-h"><div class="bar-h-piece"></div></div>
+        </div>
+        <div class="number-01">01</div>
+      </div>
+      <div class="left-bottom">
+        <div class="eyebrow">POSTER COVER DESIGN<br>CREATIVE</div>
+        <div class="headline">CREATIVE</div>
+        <div class="tagline">Innovative inspiration</div>
+        <div class="divider"></div>
+        <div class="link-label">LOREM<br>IPSUM DOLOR</div>
+        <div class="poster-block">
+          <div class="poster-label">POSTER COVER DESIGN<br>CREATIVE</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="right-col">
+      <div class="right-title">Lorem Ipsum</div>
+      <p class="right-body">
+        Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut
+        labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco
+        laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in
+        voluptate velit esse cillum dolore eu fugiat nulla pariatur
+      </p>
+    </div>
+  </main>
+</div>
+
+<script>
+(function(){
+  const canvas = document.getElementById('bg');
+  const frame  = document.getElementById('frame');
+
+  function resize(){ canvas.width=frame.offsetWidth; canvas.height=frame.offsetHeight; draw(); }
+
+  /* ─── smooth catmull-rom through points ─── */
+  function catmullPoints(pts, tension=0.5){
+    const path=[];
+    for(let i=0;i<pts.length-1;i++){
+      const p0=pts[Math.max(i-1,0)], p1=pts[i], p2=pts[i+1], p3=pts[Math.min(i+2,pts.length-1)];
+      const steps=30;
+      for(let t=0;t<steps;t++){
+        const s=t/steps;
+        const s2=s*s, s3=s2*s;
+        const h1= 2*s3-3*s2+1, h2=-2*s3+3*s2, h3=s3-2*s2+s, h4=s3-s2;
+        path.push({
+          x: h1*p1.x+h2*p2.x+tension*(h3*(p2.x-p0.x)+h4*(p3.x-p1.x)),
+          y: h1*p1.y+h2*p2.y+tension*(h3*(p2.y-p0.y)+h4*(p3.y-p1.y))
+        });
+      }
+    }
+    path.push(pts[pts.length-1]);
+    return path;
+  }
+
+  function tangents(path){
+    return path.map((_,i)=>{
+      const a=path[Math.max(i-1,0)], b=path[Math.min(i+1,path.length-1)];
+      const dx=b.x-a.x, dy=b.y-a.y, len=Math.sqrt(dx*dx+dy*dy)||1;
+      return {nx:-dy/len, ny:dx/len};
+    });
+  }
+
+  function drawRibbon(ctx, path, tang, halfW, colorFn){
+    const left=path.map((p,i)=>({x:p.x+tang[i].nx*halfW, y:p.y+tang[i].ny*halfW}));
+    const right=path.map((p,i)=>({x:p.x-tang[i].nx*halfW, y:p.y-tang[i].ny*halfW}));
+
+    ctx.beginPath();
+    ctx.moveTo(left[0].x,left[0].y);
+    for(let i=1;i<left.length;i++) ctx.lineTo(left[i].x,left[i].y);
+    for(let i=right.length-1;i>=0;i--) ctx.lineTo(right[i].x,right[i].y);
+    ctx.closePath();
+
+    const g=ctx.createLinearGradient(path[0].x,path[0].y,path[path.length-1].x,path[path.length-1].y);
+    colorFn(g);
+    ctx.fillStyle=g;
+    ctx.fill();
+  }
+
+  function draw(){
+    const W=canvas.width, H=canvas.height;
+    const ctx=canvas.getContext('2d');
+    ctx.clearRect(0,0,W,H);
+
+    /* ── CYAN BLOB top-right ── */
+    const rg1=ctx.createRadialGradient(W*1.0,H*-0.05,0, W*1.0,H*-0.05,W*0.28);
+    rg1.addColorStop(0,'rgba(0,220,215,1)');
+    rg1.addColorStop(0.4,'rgba(0,160,155,0.7)');
+    rg1.addColorStop(0.75,'rgba(0,80,90,0.3)');
+    rg1.addColorStop(1,'rgba(0,0,0,0)');
+    ctx.fillStyle=rg1; ctx.fillRect(0,0,W,H);
+
+    /* ── DARK SPHERE center ── */
+    const rg2=ctx.createRadialGradient(W*0.47,H*0.40,0, W*0.47,H*0.40,W*0.145);
+    rg2.addColorStop(0,'rgba(15,28,36,1)');
+    rg2.addColorStop(0.5,'rgba(8,16,22,0.9)');
+    rg2.addColorStop(1,'rgba(0,0,0,0)');
+    ctx.save(); ctx.fillStyle=rg2;
+    ctx.beginPath(); ctx.ellipse(W*0.47,H*0.40,W*0.145,H*0.26,0,0,Math.PI*2); ctx.fill();
+    ctx.restore();
+
+    /* ── TEAL BLOB bottom-right ── */
+    const rg3=ctx.createRadialGradient(W*0.87,H*0.85,0, W*0.87,H*0.85,W*0.22);
+    rg3.addColorStop(0,'rgba(0,50,55,0.85)');
+    rg3.addColorStop(0.5,'rgba(0,28,32,0.5)');
+    rg3.addColorStop(1,'rgba(0,0,0,0)');
+    ctx.fillStyle=rg3; ctx.fillRect(0,0,W,H);
+
+    /* ════════════════════════════════════
+       WINDING RED RIBBON
+       The ribbon follows the S-curve from
+       the image: enters bottom-center-left,
+       arcs up through the middle (left),
+       then sweeps upper-right and off-canvas.
+    ════════════════════════════════════ */
+    // Spine control points (fraction of W,H)
+    const spineCtrl = [
+      {x:0.32, y:1.10},   // 0 — off-bottom entry
+      {x:0.34, y:0.95},   // 1
+      {x:0.37, y:0.82},   // 2
+      {x:0.40, y:0.70},   // 3 — lower belly, red hot
+      {x:0.44, y:0.58},   // 4
+      {x:0.48, y:0.47},   // 5 — crossing mid-height
+      {x:0.52, y:0.38},   // 6
+      {x:0.56, y:0.28},   // 7 — upper arc
+      {x:0.61, y:0.18},   // 8
+      {x:0.67, y:0.10},   // 9
+      {x:0.75, y:0.02},   // 10 — exit top-right
+    ].map(p=>({x:p.x*W, y:p.y*H}));
+
+    const path  = catmullPoints(spineCtrl, 0.5);
+    const tang  = tangents(path);
+
+    // --- pass 1: wide outer glow (darkest) ---
+    ctx.save(); ctx.globalAlpha=0.30; ctx.globalCompositeOperation='screen';
+    drawRibbon(ctx,path,tang,W*0.10,g=>{
+      g.addColorStop(0,'rgba(80,0,0,0)');
+      g.addColorStop(0.25,'rgba(160,20,0,0.6)');
+      g.addColorStop(0.55,'rgba(200,30,0,0.7)');
+      g.addColorStop(1,'rgba(80,0,0,0)');
+    }); ctx.restore();
+
+    // --- pass 2: medium glow ---
+    ctx.save(); ctx.globalAlpha=0.55; ctx.globalCompositeOperation='screen';
+    drawRibbon(ctx,path,tang,W*0.065,g=>{
+      g.addColorStop(0,'rgba(120,0,0,0)');
+      g.addColorStop(0.20,'rgba(220,30,0,0.75)');
+      g.addColorStop(0.50,'rgba(240,50,10,0.9)');
+      g.addColorStop(0.75,'rgba(200,25,0,0.6)');
+      g.addColorStop(1,'rgba(100,0,0,0)');
+    }); ctx.restore();
+
+    // --- pass 3: bright core ---
+    ctx.save(); ctx.globalAlpha=0.85; ctx.globalCompositeOperation='screen';
+    drawRibbon(ctx,path,tang,W*0.032,g=>{
+      g.addColorStop(0,'rgba(200,20,0,0)');
+      g.addColorStop(0.18,'rgba(255,60,20,0.9)');
+      g.addColorStop(0.45,'rgba(255,90,30,1)');
+      g.addColorStop(0.70,'rgba(255,60,15,0.85)');
+      g.addColorStop(1,'rgba(200,10,0,0)');
+    }); ctx.restore();
+
+    // --- pass 4: specular hot-white core (lower third only) ---
+    const hotPath = path.slice(0, Math.floor(path.length*0.45));
+    const hotTang = tang.slice(0, hotPath.length);
+    ctx.save(); ctx.globalAlpha=0.7;
+    drawRibbon(ctx,hotPath,hotTang,W*0.013,g=>{
+      g.addColorStop(0,'rgba(255,180,120,0)');
+      g.addColorStop(0.3,'rgba(255,220,170,1)');
+      g.addColorStop(0.6,'rgba(255,240,190,1)');
+      g.addColorStop(1,'rgba(255,180,100,0)');
+    }); ctx.restore();
+
+    // --- pass 5: edge rim light on the ribbon (adds 3-D glow sheen) ---
+    ctx.save(); ctx.globalAlpha=0.25; ctx.globalCompositeOperation='screen';
+    drawRibbon(ctx,path,tang,W*0.005,g=>{
+      g.addColorStop(0,'rgba(255,100,50,0)');
+      g.addColorStop(0.5,'rgba(255,160,100,1)');
+      g.addColorStop(1,'rgba(255,100,50,0)');
+    }); ctx.restore();
+  }
+
+  window.addEventListener('resize',resize);
+  // Use ResizeObserver if available for more reliable sizing
+  if(window.ResizeObserver){
+    new ResizeObserver(resize).observe(frame);
+  }
+  resize();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>COMPANY</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Outfit:wght@300;400&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+html,body{width:100%;height:100%;background:#1c1c1c;display:flex;align-items:center;justify-content:center;font-family:'Outfit',sans-serif}
+
+.outer{
+  /* grey outer frame matching the image */
+  background:#2b2b2b;
+  padding:3vw;
+  display:flex;align-items:center;justify-content:center;
+  width:100vw;height:100vh;
+}
+
+.page{
+  width:100%;
+  max-width:1150px;
+  aspect-ratio:16/9;
+  background:#0a0b0d;
+  position:relative;
+  overflow:hidden;
+  flex-shrink:0;
+}
+
+canvas{position:absolute;inset:0;width:100%;height:100%;z-index:0}
+
+/* NAV */
+nav{
+  position:relative;z-index:10;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:3.2% 5.5% 0;
+}
+.logo{
+  display:flex;align-items:center;gap:8px;
+  color:#e8e8e8;font-family:'Syne',sans-serif;font-weight:700;
+  font-size:clamp(8px,1.2vw,14px);letter-spacing:.16em;text-transform:uppercase;
+}
+.logo svg{width:clamp(12px,1.6vw,18px);height:clamp(12px,1.6vw,18px)}
+.logo svg polygon{fill:none;stroke:#e8e8e8;stroke-width:1.5}
+
+.nav-right{display:flex;align-items:center;gap:clamp(12px,2.5vw,40px)}
+.nav-right a{
+  color:#e0e0e0;text-decoration:none;
+  font-size:clamp(6px,.9vw,11px);letter-spacing:.06em;opacity:.8;
+}
+.nav-right a.active{opacity:1;text-decoration:underline;text-underline-offset:3px}
+.signin{
+  border:1px solid rgba(255,255,255,.5);border-radius:50px;
+  padding:clamp(2px,.4vw,5px) clamp(8px,1.4vw,18px);
+  font-size:clamp(6px,.9vw,11px);letter-spacing:.06em;
+  color:#e0e0e0;background:transparent;cursor:pointer;font-family:'Outfit',sans-serif;
+}
+
+/* MAIN LAYOUT */
+main{
+  position:relative;z-index:10;
+  display:flex;padding:2% 5.5% 4%;gap:2%;
+  height:calc(100% - 11%);
+}
+
+/* LEFT */
+.left{flex:0 0 32%;display:flex;flex-direction:column;justify-content:space-between}
+
+.bar-num{display:flex;align-items:flex-end;gap:clamp(4px,.6vw,8px)}
+
+.bars{display:flex;align-items:flex-end;gap:3px;margin-bottom:5px}
+/* tall dark box with cyan left border */
+.bar-tall{
+  width:clamp(7px,1vw,13px);
+  height:clamp(48px,8vw,100px);
+  background:#121c24;
+  border-left:clamp(3px,.4vw,5px) solid #00c0c0;
+}
+/* cyan wide short bar */
+.bar-wide{
+  width:clamp(20px,3vw,38px);
+  height:clamp(10px,1.5vw,18px);
+  background:#00c0c0;
+  margin-bottom:0;
+  align-self:flex-end;
+}
+
+.num01{
+  font-family:'Syne',sans-serif;font-weight:800;
+  font-size:clamp(44px,9vw,120px);
+  color:#00c0c0;line-height:1;letter-spacing:-.02em;
+}
+
+/* bottom text block */
+.eyebrow{
+  font-size:clamp(5px,.7vw,8.5px);letter-spacing:.15em;
+  text-transform:uppercase;color:#00c0c0;line-height:1.6;
+}
+.creative-head{
+  font-family:'Syne',sans-serif;font-weight:700;
+  font-size:clamp(12px,2.4vw,32px);
+  color:#e8e8e8;letter-spacing:.22em;text-transform:uppercase;
+  margin-top:clamp(4px,.7vw,10px);
+}
+.creative-sub{
+  font-size:clamp(6px,.9vw,11px);color:rgba(232,232,232,.65);
+  font-style:italic;margin-top:2px;letter-spacing:.04em;
+}
+.divider{height:1px;background:rgba(255,255,255,.1);margin:clamp(6px,1vw,13px) 0}
+.link-cyan{
+  font-size:clamp(5px,.7vw,8.5px);color:#00c0c0;
+  letter-spacing:.15em;text-transform:uppercase;line-height:1.7;
+}
+.poster-white{
+  font-size:clamp(6px,.85vw,10px);color:#e0e0e0;
+  letter-spacing:.1em;text-transform:uppercase;line-height:1.6;
+  margin-top:clamp(6px,1vw,12px);
+}
+
+/* RIGHT */
+.right{
+  flex:1;display:flex;flex-direction:column;
+  justify-content:center;padding-left:5%;padding-top:4%;
+}
+.right-title{
+  font-family:'Syne',sans-serif;font-weight:700;
+  font-size:clamp(18px,4.5vw,62px);
+  color:#e8e8e8;line-height:1.05;
+  margin-bottom:clamp(6px,1vw,14px);
+}
+.right-body{
+  font-size:clamp(6px,.85vw,11px);color:rgba(232,232,232,.6);
+  line-height:1.7;max-width:85%;
+}
+</style>
+</head>
+<body>
+<div class="outer">
+<div class="page" id="page">
+<canvas id="c"></canvas>
+
+<nav>
+  <div class="logo">
+    <svg viewBox="0 0 24 24"><polygon points="12,2 22,7 22,17 12,22 2,17 2,7"/></svg>
+    COMPANY
+  </div>
+  <div class="nav-right">
+    <a href="#" class="active">HOME</a>
+    <a href="#">ABOUT US</a>
+    <a href="#">CONTACT US</a>
+    <a href="#">FAQ</a>
+    <button class="signin">SIGN IN</button>
+  </div>
+</nav>
+
+<main>
+  <div class="left">
+    <div class="bar-num">
+      <div class="bars">
+        <div class="bar-tall"></div>
+        <div class="bar-wide"></div>
+      </div>
+      <div class="num01">01</div>
+    </div>
+    <div>
+      <div class="eyebrow">POSTER COVER DESIGN<br>CREATIVE</div>
+      <div class="creative-head">C R E A T I V E</div>
+      <div class="creative-sub">Innovative inspiration</div>
+      <div class="divider"></div>
+      <div class="link-cyan">LOREM<br>IPSUM DOLOR</div>
+      <div class="poster-white">POSTER COVER DESIGN<br>CREATIVE</div>
+    </div>
+  </div>
+
+  <div class="right">
+    <div class="right-title">Lorem Ipsum</div>
+    <p class="right-body">Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur</p>
+  </div>
+</main>
+</div>
+</div>
+
+<script>
+(function(){
+  const canvas = document.getElementById('c');
+  const page   = document.getElementById('page');
+
+  function resize(){
+    canvas.width  = page.offsetWidth;
+    canvas.height = page.offsetHeight;
+    draw();
+  }
+
+  /* ── Catmull-Rom spline ── */
+  function catmull(pts, steps=40){
+    const out=[];
+    for(let i=0;i<pts.length-1;i++){
+      const p0=pts[Math.max(i-1,0)], p1=pts[i], p2=pts[i+1], p3=pts[Math.min(i+2,pts.length-1)];
+      for(let t=0;t<steps;t++){
+        const s=t/steps, s2=s*s, s3=s2*s;
+        const h1=2*s3-3*s2+1, h2=-2*s3+3*s2, h3=s3-2*s2+s, h4=s3-s2;
+        out.push({
+          x:h1*p1.x+h2*p2.x+0.5*(h3*(p2.x-p0.x)+h4*(p3.x-p1.x)),
+          y:h1*p1.y+h2*p2.y+0.5*(h3*(p2.y-p0.y)+h4*(p3.y-p1.y))
+        });
+      }
+    }
+    out.push(pts[pts.length-1]);
+    return out;
+  }
+
+  /* ── normals ── */
+  function normals(path){
+    return path.map((_,i)=>{
+      const a=path[Math.max(i-1,0)], b=path[Math.min(i+1,path.length-1)];
+      const dx=b.x-a.x, dy=b.y-a.y, len=Math.hypot(dx,dy)||1;
+      return {nx:-dy/len, ny:dx/len};
+    });
+  }
+
+  /* ── draw one ribbon pass ── */
+  function ribbon(ctx, path, norm, hw, stops, alpha=1, comp='source-over'){
+    const L=path.map((p,i)=>({x:p.x+norm[i].nx*hw(i), y:p.y+norm[i].ny*hw(i)}));
+    const R=path.map((p,i)=>({x:p.x-norm[i].nx*hw(i), y:p.y-norm[i].ny*hw(i)}));
+    ctx.save();
+    ctx.globalAlpha=alpha;
+    ctx.globalCompositeOperation=comp;
+    ctx.beginPath();
+    ctx.moveTo(L[0].x,L[0].y);
+    for(let i=1;i<L.length;i++) ctx.lineTo(L[i].x,L[i].y);
+    for(let i=R.length-1;i>=0;i--) ctx.lineTo(R[i].x,R[i].y);
+    ctx.closePath();
+    /* gradient along spine direction */
+    const g=ctx.createLinearGradient(path[0].x,path[0].y,path[path.length-1].x,path[path.length-1].y);
+    stops.forEach(([t,c])=>g.addColorStop(t,c));
+    ctx.fillStyle=g;
+    ctx.fill();
+    ctx.restore();
+  }
+
+  function draw(){
+    const W=canvas.width, H=canvas.height;
+    const ctx=canvas.getContext('2d');
+    ctx.clearRect(0,0,W,H);
+
+    /* ══════════════════════════════════════════
+       1. CYAN TEARDROP — top right
+       Two lobes: bright upper blob + a lower extension
+    ══════════════════════════════════════════ */
+    // upper lobe
+    {
+      const gx=W*0.97, gy=H*0.02, r=W*0.20;
+      const g=ctx.createRadialGradient(gx,gy,0,gx,gy,r);
+      g.addColorStop(0,'rgba(0,230,225,1)');
+      g.addColorStop(0.30,'rgba(0,185,180,0.85)');
+      g.addColorStop(0.60,'rgba(0,110,115,0.45)');
+      g.addColorStop(1,'rgba(0,0,0,0)');
+      ctx.fillStyle=g; ctx.fillRect(0,0,W,H);
+    }
+    // lower teardrop extension
+    {
+      const gx=W*1.02, gy=H*0.38, r=W*0.16;
+      const g=ctx.createRadialGradient(gx,gy,0,gx,gy,r);
+      g.addColorStop(0,'rgba(0,160,155,0.7)');
+      g.addColorStop(0.5,'rgba(0,80,85,0.3)');
+      g.addColorStop(1,'rgba(0,0,0,0)');
+      ctx.fillStyle=g; ctx.fillRect(0,0,W,H);
+    }
+
+    /* ══════════════════════════════════════════
+       2. DARK BLUE-GREY SPHERE — center
+       Hard-edged dark circle
+    ══════════════════════════════════════════ */
+    {
+      const cx=W*0.47, cy=H*0.43, rx=W*0.13, ry=H*0.23;
+      const g=ctx.createRadialGradient(cx,cy,0,cx,cy,Math.max(rx,ry));
+      g.addColorStop(0,'rgba(22,38,50,1)');
+      g.addColorStop(0.55,'rgba(14,24,32,0.97)');
+      g.addColorStop(0.80,'rgba(8,14,20,0.6)');
+      g.addColorStop(1,'rgba(0,0,0,0)');
+      ctx.save();
+      ctx.fillStyle=g;
+      ctx.beginPath();
+      ctx.ellipse(cx,cy,rx*1.1,ry,0,0,Math.PI*2);
+      ctx.fill();
+      ctx.restore();
+    }
+
+    /* ══════════════════════════════════════════
+       3. DARK TEAL SHADOW — bottom right
+    ══════════════════════════════════════════ */
+    {
+      const gx=W*0.85, gy=H*0.80, r=W*0.24;
+      const g=ctx.createRadialGradient(gx,gy,0,gx,gy,r);
+      g.addColorStop(0,'rgba(0,45,50,0.75)');
+      g.addColorStop(0.5,'rgba(0,22,26,0.4)');
+      g.addColorStop(1,'rgba(0,0,0,0)');
+      ctx.fillStyle=g; ctx.fillRect(0,0,W,H);
+    }
+
+    /* ══════════════════════════════════════════
+       4. THE RED RIBBON
+       Shape from image:
+       - STARTS at bottom-center as a large, wide, bright
+         red-orange pool/blob
+       - Sweeps upward and slightly LEFT in a broad arc
+       - As it rises it NARROWS and shifts right
+       - Ends upper-center-right as a thin glowing streak
+       
+       The ribbon tapers: very wide at bottom, narrow at top.
+       It curves: bottom-center → mid-left-center → upper-right-center
+    ══════════════════════════════════════════ */
+
+    // Spine from bottom (wide, bright) to top (narrow, dim)
+    // x,y as fractions
+    const spineRaw = [
+      {x:0.50, y:1.08},   // 0 entry below canvas
+      {x:0.48, y:0.92},   // 1 — bottom pool region
+      {x:0.46, y:0.80},   // 2
+      {x:0.44, y:0.68},   // 3 — starts curving
+      {x:0.45, y:0.57},   // 4
+      {x:0.48, y:0.47},   // 5 — inflection, sweeping right
+      {x:0.52, y:0.38},   // 6
+      {x:0.56, y:0.30},   // 7
+      {x:0.60, y:0.22},   // 8
+      {x:0.65, y:0.14},   // 9 — getting narrow up top
+      {x:0.70, y:0.06},   // 10
+    ].map(p=>({x:p.x*W, y:p.y*H}));
+
+    const spine = catmull(spineRaw, 50);
+    const norm  = normals(spine);
+    const n     = spine.length;
+
+    // Width profile: taper from wide at bottom to narrow at top
+    // t=0 is bottom (start), t=1 is top (end)
+    function taperedHW(i){
+      const t = i/n;  // 0=bottom, 1=top
+      // wide at bottom, narrow at top
+      const w = (1-t)*(1-t)*W*0.14 + t*W*0.018;
+      return w;
+    }
+    function taperedHWMid(i){
+      const t=i/n;
+      return (1-t)*(1-t)*W*0.09 + t*W*0.012;
+    }
+    function taperedHWCore(i){
+      const t=i/n;
+      return (1-t)*(1-t)*W*0.05 + t*W*0.006;
+    }
+    function taperedHWHot(i){
+      const t=i/n;
+      return (1-t)*(1-t)*W*0.022 + t*W*0.003;
+    }
+
+    // Gradient: bright red-orange at bottom, deep red fading at top
+    // We use a vertical gradient (y-axis) so bottom is brighter
+    function makeYGrad(ctx,alpha,c0,c1){
+      // y from bottom of canvas to top of ribbon
+      const topY = Math.min(...spine.slice(spine.length-20).map(p=>p.y));
+      const botY = Math.max(...spine.slice(0,20).map(p=>p.y));
+      const g=ctx.createLinearGradient(0,botY,0,topY);
+      c0.forEach(([t,c])=>g.addColorStop(t,c));
+      return g;
+    }
+
+    // Pass 1: wide outer glow
+    {
+      ctx.save();
+      ctx.globalAlpha=0.45;
+      const L=spine.map((p,i)=>({x:p.x+norm[i].nx*taperedHW(i), y:p.y+norm[i].ny*taperedHW(i)}));
+      const R=spine.map((p,i)=>({x:p.x-norm[i].nx*taperedHW(i), y:p.y-norm[i].ny*taperedHW(i)}));
+      ctx.beginPath();
+      ctx.moveTo(L[0].x,L[0].y);
+      for(let i=1;i<L.length;i++) ctx.lineTo(L[i].x,L[i].y);
+      for(let i=R.length-1;i>=0;i--) ctx.lineTo(R[i].x,R[i].y);
+      ctx.closePath();
+      const g=ctx.createLinearGradient(0,spine[0].y,0,spine[spine.length-1].y);
+      g.addColorStop(0,'rgba(255,60,0,0.0)');  // top
+      g.addColorStop(0.3,'rgba(200,20,0,0.5)');
+      g.addColorStop(0.6,'rgba(220,30,0,0.7)');
+      g.addColorStop(0.85,'rgba(200,40,0,0.8)');
+      g.addColorStop(1,'rgba(180,30,0,0.6)');  // bottom
+      ctx.fillStyle=g; ctx.fill();
+      ctx.restore();
+    }
+
+    // Pass 2: mid glow
+    {
+      ctx.save();
+      ctx.globalAlpha=0.7;
+      const L=spine.map((p,i)=>({x:p.x+norm[i].nx*taperedHWMid(i), y:p.y+norm[i].ny*taperedHWMid(i)}));
+      const R=spine.map((p,i)=>({x:p.x-norm[i].nx*taperedHWMid(i), y:p.y-norm[i].ny*taperedHWMid(i)}));
+      ctx.beginPath();
+      ctx.moveTo(L[0].x,L[0].y);
+      for(let i=1;i<L.length;i++) ctx.lineTo(L[i].x,L[i].y);
+      for(let i=R.length-1;i>=0;i--) ctx.lineTo(R[i].x,R[i].y);
+      ctx.closePath();
+      const g=ctx.createLinearGradient(0,spine[0].y,0,spine[spine.length-1].y);
+      g.addColorStop(0,'rgba(200,40,0,0.0)');
+      g.addColorStop(0.25,'rgba(230,50,5,0.6)');
+      g.addColorStop(0.55,'rgba(245,60,10,0.85)');
+      g.addColorStop(0.8,'rgba(255,80,20,1)');
+      g.addColorStop(1,'rgba(240,70,10,0.9)');
+      ctx.fillStyle=g; ctx.fill();
+      ctx.restore();
+    }
+
+    // Pass 3: bright core
+    {
+      ctx.save();
+      ctx.globalAlpha=0.9;
+      const L=spine.map((p,i)=>({x:p.x+norm[i].nx*taperedHWCore(i), y:p.y+norm[i].ny*taperedHWCore(i)}));
+      const R=spine.map((p,i)=>({x:p.x-norm[i].nx*taperedHWCore(i), y:p.y-norm[i].ny*taperedHWCore(i)}));
+      ctx.beginPath();
+      ctx.moveTo(L[0].x,L[0].y);
+      for(let i=1;i<L.length;i++) ctx.lineTo(L[i].x,L[i].y);
+      for(let i=R.length-1;i>=0;i--) ctx.lineTo(R[i].x,R[i].y);
+      ctx.closePath();
+      const g=ctx.createLinearGradient(0,spine[0].y,0,spine[spine.length-1].y);
+      g.addColorStop(0,'rgba(255,80,20,0.0)');
+      g.addColorStop(0.2,'rgba(255,100,30,0.7)');
+      g.addColorStop(0.5,'rgba(255,120,40,1)');
+      g.addColorStop(0.75,'rgba(255,140,60,1)');
+      g.addColorStop(1,'rgba(255,160,80,0.95)');
+      ctx.fillStyle=g; ctx.fill();
+      ctx.restore();
+    }
+
+    // Pass 4: hot white specular — only bottom 60%
+    {
+      const cutoff = Math.floor(n*0.60);
+      const subSpine = spine.slice(0, cutoff);
+      const subNorm  = norm.slice(0, cutoff);
+      ctx.save();
+      ctx.globalAlpha=0.75;
+      const L=subSpine.map((p,i)=>({x:p.x+subNorm[i].nx*taperedHWHot(i), y:p.y+subNorm[i].ny*taperedHWHot(i)}));
+      const R=subSpine.map((p,i)=>({x:p.x-subNorm[i].nx*taperedHWHot(i), y:p.y-subNorm[i].ny*taperedHWHot(i)}));
+      ctx.beginPath();
+      ctx.moveTo(L[0].x,L[0].y);
+      for(let i=1;i<L.length;i++) ctx.lineTo(L[i].x,L[i].y);
+      for(let i=R.length-1;i>=0;i--) ctx.lineTo(R[i].x,R[i].y);
+      ctx.closePath();
+      const g=ctx.createLinearGradient(0,subSpine[0].y,0,subSpine[subSpine.length-1].y);
+      g.addColorStop(0,'rgba(255,200,150,0.0)');
+      g.addColorStop(0.4,'rgba(255,220,170,0.6)');
+      g.addColorStop(0.75,'rgba(255,240,200,0.9)');
+      g.addColorStop(1,'rgba(255,255,220,1)');
+      ctx.fillStyle=g; ctx.fill();
+      ctx.restore();
+    }
+
+    // Pass 5: bottom pool — extra large radial bloom at foot of ribbon
+    {
+      const bx=W*0.48, by=H*0.93;
+      const g=ctx.createRadialGradient(bx,by,0,bx,by,W*0.12);
+      g.addColorStop(0,'rgba(255,120,40,0.85)');
+      g.addColorStop(0.35,'rgba(240,60,10,0.65)');
+      g.addColorStop(0.65,'rgba(200,20,0,0.35)');
+      g.addColorStop(1,'rgba(0,0,0,0)');
+      ctx.save();
+      ctx.globalAlpha=0.8;
+      ctx.fillStyle=g; ctx.fillRect(0,0,W,H);
+      ctx.restore();
+    }
+  }
+
+  if(window.ResizeObserver) new ResizeObserver(resize).observe(page);
+  window.addEventListener('resize',resize);
+  resize();
+})();
+</script>
+</body>
+</html>

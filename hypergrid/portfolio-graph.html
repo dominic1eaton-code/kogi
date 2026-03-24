@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KOGI · Portfolio · Graph</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;600;700&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap');
+:root{--bg:#0a0b0f;--bg1:#0f1117;--bg2:#13151e;--bg3:#181c28;--border:rgba(255,255,255,0.06);--border2:rgba(255,255,255,0.1);--text:#c8ccdb;--text2:#7a8099;--text3:#4a5068;--cyan:#00d4aa;--gold:#c8a84b;--violet:#7c5cbf;--rose:#c45c7a;--orange:#c87c3a;--blue:#3a7cc8;--green:#4aab6d;--pink:#bf5ca0;--nav-w:158px;--mono:'IBM Plex Mono',monospace;--sans:'IBM Plex Sans',sans-serif}
+*{box-sizing:border-box;margin:0;padding:0}html,body{width:100%;height:100%;background:var(--bg);font-family:var(--sans);color:var(--text);font-size:10px;overflow:hidden}a{text-decoration:none;color:inherit}
+.screen{display:flex;flex-direction:column;width:100%;height:100vh;overflow:hidden}
+.body-layout{display:flex;flex:1;min-height:0;overflow:hidden}
+.g-hdr{height:36px;background:var(--bg1);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 12px;gap:10px;flex-shrink:0}
+.g-logo{font-family:var(--mono);font-size:11px;font-weight:700;color:var(--cyan);letter-spacing:.1em}
+.g-bc{display:flex;align-items:center;gap:4px;font-family:var(--mono);font-size:9px;color:var(--text3)}
+.g-bc span{color:var(--text2)}.g-bc .sep{color:var(--text3)}.g-bc .cur{color:var(--text)}
+.g-dot{width:8px;height:8px;border-radius:50%;background:var(--cyan);margin-left:auto;animation:pulse 2s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+.sub-nav{height:30px;background:var(--bg2);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 10px;gap:1px;flex-shrink:0;overflow-x:auto}
+.sub-nav::-webkit-scrollbar{display:none}
+.sn-item{display:flex;align-items:center;padding:4px 10px;font-family:var(--mono);font-size:8px;color:var(--text3);cursor:pointer;border-radius:3px;white-space:nowrap;transition:all .1s;border:1px solid transparent}
+.sn-item:hover{color:var(--text2);background:var(--bg3)}.sn-item.active{color:var(--text);background:var(--bg3);border-color:var(--border2)}
+.sn-sep{width:1px;height:14px;background:var(--border);margin:0 4px;flex-shrink:0}
+.l-nav{width:var(--nav-w);background:var(--bg1);border-right:1px solid var(--border);flex-shrink:0;display:flex;flex-direction:column;padding:10px 0;gap:1px;overflow-y:auto}
+.nav-sec{font-family:var(--mono);font-size:7px;letter-spacing:.14em;text-transform:uppercase;color:var(--text3);padding:8px 12px 3px}
+.nav-it{display:flex;align-items:center;gap:6px;padding:5px 12px;font-family:var(--mono);font-size:9px;color:var(--text3);cursor:pointer;border-left:2px solid transparent;white-space:nowrap;overflow:hidden;transition:all .1s}
+.nav-it:hover{background:var(--bg2);color:var(--text2)}.nav-it.active{background:var(--bg2);color:var(--text);border-left-color:var(--cyan)}
+.nav-it .badge{margin-left:auto;background:var(--bg3);border-radius:2px;padding:1px 4px;font-size:7px;color:var(--text3)}
+.toolbar{height:32px;background:var(--bg1);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 12px;gap:8px;flex-shrink:0}
+.tb-title{font-family:var(--mono);font-size:10px;font-weight:600;color:var(--text)}
+.g-btn{background:var(--bg2);border:1px solid var(--border2);border-radius:3px;padding:3px 8px;font-family:var(--mono);font-size:9px;color:var(--text2);cursor:pointer;transition:all .12s}
+.g-btn:hover{border-color:var(--cyan);color:var(--cyan)}.g-btn.active{border-color:var(--cyan);color:var(--cyan)}
+/* GRAPH LAYOUT */
+.graph-area{flex:1;display:flex;min-height:0;overflow:hidden;position:relative}
+.graph-canvas{flex:1;position:relative;overflow:hidden;background:var(--bg);cursor:grab}
+.graph-canvas:active{cursor:grabbing}
+#graph-svg{width:100%;height:100%;position:absolute;inset:0}
+/* SIDE INFO PANEL */
+.graph-info{width:260px;border-left:1px solid var(--border);background:var(--bg1);display:flex;flex-direction:column;overflow:hidden;flex-shrink:0}
+.gi-hdr{padding:10px 12px;border-bottom:1px solid var(--border);flex-shrink:0}
+.gi-title{font-family:var(--mono);font-size:9px;font-weight:600;color:var(--text)}
+.gi-sub{font-family:var(--mono);font-size:7px;color:var(--text3);margin-top:2px}
+.gi-body{flex:1;overflow:auto;padding:10px 12px;display:flex;flex-direction:column;gap:8px}
+.gi-kv{display:flex;justify-content:space-between;align-items:center;padding:3px 0;border-bottom:1px solid var(--border)}
+.gi-k{font-family:var(--mono);font-size:8px;color:var(--text3)}
+.gi-v{font-family:var(--mono);font-size:8px;color:var(--text2);font-weight:500}
+.gi-sec{font-family:var(--mono);font-size:7px;letter-spacing:.1em;text-transform:uppercase;color:var(--text3);margin-bottom:4px}
+.edge-item{display:flex;align-items:center;gap:6px;padding:4px 0;border-bottom:1px solid var(--border)}
+.edge-item:last-child{border-bottom:none}
+.edge-dot{width:5px;height:5px;border-radius:50%;flex-shrink:0}
+.edge-name{font-family:var(--mono);font-size:8px;color:var(--text2);flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.edge-type{font-family:var(--mono);font-size:6px;padding:1px 4px;border-radius:2px;border:1px solid;font-weight:600}
+/* LEGEND PANEL (bottom of graph) */
+.graph-legend{position:absolute;bottom:12px;left:12px;background:rgba(13,15,23,0.88);border:1px solid var(--border2);border-radius:4px;padding:8px 10px;display:flex;flex-direction:column;gap:4px;backdrop-filter:blur(8px)}
+.gl-row{display:flex;align-items:center;gap:6px}
+.gl-line{width:22px;height:2px;border-radius:1px}
+.gl-dash{width:22px;height:0;border-top:2px dashed}
+.gl-lbl{font-family:var(--mono);font-size:7px;color:var(--text3)}
+/* controls */
+.graph-controls{position:absolute;top:12px;right:272px;display:flex;flex-direction:column;gap:4px}
+.gc-btn{background:var(--bg2);border:1px solid var(--border2);border-radius:3px;width:28px;height:28px;display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:14px;color:var(--text2);cursor:pointer;transition:all .1s}
+.gc-btn:hover{border-color:var(--cyan);color:var(--cyan)}
+/* tooltip */
+#tooltip{position:absolute;background:var(--bg3);border:1px solid var(--border2);border-radius:3px;padding:5px 8px;font-family:var(--mono);font-size:8px;color:var(--text);pointer-events:none;display:none;z-index:10;max-width:180px}
+</style>
+</head>
+<body>
+<div class="screen">
+  <div class="g-hdr">
+    <span class="g-logo">KOGI</span>
+    <div class="g-bc"><span>OS</span><span class="sep"> / </span><span>Portfolio</span><span class="sep"> / </span><span class="cur">Graph</span></div>
+    <div class="g-dot"></div>
+  </div>
+  <div class="sub-nav" id="sub-nav"></div>
+  <div class="body-layout" style="flex-direction:column">
+    <div class="toolbar">
+      <span class="tb-title">Graph View</span>
+      <span style="font-family:var(--mono);font-size:8px;color:var(--text3);margin-left:6px">KLNK · GraphEdge system · Force-directed layout</span>
+      <div style="margin-left:auto;display:flex;gap:6px" id="toolbar-btns">
+        <span class="g-btn active" id="btn-all" onclick="setFilter('all')">All</span>
+        <span class="g-btn" id="btn-hierarchy" onclick="setFilter('hierarchy')">Hierarchy</span>
+        <span class="g-btn" id="btn-dependency" onclick="setFilter('dependency')">Dependency</span>
+        <span class="g-btn" id="btn-contains" onclick="setFilter('contains')">Contains</span>
+        <span class="g-btn" id="btn-link" onclick="setFilter('link')">Link</span>
+        <span class="g-btn" id="btn-resourceshare" onclick="setFilter('resourceshare')">ResShare</span>
+      </div>
+    </div>
+    <div class="graph-area">
+      <div class="l-nav" style="height:100%">
+        <div class="nav-sec">Navigation</div>
+        <a href="#" class="nav-it">🏠 Home</a>
+        <a href="portfolio-grid.html" class="nav-it">📁 Portfolio</a>
+        <a href="portfolio-programs.html" class="nav-it">📋 Programs</a>
+        <a href="portfolio-resources.html" class="nav-it">👤 Resources</a>
+        <div class="nav-sec">Workspace</div>
+        <a href="#" class="nav-it">🗂 Collections</a>
+        <a href="#" class="nav-it">📌 Pinned</a>
+        <a href="#" class="nav-it">🏷 Tags</a>
+        <div class="nav-sec">Tools</div>
+        <a href="portfolio-analytics.html" class="nav-it">📊 Analytics</a>
+        <a href="portfolio-governance.html" class="nav-it">⚙ Governance</a>
+        <a href="portfolio-graph.html" class="nav-it active">🔗 Graph</a>
+        <div class="nav-sec">Platform</div>
+        <a href="portfolio-benefits.html" class="nav-it">⊕ Benefits</a>
+        <a href="portfolio-collaboration.html" class="nav-it">⊗ Collab</a>
+      </div>
+      <div class="graph-canvas" id="graph-canvas">
+        <svg id="graph-svg" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <marker id="arr-h" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
+              <path d="M0,0 L6,3 L0,6 Z" fill="#00d4aa" fill-opacity="0.7"/>
+            </marker>
+            <marker id="arr-d" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
+              <path d="M0,0 L6,3 L0,6 Z" fill="#c8a84b" fill-opacity="0.7"/>
+            </marker>
+            <marker id="arr-c" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
+              <path d="M0,0 L6,3 L0,6 Z" fill="#3a7cc8" fill-opacity="0.7"/>
+            </marker>
+            <marker id="arr-l" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
+              <path d="M0,0 L6,3 L0,6 Z" fill="#7c5cbf" fill-opacity="0.7"/>
+            </marker>
+            <marker id="arr-r" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
+              <path d="M0,0 L6,3 L0,6 Z" fill="#c87c3a" fill-opacity="0.7"/>
+            </marker>
+          </defs>
+          <g id="edges-layer"></g>
+          <g id="nodes-layer"></g>
+        </svg>
+        <div id="tooltip"></div>
+        <!-- LEGEND -->
+        <div class="graph-legend">
+          <div style="font-family:var(--mono);font-size:7px;color:var(--text3);letter-spacing:.1em;margin-bottom:2px">EDGE TYPES</div>
+          <div class="gl-row"><div class="gl-line" style="background:#00d4aa"></div><span class="gl-lbl">Hierarchy (parent→child)</span></div>
+          <div class="gl-row"><div class="gl-line" style="background:#c8a84b"></div><span class="gl-lbl">Dependency (blocks)</span></div>
+          <div class="gl-row"><div class="gl-line" style="background:#3a7cc8"></div><span class="gl-lbl">Contains (container→item)</span></div>
+          <div class="gl-row"><div class="gl-line" style="background:#7c5cbf"></div><span class="gl-lbl">Link (generic)</span></div>
+          <div class="gl-row"><div class="gl-line" style="background:#c87c3a"></div><span class="gl-lbl">Resource Share</span></div>
+          <div class="gl-row"><div class="gl-line" style="background:#bf5ca0"></div><span class="gl-lbl">Attribution</span></div>
+        </div>
+        <!-- ZOOM CONTROLS -->
+        <div class="graph-controls">
+          <div class="gc-btn" onclick="zoom(1.2)">+</div>
+          <div class="gc-btn" onclick="zoom(0.83)">−</div>
+          <div class="gc-btn" onclick="resetView()" title="Reset">⌖</div>
+        </div>
+      </div>
+      <!-- RIGHT PANEL -->
+      <div class="graph-info">
+        <div class="gi-hdr">
+          <div class="gi-title" id="gi-title">Graph Overview</div>
+          <div class="gi-sub" id="gi-sub">Click a node to inspect</div>
+        </div>
+        <div class="gi-body" id="gi-body">
+          <div class="gi-sec">Statistics</div>
+          <div class="gi-kv"><span class="gi-k">Nodes</span><span class="gi-v" id="stat-nodes">19</span></div>
+          <div class="gi-kv"><span class="gi-k">Edges</span><span class="gi-v" id="stat-edges">—</span></div>
+          <div class="gi-kv"><span class="gi-k">Hierarchy edges</span><span class="gi-v" style="color:var(--cyan)" id="stat-h">—</span></div>
+          <div class="gi-kv"><span class="gi-k">Dependency edges</span><span class="gi-v" style="color:var(--gold)" id="stat-d">—</span></div>
+          <div class="gi-kv"><span class="gi-k">Contains edges</span><span class="gi-v" style="color:var(--blue)" id="stat-c">—</span></div>
+          <div class="gi-kv"><span class="gi-k">Link edges</span><span class="gi-v" style="color:var(--violet)" id="stat-l">—</span></div>
+          <div class="gi-kv"><span class="gi-k">ResShare edges</span><span class="gi-v" style="color:var(--orange)" id="stat-r">—</span></div>
+          <div style="margin-top:8px" class="gi-sec">GraphEdge Model</div>
+          <div style="font-family:var(--sans);font-size:8px;color:var(--text3);line-height:1.5">Each edge carries: source_id · target_id · edge_type · metadata (policy_id, access_level, expiry, attribution_required). Edges are stored in the KLNK graph and indexed for O(1) traversal.</div>
+          <div style="margin-top:8px" class="gi-sec">Tip</div>
+          <div style="font-family:var(--sans);font-size:8px;color:var(--text3);line-height:1.5">Click a node to see its connections. Use the edge-type filter buttons in the toolbar to isolate specific relationship types. Drag nodes to reposition.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<script src="kogi-shared.js"></script>
+<script>
+buildSubNav('graph');
+
+const EDGE_COLORS={hierarchy:'#00d4aa',dependency:'#c8a84b',contains:'#3a7cc8',link:'#7c5cbf',resourceshare:'#c87c3a',attribution:'#bf5ca0'};
+const EDGE_MARKERS={hierarchy:'arr-h',dependency:'arr-d',contains:'arr-c',link:'arr-l',resourceshare:'arr-r',attribution:'arr-r'};
+
+const NODES=[
+  {id:'n0',label:'Alpha Platform',color:'#00d4aa',type:'Portfolio',r:14},
+  {id:'n1',label:'Community Growth',color:'#c8a84b',type:'Program',r:12},
+  {id:'n2',label:'Brand Identity',color:'#7c5cbf',type:'Project',r:11},
+  {id:'n3',label:'Jordan Chen',color:'#3a7cc8',type:'Resource',r:10},
+  {id:'n4',label:'Design Sys. Lib',color:'#c87c3a',type:'Asset',r:10},
+  {id:'n5',label:'Q3 Strategy Deck',color:'#bf5ca0',type:'Artifact',r:9},
+  {id:'n6',label:'Finance Infra',color:'#c8a84b',type:'Project',r:10},
+  {id:'n7',label:'Marketplace v2',color:'#4a5068',type:'Project',r:9},
+  {id:'n8',label:'Mobile App MVP',color:'#00d4aa',type:'Project',r:11},
+  {id:'n9',label:'Worker Portal v1',color:'#4aab6d',type:'Project',r:11},
+  {id:'n10',label:"Bloom's Fund",color:'#c87c3a',type:'Asset',r:9},
+  {id:'n11',label:'Platform Binder',color:'#5ca8bf',type:'Binder',r:12},
+  {id:'n12',label:'Proj Dossier·Brand',color:'#c8a84b',type:'Book',r:10},
+  {id:'n13',label:'Growth Playbook',color:'#5cbf7a',type:'Book',r:9},
+  {id:'n14',label:'Metadata Record',color:'#7abf5c',type:'Record',r:9},
+  {id:'n15',label:'Design Assets',color:'#7c5cbf',type:'Folder',r:9},
+  {id:'n16',label:'Contact Book',color:'#c8a84b',type:'Book',r:9},
+  {id:'n17',label:'Legal Pack',color:'#c45c7a',type:'Document',r:10},
+  {id:'n18',label:'Research Library',color:'#00d4aa',type:'Collection',r:9},
+];
+
+const ALL_EDGES=[
+  {s:'n0',t:'n1',type:'hierarchy'},{s:'n0',t:'n8',type:'contains'},{s:'n0',t:'n11',type:'contains'},
+  {s:'n1',t:'n0',type:'link'},{s:'n1',t:'n6',type:'dependency'},
+  {s:'n2',t:'n3',type:'hierarchy'},{s:'n2',t:'n4',type:'dependency'},{s:'n2',t:'n12',type:'contains'},
+  {s:'n3',t:'n2',type:'link'},{s:'n3',t:'n4',type:'resourceshare'},
+  {s:'n4',t:'n2',type:'attribution'},{s:'n4',t:'n14',type:'link'},
+  {s:'n8',t:'n9',type:'hierarchy'},{s:'n8',t:'n7',type:'dependency'},
+  {s:'n11',t:'n12',type:'contains'},{s:'n11',t:'n13',type:'contains'},{s:'n11',t:'n14',type:'contains'},
+  {s:'n17',t:'n6',type:'dependency'},{s:'n6',t:'n17',type:'link'},
+];
+
+let positions={},velocities={},activeFilter='all',selectedNode=null,scale=1,panX=0,panY=0,draggingNode=null,dragOffX=0,dragOffY=0,isPanning=false,panStartX=0,panStartY=0;
+
+function initPositions(){
+  const W=document.getElementById('graph-canvas').offsetWidth||800;
+  const H=document.getElementById('graph-canvas').offsetHeight||500;
+  // radial layout with alpha platform at center
+  const cx=W/2,cy=H/2;
+  positions['n0']={x:cx,y:cy};
+  const others=NODES.filter(n=>n.id!=='n0');
+  others.forEach((n,i)=>{
+    const a=(2*Math.PI*i/others.length)-(Math.PI/2);
+    const r=Math.min(W,H)*0.35;
+    positions[n.id]={x:cx+r*Math.cos(a),y:cy+r*Math.sin(a)};
+    velocities[n.id]={vx:0,vy:0};
+  });
+  velocities['n0']={vx:0,vy:0};
+}
+
+function getEdges(){
+  if(activeFilter==='all')return ALL_EDGES;
+  return ALL_EDGES.filter(e=>e.type===activeFilter);
+}
+
+function setFilter(f){
+  activeFilter=f;
+  document.querySelectorAll('#toolbar-btns .g-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('btn-'+f).classList.add('active');
+  drawGraph();updateStats();
+}
+
+function drawGraph(){
+  const svg=document.getElementById('graph-svg');
+  const el=document.getElementById('edges-layer');
+  const nl=document.getElementById('nodes-layer');
+  el.innerHTML='';nl.innerHTML='';
+  const W=svg.parentElement.offsetWidth,H=svg.parentElement.offsetHeight;
+  const edges=getEdges();
+
+  // draw edges
+  edges.forEach(edge=>{
+    const sp=positions[edge.s],tp=positions[edge.t];if(!sp||!tp)return;
+    const sx=panX+sp.x*scale,sy=panY+sp.y*scale,tx=panX+tp.x*scale,ty=panY+tp.y*scale;
+    const dx=tx-sx,dy=ty-sy,dist=Math.sqrt(dx*dx+dy*dy)||1;
+    const nr=NODES.find(n=>n.id===edge.t)?.r||10;
+    const ex=tx-dx/dist*nr*scale,ey=ty-dy/dist*nr*scale;
+    const color=EDGE_COLORS[edge.type]||'#888';
+    const line=document.createElementNS('http://www.w3.org/2000/svg','line');
+    line.setAttribute('x1',sx);line.setAttribute('y1',sy);line.setAttribute('x2',ex);line.setAttribute('y2',ey);
+    line.setAttribute('stroke',color);line.setAttribute('stroke-opacity','0.45');
+    line.setAttribute('stroke-width',edge.type==='hierarchy'?'2':'1.2');
+    if(edge.type==='link')line.setAttribute('stroke-dasharray','5,3');
+    const mkr=EDGE_MARKERS[edge.type];if(mkr)line.setAttribute('marker-end',`url(#${mkr})`);
+    el.appendChild(line);
+  });
+
+  // draw nodes
+  NODES.forEach(node=>{
+    const p=positions[node.id];if(!p)return;
+    const nx=panX+p.x*scale,ny=panY+p.y*scale;
+    const r=node.r*scale;
+    const isSel=selectedNode===node.id;
+    const g=document.createElementNS('http://www.w3.org/2000/svg','g');
+    g.style.cursor='pointer';
+    // glow ring for selected
+    if(isSel){
+      const glow=document.createElementNS('http://www.w3.org/2000/svg','circle');
+      glow.setAttribute('cx',nx);glow.setAttribute('cy',ny);glow.setAttribute('r',r+6);
+      glow.setAttribute('fill','none');glow.setAttribute('stroke',node.color);glow.setAttribute('stroke-width','2');glow.setAttribute('stroke-opacity','0.5');
+      g.appendChild(glow);
+    }
+    const circle=document.createElementNS('http://www.w3.org/2000/svg','circle');
+    circle.setAttribute('cx',nx);circle.setAttribute('cy',ny);circle.setAttribute('r',r);
+    circle.setAttribute('fill',node.color);circle.setAttribute('fill-opacity',isSel?'1':'0.75');
+    circle.setAttribute('stroke','#0a0b0f');circle.setAttribute('stroke-width','2');
+    g.appendChild(circle);
+    const label=document.createElementNS('http://www.w3.org/2000/svg','text');
+    label.setAttribute('x',nx);label.setAttribute('y',ny+r+10*scale);
+    label.setAttribute('text-anchor','middle');label.setAttribute('font-family','IBM Plex Mono,monospace');
+    label.setAttribute('font-size',Math.max(7,8*scale));label.setAttribute('fill','#7a8099');
+    label.textContent=node.label.slice(0,14)+(node.label.length>14?'…':'');
+    g.appendChild(label);
+    // type mini label inside circle
+    if(r>8){
+      const tl=document.createElementNS('http://www.w3.org/2000/svg','text');
+      tl.setAttribute('x',nx);tl.setAttribute('y',ny+3);
+      tl.setAttribute('text-anchor','middle');tl.setAttribute('font-family','IBM Plex Mono,monospace');
+      tl.setAttribute('font-size',Math.max(5,6*scale));tl.setAttribute('fill','#0a0b0f');tl.setAttribute('font-weight','700');
+      tl.textContent=node.type.slice(0,4).toUpperCase();
+      g.appendChild(tl);
+    }
+    g.addEventListener('mouseenter',e=>showTooltip(e,node));
+    g.addEventListener('mouseleave',()=>hideTooltip());
+    g.addEventListener('click',e=>{e.stopPropagation();selectNode(node.id);});
+    g.addEventListener('mousedown',e=>{e.stopPropagation();startDragNode(e,node.id);});
+    nl.appendChild(g);
+  });
+}
+
+function showTooltip(e,node){
+  const tt=document.getElementById('tooltip');
+  tt.innerHTML=`<strong style="color:${node.color}">${node.label}</strong><br/><span style="color:var(--text3)">${node.type}</span>`;
+  tt.style.display='block';tt.style.left=(e.offsetX+12)+'px';tt.style.top=(e.offsetY-10)+'px';
+}
+function hideTooltip(){document.getElementById('tooltip').style.display='none';}
+
+function selectNode(id){
+  selectedNode=selectedNode===id?null:id;
+  const node=NODES.find(n=>n.id===id);
+  const gi=document.getElementById('gi-body');
+  if(!selectedNode||!node){
+    document.getElementById('gi-title').textContent='Graph Overview';
+    document.getElementById('gi-sub').textContent='Click a node to inspect';
+    updateStats();drawGraph();return;
+  }
+  document.getElementById('gi-title').textContent=node.label;
+  document.getElementById('gi-sub').textContent=node.type+' · '+(node.r>=12?'Hub':'Leaf')+' node';
+  const outEdges=ALL_EDGES.filter(e=>e.s===id);
+  const inEdges=ALL_EDGES.filter(e=>e.t===id);
+  gi.innerHTML=`
+    <div class="gi-sec">Node Info</div>
+    <div class="gi-kv"><span class="gi-k">Type</span><span class="gi-v" style="color:${node.color}">${node.type}</span></div>
+    <div class="gi-kv"><span class="gi-k">Out-edges</span><span class="gi-v">${outEdges.length}</span></div>
+    <div class="gi-kv"><span class="gi-k">In-edges</span><span class="gi-v">${inEdges.length}</span></div>
+    <div class="gi-kv"><span class="gi-k">Degree</span><span class="gi-v" style="color:var(--cyan)">${outEdges.length+inEdges.length}</span></div>
+    <div style="margin-top:8px" class="gi-sec">${outEdges.length} Outgoing Edges</div>
+    ${outEdges.length===0?'<div style="font-family:var(--mono);font-size:8px;color:var(--text3)">None</div>':outEdges.map(e=>{
+      const tn=NODES.find(n=>n.id===e.t);const ec=EDGE_COLORS[e.type]||'#888';
+      return `<div class="edge-item">
+        <div class="edge-dot" style="background:${tn?.color||'#888'}"></div>
+        <span class="edge-name">${tn?.label||e.t}</span>
+        <span class="edge-type" style="color:${ec};border-color:${ec}40;background:${ec}10">${e.type.slice(0,6)}</span>
+      </div>`;
+    }).join('')}
+    <div style="margin-top:8px" class="gi-sec">${inEdges.length} Incoming Edges</div>
+    ${inEdges.length===0?'<div style="font-family:var(--mono);font-size:8px;color:var(--text3)">None</div>':inEdges.map(e=>{
+      const sn=NODES.find(n=>n.id===e.s);const ec=EDGE_COLORS[e.type]||'#888';
+      return `<div class="edge-item">
+        <div class="edge-dot" style="background:${sn?.color||'#888'}"></div>
+        <span class="edge-name">${sn?.label||e.s}</span>
+        <span class="edge-type" style="color:${ec};border-color:${ec}40;background:${ec}10">↩ ${e.type.slice(0,5)}</span>
+      </div>`;
+    }).join('')}
+  `;
+  drawGraph();
+}
+
+function updateStats(){
+  const edges=getEdges();
+  document.getElementById('stat-nodes').textContent=NODES.length;
+  document.getElementById('stat-edges').textContent=edges.length;
+  document.getElementById('stat-h').textContent=edges.filter(e=>e.type==='hierarchy').length;
+  document.getElementById('stat-d').textContent=edges.filter(e=>e.type==='dependency').length;
+  document.getElementById('stat-c').textContent=edges.filter(e=>e.type==='contains').length;
+  document.getElementById('stat-l').textContent=edges.filter(e=>e.type==='link').length;
+  document.getElementById('stat-r').textContent=edges.filter(e=>e.type==='resourceshare').length;
+}
+
+// DRAG NODES
+function startDragNode(e,id){draggingNode=id;const p=positions[id];dragOffX=e.offsetX-panX-p.x*scale;dragOffY=e.offsetY-panY-p.y*scale;}
+document.getElementById('graph-canvas').addEventListener('mousemove',e=>{
+  if(draggingNode){const p=positions[draggingNode];p.x=(e.offsetX-panX-dragOffX)/scale;p.y=(e.offsetY-panY-dragOffY)/scale;drawGraph();}
+  else if(isPanning){panX+=e.clientX-panStartX;panY+=e.clientY-panStartY;panStartX=e.clientX;panStartY=e.clientY;drawGraph();}
+});
+document.getElementById('graph-canvas').addEventListener('mouseup',()=>{draggingNode=null;isPanning=false;});
+document.getElementById('graph-canvas').addEventListener('mousedown',e=>{if(!draggingNode){isPanning=true;panStartX=e.clientX;panStartY=e.clientY;}});
+document.getElementById('graph-canvas').addEventListener('click',e=>{if(!draggingNode&&e.target===document.getElementById('graph-svg')||e.target.tagName==='svg'){selectedNode=null;document.getElementById('gi-title').textContent='Graph Overview';document.getElementById('gi-sub').textContent='Click a node to inspect';updateStats();drawGraph();}});
+document.getElementById('graph-canvas').addEventListener('wheel',e=>{e.preventDefault();const factor=e.deltaY<0?1.1:0.9;const mx=e.offsetX,my=e.offsetY;panX=(panX-mx)*factor+mx;panY=(panY-my)*factor+my;scale*=factor;scale=Math.max(0.3,Math.min(3,scale));drawGraph();},{passive:false});
+
+function zoom(f){const W=document.getElementById('graph-canvas').offsetWidth/2,H=document.getElementById('graph-canvas').offsetHeight/2;panX=(panX-W)*f+W;panY=(panY-H)*f+H;scale*=f;scale=Math.max(0.3,Math.min(3,scale));drawGraph();}
+function resetView(){scale=1;const W=document.getElementById('graph-canvas').offsetWidth,H=document.getElementById('graph-canvas').offsetHeight;panX=0;panY=0;initPositions();drawGraph();}
+
+window.addEventListener('load',()=>{initPositions();drawGraph();updateStats();});
+window.addEventListener('resize',()=>{drawGraph();});
+</script>
+</body>
+</html>

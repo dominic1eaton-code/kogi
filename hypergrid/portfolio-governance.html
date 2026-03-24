@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KOGI · Portfolio · Governance</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;600;700&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap');
+:root{--bg:#0a0b0f;--bg1:#0f1117;--bg2:#13151e;--bg3:#181c28;--border:rgba(255,255,255,0.06);--border2:rgba(255,255,255,0.1);--text:#c8ccdb;--text2:#7a8099;--text3:#4a5068;--cyan:#00d4aa;--gold:#c8a84b;--violet:#7c5cbf;--rose:#c45c7a;--orange:#c87c3a;--blue:#3a7cc8;--green:#4aab6d;--pink:#bf5ca0;--nav-w:158px;--mono:'IBM Plex Mono',monospace;--sans:'IBM Plex Sans',sans-serif}
+*{box-sizing:border-box;margin:0;padding:0}html,body{width:100%;height:100%;background:var(--bg);font-family:var(--sans);color:var(--text);font-size:10px;overflow:hidden}a{text-decoration:none;color:inherit}
+.screen{display:flex;flex-direction:column;width:100%;height:100vh;overflow:hidden}
+.body-layout{display:flex;flex:1;min-height:0;overflow:hidden}
+.main{flex:1;display:flex;flex-direction:column;min-width:0;overflow:hidden}
+.content{flex:1;overflow:auto;padding:14px;display:flex;flex-direction:column;gap:12px}
+.g-hdr{height:36px;background:var(--bg1);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 12px;gap:10px;flex-shrink:0}
+.g-logo{font-family:var(--mono);font-size:11px;font-weight:700;color:var(--cyan);letter-spacing:.1em}
+.g-bc{display:flex;align-items:center;gap:4px;font-family:var(--mono);font-size:9px;color:var(--text3)}
+.g-bc span{color:var(--text2)}.g-bc .sep{color:var(--text3)}.g-bc .cur{color:var(--text)}
+.g-dot{width:8px;height:8px;border-radius:50%;background:var(--cyan);margin-left:auto;animation:pulse 2s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+.sub-nav{height:30px;background:var(--bg2);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 10px;gap:1px;flex-shrink:0;overflow-x:auto}
+.sub-nav::-webkit-scrollbar{display:none}
+.sn-item{display:flex;align-items:center;padding:4px 10px;font-family:var(--mono);font-size:8px;color:var(--text3);cursor:pointer;border-radius:3px;white-space:nowrap;transition:all .1s;border:1px solid transparent}
+.sn-item:hover{color:var(--text2);background:var(--bg3)}.sn-item.active{color:var(--text);background:var(--bg3);border-color:var(--border2)}
+.sn-sep{width:1px;height:14px;background:var(--border);margin:0 4px;flex-shrink:0}
+.l-nav{width:var(--nav-w);background:var(--bg1);border-right:1px solid var(--border);flex-shrink:0;display:flex;flex-direction:column;padding:10px 0;gap:1px;overflow-y:auto}
+.nav-sec{font-family:var(--mono);font-size:7px;letter-spacing:.14em;text-transform:uppercase;color:var(--text3);padding:8px 12px 3px}
+.nav-it{display:flex;align-items:center;gap:6px;padding:5px 12px;font-family:var(--mono);font-size:9px;color:var(--text3);cursor:pointer;border-left:2px solid transparent;white-space:nowrap;overflow:hidden;transition:all .1s}
+.nav-it:hover{background:var(--bg2);color:var(--text2)}.nav-it.active{background:var(--bg2);color:var(--text);border-left-color:var(--cyan)}
+.nav-it .badge{margin-left:auto;background:var(--bg3);border-radius:2px;padding:1px 4px;font-size:7px;color:var(--text3)}
+.toolbar{height:32px;background:var(--bg1);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 12px;gap:8px;flex-shrink:0}
+.tb-title{font-family:var(--mono);font-size:10px;font-weight:600;color:var(--text)}
+.g-btn{background:var(--bg2);border:1px solid var(--border2);border-radius:3px;padding:3px 8px;font-family:var(--mono);font-size:9px;color:var(--text2);cursor:pointer;transition:all .12s}
+.g-btn:hover{border-color:var(--cyan);color:var(--cyan)}.g-btn.pri{background:var(--cyan);border-color:var(--cyan);color:#000;font-weight:600}
+/* layout */
+.gov-layout{display:grid;grid-template-columns:1fr 320px;gap:12px;height:100%}
+.gov-main{display:flex;flex-direction:column;gap:10px;overflow:auto}
+.gov-side{display:flex;flex-direction:column;gap:10px;overflow:auto}
+.widget{background:var(--bg1);border:1px solid var(--border);border-radius:4px;padding:12px 14px}
+.w-hdr{display:flex;align-items:center;gap:6px;margin-bottom:10px}
+.w-title{font-family:var(--mono);font-size:9px;font-weight:600;color:var(--text);flex:1}
+.w-badge{font-family:var(--mono);font-size:7px;color:var(--text3);background:var(--bg2);border:1px solid var(--border);border-radius:2px;padding:1px 5px}
+/* approval queue */
+.appr-item{display:flex;align-items:flex-start;gap:10px;padding:8px 0;border-bottom:1px solid var(--border)}
+.appr-item:last-child{border-bottom:none}
+.appr-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;margin-top:3px}
+.appr-body{flex:1}
+.appr-title{font-family:var(--mono);font-size:9px;font-weight:600;color:var(--text);margin-bottom:2px}
+.appr-desc{font-family:var(--sans);font-size:8px;color:var(--text3);line-height:1.4;margin-bottom:5px}
+.appr-meta{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.appr-badge{font-family:var(--mono);font-size:7px;padding:1px 5px;border-radius:2px;border:1px solid}
+.appr-actions{display:flex;gap:5px;margin-top:5px}
+.appr-btn{font-family:var(--mono);font-size:7px;padding:2px 8px;border-radius:2px;border:1px solid;cursor:pointer}
+.appr-btn.approve{border-color:var(--green);color:var(--green);background:rgba(74,171,109,.08)}
+.appr-btn.reject{border-color:var(--rose);color:var(--rose);background:rgba(196,92,122,.08)}
+.appr-btn.defer{border-color:var(--border2);color:var(--text3)}
+/* policy list */
+.pol-item{display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--border)}
+.pol-item:last-child{border-bottom:none}
+.pol-dot{width:6px;height:6px;border-radius:50%}
+.pol-name{font-family:var(--mono);font-size:8px;color:var(--text2);flex:1}
+.pol-scope{font-family:var(--mono);font-size:7px;color:var(--text3);padding:1px 4px;border-radius:2px;border:1px solid var(--border)}
+.pol-status{font-family:var(--mono);font-size:7px;padding:1px 4px;border-radius:2px;border:1px solid}
+/* event log */
+.ev-item{display:flex;align-items:flex-start;gap:8px;padding:5px 0;border-bottom:1px solid var(--border)}
+.ev-item:last-child{border-bottom:none}
+.ev-time{font-family:var(--mono);font-size:7px;color:var(--text3);width:50px;flex-shrink:0;margin-top:1px}
+.ev-dot{width:5px;height:5px;border-radius:50%;margin-top:3px;flex-shrink:0}
+.ev-msg{font-family:var(--sans);font-size:8px;color:var(--text2);flex:1;line-height:1.4}
+.ev-actor{font-family:var(--mono);font-size:7px;color:var(--text3);margin-top:1px}
+/* permission tiers */
+.tier-row{display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid var(--border)}
+.tier-row:last-child{border-bottom:none}
+.tier-num{font-family:var(--mono);font-size:9px;font-weight:700;width:20px;flex-shrink:0}
+.tier-name{font-family:var(--mono);font-size:8px;color:var(--text2);flex:1}
+.tier-desc{font-family:var(--sans);font-size:7px;color:var(--text3)}
+/* compliance */
+.comp-item{display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid var(--border)}
+.comp-item:last-child{border-bottom:none}
+.comp-name{font-family:var(--mono);font-size:8px;color:var(--text2);flex:1}
+.comp-st{font-family:var(--mono);font-size:7px;padding:1px 5px;border-radius:2px;border:1px solid}
+</style>
+</head>
+<body>
+<div class="screen">
+  <div class="g-hdr">
+    <span class="g-logo">KOGI</span>
+    <div class="g-bc"><span>OS</span><span class="sep"> / </span><span>Portfolio</span><span class="sep"> / </span><span class="cur">Governance</span></div>
+    <div class="g-dot"></div>
+  </div>
+  <div class="sub-nav" id="sub-nav"></div>
+  <div class="body-layout">
+    <div class="l-nav">
+      <div class="nav-sec">Navigation</div>
+      <a href="#" class="nav-it">🏠 Home</a>
+      <a href="portfolio-grid.html" class="nav-it">📁 Portfolio</a>
+      <a href="portfolio-programs.html" class="nav-it">📋 Programs</a>
+      <a href="portfolio-resources.html" class="nav-it">👤 Resources</a>
+      <div class="nav-sec">Workspace</div>
+      <a href="#" class="nav-it">🗂 Collections</a>
+      <a href="#" class="nav-it">📌 Pinned</a>
+      <a href="#" class="nav-it">🏷 Tags</a>
+      <div class="nav-sec">Tools</div>
+      <a href="portfolio-analytics.html" class="nav-it">📊 Analytics</a>
+      <a href="portfolio-governance.html" class="nav-it active">⚙ Governance</a>
+      <a href="portfolio-graph.html" class="nav-it">🔗 Graph</a>
+      <div class="nav-sec">Platform</div>
+      <a href="portfolio-benefits.html" class="nav-it">⊕ Benefits</a>
+      <a href="portfolio-collaboration.html" class="nav-it">⊗ Collab</a>
+    </div>
+    <div class="main">
+      <div class="toolbar">
+        <span class="tb-title">Governance</span>
+        <span style="font-family:var(--mono);font-size:8px;color:var(--text3);margin-left:6px">PolicyEngine · PermissionTier · ApprovalWorkflow · EventLog</span>
+        <div style="margin-left:auto;display:flex;gap:6px">
+          <span class="g-btn">Policies</span>
+          <span class="g-btn pri">+ Proposal</span>
+        </div>
+      </div>
+      <div class="content">
+        <div class="gov-layout">
+          <div class="gov-main">
+            <!-- APPROVAL QUEUE -->
+            <div class="widget">
+              <div class="w-hdr"><span class="w-title">Approval Queue</span><span class="w-badge" style="color:var(--rose);border-color:rgba(196,92,122,.3)">3 Pending</span></div>
+              <div class="appr-item">
+                <div class="appr-dot" style="background:var(--rose)"></div>
+                <div class="appr-body">
+                  <div class="appr-title">Finance Infrastructure — Resume Work Request</div>
+                  <div class="appr-desc">Request to resume Finance Infrastructure project following 14-day legal hold. Legal counsel has cleared contractor classification questions. Requires owner approval to reactivate budget allocation of $18.3k.</div>
+                  <div class="appr-meta">
+                    <span class="appr-badge" style="color:var(--rose);border-color:rgba(196,92,122,.3)">OwnerDecision</span>
+                    <span class="appr-badge" style="color:var(--text3);border-color:var(--border)">Finance</span>
+                    <span style="font-family:var(--mono);font-size:7px;color:var(--text3)">Requested by: @jordan · 2d ago</span>
+                  </div>
+                  <div class="appr-actions">
+                    <span class="appr-btn approve">✓ Approve</span>
+                    <span class="appr-btn reject">✕ Reject</span>
+                    <span class="appr-btn defer">⌛ Defer</span>
+                  </div>
+                </div>
+              </div>
+              <div class="appr-item">
+                <div class="appr-dot" style="background:var(--gold)"></div>
+                <div class="appr-body">
+                  <div class="appr-title">Marketplace Engine v2 — Budget Activation</div>
+                  <div class="appr-desc">Proposal to activate $0 → $32k budget allocation for Marketplace Engine v2 project. Requires strategic alignment review against Q3 roadmap before resource commitment.</div>
+                  <div class="appr-meta">
+                    <span class="appr-badge" style="color:var(--gold);border-color:rgba(200,168,75,.3)">AdminApproval</span>
+                    <span class="appr-badge" style="color:var(--text3);border-color:var(--border)">Tech · AI</span>
+                    <span style="font-family:var(--mono);font-size:7px;color:var(--text3)">Requested by: @kwame · 5d ago</span>
+                  </div>
+                  <div class="appr-actions">
+                    <span class="appr-btn approve">✓ Approve</span>
+                    <span class="appr-btn reject">✕ Reject</span>
+                    <span class="appr-btn defer">⌛ Defer</span>
+                  </div>
+                </div>
+              </div>
+              <div class="appr-item">
+                <div class="appr-dot" style="background:var(--blue)"></div>
+                <div class="appr-body">
+                  <div class="appr-title">Design Assets Folder — Access Level Change</div>
+                  <div class="appr-desc">Request to change Design Assets Folder visibility from Protected → Internal to allow contractor team access to brand export files.</div>
+                  <div class="appr-meta">
+                    <span class="appr-badge" style="color:var(--blue);border-color:rgba(58,124,200,.3)">OwnerDecision</span>
+                    <span class="appr-badge" style="color:var(--text3);border-color:var(--border)">Creative</span>
+                    <span style="font-family:var(--mono);font-size:7px;color:var(--text3)">Requested by: @jordan · 1d ago</span>
+                  </div>
+                  <div class="appr-actions">
+                    <span class="appr-btn approve">✓ Approve</span>
+                    <span class="appr-btn reject">✕ Reject</span>
+                    <span class="appr-btn defer">⌛ Defer</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- ACTIVE POLICIES -->
+            <div class="widget">
+              <div class="w-hdr"><span class="w-title">Active Governance Policies</span><span class="w-badge">PolicyEngine · KOGI-MANAGER</span></div>
+              <div class="pol-item">
+                <div class="pol-dot" style="background:var(--rose)"></div>
+                <span class="pol-name">Budget Overrun Alert</span>
+                <span class="pol-scope">Portfolio-wide</span>
+                <span class="pol-status" style="color:var(--green);border-color:rgba(74,171,109,.3)">Active</span>
+              </div>
+              <div class="pol-item">
+                <div class="pol-dot" style="background:var(--gold)"></div>
+                <span class="pol-name">Legal Review Gate</span>
+                <span class="pol-scope">Finance, Legal</span>
+                <span class="pol-status" style="color:var(--green);border-color:rgba(74,171,109,.3)">Active</span>
+              </div>
+              <div class="pol-item">
+                <div class="pol-dot" style="background:var(--blue)"></div>
+                <span class="pol-name">IP Registration Requirement</span>
+                <span class="pol-scope">Assets</span>
+                <span class="pol-status" style="color:var(--green);border-color:rgba(74,171,109,.3)">Active</span>
+              </div>
+              <div class="pol-item">
+                <div class="pol-dot" style="background:var(--violet)"></div>
+                <span class="pol-name">Design Review — Creative Artifacts</span>
+                <span class="pol-scope">Creative</span>
+                <span class="pol-status" style="color:var(--green);border-color:rgba(74,171,109,.3)">Active</span>
+              </div>
+              <div class="pol-item">
+                <div class="pol-dot" style="background:var(--text3)"></div>
+                <span class="pol-name">Archive Stale Items (>90d)</span>
+                <span class="pol-scope">All</span>
+                <span class="pol-status" style="color:var(--gold);border-color:rgba(200,168,75,.3)">Paused</span>
+              </div>
+            </div>
+
+            <!-- PERMISSION TIERS -->
+            <div class="widget">
+              <div class="w-hdr"><span class="w-title">Permission Tier Hierarchy</span><span class="w-badge">PermissionTier · RBAC</span></div>
+              <div class="tier-row"><span class="tier-num" style="color:var(--rose)">T1</span><span class="tier-name">Owner</span><span class="tier-desc">Full control: create, read, update, delete, govern, transfer</span></div>
+              <div class="tier-row"><span class="tier-num" style="color:var(--orange)">T2</span><span class="tier-name">Admin</span><span class="tier-desc">All ops except ownership transfer and federation</span></div>
+              <div class="tier-row"><span class="tier-num" style="color:var(--gold)">T3</span><span class="tier-name">Editor</span><span class="tier-desc">Create, read, update; no delete or policy management</span></div>
+              <div class="tier-row"><span class="tier-num" style="color:var(--cyan)">T4</span><span class="tier-name">Contributor</span><span class="tier-desc">Read + contribute via ContributionRecord; submit for review</span></div>
+              <div class="tier-row"><span class="tier-num" style="color:var(--blue)">T5</span><span class="tier-name">Viewer</span><span class="tier-desc">Read-only access per visibility setting</span></div>
+              <div class="tier-row"><span class="tier-num" style="color:var(--text3)">T6</span><span class="tier-name">Public</span><span class="tier-desc">Unauthenticated access to Public-visibility items only</span></div>
+            </div>
+          </div>
+
+          <div class="gov-side">
+            <!-- COMPLIANCE FLAGS -->
+            <div class="widget">
+              <div class="w-hdr"><span class="w-title">Compliance Flags</span><span class="w-badge" style="color:var(--gold)">2 Open</span></div>
+              <div class="comp-item">
+                <span class="comp-name">Finance Infrastructure — RBAC</span>
+                <span class="comp-st" style="color:var(--rose);border-color:rgba(196,92,122,.3)">Open</span>
+              </div>
+              <div class="comp-item">
+                <span class="comp-name">Worker Portal — GDPR consent flow</span>
+                <span class="comp-st" style="color:var(--rose);border-color:rgba(196,92,122,.3)">Open</span>
+              </div>
+              <div class="comp-item">
+                <span class="comp-name">IP Registration — Design System</span>
+                <span class="comp-st" style="color:var(--green);border-color:rgba(74,171,109,.3)">Resolved</span>
+              </div>
+              <div class="comp-item">
+                <span class="comp-name">Legal Pack — SOC2 alignment</span>
+                <span class="comp-st" style="color:var(--green);border-color:rgba(74,171,109,.3)">Resolved</span>
+              </div>
+            </div>
+
+            <!-- GOVERNANCE MODELS -->
+            <div class="widget">
+              <div class="w-hdr"><span class="w-title">Governance Models</span><span class="w-badge">GovernanceModel</span></div>
+              <div class="pol-item"><div class="pol-dot" style="background:var(--rose)"></div><span class="pol-name">OwnerDecision</span><span style="font-family:var(--mono);font-size:7px;color:var(--text3)">9 items</span></div>
+              <div class="pol-item"><div class="pol-dot" style="background:var(--gold)"></div><span class="pol-name">AdminApproval</span><span style="font-family:var(--mono);font-size:7px;color:var(--text3)">4 items</span></div>
+              <div class="pol-item"><div class="pol-dot" style="background:var(--violet)"></div><span class="pol-name">MajorityVote</span><span style="font-family:var(--mono);font-size:7px;color:var(--text3)">2 items</span></div>
+              <div class="pol-item"><div class="pol-dot" style="background:var(--text3)"></div><span class="pol-name">None</span><span style="font-family:var(--mono);font-size:7px;color:var(--text3)">4 items</span></div>
+            </div>
+
+            <!-- EVENT LOG -->
+            <div class="widget">
+              <div class="w-hdr"><span class="w-title">Event Log</span><span class="w-badge">Append-only · CRDT</span></div>
+              <div class="ev-item"><span class="ev-time">10m ago</span><div class="ev-dot" style="background:var(--cyan)"></div><div><div class="ev-msg">Legal Compliance Pack status → Active</div><div class="ev-actor">@system · PolicyEngine</div></div></div>
+              <div class="ev-item"><span class="ev-time">2h ago</span><div class="ev-dot" style="background:var(--gold)"></div><div><div class="ev-msg">Approval requested: Marketplace Engine v2 budget</div><div class="ev-actor">@kwame · GovernanceEngine</div></div></div>
+              <div class="ev-item"><span class="ev-time">4h ago</span><div class="ev-dot" style="background:var(--violet)"></div><div><div class="ev-msg">Brand Identity System sprint 3 → InProgress</div><div class="ev-actor">@jordan · WorkflowEngine</div></div></div>
+              <div class="ev-item"><span class="ev-time">1d ago</span><div class="ev-dot" style="background:var(--rose)"></div><div><div class="ev-msg">Finance Infrastructure → Paused (legal hold)</div><div class="ev-actor">@legal-ext · OwnerDecision</div></div></div>
+              <div class="ev-item"><span class="ev-time">2d ago</span><div class="ev-dot" style="background:var(--green)"></div><div><div class="ev-msg">Worker Portal v1 milestone 4 → Approved</div><div class="ev-actor">@mia · MilestoneEngine</div></div></div>
+              <div class="ev-item"><span class="ev-time">3d ago</span><div class="ev-dot" style="background:var(--blue)"></div><div><div class="ev-msg">Design Assets Folder access request submitted</div><div class="ev-actor">@jordan · AccessControl</div></div></div>
+              <div style="text-align:center;margin-top:8px;font-family:var(--mono);font-size:8px;color:var(--cyan);cursor:pointer">View full EventLog →</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<script src="kogi-shared.js"></script>
+<script>buildSubNav('governance');</script>
+</body>
+</html>

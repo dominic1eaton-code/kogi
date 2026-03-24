@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>UME OrgOS — Org Chart</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#070010;--surface:#0f0820;--surface-2:#150b2c;--surface-3:#1b1038;
+  --border:rgba(255,255,255,.065);--border-mid:rgba(255,255,255,.10);
+  --text:#ede6ff;--text-soft:rgba(215,205,255,.7);--text-muted:rgba(190,175,240,.4);
+  --purple:#6a2fff;--purple-mid:#2d0072;
+  --cherry:#ff2a55;--teal:#00e5d8;--amber:#f5b942;--blue:#38b4ff;
+  --emerald:#34e8a0;--coral:#ff6b4a;--orchid:#d855ff;--rose:#ff4c8b;
+  --sidebar-w:210px;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html,body{height:100%;font-family:"Space Grotesk",sans-serif;background:var(--bg);overflow:hidden;color:var(--text);}
+body{display:flex;}
+.sidebar{width:var(--sidebar-w);height:100vh;background:#0a0018;display:flex;flex-direction:column;flex-shrink:0;border-right:1px solid rgba(255,255,255,.05);}
+.sidebar-logo{display:flex;align-items:center;gap:9px;padding:16px 16px 14px;border-bottom:1px solid rgba(255,255,255,.06);}
+.s-icon{width:30px;height:30px;border-radius:8px;background:var(--purple-mid);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:15px;color:#fff;box-shadow:0 0 14px 2px rgba(106,47,255,.5);}
+.s-logo-text{font-weight:700;font-size:15px;color:#fff;} .s-logo-text span{color:var(--cherry);}
+.org-selector{margin:10px 10px 4px;padding:8px 10px;border-radius:8px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.07);cursor:pointer;display:flex;align-items:center;gap:8px;}
+.org-dot{width:7px;height:7px;border-radius:50%;background:var(--teal);box-shadow:0 0 6px rgba(0,229,216,.65);}
+.org-name{font-size:12px;font-weight:600;color:rgba(220,210,255,.8);flex:1;}
+.nav-section{padding:0 8px;margin-bottom:2px;}
+.nav-label{font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:rgba(200,190,255,.18);padding:10px 8px 4px;}
+.nav-item{display:flex;align-items:center;gap:9px;padding:7px 10px;border-radius:7px;cursor:pointer;transition:.15s;text-decoration:none;margin-bottom:1px;}
+.nav-item:hover{background:rgba(255,255,255,.06);}
+.nav-icon{font-size:14px;width:20px;text-align:center;}
+.nav-text{font-size:12.5px;font-weight:500;color:rgba(210,200,255,.38);flex:1;}
+.nav-item.active{background:linear-gradient(90deg,rgba(106,47,255,.5),rgba(255,42,85,.22));border:1px solid rgba(255,42,85,.15);}
+.nav-item.active .nav-text{color:#fff;font-weight:600;}
+.sidebar-footer{margin-top:auto;padding:10px;border-top:1px solid rgba(255,255,255,.05);}
+.user-avatar{width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,var(--purple-mid),var(--cherry));display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff;}
+.user-row{display:flex;align-items:center;gap:9px;cursor:pointer;padding:8px;border-radius:8px;}
+.user-name{font-size:12px;font-weight:600;color:rgba(220,210,255,.8);}
+.user-role{font-size:10px;color:rgba(200,190,255,.3);}
+.main{flex:1;display:flex;flex-direction:column;height:100vh;overflow:hidden;}
+.topbar{height:52px;background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 24px;gap:12px;flex-shrink:0;}
+.page-title{font-size:15px;font-weight:700;}
+.breadcrumb{font-size:11px;color:var(--text-muted);}
+.topbar-right{margin-left:auto;display:flex;align-items:center;gap:10px;}
+.tb-btn{padding:6px 13px;border:1px solid var(--border-mid);border-radius:7px;font-size:12px;font-weight:600;color:var(--text-soft);background:var(--surface-2);cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:5px;transition:.15s;}
+.tb-btn:hover{border-color:rgba(106,47,255,.5);color:var(--text);}
+.tb-btn.primary{background:linear-gradient(135deg,var(--purple),var(--cherry));color:#fff;border:none;}
+.subnav{height:44px;background:var(--surface-2);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 24px;gap:4px;flex-shrink:0;overflow-x:auto;}
+.subnav::-webkit-scrollbar{height:0;}
+.snav-item{padding:6px 14px;border-radius:6px;font-size:12px;font-weight:600;color:rgba(210,200,255,.4);cursor:pointer;transition:.15s;text-decoration:none;white-space:nowrap;border:1px solid transparent;}
+.snav-item:hover{color:var(--text-soft);background:rgba(255,255,255,.04);}
+.snav-item.active{color:var(--text);background:rgba(106,47,255,.22);border-color:rgba(106,47,255,.35);}
+
+/* CHART CANVAS AREA */
+.chart-outer{flex:1;display:flex;overflow:hidden;}
+.chart-stage{flex:1;overflow:auto;position:relative;background:radial-gradient(ellipse at 40% 40%,rgba(106,47,255,.05),transparent 60%);}
+.chart-stage::-webkit-scrollbar{width:5px;height:5px;}
+.chart-stage::-webkit-scrollbar-thumb{background:rgba(106,47,255,.3);border-radius:3px;}
+.chart-wrap{min-width:1400px;min-height:700px;position:relative;padding:40px;}
+
+/* NODE CARD */
+.org-node{position:absolute;transform:translate(-50%,-50%);background:var(--surface);border-radius:12px;padding:12px 14px;min-width:140px;text-align:center;cursor:pointer;transition:.2s;border:1px solid var(--border);user-select:none;}
+.org-node:hover{border-color:rgba(106,47,255,.4);background:var(--surface-2);}
+.org-node.selected{border-color:rgba(106,47,255,.7);box-shadow:0 0 0 2px rgba(106,47,255,.3);}
+.org-node.ai-node{border-color:rgba(52,232,160,.3);}
+.org-node.ceo{border-color:rgba(106,47,255,.6);background:rgba(106,47,255,.1);}
+.node-avatar{width:36px;height:36px;border-radius:50%;margin:0 auto 8px;display:flex;align-items:center;justify-content:center;font-size:16px;border:2px solid;}
+.node-name{font-size:12px;font-weight:700;color:var(--text);margin-bottom:2px;}
+.node-title{font-size:10.5px;color:var(--text-muted);}
+.node-type-badge{display:inline-flex;align-items:center;gap:3px;font-size:9px;font-weight:700;padding:2px 6px;border-radius:4px;margin-top:5px;border:1px solid;}
+.node-actions{position:absolute;top:-8px;right:-8px;display:none;gap:4px;}
+.org-node:hover .node-actions{display:flex;}
+.node-action-btn{width:20px;height:20px;border-radius:50%;border:1px solid var(--border-mid);background:var(--surface-2);color:var(--text-soft);font-size:10px;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+
+/* SVG LINES */
+#chart-svg{position:absolute;top:0;left:0;pointer-events:none;}
+
+/* SIDE PANEL */
+.chart-panel{width:280px;background:var(--surface);border-left:1px solid var(--border);overflow-y:auto;padding:16px;}
+.chart-panel::-webkit-scrollbar{width:4px;}
+.chart-panel::-webkit-scrollbar-thumb{background:rgba(106,47,255,.3);border-radius:2px;}
+.panel-section{margin-bottom:20px;}
+.ps-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text-muted);margin-bottom:10px;}
+
+/* ADD NODE MODAL */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:100;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px);}
+.modal{background:var(--surface-2);border:1px solid rgba(106,47,255,.3);border-radius:16px;padding:24px;width:360px;}
+.modal-title{font-size:15px;font-weight:700;margin-bottom:16px;}
+.form-group{margin-bottom:12px;}
+.form-label{font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:5px;display:block;}
+.form-input{width:100%;background:rgba(255,255,255,.05);border:1px solid var(--border-mid);border-radius:8px;color:var(--text);font-size:12px;font-family:inherit;padding:8px 11px;outline:none;}
+.form-input:focus{border-color:rgba(106,47,255,.5);}
+.form-select{width:100%;background:rgba(255,255,255,.05);border:1px solid var(--border-mid);border-radius:8px;color:var(--text);font-size:12px;font-family:inherit;padding:8px 11px;outline:none;}
+.form-actions{display:flex;gap:8px;margin-top:16px;}
+</style>
+</head>
+<body>
+
+<nav class="sidebar">
+  <div class="sidebar-logo"><div class="s-icon">U</div><div class="s-logo-text">UME <span>OS</span></div></div>
+  <div class="org-selector"><div class="org-dot"></div><div class="org-name">Acme Corp</div><span style="color:rgba(200,190,255,.3);font-size:10px;">▾</span></div>
+  <div style="flex:1;overflow-y:auto;padding-top:6px;">
+    <div class="nav-section">
+      <div class="nav-label">Core</div>
+      <a href="../dashboard.html" class="nav-item"><span class="nav-icon">⬡</span><span class="nav-text">Dashboard</span></a>
+      <a href="digital-twin.html" class="nav-item active"><span class="nav-icon">🧬</span><span class="nav-text">Digital Twin</span></a>
+    </div>
+    <div class="nav-section">
+      <div class="nav-label">Operations</div>
+      <a href="#" class="nav-item"><span class="nav-icon">👥</span><span class="nav-text">OrgExecs</span></a>
+      <a href="#" class="nav-item"><span class="nav-icon">🛡️</span><span class="nav-text">Risk & GRC</span></a>
+    </div>
+  </div>
+  <div class="sidebar-footer"><div class="user-row"><div class="user-avatar">JS</div><div><div class="user-name">J. Smith</div><div class="user-role">OrgExec · Admin</div></div></div></div>
+</nav>
+
+<div class="main">
+  <div class="topbar">
+    <div><div class="page-title">🌲 Org Chart</div><div class="breadcrumb">Digital Twin · OrgExec Hierarchy · Auto-Generated</div></div>
+    <div class="topbar-right">
+      <button class="tb-btn" onclick="autoLayout()">⟳ Auto Layout</button>
+      <button class="tb-btn">⤓ Export PNG</button>
+      <button class="tb-btn">🧬 Sync to OrgDNA</button>
+      <button class="tb-btn primary" onclick="openAddModal()">+ Add Person</button>
+    </div>
+  </div>
+  <div class="subnav">
+    <a href="digital-twin.html" class="snav-item">⬡ Overview</a>
+    <a href="org-system.html" class="snav-item">🏛 OrgSystem</a>
+    <a href="org-dna.html" class="snav-item">🧬 OrgDNA</a>
+    <a href="network-graph.html" class="snav-item">🕸 Network Graph</a>
+    <a href="org-chart.html" class="snav-item active">🌲 Org Chart</a>
+    <a href="business-model.html" class="snav-item">📐 Business Model</a>
+    <a href="value-proposition.html" class="snav-item">💎 Value Proposition</a>
+    <a href="data-master.html" class="snav-item">🗄 Data Master</a>
+  </div>
+
+  <div class="chart-outer">
+    <div class="chart-stage" id="chart-stage">
+      <div class="chart-wrap" id="chart-wrap">
+        <svg id="chart-svg"></svg>
+        <!-- Nodes injected by JS -->
+      </div>
+    </div>
+    <div class="chart-panel">
+      <div class="panel-section">
+        <div class="ps-title">Chart Stats</div>
+        <div style="display:flex;flex-direction:column;gap:7px;">
+          <div style="display:flex;justify-content:space-between;font-size:12px;"><span style="color:var(--text-soft);">Total People</span><span id="stat-total" style="font-weight:700;color:var(--text);">0</span></div>
+          <div style="display:flex;justify-content:space-between;font-size:12px;"><span style="color:var(--text-soft);">Human OrgExecs</span><span id="stat-humans" style="font-weight:700;color:var(--blue);">0</span></div>
+          <div style="display:flex;justify-content:space-between;font-size:12px;"><span style="color:var(--text-soft);">AI Agents</span><span id="stat-ai" style="font-weight:700;color:var(--emerald);">0</span></div>
+          <div style="display:flex;justify-content:space-between;font-size:12px;"><span style="color:var(--text-soft);">Depth</span><span id="stat-depth" style="font-weight:700;color:var(--text);">0</span></div>
+        </div>
+      </div>
+      <div class="panel-section">
+        <div class="ps-title">Selected Node</div>
+        <div id="selected-panel" style="color:var(--text-muted);font-size:12px;text-align:center;padding:20px 0;">Click a node to inspect</div>
+      </div>
+      <div class="panel-section">
+        <div class="ps-title">Legend</div>
+        <div style="display:flex;flex-direction:column;gap:7px;">
+          <div style="display:flex;align-items:center;gap:8px;font-size:12px;color:var(--text-soft);">
+            <div style="width:10px;height:10px;border-radius:50%;background:var(--purple);"></div>Leadership
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;font-size:12px;color:var(--text-soft);">
+            <div style="width:10px;height:10px;border-radius:50%;background:var(--blue);"></div>Human OrgExec
+          </div>
+          <div style="display:flex;align-items:center;gap=8px;font-size:12px;color:var(--text-soft);">
+            <div style="width:10px;height:10px;border-radius:50%;background:var(--emerald);margin-right:8px;"></div>AI Agent
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;font-size:12px;color:var(--text-soft);">
+            <div style="width:10px;height:10px;border-radius:50%;background:var(--orchid);"></div>Hybrid
+          </div>
+        </div>
+      </div>
+      <div class="panel-section">
+        <div class="ps-title">Quick Actions</div>
+        <div style="display:flex;flex-direction:column;gap:6px;">
+          <button class="tb-btn" style="width:100%;justify-content:center;font-size:11.5px;" onclick="openAddModal()">+ Add OrgExec</button>
+          <button class="tb-btn" style="width:100%;justify-content:center;font-size:11.5px;">+ Add AI Agent</button>
+          <button class="tb-btn" style="width:100%;justify-content:center;font-size:11.5px;">+ Add Department</button>
+          <button class="tb-btn" style="width:100%;justify-content:center;font-size:11.5px;color:var(--amber);">⟳ Regenerate from ODD</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ADD MODAL -->
+<div class="modal-overlay" id="add-modal" style="display:none;">
+  <div class="modal">
+    <div class="modal-title">+ Add OrgExec</div>
+    <div class="form-group">
+      <label class="form-label">Name</label>
+      <input class="form-input" id="add-name" placeholder="Full name or agent label">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Title / Role</label>
+      <input class="form-input" id="add-title" placeholder="e.g. Head of Finance">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Type</label>
+      <select class="form-select" id="add-type">
+        <option value="human">Human OrgExec</option>
+        <option value="ai">AI Agent</option>
+        <option value="hybrid">Hybrid</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Reports To</label>
+      <select class="form-select" id="add-parent"></select>
+    </div>
+    <div class="form-actions">
+      <button class="tb-btn primary" style="flex:1;justify-content:center;" onclick="addNode()">Add to Chart</button>
+      <button class="tb-btn" style="flex:1;justify-content:center;" onclick="closeAddModal()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<script>
+let people=[
+  {id:'ceo',name:'Sarah Chen',title:'CEO & Founder',type:'human',parentId:null,initials:'SC',color:'var(--purple)'},
+  {id:'cto',name:'James Park',title:'CTO',type:'human',parentId:'ceo',initials:'JP',color:'var(--blue)'},
+  {id:'cfo',name:'Maria Lopez',title:'CFO',type:'human',parentId:'ceo',initials:'ML',color:'var(--amber)'},
+  {id:'coo',name:'David Kim',title:'COO',type:'human',parentId:'ceo',initials:'DK',color:'var(--teal)'},
+  {id:'cmo',name:'Emily Ross',title:'CMO',type:'human',parentId:'ceo',initials:'ER',color:'var(--rose)'},
+  // CTO reports
+  {id:'vpe',name:'Tom Wu',title:'VP Engineering',type:'human',parentId:'cto',initials:'TW',color:'var(--blue)'},
+  {id:'ai1',name:'AI Scheduler',title:'Scheduling Agent',type:'ai',parentId:'cto',initials:'🤖',color:'var(--emerald)'},
+  {id:'ai2',name:'AI Analyst',title:'Data Analysis Agent',type:'ai',parentId:'cto',initials:'🤖',color:'var(--emerald)'},
+  {id:'lead1',name:'Priya Nair',title:'Lead Engineer',type:'human',parentId:'vpe',initials:'PN',color:'var(--blue)'},
+  {id:'lead2',name:'Carlos Diaz',title:'Lead Engineer',type:'human',parentId:'vpe',initials:'CD',color:'var(--blue)'},
+  // CFO reports
+  {id:'head-fin',name:'Alex Turner',title:'Head of Finance',type:'human',parentId:'cfo',initials:'AT',color:'var(--amber)'},
+  {id:'ai3',name:'AI Bookkeeping',title:'Finance Agent',type:'ai',parentId:'cfo',initials:'🤖',color:'var(--emerald)'},
+  {id:'controller',name:'Jin Lee',title:'Controller',type:'human',parentId:'head-fin',initials:'JL',color:'var(--amber)'},
+  // COO reports
+  {id:'vpo',name:'Raj Patel',title:'VP Operations',type:'human',parentId:'coo',initials:'RP',color:'var(--teal)'},
+  {id:'sc-mgr',name:'Nina Johal',title:'Supply Chain Mgr',type:'human',parentId:'coo',initials:'NJ',color:'var(--coral)'},
+  {id:'ai4',name:'AI OpsOptimiser',title:'Ops Agent',type:'ai',parentId:'vpo',initials:'🤖',color:'var(--emerald)'},
+  // CMO reports
+  {id:'brand',name:'Zoe Hart',title:'Brand Director',type:'human',parentId:'cmo',initials:'ZH',color:'var(--rose)'},
+  {id:'ai5',name:'AI Content',title:'Content Agent',type:'ai',parentId:'cmo',initials:'🤖',color:'var(--emerald)'},
+];
+
+let selectedId=null;
+const HSPACE=170,VSPACE=130;
+
+function computeLayout(){
+  const childrenMap={};
+  people.forEach(p=>{
+    if(!childrenMap[p.parentId||'root'])childrenMap[p.parentId||'root']=[];
+    childrenMap[p.parentId||'root'].push(p.id);
+  });
+  const positions={};
+  let maxDepth=0;
+  function calcWidth(id){
+    const ch=childrenMap[id]||[];
+    if(ch.length===0)return 1;
+    return ch.reduce((s,c)=>s+calcWidth(c),0);
+  }
+  function assign(id,depth,x){
+    maxDepth=Math.max(maxDepth,depth);
+    const ch=childrenMap[id]||[];
+    positions[id]={x,y:depth};
+    if(ch.length===0)return;
+    let cur=x-(calcWidth(id)-1)/2;
+    ch.forEach(c=>{
+      const w=calcWidth(c);
+      assign(c,depth+1,cur+(w-1)/2);
+      cur+=w;
+    });
+  }
+  const root=people.find(p=>!p.parentId);
+  if(root)assign(root.id,0,0);
+  return{positions,maxDepth};
+}
+
+function render(){
+  const wrap=document.getElementById('chart-wrap');
+  // Remove old nodes
+  wrap.querySelectorAll('.org-node').forEach(n=>n.remove());
+  const svg=document.getElementById('chart-svg');
+  svg.innerHTML='';
+
+  const{positions,maxDepth}=computeLayout();
+  const ww=Math.max(...Object.values(positions).map(p=>p.x)+1)*HSPACE+300;
+  const hh=(maxDepth+1)*VSPACE+200;
+  wrap.style.minWidth=ww+'px';wrap.style.minHeight=hh+'px';
+  svg.setAttribute('width',ww);svg.setAttribute('height',hh);
+
+  const cx=ww/2,baseY=80;
+
+  // Draw connections
+  people.forEach(p=>{
+    if(!p.parentId)return;
+    const pp=people.find(x=>x.id===p.parentId);
+    if(!pp)return;
+    const from=positions[pp.id],to=positions[p.id];
+    if(!from||!to)return;
+    const x1=cx+from.x*HSPACE,y1=baseY+from.y*VSPACE+50;
+    const x2=cx+to.x*HSPACE,y2=baseY+to.y*VSPACE-10;
+    const path=document.createElementNS('http://www.w3.org/2000/svg','path');
+    path.setAttribute('d',`M${x1},${y1} C${x1},${(y1+y2)/2} ${x2},${(y1+y2)/2} ${x2},${y2}`);
+    path.setAttribute('fill','none');
+    path.setAttribute('stroke',p.type==='ai'?'rgba(52,232,160,.3)':'rgba(106,47,255,.25)');
+    path.setAttribute('stroke-width','1.5');
+    path.setAttribute('stroke-dasharray',p.type==='ai'?'5,3':'');
+    svg.appendChild(path);
+  });
+
+  // Draw nodes
+  people.forEach(p=>{
+    const pos=positions[p.id];if(!pos)return;
+    const x=cx+pos.x*HSPACE,y=baseY+pos.y*VSPACE;
+    const div=document.createElement('div');
+    div.className='org-node'+(p.id==='ceo'?' ceo':'')+(p.type==='ai'?' ai-node':'');
+    div.style.left=x+'px';div.style.top=y+'px';
+    div.dataset.id=p.id;
+    const avatarBorder=p.type==='ai'?'rgba(52,232,160,.5)':p.id==='ceo'?'rgba(106,47,255,.7)':'rgba(56,180,255,.35)';
+    const avatarBg=p.type==='ai'?'rgba(52,232,160,.12)':'rgba(106,47,255,.12)';
+    div.innerHTML=`
+      <div class="node-actions">
+        <div class="node-action-btn" title="Add report" onclick="quickAdd('${p.id}',event)">+</div>
+        <div class="node-action-btn" title="Edit" style="color:var(--amber);">✎</div>
+        <div class="node-action-btn" title="Remove" style="color:var(--cherry);" onclick="removeNode('${p.id}',event)">×</div>
+      </div>
+      <div class="node-avatar" style="background:${avatarBg};border-color:${avatarBorder};">${p.type==='ai'?'🤖':p.initials}</div>
+      <div class="node-name">${p.name}</div>
+      <div class="node-title">${p.title}</div>
+      <div class="node-type-badge" style="background:${p.type==='ai'?'rgba(52,232,160,.1)':p.type==='hybrid'?'rgba(216,85,255,.1)':'rgba(56,180,255,.1)'};border-color:${p.type==='ai'?'rgba(52,232,160,.3)':p.type==='hybrid'?'rgba(216,85,255,.3)':'rgba(56,180,255,.25)'};color:${p.type==='ai'?'var(--emerald)':p.type==='hybrid'?'var(--orchid)':'var(--blue)'};">
+        ${p.type==='ai'?'● AI Agent':p.type==='hybrid'?'◈ Hybrid':'● Human'}
+      </div>`;
+    div.addEventListener('click',()=>selectNode(p.id));
+    wrap.appendChild(div);
+  });
+
+  // Update stats
+  document.getElementById('stat-total').textContent=people.length;
+  document.getElementById('stat-humans').textContent=people.filter(p=>p.type==='human').length;
+  document.getElementById('stat-ai').textContent=people.filter(p=>p.type==='ai').length;
+  document.getElementById('stat-depth').textContent=maxDepth+1;
+}
+
+function selectNode(id){
+  selectedId=id;
+  document.querySelectorAll('.org-node').forEach(n=>{
+    n.classList.toggle('selected',n.dataset.id===id);
+  });
+  const p=people.find(x=>x.id===id);
+  const childCount=people.filter(x=>x.parentId===id).length;
+  document.getElementById('selected-panel').innerHTML=`
+    <div style="background:var(--surface-2);border:1px solid rgba(106,47,255,.25);border-radius:10px;padding:14px;text-align:left;">
+      <div style="font-size:14px;font-weight:700;color:var(--text);margin-bottom:4px;">${p.name}</div>
+      <div style="font-size:11.5px;color:var(--text-muted);margin-bottom:10px;">${p.title}</div>
+      <div style="font-size:12px;color:var(--text-soft);margin-bottom:6px;">Type: <span style="color:${p.type==='ai'?'var(--emerald)':'var(--blue)'};">${p.type==='ai'?'AI Agent':'Human'}</span></div>
+      <div style="font-size:12px;color:var(--text-soft);margin-bottom:6px;">Direct Reports: <strong style="color:var(--text);">${childCount}</strong></div>
+      <div style="font-size:12px;color:var(--text-soft);">ODD Status: <span style="color:var(--emerald);">● Active</span></div>
+      <div style="margin-top:10px;display:flex;gap:6px;">
+        <button class="tb-btn" style="flex:1;justify-content:center;font-size:11px;">View ODD</button>
+        <button class="tb-btn" style="flex:1;justify-content:center;font-size:11px;" onclick="quickAdd('${id}',event)">+ Report</button>
+      </div>
+    </div>`;
+}
+
+function autoLayout(){render();}
+
+let addParentId=null;
+function openAddModal(parentId){
+  addParentId=parentId||null;
+  const sel=document.getElementById('add-parent');
+  sel.innerHTML=people.map(p=>`<option value="${p.id}" ${p.id===parentId?'selected':''}>${p.name} — ${p.title}</option>`).join('');
+  document.getElementById('add-modal').style.display='flex';
+}
+function closeAddModal(){document.getElementById('add-modal').style.display='none';}
+function quickAdd(parentId,e){e.stopPropagation();openAddModal(parentId);}
+function removeNode(id,e){
+  e.stopPropagation();
+  people=people.filter(p=>p.id!==id);
+  // re-parent orphans to removed node's parent
+  const removed=people.find(p=>p.id===id)||{parentId:null};
+  people.forEach(p=>{if(p.parentId===id)p.parentId=removed.parentId;});
+  render();
+}
+function addNode(){
+  const name=document.getElementById('add-name').value.trim();
+  const title=document.getElementById('add-title').value.trim();
+  const type=document.getElementById('add-type').value;
+  const parentId=document.getElementById('add-parent').value;
+  if(!name)return;
+  const initials=type==='ai'?'🤖':name.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);
+  const colors={'human':'var(--blue)','ai':'var(--emerald)','hybrid':'var(--orchid)'};
+  people.push({id:'n'+Date.now(),name,title:title||'OrgExec',type,parentId,initials,color:colors[type]});
+  closeAddModal();render();
+}
+
+render();
+</script>
+</body></html>
