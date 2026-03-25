@@ -2492,11 +2492,11 @@ A component is the highest-level element in this context, representing a project
 Portfolio Items (sometimes referred to as items in an Agile Portfolio Tree) are large-grained features or initiatives. They represent a "middle layer" that bridges high-level strategy with actionable, smaller work items (such as user stories or backlog items). 
 
 * Purpose: To break down large strategies into actionable chunks that can be delivered across different teams.
-* Key Aspect: Can be broken down further into smaller stories or backlog items. 
+* Key Aspect: Can be broken down further into smaller stories or backlog items.
 
 ## 3. Portfolio Task
 
-A Portfolio Task is a specific action item within a portfolio. While portfolio items are large "work units," tasks are often granular actions assigned to individuals. In educational or specialized software contexts (like OpenOlat), a "portfolio task" is an assignment or folder meant to be filled with work. 
+A Portfolio Task is a specific action item within a portfolio. While portfolio items are large "work units," tasks are often granular actions assigned to individuals. In educational or specialized software contexts (like OpenOlat), a "portfolio task" is an assignment or folder meant to be filled with work.
 Northeastern University Graduate Programs
 Northeastern University Graduate Programs
 
