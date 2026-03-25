@@ -2289,3 +2289,12 @@ items:
 - toolchain
 - link
 - agreement
+
+item.book
+item.attachment[s]
+item.linktree
+    linktree.account
+    linktree.integration
+item.owner[s]
+item.data
+item.metadata
