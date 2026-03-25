@@ -597,9 +597,11 @@ solution book
     - collections
     - schedules
     - timelines
-    - work packages
+    - work packages - scope
     - work breakdown structures WBSs
     - resources
+    - budget; resource budget; finance budget; time budget; network budget; X budget
+    - expense - cost
     - communications+channels
     - logistics, supplychain, inventory
     - registries
@@ -2236,6 +2238,8 @@ containers:
 - linknet
 - linktree
 - linkforest
+- form
+- resume
 
 items:
 - solution
@@ -2292,6 +2296,7 @@ items:
 
 portfolio.component
 portfolio.item
+portolio.task
 portfolio.executor
 
 item.binder
@@ -2353,6 +2358,7 @@ AI can make mistakes, so double-check responses
 
 
 ---
+
 Portfolio operational building blocks are the core components used to structure, manage, and optimize a collection of investments or projects to meet strategic goals. Key elements include defining the investment strategy (asset allocation, diversification), establishing governance for monitoring, tracking performance, risk management, and ensuring alignment with organizational objectives. [1, 2, 3]  
 Key Portfolio Operational Building Blocks 
 
@@ -2385,3 +2391,38 @@ AI can make mistakes, so double-check responses
 
 ---
 
+A portfolio component represents the high-level, strategic building blocks (projects, programs) aimed at business goals, while a portfolio item is a specific, actionable, or deliverable unit (a feature, case study, or work sample) designed for tactical planning, tracking, or showcasing. Components align to strategy; items are the granular work. [1, 2, 3, 4]  
+Portfolio Components (Strategic View) 
+
+• Definition: High-level, often large-scale initiatives within a portfolio. 
+• Examples: Projects, programs, sub-portfolios, or distinct lines of business. 
+• Purpose: To group work based on strategic objectives, allowing for better risk management and resource allocation. 
+• Scope: Broad and strategic; they often span multiple teams or long timeframes. [1, 2, 5, 6, 7]  
+
+Portfolio Items (Tactical View) 
+
+• Definition: Specific initiatives, features, or work samples that form the detailed components. 
+• Examples: A "new checkout page" feature, a UX project case study, a specific client deliverable. 
+• Purpose: To plan, track progress, and showcase specific value. In tools like Digital.ai or Agile, they can be broken down into smaller tasks or user stories. 
+• Scope: Focused and granular; often used to plan work across sprints or for portfolio roadmaps. [1, 2, 8, 9]  
+
+Key Differences Summary 
+
+• Granularity: Components are larger (e.g., "Implement New CRM System"), while items are smaller (e.g., "Migrate Data"). 
+• Context: "Component" is often used in management/strategic contexts (PMI), whereas "item" is frequently used in Agile/Software development tools. 
+• Showcase vs. Structure: In creative industries, an "item" is a single project in a portfolio, while a "component" might be an entire category of work. [2, 10]  
+
+AI can make mistakes, so double-check responses
+
+[1] https://www.youtube.com/watch?v=330H0rFyNI4
+[2] https://docs.digital.ai/agility/docs/agility/00-portfolio-item-overview
+[3] https://www.investopedia.com/terms/p/portfolio.asp
+[4] https://www.youtube.com/watch?v=ifOJ0R5UQOc
+[5] https://www.ppm.express/blog/how-to-define-portfolio-of-projects-main-principles
+[6] https://www.quora.com/How-is-product-project-portfolio-and-program-interrelated-Can-you-show-a-diagram-with-an-example
+[7] https://www.edvido.com/blog/how-to-design-a-business-portfolio-in-10-steps-templates-examples
+[8] http://techdocs.broadcom.com/us/en/ca-enterprise-software/valueops/rally/rally-help/managing-portfolio-items/portfolio-item-planning/creating-portfolio-items.html
+[9] https://www.youtube.com/watch?v=W4bFObCs_0I
+[10] https://www.pmi.org/learning/library/unified-portfolio-management-model-7281
+
+---
