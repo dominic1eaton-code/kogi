@@ -2508,3 +2508,11 @@ An organization has a portfolio.
 That portfolio consists of components (projects/programs).
 Those components can be structured into items (features/initiatives).
 Those items are executed via tasks (individual actions/work)
+
+---
+
+domain operating system
+- kernel system
+- host system
+- supporting module systems
+- utility|auxiliary systems
