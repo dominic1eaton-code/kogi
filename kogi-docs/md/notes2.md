@@ -2426,3 +2426,49 @@ AI can make mistakes, so double-check responses
 [10] https://www.pmi.org/learning/library/unified-portfolio-management-model-7281
 
 ---
+
+In project and strategic management, portfolio components, portfolio items, and portfolio tasks represent different hierarchical levels of planning, ranging from high-level strategic initiatives to actionable work. 
+
+* Portfolio Component: The broadest term, referring to any project, program, or sub-portfolio included in a portfolio to achieve strategic goals.
+* Portfolio Item: A mid-level, large-grained feature or initiative used to group related project work, which can be broken down further.
+* Portfolio Task: A specific assignment or action item within a portfolio, often associated with, but distinct from, project-level tasks
+
+Quick Comparison Table
+
+| Feature | Portfolio Component | Portfolio Item | Portfolio Task  |
+| --- | --- | --- | --- |
+| Scope | Very High (Projects/Programs) | High (Features/Epic) | Low (Specific Action)  |
+| Focus | Strategic Alignment | Grouping & Planning | Execution |
+| Example | "Cloud Migration Project" | "API Gateway Development" | "Review Design Doc"  |
+| Management | Portfolio Manager | Product/Project Owner | Team Member |
+
+---
+
+1. Portfolio Component
+
+A component is the highest-level element in this context, representing a project, program, or sub-portfolio that is being managed centrally. These components compete for resources and are selected to support an organization's strategic objectives. 
+
+* Purpose: To achieve strategic objectives and align with business goals.
+* Key Aspect: Components can be independent of each other, unlike projects within a program. 
+
+2. Portfolio Item
+
+Portfolio Items (sometimes referred to as items in an Agile Portfolio Tree) are large-grained features or initiatives. They represent a "middle layer" that bridges high-level strategy with actionable, smaller work items (such as user stories or backlog items). 
+
+* Purpose: To break down large strategies into actionable chunks that can be delivered across different teams.
+* Key Aspect: Can be broken down further into smaller stories or backlog items. 
+
+3. Portfolio Task
+
+A Portfolio Task is a specific action item within a portfolio. While portfolio items are large "work units," tasks are often granular actions assigned to individuals. In educational or specialized software contexts (like OpenOlat), a "portfolio task" is an assignment or folder meant to be filled with work. 
+Northeastern University Graduate Programs
+Northeastern University Graduate Programs
+
+* Purpose: To track specific, manageable actions or to collect "artifacts" for assessment.
+* Key Aspect: Focused on the execution and completion of specific steps. 
+
+Relationship Summary
+An organization has a portfolio.
+That portfolio consists of components (projects/programs).
+Those components can be structured into items (features/initiatives).
+Those items are executed via tasks (individual actions/work)
