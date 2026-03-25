@@ -2153,7 +2153,6 @@ ume L-system seed:
 ---
 
 kogi independent workers:
-- creator
 - contractor
 - consultant
 - gig worker
@@ -2179,12 +2178,17 @@ user:
 - collaborator
 
 personas:
+- creator
 - professional
 - developer
 - donor
 - investor
 - contributor
 - partner
+- organizer
+- facilitator
+- visionary
+- integrator
 
 action:
 - like
@@ -2226,6 +2230,12 @@ containers:
 - graph
 - matrix
 - grid
+- workspace
+- namespace
+- toolbox
+- linknet
+- linktree
+- linkforest
 
 items:
 - solution
@@ -2271,3 +2281,11 @@ items:
 - bid
 - request
 - proposal
+- post
+- ideas
+- tool
+- toolkit
+- toolset
+- toolchain
+- link
+- agreement
