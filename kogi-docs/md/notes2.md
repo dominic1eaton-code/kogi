@@ -2541,4 +2541,36 @@ then also,
 * extend shadow rows to pull actual mirrored attributes when cross‑grid sync is available
 * Decide whether risk/health/utilization should prefer AI signals or policy‑driven inputs ( tune the scoring).
 
+
+now implement the C:\dev\ws\kogi_dev\kogi-client\web_client_dev\kogi-ui\src\app\marketplace backend in C:\dev\ws\kogi_dev\kogi-marketplace, same rust library + go microservice + documentation structure, incorporating the market docs features in C:\dev\ws\kogi_dev\kogi-docs\md
+
+---
+
+consumer persona:
+persona-video game designer
+- looking for artist portfolios, music portfolios, funding etc...
+- create community space for the video game project
+
+persona-entre/microprenuer
+- looking for resources on the marketplace, money+time+skills+knowledge+courses
+
+persona-freelancer/consultant early career
+- looking for clients on the marketplace
+
+producer personas:
+persona-PA
+- busy consultant+entrepreneur who has assistants, high level of AI automation for the work systems, has network of resources/contacts to help them with endeavors, ideas, concepts, etc...
+  - can have assistants+agents manage their professional portfolio of entrepreneurial+consulting services, where other users can search for them and their portfolio
+    - persona-PA portfolio has items that contains their consulting service packages, courses, artifacts that can be traded and sold on the market AND has spaces associated with it for communities to form around their professional service portfolio (conencts skool, upwork, fiverr, oddwork, etc...)
+
+persona-PB
+- investor who has money and wants to invest in different assets and projects+programs+portfolios on the market place
+- investor portfolio tracks investments+investment assets, ROIs, asset (item) books (timelines, schedules, finances, etc....)
+
+persona-PC
+- video+board game enthusiast who has money and wants to find new+interesting game projects to donate, fund, support
+- non developer persona-PC may just want to donate funds, and perhaps contribute to social media marketing (they market the game on their personal social media)
+- developer persona-PC may want to contribute their skills+expertise+knowledge to the game project, and perhaps trade skills for liquidity/equity on the marketplace
+- persona-PC can join spaces associate with the game project, chat and meet others interesting in the game project and connect with the game's project community
+
 ---

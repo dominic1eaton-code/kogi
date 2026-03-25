@@ -119,6 +119,7 @@ func resolveRustBin(cfg RustBridgeConfig) (string, error) {
 			}
 		}
 	}
+	fmt.Println("root %s known-path %s", cfg.EnvBinKey, cfg.WellKnownName)
 	return "", fmt.Errorf("[%s] binary not found; set %s", cfg.ServiceLabel, cfg.EnvBinKey)
 }
 
@@ -160,8 +161,9 @@ func callRustExe(cfg RustBridgeConfig, action string, payload interface{}) (inte
 // dlopen/dlsym via cgo-free unsafe tricks on Linux/macOS via the purego pattern).
 //
 // NOTE: On Linux/macOS this requires that the .so/.dylib is on LD_LIBRARY_PATH
-//       or is specified as an absolute path.  On Windows the .dll must be in
-//       PATH or its directory.
+//
+//	or is specified as an absolute path.  On Windows the .dll must be in
+//	PATH or its directory.
 //
 // For production use, consider the "github.com/ebitengine/purego" package which
 // provides a CGo-free dlopen/dlsym implementation; the implementation below
@@ -459,8 +461,8 @@ func toListenAddr(port string) string {
 
 // officeToListenAddr / portfolioToListenAddr are aliases kept for backward
 // compatibility.
-func officeToListenAddr(port string) string     { return toListenAddr(port) }
-func portfolioToListenAddr(port string) string  { return toListenAddr(port) }
+func officeToListenAddr(port string) string    { return toListenAddr(port) }
+func portfolioToListenAddr(port string) string { return toListenAddr(port) }
 
 // responseRecorder captures an http.ResponseWriter so a handler's output can
 // be inspected before being forwarded (used by proxy-and-publish helpers).
@@ -470,9 +472,12 @@ type responseRecorder struct {
 	body   []byte
 }
 
-func (r *responseRecorder) Header() http.Header        { return r.header }
-func (r *responseRecorder) WriteHeader(code int)        { r.code = code }
-func (r *responseRecorder) Write(b []byte) (int, error) { r.body = append(r.body, b...); return len(b), nil }
+func (r *responseRecorder) Header() http.Header  { return r.header }
+func (r *responseRecorder) WriteHeader(code int) { r.code = code }
+func (r *responseRecorder) Write(b []byte) (int, error) {
+	r.body = append(r.body, b...)
+	return len(b), nil
+}
 
 // =============================================================================
 // §4 — Gateway pub/sub
@@ -779,8 +784,8 @@ func fileExists(p string) bool {
 }
 
 // officeFileExists / portfolioFileExists are backward-compat aliases.
-func officeFileExists(p string) bool     { return fileExists(p) }
-func portfolioFileExists(p string) bool  { return fileExists(p) }
+func officeFileExists(p string) bool    { return fileExists(p) }
+func portfolioFileExists(p string) bool { return fileExists(p) }
 
 // findRepoRoot walks parent directories looking for a kogi-modules directory or
 // go.work file, returning the root path and true when found.
@@ -803,8 +808,8 @@ func findRepoRoot() (string, bool) {
 }
 
 // officeFindRepoRoot / portfolioFindRepoRoot are backward-compat aliases.
-func officeFindRepoRoot() (string, bool)     { return findRepoRoot() }
-func portfolioFindRepoRoot() (string, bool)  { return findRepoRoot() }
+func officeFindRepoRoot() (string, bool)    { return findRepoRoot() }
+func portfolioFindRepoRoot() (string, bool) { return findRepoRoot() }
 
 // resolveBinaryHint returns the resolved binary path or an empty string.
 func resolveBinaryHint(cfg RustBridgeConfig) string {
@@ -814,11 +819,11 @@ func resolveBinaryHint(cfg RustBridgeConfig) string {
 	return ""
 }
 
-func officeResolveBinaryHint() string     { return resolveBinaryHint(OfficeExeConfig) }
+func officeResolveBinaryHint() string      { return resolveBinaryHint(OfficeExeConfig) }
 func officeResolveBinary() (string, error) { return resolveRustBin(OfficeExeConfig) }
 
 func portfolioResolveBinary() (string, error) { return resolveRustBin(PortfolioExeConfig) }
-func portfolioResolveBinaryHint() string { return resolveBinaryHint(PortfolioExeConfig) }
+func portfolioResolveBinaryHint() string      { return resolveBinaryHint(PortfolioExeConfig) }
 
 // =============================================================================
 // §7 — Platform-specific dynamic linking (DLL) implementation stubs
