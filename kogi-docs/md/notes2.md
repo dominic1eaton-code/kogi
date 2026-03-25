@@ -2290,6 +2290,11 @@ items:
 - link
 - agreement
 
+
+portfolio.component
+portfolio.item
+
+item.binder
 item.book
 item.attachment[s]
 item.linktree
@@ -2298,3 +2303,4 @@ item.linktree
 item.owner[s]
 item.data
 item.metadata
+
