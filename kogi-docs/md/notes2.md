@@ -1261,6 +1261,7 @@ portfolio
 - Linear
 - Mercury (banking)
 - Deel (contractor payments)
+- pandorapp app
 
 wallet
 - wellsfargo
@@ -2560,7 +2561,7 @@ persona-freelancer/consultant early career
 - looking for clients on the marketplace
 - has little organization in the work system and needs more systematic processes
 
-cooperative
+persona-cooperative
 - 
 
 producer personas:
@@ -2579,7 +2580,9 @@ persona-PC
 - developer persona-PC may want to contribute their skills+expertise+knowledge to the game project, and perhaps trade skills for liquidity/equity on the marketplace
 - persona-PC can join spaces associate with the game project, chat and meet others interesting in the game project and connect with the game's project community
 
-collective
+persona-collective
 - 
 
 ---
+
+appstore + operating system for the independent work economy

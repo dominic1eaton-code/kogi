@@ -8,6 +8,13 @@ Two Rust crates implementing the complete design from:
 
 ---
 
+## `kogi-marketplace`
+
+- Rust core: `kogi-marketplace` (listings, deals, campaigns, snapshots)
+- Go service: `kogi-network/services/marketplace`
+- Source of truth: `kogi-portfolio` Master Spreadsheet (`SHT-023 Marketplace`)
+- Docs: `marketplace-backend.md`
+
 ## Workspace layout
 
 ```

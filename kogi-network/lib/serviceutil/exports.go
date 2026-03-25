@@ -131,3 +131,23 @@ func PortfolioResolveBinary() (string, error) {
 func PortfolioResolveBinaryHint() string {
 	return portfolioResolveBinaryHint()
 }
+
+// MarketplaceRust calls the marketplace Rust bridge and returns fallback on error.
+func MarketplaceRust(funcName string, payload, fallback interface{}) interface{} {
+	return marketplaceRust(funcName, payload, fallback)
+}
+
+// MarketplaceCallRust calls the marketplace Rust bridge and returns error on failure.
+func MarketplaceCallRust(funcName string, payload interface{}) (interface{}, error) {
+	return marketplaceCallRust(funcName, payload)
+}
+
+// MarketplaceResolveBinary resolves the marketplace executable path.
+func MarketplaceResolveBinary() (string, error) {
+	return marketplaceResolveBinary()
+}
+
+// MarketplaceResolveBinaryHint returns a human-readable lookup hint.
+func MarketplaceResolveBinaryHint() string {
+	return marketplaceResolveBinaryHint()
+}
