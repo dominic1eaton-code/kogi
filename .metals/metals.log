@@ -1,0 +1,116 @@
+2026.03.06 20:00:10 WARN  Using H2 2.4.240 which is newer than the version Flyway has been verified with. The latest verified version of H2 is 2.3.232.
+2026.03.06 20:00:10 INFO  no build target found for C:\dev\ws\kogi\src_claude\KogiApp.java. Using fallback presentation compiler.
+2026.03.06 20:00:12 INFO  no build target found for C:\dev\ws\kogi\src_claude\KogiApp.java. Using fallback presentation compiler.
+2026.03.06 20:00:12 INFO  no build target found for C:\dev\ws\kogi\src_claude\KogiApp.java. Using fallback presentation compiler.
+Mar 06, 2026 8:00:12 PM org.eclipse.lsp4j.jsonrpc.RemoteEndpoint handleCancellation
+WARNING: Unmatched cancel notification for request id 1
+2026.03.06 20:00:12 INFO  no build target found for C:\dev\ws\kogi\src_claude\KogiApp.java. Using fallback presentation compiler.
+2026.03.06 20:00:12 INFO  no build target found for C:\dev\ws\kogi\src_claude\KogiApp.java. Using fallback presentation compiler.
+2026.03.06 20:00:12 INFO  no build target found for C:\dev\ws\kogi\src_claude\KogiApp.java. Using fallback presentation compiler.
+Mar 06, 2026 8:00:12 PM org.eclipse.lsp4j.jsonrpc.RemoteEndpoint handleCancellation
+WARNING: Unmatched cancel notification for request id 2
+Mar 06, 2026 8:00:12 PM org.eclipse.lsp4j.jsonrpc.RemoteEndpoint handleCancellation
+WARNING: Unmatched cancel notification for request id 6
+Mar 06, 2026 8:00:12 PM org.eclipse.lsp4j.jsonrpc.RemoteEndpoint handleCancellation
+WARNING: Unmatched cancel notification for request id 11
+2026.03.06 20:00:12 INFO  no build target found for C:\dev\ws\kogi\src_claude\KogiApp.java. Using fallback presentation compiler.
+2026.03.06 20:00:12 INFO  no build target found for C:\dev\ws\kogi\src_claude\KogiApp.java. Using fallback presentation compiler.
+2026.03.06 20:00:12 INFO  empty definition using pc, found symbol in pc: com/kogi/desktop/services/ApiClient# (full report at: "C:\dev\ws\kogi\.metals\.reports\metals-full\2026-03-06\r_empty-definition_20-00-12-942.md")
+2026.03.06 20:00:12 INFO  empty definition using pc, found symbol in pc: com/kogi/desktop/services/ApiClient# (full report at: "C:\dev\ws\kogi\.metals\.reports\metals-full\2026-03-06\r_empty-definition_20-00-12-942.md")
+2026.03.06 20:00:12 INFO  no build target found for C:\dev\ws\kogi\src_claude\KogiApp.java. Using fallback presentation compiler.
+2026.03.06 20:00:12 INFO  no build target found for C:\dev\ws\kogi\src_claude\KogiApp.java. Using fallback presentation compiler.
+2026.03.06 20:00:12 WARN  no build tool detected in workspace 'C:\dev\ws\kogi'. The most common cause for this problem is that the editor was opened in the wrong working directory, for example if you use sbt then the workspace directory should contain build.sbt. 
+2026.03.06 20:00:12 INFO  Created report: Optional[file:///C:/dev/ws/kogi/src_claude/KogiApp.java]
+2026.03.06 20:00:12 WARN  Build server is not auto-connectable.
+2026.03.06 20:00:12 INFO  empty definition using pc, found symbol in pc: com/kogi/desktop/services/ApiClient# (full report at: "C:\dev\ws\kogi\.metals\.reports\metals-full\2026-03-06\r_empty-definition_20-00-12-942.md")
+2026.03.06 20:00:12 INFO  no build target found for C:\dev\ws\kogi\src_claude\KogiApp.java. Using fallback presentation compiler.
+2026.03.06 20:00:12 WARN  no build target for: C:\dev\ws\kogi\src_claude\KogiApp.java
+2026.03.06 20:00:12 INFO  no build target found for C:\dev\ws\kogi\src_claude\KogiApp.java. Using fallback presentation compiler.
+2026.03.06 20:00:12 INFO  empty definition using pc, found symbol in pc: com/kogi/desktop/services/AuthService# (full report at: "C:\dev\ws\kogi\.metals\.reports\metals-full\2026-03-06\r_empty-definition_20-00-13-068.md")
+2026.03.06 20:00:12 INFO  Created report: Optional[file:///C:/dev/ws/kogi/src_claude/KogiApp.java]
+2026.03.06 20:00:12 INFO  empty definition using pc, found symbol in pc: com/kogi/desktop/services/AuthService# (full report at: "C:\dev\ws\kogi\.metals\.reports\metals-full\2026-03-06\r_empty-definition_20-00-13-068.md")
+2026.03.06 20:00:12 INFO  no build target found for C:\dev\ws\kogi\src_claude\KogiApp.java. Using fallback presentation compiler.
+2026.03.06 20:00:12 INFO  no build target found for C:\dev\ws\kogi\src_claude\KogiApp.java. Using fallback presentation compiler.
+2026.03.06 20:00:12 INFO  empty definition using pc, found symbol in pc: com/kogi/desktop/services/AuthService# (full report at: "C:\dev\ws\kogi\.metals\.reports\metals-full\2026-03-06\r_empty-definition_20-00-13-068.md")
+2026.03.06 20:00:12 INFO  no build target found for C:\dev\ws\kogi\src_claude\KogiApp.java. Using fallback presentation compiler.
+2026.03.06 20:00:12 INFO  Created report: Optional[file:///C:/dev/ws/kogi/src_claude/KogiApp.java]
+2026.03.06 20:00:12 INFO  empty definition using pc, found symbol in pc: com/kogi/desktop/controllers/MainController# (full report at: "C:\dev\ws\kogi\.metals\.reports\metals-full\2026-03-06\r_empty-definition_20-00-13-143.md")
+2026.03.06 20:00:12 INFO  empty definition using pc, found symbol in pc: com/kogi/desktop/controllers/MainController# (full report at: "C:\dev\ws\kogi\.metals\.reports\metals-full\2026-03-06\r_empty-definition_20-00-13-143.md")
+2026.03.06 20:00:12 INFO  no build target found for C:\dev\ws\kogi\src_claude\KogiApp.java. Using fallback presentation compiler.
+2026.03.06 20:00:12 INFO  no build target found for C:\dev\ws\kogi\src_claude\KogiApp.java. Using fallback presentation compiler.
+2026.03.06 20:00:12 INFO  empty definition using pc, found symbol in pc: com/kogi/desktop/controllers/MainController# (full report at: "C:\dev\ws\kogi\.metals\.reports\metals-full\2026-03-06\r_empty-definition_20-00-13-143.md")
+2026.03.06 20:00:12 INFO  no build target found for C:\dev\ws\kogi\src_claude\KogiApp.java. Using fallback presentation compiler.
+2026.03.06 20:00:12 INFO  empty definition using pc, found symbol in pc: javafx/application/Application# (full report at: "C:\dev\ws\kogi\.metals\.reports\metals-full\2026-03-06\r_empty-definition_20-00-13-232.md")
+2026.03.06 20:00:12 INFO  Created report: Optional[file:///C:/dev/ws/kogi/src_claude/KogiApp.java]
+2026.03.06 20:00:12 INFO  empty definition using pc, found symbol in pc: javafx/application/Application# (full report at: "C:\dev\ws\kogi\.metals\.reports\metals-full\2026-03-06\r_empty-definition_20-00-13-232.md")
+2026.03.06 20:00:12 INFO  no build target found for C:\dev\ws\kogi\src_claude\KogiApp.java. Using fallback presentation compiler.
+2026.03.06 20:00:12 INFO  no build target found for C:\dev\ws\kogi\src_claude\KogiApp.java. Using fallback presentation compiler.
+2026.03.06 20:00:12 INFO  empty definition using pc, found symbol in pc: javafx/application/Application# (full report at: "C:\dev\ws\kogi\.metals\.reports\metals-full\2026-03-06\r_empty-definition_20-00-13-232.md")
+2026.03.06 20:00:12 INFO  no build target found for C:\dev\ws\kogi\src_claude\KogiApp.java. Using fallback presentation compiler.
+2026.03.06 20:00:12 INFO  empty definition using pc, found symbol in pc: javafx/application/Platform# (full report at: "C:\dev\ws\kogi\.metals\.reports\metals-full\2026-03-06\r_empty-definition_20-00-13-314.md")
+2026.03.06 20:00:12 INFO  Created report: Optional[file:///C:/dev/ws/kogi/src_claude/KogiApp.java]
+2026.03.06 20:00:12 INFO  empty definition using pc, found symbol in pc: javafx/application/Platform# (full report at: "C:\dev\ws\kogi\.metals\.reports\metals-full\2026-03-06\r_empty-definition_20-00-13-314.md")
+2026.03.06 20:00:12 INFO  no build target found for C:\dev\ws\kogi\src_claude\KogiApp.java. Using fallback presentation compiler.
+2026.03.06 20:00:12 INFO  no build target found for C:\dev\ws\kogi\src_claude\KogiApp.java. Using fallback presentation compiler.
+2026.03.06 20:00:12 INFO  empty definition using pc, found symbol in pc: javafx/application/Platform# (full report at: "C:\dev\ws\kogi\.metals\.reports\metals-full\2026-03-06\r_empty-definition_20-00-13-314.md")
+2026.03.06 20:00:13 INFO  no build target found for C:\dev\ws\kogi\src_claude\KogiApp.java. Using fallback presentation compiler.
+2026.03.06 20:00:12 INFO  empty definition using pc, found symbol in pc: javafx/fxml/FXMLLoader# (full report at: "C:\dev\ws\kogi\.metals\.reports\metals-full\2026-03-06\r_empty-definition_20-00-13-433.md")
+2026.03.06 20:00:12 INFO  Created report: Optional[file:///C:/dev/ws/kogi/src_claude/KogiApp.java]
+2026.03.06 20:00:12 INFO  empty definition using pc, found symbol in pc: javafx/fxml/FXMLLoader# (full report at: "C:\dev\ws\kogi\.metals\.reports\metals-full\2026-03-06\r_empty-definition_20-00-13-433.md")
+2026.03.06 20:00:12 INFO  no build target found for C:\dev\ws\kogi\src_claude\KogiApp.java. Using fallback presentation compiler.
+2026.03.06 20:00:12 INFO  no build target found for C:\dev\ws\kogi\src_claude\KogiApp.java. Using fallback presentation compiler.
+2026.03.06 20:00:13 INFO  empty definition using pc, found symbol in pc: javafx/fxml/FXMLLoader# (full report at: "C:\dev\ws\kogi\.metals\.reports\metals-full\2026-03-06\r_empty-definition_20-00-13-433.md")
+2026.03.06 20:00:12 INFO  no build target found for C:\dev\ws\kogi\src_claude\KogiApp.java. Using fallback presentation compiler.
+2026.03.06 20:00:12 INFO  Created report: Optional[file:///C:/dev/ws/kogi/src_claude/KogiApp.java]
+2026.03.06 20:00:12 INFO  empty definition using pc, found symbol in pc: javafx/scene/Scene# (full report at: "C:\dev\ws\kogi\.metals\.reports\metals-full\2026-03-06\r_empty-definition_20-00-13-530.md")
+2026.03.06 20:00:12 INFO  empty definition using pc, found symbol in pc: javafx/scene/Scene# (full report at: "C:\dev\ws\kogi\.metals\.reports\metals-full\2026-03-06\r_empty-definition_20-00-13-530.md")
+2026.03.06 20:00:12 INFO  no build target found for C:\dev\ws\kogi\src_claude\KogiApp.java. Using fallback presentation compiler.
+2026.03.06 20:00:12 INFO  no build target found for C:\dev\ws\kogi\src_claude\KogiApp.java. Using fallback presentation compiler.
+2026.03.06 20:00:12 INFO  empty definition using pc, found symbol in pc: javafx/scene/Scene# (full report at: "C:\dev\ws\kogi\.metals\.reports\metals-full\2026-03-06\r_empty-definition_20-00-13-530.md")
+2026.03.06 20:00:13 INFO  no build target found for C:\dev\ws\kogi\src_claude\KogiApp.java. Using fallback presentation compiler.
+2026.03.06 20:00:12 INFO  empty definition using pc, found symbol in pc: javafx/scene/image/Image# (full report at: "C:\dev\ws\kogi\.metals\.reports\metals-full\2026-03-06\r_empty-definition_20-00-13-605.md")
+2026.03.06 20:00:12 INFO  Created report: Optional[file:///C:/dev/ws/kogi/src_claude/KogiApp.java]
+2026.03.06 20:00:12 INFO  empty definition using pc, found symbol in pc: javafx/scene/image/Image# (full report at: "C:\dev\ws\kogi\.metals\.reports\metals-full\2026-03-06\r_empty-definition_20-00-13-605.md")
+2026.03.06 20:00:12 INFO  no build target found for C:\dev\ws\kogi\src_claude\KogiApp.java. Using fallback presentation compiler.
+2026.03.06 20:00:12 INFO  no build target found for C:\dev\ws\kogi\src_claude\KogiApp.java. Using fallback presentation compiler.
+2026.03.06 20:00:13 INFO  empty definition using pc, found symbol in pc: javafx/scene/image/Image# (full report at: "C:\dev\ws\kogi\.metals\.reports\metals-full\2026-03-06\r_empty-definition_20-00-13-605.md")
+2026.03.06 20:00:12 INFO  empty definition using pc, found symbol in pc: javafx/scene/layout/BorderPane# (full report at: "C:\dev\ws\kogi\.metals\.reports\metals-full\2026-03-06\r_empty-definition_20-00-13-672.md")
+2026.03.06 20:00:13 INFO  no build target found for C:\dev\ws\kogi\src_claude\KogiApp.java. Using fallback presentation compiler.
+2026.03.06 20:00:13 INFO  Created report: Optional[file:///C:/dev/ws/kogi/src_claude/KogiApp.java]
+2026.03.06 20:00:13 INFO  empty definition using pc, found symbol in pc: javafx/scene/layout/BorderPane# (full report at: "C:\dev\ws\kogi\.metals\.reports\metals-full\2026-03-06\r_empty-definition_20-00-13-672.md")
+2026.03.06 20:00:13 INFO  empty definition using pc, found symbol in pc: javafx/scene/layout/BorderPane# (full report at: "C:\dev\ws\kogi\.metals\.reports\metals-full\2026-03-06\r_empty-definition_20-00-13-672.md")
+2026.03.06 20:00:13 INFO  no build target found for C:\dev\ws\kogi\src_claude\KogiApp.java. Using fallback presentation compiler.
+2026.03.06 20:00:13 INFO  no build target found for C:\dev\ws\kogi\src_claude\KogiApp.java. Using fallback presentation compiler.
+2026.03.06 20:00:13 INFO  no build target found for C:\dev\ws\kogi\src_claude\KogiApp.java. Using fallback presentation compiler.
+2026.03.06 20:00:14 INFO  Created report: Optional[file:///C:/dev/ws/kogi/src_claude/KogiApp.java]
+2026.03.06 20:00:14 INFO  empty definition using pc, found symbol in pc: javafx/stage/Stage# (full report at: "C:\dev\ws\kogi\.metals\.reports\metals-full\2026-03-06\r_empty-definition_20-00-14-510.md")
+2026.03.06 20:00:13 INFO  empty definition using pc, found symbol in pc: javafx/stage/Stage# (full report at: "C:\dev\ws\kogi\.metals\.reports\metals-full\2026-03-06\r_empty-definition_20-00-14-510.md")
+2026.03.06 20:00:13 INFO  no build target found for C:\dev\ws\kogi\src_claude\KogiApp.java. Using fallback presentation compiler.
+2026.03.06 20:00:14 INFO  no build target found for C:\dev\ws\kogi\src_claude\KogiApp.java. Using fallback presentation compiler.
+2026.03.06 20:00:14 INFO  empty definition using pc, found symbol in pc: javafx/stage/Stage# (full report at: "C:\dev\ws\kogi\.metals\.reports\metals-full\2026-03-06\r_empty-definition_20-00-14-510.md")
+2026.03.06 20:00:14 INFO  Created report: Optional[file:///C:/dev/ws/kogi/src_claude/KogiApp.java]
+2026.03.06 20:00:14 INFO  empty definition using pc, found symbol in pc: org/slf4j/Logger# (full report at: "C:\dev\ws\kogi\.metals\.reports\metals-full\2026-03-06\r_empty-definition_20-00-14-707.md")
+2026.03.06 20:00:14 INFO  no build target found for C:\dev\ws\kogi\src_claude\KogiApp.java. Using fallback presentation compiler.
+2026.03.06 20:00:14 INFO  no build target found for C:\dev\ws\kogi\src_claude\KogiApp.java. Using fallback presentation compiler.
+2026.03.06 20:00:14 INFO  empty definition using pc, found symbol in pc: org/slf4j/Logger# (full report at: "C:\dev\ws\kogi\.metals\.reports\metals-full\2026-03-06\r_empty-definition_20-00-14-707.md")
+2026.03.06 20:00:14 INFO  no build target found for C:\dev\ws\kogi\src_claude\KogiApp.java. Using fallback presentation compiler.
+2026.03.06 20:00:14 INFO  empty definition using pc, found symbol in pc: org/slf4j/Logger# (full report at: "C:\dev\ws\kogi\.metals\.reports\metals-full\2026-03-06\r_empty-definition_20-00-14-707.md")
+2026.03.06 20:00:14 INFO  Created report: Optional[file:///C:/dev/ws/kogi/src_claude/KogiApp.java]
+2026.03.06 20:00:14 INFO  empty definition using pc, found symbol in pc: org/slf4j/LoggerFactory# (full report at: "C:\dev\ws\kogi\.metals\.reports\metals-full\2026-03-06\r_empty-definition_20-00-14-800.md")
+2026.03.06 20:00:14 INFO  no build target found for C:\dev\ws\kogi\src_claude\KogiApp.java. Using fallback presentation compiler.
+2026.03.06 20:00:14 INFO  no build target found for C:\dev\ws\kogi\src_claude\KogiApp.java. Using fallback presentation compiler.
+2026.03.06 20:00:14 INFO  empty definition using pc, found symbol in pc: org/slf4j/LoggerFactory# (full report at: "C:\dev\ws\kogi\.metals\.reports\metals-full\2026-03-06\r_empty-definition_20-00-14-800.md")
+2026.03.06 20:00:14 INFO  no build target found for C:\dev\ws\kogi\src_claude\KogiApp.java. Using fallback presentation compiler.
+2026.03.06 20:00:14 INFO  Created report: Optional[file:///C:/dev/ws/kogi/src_claude/KogiApp.java]
+2026.03.06 20:00:14 INFO  empty definition using pc, found symbol in pc: java/io/IOException# (full report at: "C:\dev\ws\kogi\.metals\.reports\metals-full\2026-03-06\r_empty-definition_20-00-14-943.md")
+2026.03.06 20:00:14 INFO  empty definition using pc, found symbol in pc: org/slf4j/LoggerFactory# (full report at: "C:\dev\ws\kogi\.metals\.reports\metals-full\2026-03-06\r_empty-definition_20-00-14-800.md")
+2026.03.06 20:00:14 INFO  empty definition using pc, found symbol in pc: java/io/IOException# (full report at: "C:\dev\ws\kogi\.metals\.reports\metals-full\2026-03-06\r_empty-definition_20-00-14-943.md")
+2026.03.06 20:00:17 INFO  no build target found for C:\dev\ws\kogi\src_claude\KogiApp.java. Using fallback presentation compiler.
+Mar 09, 2026 12:30:53 PM org.eclipse.lsp4j.jsonrpc.services.GenericEndpoint notify
+INFO: Unsupported notification method: $/setTrace
+Mar 09, 2026 5:03:50 PM org.eclipse.lsp4j.jsonrpc.services.GenericEndpoint notify
+INFO: Unsupported notification method: $/setTrace
+2026.03.10 12:20:52 INFO  Shutting down server
+2026.03.10 12:20:52 INFO  Memory monitor stopped
+2026.03.10 12:20:52 INFO  shutting down Metals
+2026.03.10 12:20:52 INFO  Exiting server
