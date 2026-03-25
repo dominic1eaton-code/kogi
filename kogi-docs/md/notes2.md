@@ -2427,13 +2427,13 @@ AI can make mistakes, so double-check responses
 
 ---
 
-A portfolio component represents the high-level, strategic building blocks (projects, programs) aimed at business goals, while a portfolio item is a specific, actionable, or deliverable unit (a feature, case study, or work sample) designed for tactical planning, tracking, or showcasing. Components align to strategy; items are the granular work. [1, 2, 3, 4]  
+A portfolio component represents the high-level, strategic building blocks (projects, programs) aimed at business goals, while a portfolio item is a specific, actionable, or deliverable unit (a feature, case study, or work sample) designed for tactical planning, tracking, or showcasing. Components align to strategy; items are the granular work. [1, 2, 3, 4]
 Portfolio Components (Strategic View) 
 
 • Definition: High-level, often large-scale initiatives within a portfolio. 
 • Examples: Projects, programs, sub-portfolios, or distinct lines of business. 
 • Purpose: To group work based on strategic objectives, allowing for better risk management and resource allocation. 
-• Scope: Broad and strategic; they often span multiple teams or long timeframes. [1, 2, 5, 6, 7]  
+• Scope: Broad and strategic; they often span multiple teams or long timeframes. [1, 2, 5, 6, 7]
 
 Portfolio Items (Tactical View) 
 
