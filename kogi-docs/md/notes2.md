@@ -143,7 +143,7 @@ workspace
         - files
         - documents
         - folders
-    - calendar, timelines, schedules
+    - calendar, timelines, schedules, backlogs - todo lists
 
 ## office
 
@@ -254,6 +254,7 @@ portfolio
                         - version
                         - schedule
                         - directory
+                        - backlog
             - record
             - folder
             - registry
@@ -913,7 +914,7 @@ work management system
   - asset
     - solution, product, service, good, platform, application, investment, estate, real estate, devices/hardware
   - artifact
-    - documents, files, archives, outcomes, deliverables
+    - documents, files, archives, outcomes, deliverables, plans, reports, charters, registers, risk registers, project plans, status reports, project charters, etc...
 - work breakdown structure WBS; portfolio.items
     - work package
         - theme
@@ -2276,6 +2277,7 @@ containers:
 - linkforest
 - form
 - resume
+- backlog
 
 items:
 - solution
