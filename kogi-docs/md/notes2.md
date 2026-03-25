@@ -885,7 +885,32 @@ work management system
     - work studio
         - requirements management system
         - work design systems
-- work breakdown structure WBS
+- portfolio.components
+  - portfolio
+  - program
+  - project
+  - resource
+    - knowledge; skills
+    - time
+      - schedule
+      - timeline
+      - roadmap
+      - timebox
+      - time epoch
+        - quarter
+        - sprint
+        - PI
+        - cycle
+    - contacts
+    - capital
+    - labor
+    - budget; provision; allocation
+    - finance+liquidity+equity+securities; accounts - wallets
+  - asset
+    - solution, product, service, good, platform, application, investment, estate, real estate, devices/hardware
+  - artifact
+    - documents, files, archives, outcomes, deliverables
+- work breakdown structure WBS; portfolio.items
     - work package
         - theme
             - initiative
@@ -931,6 +956,7 @@ work management system
                         + mission
                         + vision
                         + risk
+                        + analysis
                         + strategy
                         + tactic
                         + operation
@@ -941,7 +967,13 @@ work management system
                         + distribution
                         + template
                         + archive
-
+                        + gig
+                        + job
+                        + contract
+                        + consultation
+                        + booking
+                        + meeting
+                        + appointment
 
 ---
 
@@ -2444,21 +2476,21 @@ Quick Comparison Table
 
 ---
 
-1. Portfolio Component
+## 1. Portfolio Component
 
 A component is the highest-level element in this context, representing a project, program, or sub-portfolio that is being managed centrally. These components compete for resources and are selected to support an organization's strategic objectives. 
 
 * Purpose: To achieve strategic objectives and align with business goals.
 * Key Aspect: Components can be independent of each other, unlike projects within a program. 
 
-2. Portfolio Item
+## 2. Portfolio Item
 
 Portfolio Items (sometimes referred to as items in an Agile Portfolio Tree) are large-grained features or initiatives. They represent a "middle layer" that bridges high-level strategy with actionable, smaller work items (such as user stories or backlog items). 
 
 * Purpose: To break down large strategies into actionable chunks that can be delivered across different teams.
 * Key Aspect: Can be broken down further into smaller stories or backlog items. 
 
-3. Portfolio Task
+## 3. Portfolio Task
 
 A Portfolio Task is a specific action item within a portfolio. While portfolio items are large "work units," tasks are often granular actions assigned to individuals. In educational or specialized software contexts (like OpenOlat), a "portfolio task" is an assignment or folder meant to be filled with work. 
 Northeastern University Graduate Programs
