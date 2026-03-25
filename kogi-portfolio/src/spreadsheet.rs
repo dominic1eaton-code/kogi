@@ -212,6 +212,60 @@ pub fn default_master_schema() -> ColumnSchema {
             ai_signal: false,
         },
         ColumnDefinition {
+            id: "health_score".into(),
+            name: "Health Score".into(),
+            column_type: ColumnType::Computed,
+            group: ColumnGroup::Analytics,
+            pinned: false,
+            computed: true,
+            ai_signal: false,
+        },
+        ColumnDefinition {
+            id: "risk_score".into(),
+            name: "Risk Score".into(),
+            column_type: ColumnType::Computed,
+            group: ColumnGroup::Analytics,
+            pinned: false,
+            computed: true,
+            ai_signal: false,
+        },
+        ColumnDefinition {
+            id: "resource_utilization_pct".into(),
+            name: "Resource Utilization %".into(),
+            column_type: ColumnType::Computed,
+            group: ColumnGroup::Resource,
+            pinned: false,
+            computed: true,
+            ai_signal: false,
+        },
+        ColumnDefinition {
+            id: "health_rollup".into(),
+            name: "Health Rollup".into(),
+            column_type: ColumnType::Computed,
+            group: ColumnGroup::Analytics,
+            pinned: false,
+            computed: true,
+            ai_signal: false,
+        },
+        ColumnDefinition {
+            id: "risk_rollup".into(),
+            name: "Risk Rollup".into(),
+            column_type: ColumnType::Computed,
+            group: ColumnGroup::Analytics,
+            pinned: false,
+            computed: true,
+            ai_signal: false,
+        },
+        ColumnDefinition {
+            id: "resource_utilization_rollup_pct".into(),
+            name: "Resource Utilization Rollup %".into(),
+            column_type: ColumnType::Computed,
+            group: ColumnGroup::Resource,
+            pinned: false,
+            computed: true,
+            ai_signal: false,
+        },
+        ColumnDefinition {
             id: "due_date".into(),
             name: "Due".into(),
             column_type: ColumnType::Date,
@@ -390,6 +444,11 @@ impl PortfolioRow {
             "budget_remaining" => self.budget_remaining().map(CellValue::Decimal),
             "budget_utilization_pct" => self.budget_utilization_pct().map(CellValue::Percent),
             "earnings_net" => Some(CellValue::Decimal(self.earnings_net())),
+            "health_score" => self.ext.get("health_score").and_then(|v| v.as_f64()).map(CellValue::Number),
+            "risk_score" => self.ext.get("risk_score").and_then(|v| v.as_f64()).map(CellValue::Number),
+            "resource_utilization_pct" => resource_utilization_pct_from_row(self).map(CellValue::Percent),
+            "resource_units_total" => self.resource_units_total.map(CellValue::Number),
+            "resource_units_allocated" => Some(CellValue::Number(self.resource_units_allocated)),
             "due_date" => self.due_date.map(CellValue::Date),
             "progress_pct" => Some(CellValue::Percent(self.progress_pct)),
             "created_at" => Some(CellValue::DateTime(self.created_at)),
@@ -491,7 +550,8 @@ fn register_builtin_sheets(registry: &mut SheetRegistry) {
     registry.register(SheetDefinition::builtin("SHT-027", "Developer", "Developer", vec![], schema.clone()));
     registry.register(SheetDefinition::builtin("SHT-028", "Configuration", "Configuration", vec![], schema.clone()));
     registry.register(SheetDefinition::builtin("SHT-029", "Link Network", "Link network", vec![], schema.clone()));
-    registry.register(SheetDefinition::builtin("SHT-030", "Custom", "Custom sheet", vec![], schema));
+    registry.register(SheetDefinition::builtin("SHT-030", "Custom", "Custom sheet", vec![], schema.clone()));
+    registry.register(SheetDefinition::builtin("SHT-031", "Link Forest", "Cross-grid link forest", vec![], schema));
 }
 
 #[derive(Debug, Clone, Default)]
@@ -671,6 +731,12 @@ pub enum ComputedColumnKind {
     BudgetRemaining,
     BudgetUtilizationPct,
     EarningsNet,
+    RiskScore,
+    HealthScore,
+    ResourceUtilizationPct,
+    RiskRollup,
+    HealthRollup,
+    ResourceUtilizationRollupPct,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -691,17 +757,29 @@ impl ComputationEngine {
                 ComputedColumnSpec { column_id: "budget_remaining".into(), kind: ComputedColumnKind::BudgetRemaining },
                 ComputedColumnSpec { column_id: "budget_utilization_pct".into(), kind: ComputedColumnKind::BudgetUtilizationPct },
                 ComputedColumnSpec { column_id: "earnings_net".into(), kind: ComputedColumnKind::EarningsNet },
+                ComputedColumnSpec { column_id: "risk_score".into(), kind: ComputedColumnKind::RiskScore },
+                ComputedColumnSpec { column_id: "health_score".into(), kind: ComputedColumnKind::HealthScore },
+                ComputedColumnSpec { column_id: "resource_utilization_pct".into(), kind: ComputedColumnKind::ResourceUtilizationPct },
+                ComputedColumnSpec { column_id: "risk_rollup".into(), kind: ComputedColumnKind::RiskRollup },
+                ComputedColumnSpec { column_id: "health_rollup".into(), kind: ComputedColumnKind::HealthRollup },
+                ComputedColumnSpec { column_id: "resource_utilization_rollup_pct".into(), kind: ComputedColumnKind::ResourceUtilizationRollupPct },
             ],
         }
     }
 
-    pub fn compute_for_row(&self, row: &PortfolioRow, cells: &CellStore) -> Vec<(ColumnId, CellValue)> {
+    pub fn compute_for_row(&self, row: &PortfolioRow, cells: &CellStore, rows: &RowStore) -> Vec<(ColumnId, CellValue)> {
         let mut out = Vec::new();
         for spec in &self.columns {
             let value = match spec.kind {
                 ComputedColumnKind::BudgetRemaining => row.budget_remaining().map(CellValue::Decimal),
                 ComputedColumnKind::BudgetUtilizationPct => row.budget_utilization_pct().map(CellValue::Percent),
                 ComputedColumnKind::EarningsNet => Some(CellValue::Decimal(row.earnings_net())),
+                ComputedColumnKind::RiskScore => Some(CellValue::Number(compute_risk_score(row, cells))),
+                ComputedColumnKind::HealthScore => Some(CellValue::Number(compute_health_score(row, cells))),
+                ComputedColumnKind::ResourceUtilizationPct => compute_resource_utilization_pct(row, cells).map(CellValue::Percent),
+                ComputedColumnKind::RiskRollup => Some(CellValue::Number(compute_risk_rollup(row, cells, rows))),
+                ComputedColumnKind::HealthRollup => Some(CellValue::Number(compute_health_rollup(row, cells, rows))),
+                ComputedColumnKind::ResourceUtilizationRollupPct => compute_resource_utilization_rollup_pct(row, cells, rows).map(CellValue::Percent),
             };
             if let Some(val) = value {
                 out.push((spec.column_id.clone(), val));
@@ -715,14 +793,173 @@ impl ComputationEngine {
     pub fn writeback(&self, workbook: &mut SpreadsheetWorkbook, actor: impl Into<String>) {
         let actor_str = actor.into();
         let row_ids: Vec<ComponentId> = workbook.row_store.iter().map(|row| row.component_id).collect();
+        let rows_snapshot = workbook.row_store.clone();
         for row_id in row_ids {
-            if let Some(row) = workbook.row_store.get(&row_id).cloned() {
-                let computed = self.compute_for_row(&row, &workbook.cell_store);
+            if let Some(row) = rows_snapshot.get(&row_id).cloned() {
+                let computed = self.compute_for_row(&row, &workbook.cell_store, &rows_snapshot);
                 for (column_id, value) in computed {
                     workbook.cell_store.set_cell(row_id, column_id, value, actor_str.clone(), Some(300));
                 }
             }
         }
+    }
+}
+
+fn clamp_score(value: f64) -> f64 {
+    value.max(0.0).min(100.0)
+}
+
+fn cell_override_f64(row: &PortfolioRow, cells: &CellStore, column_id: &str) -> Option<f64> {
+    cells.get_cell(&row.component_id, column_id)
+        .and_then(|v| v.as_f64())
+        .or_else(|| row.ext.get(column_id).and_then(|v| v.as_f64()))
+}
+
+fn resource_utilization_pct_from_row(row: &PortfolioRow) -> Option<f64> {
+    if let Some(total) = row.resource_units_total {
+        if total > 0.0 {
+            return Some((row.resource_units_allocated / total) * 100.0);
+        }
+    }
+    let allocated = row.budget_allocated.and_then(|v| v.to_f64());
+    let spent = row.budget_spent.to_f64();
+    match (allocated, spent) {
+        (Some(alloc), Some(spent)) if alloc > 0.0 => Some((spent / alloc) * 100.0),
+        _ => None,
+    }
+}
+
+pub(crate) fn compute_resource_utilization_pct(row: &PortfolioRow, cells: &CellStore) -> Option<f64> {
+    cell_override_f64(row, cells, "resource_utilization_pct")
+        .or_else(|| resource_utilization_pct_from_row(row))
+        .map(clamp_score)
+}
+
+pub(crate) fn compute_risk_score(row: &PortfolioRow, cells: &CellStore) -> f64 {
+    if let Some(score) = cell_override_f64(row, cells, "risk_score") {
+        return clamp_score(score);
+    }
+
+    let mut score = 0.0;
+    let status = row.status.to_lowercase();
+    if status.contains("paused") { score += 10.0; }
+    if status.contains("draft") { score += 5.0; }
+    if status.contains("review") { score += 8.0; }
+    if status.contains("blocked") { score += 20.0; }
+    if status.contains("rejected") { score += 15.0; }
+
+    let state = row.state.to_lowercase();
+    if state.contains("blocked") { score += 15.0; }
+    if state.contains("failing") { score += 20.0; }
+
+    score += (row.risk_flags.len() as f64) * 5.0;
+
+    if let Some(due) = row.due_date {
+        let today = Utc::now().date_naive();
+        if due < today && row.progress_pct < 100.0 {
+            score += 20.0;
+        }
+    }
+
+    if row.budget_remaining().map(|v| v < Decimal::ZERO).unwrap_or(false) {
+        score += 15.0;
+    }
+
+    if let Some(util) = compute_resource_utilization_pct(row, cells) {
+        if util > 100.0 {
+            score += ((util - 100.0) * 0.2).min(15.0);
+        }
+    }
+
+    clamp_score(score)
+}
+
+pub(crate) fn compute_health_score(row: &PortfolioRow, cells: &CellStore) -> f64 {
+    if let Some(score) = cell_override_f64(row, cells, "health_score") {
+        return clamp_score(score);
+    }
+
+    let risk = compute_risk_score(row, cells);
+    let mut health = (100.0 - risk + row.progress_pct) / 2.0;
+
+    if let Some(util) = compute_resource_utilization_pct(row, cells) {
+        if util > 100.0 {
+            health -= (util - 100.0) * 0.25;
+        }
+    }
+
+    if row.budget_remaining().map(|v| v < Decimal::ZERO).unwrap_or(false) {
+        health -= 5.0;
+    }
+
+    if row.status.to_lowercase().contains("completed") {
+        health = 100.0;
+    }
+
+    clamp_score(health)
+}
+
+pub(crate) fn compute_risk_rollup(row: &PortfolioRow, cells: &CellStore, rows: &RowStore) -> f64 {
+    if row.child_ids.is_empty() {
+        return compute_risk_score(row, cells);
+    }
+
+    let mut max_score: Option<f64> = None;
+    for child_id in &row.child_ids {
+        if let Some(child) = rows.get(child_id) {
+            let score = compute_risk_score(child, cells);
+            max_score = Some(max_score.map(|v| v.max(score)).unwrap_or(score));
+        }
+    }
+
+    max_score.unwrap_or_else(|| compute_risk_score(row, cells))
+}
+
+pub(crate) fn compute_health_rollup(row: &PortfolioRow, cells: &CellStore, rows: &RowStore) -> f64 {
+    if row.child_ids.is_empty() {
+        return compute_health_score(row, cells);
+    }
+
+    let mut total = 0.0;
+    let mut count = 0;
+    for child_id in &row.child_ids {
+        if let Some(child) = rows.get(child_id) {
+            total += compute_health_score(child, cells);
+            count += 1;
+        }
+    }
+
+    if count == 0 {
+        compute_health_score(row, cells)
+    } else {
+        clamp_score(total / count as f64)
+    }
+}
+
+pub(crate) fn compute_resource_utilization_rollup_pct(
+    row: &PortfolioRow,
+    cells: &CellStore,
+    rows: &RowStore,
+) -> Option<f64> {
+    if row.child_ids.is_empty() {
+        return compute_resource_utilization_pct(row, cells);
+    }
+
+    let mut total = 0.0;
+    let mut count = 0;
+    for child_id in &row.child_ids {
+        if let Some(child) = rows.get(child_id) {
+            if let Some(util) = compute_resource_utilization_pct(child, cells) {
+                total += util;
+                count += 1;
+            }
+        }
+    }
+
+    if count == 0 {
+        compute_resource_utilization_pct(row, cells)
+    } else {
+        Some(clamp_score(total / count as f64))
     }
 }
 
@@ -753,6 +990,179 @@ pub struct ViewDefinition {
     pub sorts: Vec<ViewSort>,
     pub limit: Option<usize>,
     pub offset: usize,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct SavedView {
+    pub view_id: Uuid,
+    pub name: String,
+    pub description: String,
+    pub owner_id: EntityId,
+    pub definition: ViewDefinition,
+    pub groups: Vec<ViewGroup>,
+    pub pivot: Option<PivotConfig>,
+    pub created_at: DateTime<Utc>,
+    pub updated_at: DateTime<Utc>,
+}
+
+impl SavedView {
+    pub fn new(
+        name: impl Into<String>,
+        owner_id: EntityId,
+        definition: ViewDefinition,
+    ) -> Self {
+        let now = Utc::now();
+        Self {
+            view_id: Uuid::new_v4(),
+            name: name.into(),
+            description: String::new(),
+            owner_id,
+            definition,
+            groups: vec![],
+            pivot: None,
+            created_at: now,
+            updated_at: now,
+        }
+    }
+
+    pub fn touch(&mut self) {
+        self.updated_at = Utc::now();
+    }
+}
+
+#[derive(Debug, Clone, Default)]
+pub struct ViewRegistry {
+    order: Vec<Uuid>,
+    views: HashMap<Uuid, SavedView>,
+}
+
+impl ViewRegistry {
+    pub fn empty() -> Self { Self::default() }
+
+    pub fn new() -> Self {
+        let mut registry = Self::default();
+        register_builtin_views(&mut registry);
+        registry
+    }
+
+    pub fn register(&mut self, view: SavedView) {
+        let id = view.view_id;
+        if !self.views.contains_key(&id) {
+            self.order.push(id);
+        }
+        self.views.insert(id, view);
+    }
+
+    pub fn get(&self, id: &Uuid) -> Option<&SavedView> {
+        self.views.get(id)
+    }
+
+    pub fn all(&self) -> Vec<&SavedView> {
+        self.order.iter().filter_map(|id| self.views.get(id)).collect()
+    }
+
+    pub fn order(&self) -> Vec<Uuid> { self.order.clone() }
+
+    pub fn set_order(&mut self, order: Vec<Uuid>) {
+        self.order = order;
+    }
+
+    pub fn is_empty(&self) -> bool {
+        self.views.is_empty()
+    }
+
+    pub fn len(&self) -> usize { self.views.len() }
+
+    pub fn for_sheet(&self, sheet_id: &str) -> Vec<&SavedView> {
+        self.order.iter()
+            .filter_map(|id| self.views.get(id))
+            .filter(|view| view.definition.sheet_id == sheet_id)
+            .collect()
+    }
+}
+
+fn register_builtin_views(registry: &mut ViewRegistry) {
+    let owner = Uuid::nil();
+    let master_sheet = "SHT-001".to_string();
+
+    let all_view = SavedView::new(
+        "All Items",
+        owner,
+        ViewDefinition {
+            sheet_id: master_sheet.clone(),
+            filters: vec![],
+            sorts: vec![ViewSort { column_id: "updated_at".into(), direction: SortDirection::Desc }],
+            limit: None,
+            offset: 0,
+        },
+    );
+    registry.register(all_view);
+
+    let active_view = SavedView::new(
+        "Active Items",
+        owner,
+        ViewDefinition {
+            sheet_id: master_sheet.clone(),
+            filters: vec![FilterPredicate::Equals("status".into(), CellValue::Enum("Active".into()))],
+            sorts: vec![ViewSort { column_id: "health_score".into(), direction: SortDirection::Desc }],
+            limit: None,
+            offset: 0,
+        },
+    );
+    registry.register(active_view);
+
+    let mut risk_view = SavedView::new(
+        "At Risk",
+        owner,
+        ViewDefinition {
+            sheet_id: master_sheet.clone(),
+            filters: vec![FilterPredicate::GreaterThan("risk_score".into(), 70.0)],
+            sorts: vec![ViewSort { column_id: "risk_score".into(), direction: SortDirection::Desc }],
+            limit: None,
+            offset: 0,
+        },
+    );
+    risk_view.description = "Items with elevated risk scores.".to_string();
+    registry.register(risk_view);
+
+    let mut status_view = SavedView::new(
+        "By Status",
+        owner,
+        ViewDefinition {
+            sheet_id: master_sheet.clone(),
+            filters: vec![],
+            sorts: vec![ViewSort { column_id: "status".into(), direction: SortDirection::Asc }],
+            limit: None,
+            offset: 0,
+        },
+    );
+    status_view.groups = vec![ViewGroup {
+        column_id: "status".into(),
+        aggregations: vec![
+            ("budget_spent".into(), Aggregation::Sum),
+            ("health_score".into(), Aggregation::Avg),
+        ],
+    }];
+    registry.register(status_view);
+
+    let mut pivot_view = SavedView::new(
+        "Health Pivot",
+        owner,
+        ViewDefinition {
+            sheet_id: master_sheet,
+            filters: vec![],
+            sorts: vec![],
+            limit: None,
+            offset: 0,
+        },
+    );
+    pivot_view.pivot = Some(PivotConfig {
+        row_column: "component_type".into(),
+        column_column: "status".into(),
+        value_column: "health_score".into(),
+        aggregation: Aggregation::Avg,
+    });
+    registry.register(pivot_view);
 }
 
 pub struct ViewEngine;
@@ -922,6 +1332,7 @@ pub struct SpreadsheetWorkbook {
     pub row_store: RowStore,
     pub cell_store: CellStore,
     pub sheets: SheetRegistry,
+    pub views: ViewRegistry,
     pub registry: ComponentRegistry,
 }
 
@@ -934,6 +1345,7 @@ impl SpreadsheetWorkbook {
             row_store: RowStore::default(),
             cell_store: CellStore::default(),
             sheets: SheetRegistry::new(),
+            views: ViewRegistry::new(),
             registry: ComponentRegistry::default(),
         }
     }
@@ -946,6 +1358,7 @@ impl SpreadsheetWorkbook {
             row_store: RowStore::default(),
             cell_store: CellStore::default(),
             sheets: SheetRegistry::empty(),
+            views: ViewRegistry::empty(),
             registry: ComponentRegistry::default(),
         }
     }
@@ -967,6 +1380,22 @@ impl SpreadsheetWorkbook {
             }).collect(),
             _ => self.row_store.iter().collect(),
         }
+    }
+
+    pub fn add_view(&mut self, view: SavedView) {
+        self.views.register(view);
+    }
+
+    pub fn get_view(&self, view_id: &Uuid) -> Option<&SavedView> {
+        self.views.get(view_id)
+    }
+
+    pub fn views_for_sheet(&self, sheet_id: &str) -> Vec<&SavedView> {
+        self.views.for_sheet(sheet_id)
+    }
+
+    pub fn saved_views(&self) -> Vec<&SavedView> {
+        self.views.all()
     }
 
     pub fn set_cell(&mut self, row_id: ComponentId, column: impl Into<ColumnId>, value: CellValue, actor: impl Into<String>, ttl_seconds: Option<u64>) {

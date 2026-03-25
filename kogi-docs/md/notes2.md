@@ -2520,8 +2520,24 @@ domain operating system
 
 ---
 
+* Add saved view persistence (filters/sorts/groups/pivots) into the views cube.
+* Expand computed column library (risk, health, utilization rollups).
+* Add link‑forest “sheet” materialization that mixes remote shadow rows.
 
-Add saved view persistence (filters/sorts/groups/pivots) into the views cube.
-Expand computed column library (risk, health, utilization rollups).
-Add link‑forest “sheet” materialization that mixes remote shadow rows.
+then also, read the frontend uiux files in C:\dev\ws\kogi_dev\kogi-client\web_client_dev\kogi-ui\src\app\portfolio and implement the backend logic for the frontend features, expanding out C:\dev\ws\kogi_dev\kogi-portfolio
 
+* Hook the new snapshot methods into the Go service or your API layer so the Angular UI can load them directly.
+* Decide whether risk/health/utilization should prefer AI signals or policy‑driven inputs (I can tune the scoring).
+* If you want, I can extend shadow rows to pull actual mirrored attributes when cross‑grid sync is available.
+
+
+implement the kogi-wallet backend system from the kogi-wallet frontend in C:\dev\ws\kogi_dev\kogi-client\web_client_dev\kogi-ui\src\app\wallet, also including the features from the bank+wallet docs in C:\dev\ws\kogi_dev\kogi-docs\md. Generate the rust backend library in C:\dev\ws\kogi_dev\kogi-wallet. All the resources/data is tracked in the portfolio system in C:\dev\ws\kogi_dev\kogi-portfolio. generate the principle PortfolioSystem in C:\dev\ws\kogi_dev\kogi-portfolio\src\model.rs that is the portfolio service master application exeuction model, and create an executing go microservice in C:\dev\ws\kogi_dev\kogi-portfolio\service that provides the interface to/from and primary point of interaction for the portfolio system. also generate documentation for kogi-portfolio and documentation for making curl api command calls to the go microservice for executing the kogi-portfolio rust module lib commands. the go service should can call the rust library code, so also add a rust library FFI interface and go micrservice C (rust) code interface, bridging the rust library code and go microservice code/api microservice calls.
+
+also generate a similar go microservice for the kogi-wallet in C:\dev\ws\kogi_dev\kogi-wallet\service which interacts with the wallet rust library
+
+then also,
+* Hook the new snapshot methods into the Go services + API layer so the Angular UI can load them directly.
+*  extend shadow rows to pull actual mirrored attributes when cross‑grid sync is available
+* Decide whether risk/health/utilization should prefer AI signals or policy‑driven inputs ( tune the scoring).
+
+---

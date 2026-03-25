@@ -61,6 +61,14 @@ pub struct LinkForestView {
     pub links: Vec<LinkEdgeView>,
 }
 
+#[derive(Debug, Clone)]
+pub struct LinkForestSheet {
+    pub root: EntityRef,
+    pub sheet_id: String,
+    pub sheet_name: String,
+    pub rows: Vec<PortfolioRow>,
+}
+
 impl KogiPortfolioRuntime {
     pub fn new(config: KogiPortfolioConfig) -> KogiPortfolioResult<Self> {
         let apapo = ApapoRuntime::new(config.apapo_config())?;
@@ -124,22 +132,59 @@ impl KogiPortfolioRuntime {
     }
 
     pub fn link_forest_rows(&self, root_component_id: Uuid) -> Vec<PortfolioRow> {
-        let view = self.link_forest_view(root_component_id);
-        let mut rows = HashMap::new();
-        for link in view.links {
-            if let Some(row) = link.source_row {
-                rows.insert(row.component_id, row);
-            }
-            if let Some(row) = link.target_row {
-                rows.insert(row.component_id, row);
-            }
+    let view = self.link_forest_view(root_component_id);
+    let mut rows = HashMap::new();
+    for link in view.links {
+        let source_row = link.source_row.clone();
+        let target_row = link.target_row.clone();
+        if let Some(row) = source_row {
+            rows.insert(row.component_id, row);
+        } else {
+            let shadow = shadow_row_from_link(&link.source, &link, "source");
+            rows.insert(shadow.component_id, shadow);
         }
+        if let Some(row) = target_row {
+            rows.insert(row.component_id, row);
+        } else {
+            let shadow = shadow_row_from_link(&link.target, &link, "target");
+            rows.insert(shadow.component_id, shadow);
+        }
+    }
         rows.into_values().collect()
     }
 
     pub fn link_forest_view_rows(&self, root_component_id: Uuid, view: &ViewDefinition) -> Vec<PortfolioRow> {
         let rows = self.link_forest_rows(root_component_id);
         ViewEngine::apply(&rows, &self.master.workbook.cell_store, view)
+    }
+
+    pub fn link_forest_sheet(&self, root_component_id: Uuid) -> LinkForestSheet {
+        let root = EntityRef {
+            cube_id: self.cubes.components_cube,
+            d1_key: root_component_id,
+            grid_id: Some(self.apapo.grid.grid_id),
+        };
+        let rows = self.link_forest_rows(root_component_id);
+        let (sheet_id, sheet_name) = self.master.workbook.sheets.get("SHT-031")
+            .map(|s| (s.id.clone(), s.name.clone()))
+            .unwrap_or_else(|| ("SHT-031".to_owned(), "Link Forest".to_owned()));
+        LinkForestSheet { root, sheet_id, sheet_name, rows }
+    }
+
+    pub fn items_view(&self) -> crate::ui::PortfolioItemsView {
+        self.master.workbook.items_view()
+    }
+
+    pub fn dashboard_snapshot(&self) -> crate::ui::PortfolioDashboardSnapshot {
+        self.master.workbook.dashboard_snapshot()
+    }
+
+    pub fn analytics_snapshot(&self) -> crate::ui::PortfolioAnalyticsSnapshot {
+        self.master.workbook.analytics_snapshot()
+    }
+
+    pub fn registry_snapshot(&self) -> crate::ui::PortfolioRegistrySnapshot {
+        self.master.workbook.registry_snapshot()
     }
 }
 
@@ -164,6 +209,7 @@ impl MasterPortfolioSpreadsheet {
         persist_sheets(grid, cubes.sheet_cube, self.workbook_id, &self.workbook.sheets, actor)?;
         persist_columns(grid, cubes.column_cube, self.workbook_id, &self.workbook.sheets, actor)?;
         persist_cells(grid, cubes.cell_cube, &self.workbook.cell_store, actor)?;
+        persist_views(grid, cubes.view_cube, self.workbook_id, &self.workbook.views, actor)?;
         Ok(())
     }
 }
@@ -227,6 +273,7 @@ fn load_workbook_from_grid(
         let name = fields.get("name").and_then(attr_to_text).unwrap_or_else(|| "Master Portfolio Spreadsheet".to_owned());
         let owner_id = fields.get("owner_id").and_then(attr_to_uuid).unwrap_or(Uuid::nil());
         let sheet_order = fields.get("sheet_order").and_then(attr_to_json::<Vec<String>>).unwrap_or_default();
+        let view_order = fields.get("view_order").and_then(attr_to_json::<Vec<String>>).unwrap_or_default();
 
         let column_defs = load_column_definitions(grid, cubes.column_cube, workbook_id);
         let mut sheets = load_sheet_registry(grid, cubes.sheet_cube, workbook_id, &column_defs);
@@ -237,6 +284,17 @@ fn load_workbook_from_grid(
         let mut workbook = SpreadsheetWorkbook::with_id(workbook_id, owner_id, name);
         workbook.sheets = sheets;
         workbook.cell_store = load_cell_store(grid, cubes.cell_cube);
+        let mut views = load_view_registry(grid, cubes.view_cube, workbook_id);
+        if !view_order.is_empty() {
+            let order_ids: Vec<Uuid> = view_order.iter()
+                .filter_map(|s| Uuid::parse_str(s).ok())
+                .collect();
+            views.set_order(order_ids);
+        }
+        if views.is_empty() {
+            views = crate::spreadsheet::ViewRegistry::new();
+        }
+        workbook.views = views;
         return Some(workbook);
     }
     None
@@ -252,6 +310,9 @@ fn portfolio_row_from_component(component: &PortfolioComponent) -> PortfolioRow 
     row.visibility = visibility_string(&component.visibility);
     row.created_at = component.metadata.created_at;
     row.updated_at = component.metadata.updated_at;
+    if let Some(due) = component.due_date {
+        row.due_date = Some(due.date_naive());
+    }
     row.owners = component.metadata.owners.clone();
     row.tags = component.metadata.tags.iter().cloned().collect();
     row.hashtags = component.hashtags.iter().cloned().collect();
@@ -281,6 +342,15 @@ fn portfolio_row_from_component(component: &PortfolioComponent) -> PortfolioRow 
     if !component.metadata.properties.is_empty() {
         row.ext.insert("properties".to_owned(), json!(component.metadata.properties));
     }
+    if !component.description.is_empty() {
+        row.ext.insert("description".to_owned(), json!(component.description));
+    }
+    if let Some(score) = component.health_score {
+        row.ext.insert("health_score".to_owned(), json!(score));
+    }
+    if let Some(score) = component.risk_score {
+        row.ext.insert("risk_score".to_owned(), json!(score));
+    }
     row
 }
 
@@ -296,6 +366,29 @@ fn link_edge_view(workbook: &SpreadsheetWorkbook, link: CrossGridLink) -> LinkEd
         source_row,
         target_row,
     }
+}
+
+fn shadow_row_from_link(entity: &EntityRef, link: &LinkEdgeView, role: &str) -> PortfolioRow {
+    let mut row = PortfolioRow::new(
+        entity.d1_key,
+        "shadow",
+        format!("Shadow {}", entity.d1_key),
+        Uuid::nil(),
+    );
+    row.item_type = Some("Shadow".to_owned());
+    row.status = "Shadow".to_owned();
+    row.state = "Shadow".to_owned();
+    row.visibility = "Protected".to_owned();
+    row.ext.insert("shadow".to_owned(), json!(true));
+    row.ext.insert("shadow_role".to_owned(), json!(role));
+    if let Some(grid_id) = entity.grid_id {
+        row.ext.insert("shadow_grid_id".to_owned(), json!(grid_id.to_string()));
+    }
+    row.ext.insert("shadow_cube_id".to_owned(), json!(entity.cube_id.to_string()));
+    row.ext.insert("link_id".to_owned(), json!(link.link_id.to_string()));
+    row.ext.insert("link_phase".to_owned(), json!(format!("{:?}", link.phase)));
+    row.ext.insert("link_consent".to_owned(), json!(format!("{:?}", link.consent)));
+    row
 }
 
 fn component_type_string(category: &ComponentCategory) -> String {
@@ -402,6 +495,8 @@ fn persist_workbook(
     grid.write_cell(workbook_cube, coord("owner_id"), "value", TypedAttrValue::Text(master.workbook.owner_id.to_string()), actor)?;
     grid.write_cell(workbook_cube, coord("root_component_id"), "value", TypedAttrValue::Text(master.root_component_id.to_string()), actor)?;
     grid.write_cell(workbook_cube, coord("sheet_order"), "value", TypedAttrValue::Json(json!(master.workbook.sheets.order())), actor)?;
+    let view_order: Vec<String> = master.workbook.views.order().into_iter().map(|id| id.to_string()).collect();
+    grid.write_cell(workbook_cube, coord("view_order"), "value", TypedAttrValue::Json(json!(view_order)), actor)?;
     grid.write_cell(workbook_cube, coord("updated_at"), "value", TypedAttrValue::DateTime(Utc::now()), actor)?;
     Ok(())
 }
@@ -455,6 +550,36 @@ fn persist_cells(
     for ((row_id, column_id), value) in cells.iter() {
         let coord = DimCoordinate::n2(grid.grid_id, cell_cube, DimKey::uuid(*row_id), DimKey::text(column_id.clone()));
         grid.write_cell(cell_cube, coord, "value", TypedAttrValue::Json(json!(value)), actor)?;
+    }
+    Ok(())
+}
+
+fn persist_views(
+    grid: &Grid,
+    view_cube: hypergrid::CubeId,
+    workbook_id: Uuid,
+    registry: &crate::spreadsheet::ViewRegistry,
+    actor: &str,
+) -> Result<(), HypergridError> {
+    for view in registry.all() {
+        let coord = |field: &str| DimCoordinate::n2(
+            grid.grid_id,
+            view_cube,
+            DimKey::uuid(view.view_id),
+            DimKey::text(field),
+        );
+        grid.write_cell(view_cube, coord("name"), "value", TypedAttrValue::Text(view.name.clone()), actor)?;
+        grid.write_cell(view_cube, coord("description"), "value", TypedAttrValue::Text(view.description.clone()), actor)?;
+        grid.write_cell(view_cube, coord("workbook_id"), "value", TypedAttrValue::Text(workbook_id.to_string()), actor)?;
+        grid.write_cell(view_cube, coord("owner_id"), "value", TypedAttrValue::Text(view.owner_id.to_string()), actor)?;
+        grid.write_cell(view_cube, coord("sheet_id"), "value", TypedAttrValue::Text(view.definition.sheet_id.clone()), actor)?;
+        grid.write_cell(view_cube, coord("definition"), "value", TypedAttrValue::Json(json!(view.definition)), actor)?;
+        grid.write_cell(view_cube, coord("groups"), "value", TypedAttrValue::Json(json!(view.groups)), actor)?;
+        if let Some(pivot) = &view.pivot {
+            grid.write_cell(view_cube, coord("pivot"), "value", TypedAttrValue::Json(json!(pivot)), actor)?;
+        }
+        grid.write_cell(view_cube, coord("created_at"), "value", TypedAttrValue::Json(json!(view.created_at)), actor)?;
+        grid.write_cell(view_cube, coord("updated_at"), "value", TypedAttrValue::Json(json!(view.updated_at)), actor)?;
     }
     Ok(())
 }
@@ -543,6 +668,67 @@ fn load_cell_store(grid: &Grid, cell_cube: hypergrid::CubeId) -> crate::spreadsh
         }
     }
     store
+}
+
+fn load_view_registry(
+    grid: &Grid,
+    view_cube: hypergrid::CubeId,
+    workbook_id: Uuid,
+) -> crate::spreadsheet::ViewRegistry {
+    let mut registry = crate::spreadsheet::ViewRegistry::empty();
+    let field_map = collect_fields(grid.scan_cells(view_cube));
+    for (d1, fields) in field_map {
+        let view_id = d1.as_uuid()
+            .or_else(|| d1.as_str().and_then(|s| Uuid::parse_str(s).ok()));
+        let view_id = match view_id {
+            Some(id) => id,
+            None => continue,
+        };
+
+        let view_workbook = fields.get("workbook_id").and_then(attr_to_uuid);
+        if view_workbook != Some(workbook_id) { continue; }
+
+        let name = fields.get("name").and_then(attr_to_text).unwrap_or_else(|| view_id.to_string());
+        let description = fields.get("description").and_then(attr_to_text).unwrap_or_default();
+        let owner_id = fields.get("owner_id").and_then(attr_to_uuid).unwrap_or(Uuid::nil());
+
+        let definition = fields.get("definition")
+            .and_then(attr_to_json::<crate::spreadsheet::ViewDefinition>)
+            .unwrap_or_else(|| {
+                let sheet_id = fields.get("sheet_id").and_then(attr_to_text).unwrap_or_else(|| "SHT-001".to_owned());
+                let filters = fields.get("filters").and_then(attr_to_json::<Vec<crate::spreadsheet::FilterPredicate>>).unwrap_or_default();
+                let sorts = fields.get("sorts").and_then(attr_to_json::<Vec<crate::spreadsheet::ViewSort>>).unwrap_or_default();
+                let limit = fields.get("limit").and_then(attr_to_json::<Option<usize>>).unwrap_or(None);
+                let offset = fields.get("offset").and_then(attr_to_json::<usize>).unwrap_or(0);
+                crate::spreadsheet::ViewDefinition { sheet_id, filters, sorts, limit, offset }
+            });
+
+        let groups = fields.get("groups")
+            .and_then(attr_to_json::<Vec<crate::spreadsheet::ViewGroup>>)
+            .unwrap_or_default();
+        let pivot = fields.get("pivot")
+            .and_then(attr_to_json::<crate::spreadsheet::PivotConfig>);
+        let created_at = fields.get("created_at")
+            .and_then(attr_to_json::<chrono::DateTime<chrono::Utc>>)
+            .unwrap_or_else(chrono::Utc::now);
+        let updated_at = fields.get("updated_at")
+            .and_then(attr_to_json::<chrono::DateTime<chrono::Utc>>)
+            .unwrap_or_else(chrono::Utc::now);
+
+        let view = crate::spreadsheet::SavedView {
+            view_id,
+            name,
+            description,
+            owner_id,
+            definition,
+            groups,
+            pivot,
+            created_at,
+            updated_at,
+        };
+        registry.register(view);
+    }
+    registry
 }
 
 fn attr_to_text(value: &TypedAttrValue) -> Option<String> {
