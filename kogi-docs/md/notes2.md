@@ -2516,3 +2516,12 @@ domain operating system
 - host system
 - supporting module systems
 - utility|auxiliary systems
+
+
+---
+
+
+Add saved view persistence (filters/sorts/groups/pivots) into the views cube.
+Expand computed column library (risk, health, utilization rollups).
+Add link‑forest “sheet” materialization that mixes remote shadow rows.
+
