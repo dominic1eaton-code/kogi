@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Apapo · Grid Manager</title>
+<link rel="stylesheet" href="hg-shared.css">
+<style>
+.grid-detail{background:var(--bg2);border:1px solid var(--border);border-radius:8px;overflow:hidden}
+.grid-hero{padding:20px;background:linear-gradient(135deg,var(--bg3) 0%,var(--bg2) 100%);border-bottom:1px solid var(--border);position:relative;overflow:hidden}
+.grid-hero::after{content:'';position:absolute;top:-80px;right:-80px;width:240px;height:240px;border-radius:50%;opacity:0.06;pointer-events:none}
+.grid-title{font-family:var(--mono);font-size:18px;font-weight:700;margin-bottom:4px}
+.grid-host{font-family:var(--mono);font-size:9px;color:var(--text3);margin-bottom:10px}
+.module-list{display:flex;flex-direction:column;gap:2px}
+.module-row{display:flex;align-items:center;gap:8px;padding:6px 10px;font-family:var(--mono);font-size:9px;border-radius:4px;transition:background 0.08s;cursor:pointer}
+.module-row:hover{background:var(--bg4)}
+.module-row-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+.module-row-name{color:var(--text2);flex:1}
+.module-row-code{color:var(--text3);font-size:8px}
+</style>
+</head>
+<body>
+<nav class="topnav">
+  <span class="topnav-logo">APAPO</span>
+  <div class="topnav-sep"></div>
+  <div class="topnav-breadcrumb"><a href="index.html">Dashboard</a><span class="sep">›</span><span class="cur">Grid Manager</span></div>
+  <div class="topnav-spacer"></div>
+  <div class="topnav-actions">
+    <button class="btn btn-ghost btn-sm" onclick="openModal('modal-add-grid')">+ Register Grid</button>
+    <button class="btn btn-primary btn-sm" onclick="showToast('Bootstrap sequence initiated…')">⊛ Bootstrap</button>
+  </div>
+</nav>
+<nav class="iconav" id="hg-iconav"></nav>
+
+<div class="hg-main no-subnav" style="left:var(--nav-w)">
+  <div class="hg-toolbar">
+    <span class="hg-toolbar-title">Grid Manager</span>
+    <span class="hg-toolbar-sub">Grid · Hypercube · UCS · Hypergraph · VectorClock · CrdtLog · EventLog · Node federation</span>
+    <div class="ml-auto flex gap-2">
+      <button class="btn btn-ghost btn-sm" onclick="showToast('Saving snapshot of all grids…')">◈ Snapshot All</button>
+      <a href="crdt.html" class="btn btn-ghost btn-sm">⟳ CRDT Monitor</a>
+    </div>
+  </div>
+  <div class="hg-tabs">
+    <div class="hg-tab active" onclick="switchGTab('grids',this)">Grids</div>
+    <div class="hg-tab" onclick="switchGTab('modules',this)">HG Modules</div>
+    <div class="hg-tab" onclick="switchGTab('bootstrap',this)">Bootstrap</div>
+    <div class="hg-tab" onclick="switchGTab('config',this)">Config</div>
+  </div>
+
+  <div class="hg-split">
+    <div class="hg-panel-left">
+      <div class="panel-hdr"><span class="panel-hdr-title">Registered Grids</span><span class="panel-hdr-action" onclick="openModal('modal-add-grid')">+ Add</span></div>
+      <div class="panel-body" id="grid-list-panel"></div>
+    </div>
+    <div style="flex:1;overflow:auto;padding:14px" id="grid-main-body"></div>
+  </div>
+</div>
+
+<!-- ADD GRID MODAL -->
+<div class="modal-overlay" id="modal-add-grid">
+  <div class="modal">
+    <div class="modal-header"><div class="modal-title">Register New Grid</div><div class="modal-close" onclick="closeModal('modal-add-grid')">✕</div></div>
+    <div class="modal-body">
+      <div class="form-row">
+        <div class="form-group"><div class="form-label">Grid Name</div><input class="form-input" id="ag-name" placeholder="My Grid"/></div>
+        <div class="form-group"><div class="form-label">Domain System</div>
+          <select class="form-select" id="ag-domain">
+            <option>Kogi IW-OS</option><option>Ume B-OS</option><option>Qala SF-OS</option><option>Custom</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><div class="form-label">Host</div><input class="form-input" id="ag-host" placeholder="grid.example.com"/></div>
+        <div class="form-group"><div class="form-label">Node ID</div><input class="form-input" id="ag-node" placeholder="us-east:instance-01"/></div>
+      </div>
+      <div class="form-group"><div class="form-label">Storage Backend</div>
+        <select class="form-select" id="ag-storage">
+          <option>PostgreSQL + Redis + Kafka</option><option>PostgreSQL + Redis only</option><option>In-memory (dev)</option>
+        </select>
+      </div>
+      <div class="form-group"><div class="form-label">Domain Bootstrap</div>
+        <select class="form-select" id="ag-bootstrap">
+          <option>Auto (from domain system)</option><option>Manual schema registration</option>
+        </select>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <div class="btn btn-ghost" onclick="closeModal('modal-add-grid')">Cancel</div>
+      <div class="btn btn-primary" onclick="registerGrid()">Register & Bootstrap</div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="hg-toast"></div>
+<script src="hg-nav.js"></script>
+<script src="hg-data.js"></script>
+<script>
+renderNav('grid');
+const { grids, cubes, fedPeers } = HGData;
+let gTab='grids';
+let selectedGrid=grids[0];
+
+const HG_MODULES_LIST = [
+  {code:'HG-CORE',name:'Core Substrate',lang:'Rust',desc:'Grid, Hypercube, DimensionAxis, HyperCell, HyperRow, EventLog, CrdtLog, VectorClock, PolicyEngine'},
+  {code:'HG-DIM',name:'Dimension System',lang:'Rust',desc:'Declare, type, index, and govern custom dimensions. Sparse/dense/hybrid encoding.'},
+  {code:'HG-CELL',name:'Cell Attribute Model',lang:'Rust',desc:'N-attribute cell: attr key registry, TypedAttrValue variants, CRDT, computed attributes'},
+  {code:'HG-VIEW',name:'View Engine',lang:'Go',desc:'HypercubeView: N-dim filter, sort, group, pivot, DimFold, DimExpand, board modes'},
+  {code:'HG-COMP',name:'Computation Engine',lang:'Rust+Scala',desc:'Tier-1 formula engine and Tier-2 async AI/ML engine. Rollup aggregation.'},
+  {code:'HG-CRDT',name:'Distributed Consistency',lang:'Rust',desc:'N-dim CRDT: LWW, OR-Set, MaxRegister, GrowOnlyCounter, Lattice. VectorClock per node.'},
+  {code:'HG-GRAPH',name:'Graph & Network',lang:'Rust+Go',desc:'Hypergraph: typed edges between any entities. CrossGridLink, ShadowCell, LinkForest.'},
+  {code:'HG-SPACE',name:'Spaces & Workspaces',lang:'Go',desc:'Bounded operational contexts and active working sessions. Governance. Treasury.'},
+  {code:'HG-ID',name:'Identity & Multi-Tenancy',lang:'Go',desc:'Multi-tenant, multi-identity. TenantPartition, VisibilityMask, SplitPolicy, CrossTenantMerge.'},
+  {code:'HG-NS',name:'Namespace System',lang:'Go',desc:'Hierarchical URI addressing. NamespacePath URI scheme. Federation-aware resolution.'},
+  {code:'HG-EXPORT',name:'Export & Integration',lang:'Go',desc:'CSV, XLSX, JSON, JSON-LD, Parquet, Arrow, GraphQL, webhook, streaming export.'},
+  {code:'HG-AI',name:'AI Intelligence Layer',lang:'Rust+Python',desc:'Pluggable AI engines: anomaly detection, health scoring, recommendation, NL-to-HyperQL.'},
+  {code:'HG-QL',name:'Query Language',lang:'Rust',desc:'HyperQL: SELECT, DimSlice WHERE, FOLD, EXPAND, TRAVERSE GRAPH, AS_OF, SHADOW INCLUDE.'},
+  {code:'HG-PLUGIN',name:'Plugin System',lang:'Rust',desc:'HypercubePlugin trait: custom dim types, attr types, AI engines, render modes, connectors.'},
+  {code:'HG-OPS',name:'Telemetry & Ops',lang:'Go+Prometheus',desc:'OpenTelemetry tracing, Prometheus metrics, structured audit logs, health probes.'},
+];
+
+const statusColors={running:'var(--green)',degraded:'var(--rose)',stopped:'var(--text3)'};
+const gridDotColors={running:'#3cb878',degraded:'#e8526a',stopped:'#4e5470'};
+
+function renderGridList() {
+  document.getElementById('grid-list-panel').innerHTML = grids.map(g=>`
+    <div class="node-item${selectedGrid?.id===g.id?' selected':''}" onclick="selectGrid('${g.id}')">
+      <div class="ni-dot" style="background:${g.color}"></div>
+      <div style="flex:1;min-width:0">
+        <div class="ni-label">${g.name}</div>
+        <div class="ni-type">${g.domain} · ${g.cubes} cubes</div>
+      </div>
+      <div style="width:6px;height:6px;border-radius:50%;background:${gridDotColors[g.status]}"></div>
+    </div>`).join('');
+}
+
+function renderMain() {
+  const body=document.getElementById('grid-main-body');
+  if(gTab==='grids') renderGridDetail(body);
+  else if(gTab==='modules') renderHGModules(body);
+  else if(gTab==='bootstrap') renderBootstrap(body);
+  else if(gTab==='config') renderConfig(body);
+}
+
+function renderGridDetail(body) {
+  if (!selectedGrid) { body.innerHTML='<div style="color:var(--text3);font-family:var(--mono);font-size:9px;padding:20px">Select a grid</div>'; return; }
+  const g=selectedGrid;
+  const gridCubes = cubes.filter(c=>c.grid===g.id);
+  const gridPeers = fedPeers.filter(p=>p.grid===g.id);
+  body.innerHTML=`
+    <div class="grid-detail">
+      <div class="grid-hero" style="--hero-color:${g.color}">
+        <div class="grid-title" style="color:${g.color}">${g.name}</div>
+        <div class="grid-host">${g.host} · Node: ${g.node_id}</div>
+        <div class="stat-grid grid-4">
+          <div class="stat-cell"><div class="stat-label">Cubes</div><div class="stat-val" style="color:${g.color};font-size:14px">${g.cubes}</div></div>
+          <div class="stat-cell"><div class="stat-label">Version</div><div class="stat-val" style="color:var(--text2);font-size:14px">${g.version}</div></div>
+          <div class="stat-cell"><div class="stat-label">Health</div><div class="stat-val" style="color:${g.health>80?'var(--green)':g.health>60?'var(--gold)':'var(--rose)'};font-size:14px">${g.health}</div></div>
+          <div class="stat-cell"><div class="stat-label">Fed Peers</div><div class="stat-val" style="color:var(--violet);font-size:14px">${g.federation_peers}</div></div>
+        </div>
+      </div>
+      <div style="padding:14px;display:flex;flex-direction:column;gap:14px">
+        <div>
+          <div class="section-label">Grid Structure</div>
+          ${[['grid_id',g.id],['node_id',g.node_id],['host',g.host],['status',g.status],['domain',g.domain],['version',g.version]].map(([k,v])=>`<div class="kv"><span class="kv-key">${k}</span><span class="kv-val" style="color:${k==='status'?statusColors[v]:k==='grid_id'?g.color:'var(--text2)'}">${v}</span></div>`).join('')}
+        </div>
+        <div>
+          <div class="section-label">Hypercubes (${gridCubes.length})</div>
+          ${gridCubes.map(c=>`<div class="kv" style="cursor:pointer" onclick="window.location='cubes.html'"><span class="kv-key" style="color:${c.color};font-size:9px">${c.name.split('.').slice(-1)[0]}</span><div class="flex gap-2"><span class="dim-badge" style="font-size:7px">N=${c.dims}</span><span style="font-family:var(--mono);font-size:8px;color:var(--text3)">${c.rows.toLocaleString()} rows</span></div></div>`).join('')}
+        </div>
+        ${gridPeers.length>0?`<div>
+          <div class="section-label">Federation Peers (${gridPeers.length})</div>
+          ${gridPeers.map(p=>`<div class="kv"><span class="kv-key" style="font-size:9px">${p.node_id}</span><span class="badge ${p.status==='synced'?'badge-green':p.status==='lagging'?'badge-gold':'badge-rose'}">${p.status}</span></div>`).join('')}
+        </div>`:''}
+        <div class="flex gap-2">
+          <button class="btn btn-ghost btn-sm" onclick="showToast('Snapshotting grid…')">◈ Snapshot</button>
+          <button class="btn btn-ghost btn-sm" onclick="window.location='crdt.html'">⟳ Sync Monitor</button>
+          <button class="btn btn-ghost btn-sm" onclick="showToast('Running grid health check…')">♥ Health Check</button>
+          <button class="btn btn-danger btn-sm" onclick="showToast('Stopping grid…')">⊘ Stop</button>
+        </div>
+      </div>
+    </div>`;
+}
+
+function renderHGModules(body) {
+  body.innerHTML=`
+    <div class="section-label mb-2">Hypergrid Module Inventory — 15 modules</div>
+    <div class="module-list">
+      ${HG_MODULES_LIST.map(m=>`
+        <div class="module-row" onclick="showToast('Opening ${m.code} docs…')">
+          <div class="module-row-dot" style="background:var(--cyan)"></div>
+          <span class="badge badge-cyan" style="flex-shrink:0">${m.code}</span>
+          <span class="module-row-name">${m.name}</span>
+          <span class="module-row-code">${m.lang}</span>
+          <span style="font-family:var(--sans);font-size:9px;color:var(--text3);flex:2;text-overflow:ellipsis;overflow:hidden;white-space:nowrap">${m.desc}</span>
+        </div>`).join('')}
+    </div>`;
+}
+
+function renderBootstrap(body) {
+  body.innerHTML=`
+    <div class="hg-card mb-3">
+      <div class="hg-card-header"><div class="hg-card-title">Grid Initialization Sequence</div></div>
+      <div class="hg-card-body">
+        <div style="font-family:var(--mono);font-size:9px;color:var(--text3);line-height:2.2">
+          ${['1. Config validation — node_id, grid_id, storage backend config','2. Storage backend init — PostgreSQL pool, Redis cluster PING, Kafka topics','3. Plugin registry — load HypercubePlugin implementations, call on_load()','4. Grid bootstrap — load Hypercube registrations, rebuild AttributeKeyRegistry','5. EventLog recovery — replay unapplied CrdtLog operations in causal order','6. VectorClock merge — request latest VectorClock from all federation peers','7. Domain bootstrap — call DomainStore::bootstrap() (idempotent schema registration)','8. AI engine warmup — initialize registered HG-AI engines, verify model availability','9. Health check — compute initial health scores, emit GridStarted event','10. Ready — Grid is online. All read/write operations enabled.'].map((step,i)=>`
+            <div style="display:flex;gap:8px;align-items:center">
+              <span style="color:var(--green)">✓</span>
+              <span style="color:var(--text2)">${step}</span>
+            </div>`).join('')}
+        </div>
+      </div>
+    </div>
+    <button class="btn btn-primary btn-sm" onclick="simulateBootstrap()">▶ Simulate Bootstrap</button>
+    <div id="bootstrap-log" style="margin-top:10px;font-family:var(--mono);font-size:9px;color:var(--text3);background:var(--bg3);border-radius:4px;padding:10px;display:none;line-height:1.8"></div>`;
+}
+
+function simulateBootstrap() {
+  const log=document.getElementById('bootstrap-log');
+  log.style.display='';
+  const steps=['[00:00] Grid::new(config) — validating...','[00:01] Opening PostgreSQL pool (max: 50)...','[00:02] Redis PING — OK on all 3 nodes','[00:02] Kafka topics verified','[00:03] Loading 15 HypercubePlugin implementations...','[00:04] DomainStore::bootstrap() — idempotent schema registration','[00:05] EventLog recovery — 0 unapplied ops','[00:05] VectorClock merged from 3 federation peers','[00:06] AI engines initialized — 6 engines ready','[00:07] Grid health check — score: 94/100','[00:07] ✓ Grid ONLINE — Ready'];
+  let i=0;
+  const int=setInterval(()=>{
+    if(i>=steps.length){clearInterval(int);showToast('Bootstrap complete','success');return;}
+    log.textContent+=steps[i]+'\n';
+    log.scrollTop=log.scrollHeight;
+    i++;
+  },300);
+}
+
+function renderConfig(body) {
+  if (!selectedGrid) return;
+  body.innerHTML=`
+    <div class="hg-card">
+      <div class="hg-card-header"><div class="hg-card-title">Grid Configuration — ${selectedGrid.name}</div></div>
+      <div class="hg-card-body">
+        <div class="form-group mb-3"><div class="form-label">Grid Name</div><input class="form-input" value="${selectedGrid.name}"/></div>
+        <div class="form-row mb-3">
+          <div class="form-group"><div class="form-label">Host</div><input class="form-input" value="${selectedGrid.host}"/></div>
+          <div class="form-group"><div class="form-label">Node ID</div><input class="form-input" value="${selectedGrid.node_id}"/></div>
+        </div>
+        <div class="form-row mb-3">
+          <div class="form-group"><div class="form-label">Max Concurrent Writers</div><input class="form-input" type="number" value="1000"/></div>
+          <div class="form-group"><div class="form-label">EventLog Max Events</div><input class="form-input" type="number" value="10000"/></div>
+        </div>
+        <div class="form-row mb-3">
+          <div class="form-group"><div class="form-label">CRDT Sync Interval (ms)</div><input class="form-input" type="number" value="500"/></div>
+          <div class="form-group"><div class="form-label">AI Score TTL (hours)</div><input class="form-input" type="number" value="24"/></div>
+        </div>
+        <div class="form-group mb-3"><div class="form-label">Storage Backend</div>
+          <select class="form-select"><option>PostgreSQL + Redis + Kafka</option><option>PostgreSQL + Redis only</option></select>
+        </div>
+        <button class="btn btn-primary btn-sm" onclick="showToast('Configuration saved','success')">Save Configuration</button>
+      </div>
+    </div>`;
+}
+
+function selectGrid(id) { selectedGrid=grids.find(g=>g.id===id); renderGridList(); renderMain(); }
+function switchGTab(tab, el) { gTab=tab; document.querySelectorAll('.hg-tab').forEach(t=>t.classList.remove('active')); el.classList.add('active'); renderMain(); }
+function registerGrid() {
+  const name=document.getElementById('ag-name').value.trim();
+  if(!name){showToast('Name required','error');return;}
+  grids.push({id:'grid-'+Date.now(),name,domain:document.getElementById('ag-domain').value,host:document.getElementById('ag-host').value||'localhost:8080',node_id:document.getElementById('ag-node').value||'local:01',status:'running',cubes:0,health:100,version:'2.1.0',color:HG_COLORS[Math.floor(Math.random()*HG_COLORS.length)],federation_peers:0});
+  closeModal('modal-add-grid');renderGridList();showToast(name+' registered','success');
+}
+
+renderGridList();
+renderMain();
+</script>
+</body>
+</html>

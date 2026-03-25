@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Apapo · Ume — Business OS</title>
+<link rel="stylesheet" href="hg-shared.css">
+<style>
+.ume-hero{background:linear-gradient(135deg,rgba(61,132,232,0.06) 0%,var(--bg2) 60%);
+  border:1px solid rgba(61,132,232,0.15);border-radius:8px;padding:16px 20px;margin-bottom:14px}
+.module-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:6px}
+.module-card{background:var(--bg2);border:1px solid var(--border);border-radius:6px;
+  padding:10px 12px;cursor:pointer;transition:all 0.12s}
+.module-card:hover{border-color:var(--ume);transform:translateY(-1px)}
+.module-card.selected{border-color:var(--ume);box-shadow:0 0 0 1px var(--ume)}
+.module-num{font-family:var(--mono);font-size:8px;color:var(--text3);margin-bottom:3px}
+.module-name{font-family:var(--mono);font-size:9px;font-weight:600;color:var(--text);margin-bottom:4px}
+.module-cube{font-family:var(--mono);font-size:8px;color:var(--ume);margin-bottom:6px}
+.module-health-bar{height:3px;background:var(--bg5);border-radius:1px;overflow:hidden}
+.module-health-fill{height:100%;border-radius:1px}
+.module-state{font-family:var(--mono);font-size:7px;padding:1px 5px;border-radius:2px;border:1px solid;display:inline-block;margin-top:5px}
+.ms-running{border-color:var(--green);color:var(--green);background:var(--green-dim)}
+.ms-degraded{border-color:var(--rose);color:var(--rose);background:var(--rose-dim)}
+.ms-stopped{border-color:var(--text3);color:var(--text3)}
+.ms-starting{border-color:var(--gold);color:var(--gold);background:var(--gold-dim)}
+
+/* N-dim indicators */
+.ndim-indicator{display:flex;gap:2px;margin-top:4px}
+.ndim-axis{height:3px;border-radius:1px;flex:1}
+</style>
+</head>
+<body>
+
+<nav class="topnav">
+  <span class="topnav-logo">APAPO</span>
+  <div class="topnav-sep"></div>
+  <div class="topnav-breadcrumb">
+    <a href="index.html">Dashboard</a><span class="sep">›</span>
+    <span class="cur" style="color:var(--ume)">Ume B-OS</span>
+  </div>
+  <div class="topnav-spacer"></div>
+  <div class="topnav-system">
+    <a class="sys-pill sp-kogi" href="kogi.html">Kogi</a>
+    <a class="sys-pill sp-ume" href="ume.html">Ume</a>
+    <a class="sys-pill sp-qala" href="qala.html">Qala</a>
+  </div>
+  <div class="topnav-actions" style="margin-left:10px">
+    <button class="btn btn-ghost btn-sm" onclick="showToast('Module management…')">+ Module</button>
+    <button class="btn btn-primary btn-sm" style="background:var(--ume);border-color:var(--ume)" onclick="showToast('Opening kernel monitor…')">◈ Kernel</button>
+  </div>
+</nav>
+<nav class="iconav" id="hg-iconav"></nav>
+
+<div class="hg-main no-subnav" style="left:var(--nav-w)">
+  <div class="hg-toolbar">
+    <span class="hg-toolbar-title" style="color:var(--ume)">Ume</span>
+    <span class="hg-toolbar-sub">Business OS · 42 Domain Modules · Hypergrid substrate</span>
+    <div class="hg-toolbar-sep"></div>
+    <div class="pill-group">
+      <button class="pill active" onclick="filterModules('all',this)">All 42</button>
+      <button class="pill" onclick="filterModules('running',this)">Running</button>
+      <button class="pill" onclick="filterModules('degraded',this)">Degraded</button>
+      <button class="pill" onclick="filterModules('n3',this)">N=3</button>
+      <button class="pill" onclick="filterModules('n4',this)">N=4</button>
+    </div>
+    <div class="ml-auto">
+      <input class="form-input" style="width:160px;font-size:9px;padding:3px 8px" placeholder="⌕ Search modules…" oninput="searchModules(this.value)">
+    </div>
+  </div>
+
+  <div class="hg-tabs">
+    <div class="hg-tab active" onclick="switchUmeTab('modules',this)">42 Modules</div>
+    <div class="hg-tab" onclick="switchUmeTab('kernel',this)">Kernel</div>
+    <div class="hg-tab" onclick="switchUmeTab('chombo',this)">Chombo N=3</div>
+    <div class="hg-tab" onclick="switchUmeTab('soko',this)">Soko N=4</div>
+    <div class="hg-tab" onclick="switchUmeTab('rbac',this)">RBAC</div>
+  </div>
+
+  <div class="hg-split">
+    <div style="flex:1;overflow:auto;padding:14px" id="ume-main-body"></div>
+    <div class="hg-panel-right">
+      <div class="panel-hdr"><span class="panel-hdr-title" id="ume-right-title">Module Inspector</span></div>
+      <div style="flex:1;overflow-y:auto" id="ume-right-body">
+        <div style="padding:20px;text-align:center;color:var(--text3);font-family:var(--mono);font-size:9px">
+          <div style="font-size:20px;opacity:0.25;margin-bottom:8px">◫</div>Select a module
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="hg-toast"></div>
+<script src="hg-nav.js"></script>
+<script src="hg-data.js"></script>
+<script>
+renderNav('ume');
+
+const UME_MODULES = [
+  {num:'01',name:'Organization Administration',cube:'ume.admin.org_units',dims:3,state:'running',health:91,domain:'Admin',extra_dim:'TimeAxis'},
+  {num:'02',name:'Organization Analytics',cube:'ume.analytics.kpis',dims:4,state:'running',health:88,domain:'Analytics',extra_dim:'TimeAxis+DomainAxis'},
+  {num:'03',name:'Backup & Recovery',cube:'ume.backup.jobs',dims:3,state:'running',health:96,domain:'Infra',extra_dim:'CategoryAxis'},
+  {num:'04',name:'Board Management',cube:'ume.board.meetings',dims:3,state:'running',health:82,domain:'Governance',extra_dim:'TimeAxis'},
+  {num:'05',name:'Business Development',cube:'ume.bizdev.opportunities',dims:3,state:'running',health:78,domain:'Sales',extra_dim:'CategoryAxis'},
+  {num:'06',name:'Enterprise CMS',cube:'ume.cms.content',dims:3,state:'running',health:84,domain:'Content',extra_dim:'TimeAxis'},
+  {num:'07',name:'Communications',cube:'ume.comms.channels',dims:3,state:'running',health:92,domain:'Comms',extra_dim:'CategoryAxis'},
+  {num:'08',name:'CRM',cube:'ume.crm.contacts',dims:3,state:'running',health:87,domain:'Sales',extra_dim:'CategoryAxis'},
+  {num:'09',name:'Design System',cube:'ume.design.tokens',dims:3,state:'running',health:95,domain:'Design',extra_dim:'TimeAxis'},
+  {num:'10',name:'Engineering & Technology',cube:'ume.eng.projects',dims:3,state:'degraded',health:62,domain:'Engineering',extra_dim:'TimeAxis'},
+  {num:'11',name:'ESG / CSR / Sustainability',cube:'ume.esg.metrics',dims:4,state:'running',health:74,domain:'ESG',extra_dim:'TimeAxis+CategoryAxis'},
+  {num:'12',name:'Enterprise Engineering Admin',cube:'ume.enterprise.systems',dims:2,state:'running',health:89,domain:'Admin'},
+  {num:'13',name:'Legal Entity (Chombo)',cube:'ume.chombo.entities',dims:3,state:'running',health:93,domain:'Legal',extra_dim:'CategoryAxis'},
+  {num:'14',name:'Finance & Accounting',cube:'ume.finance.accounts',dims:3,state:'running',health:90,domain:'Finance',extra_dim:'TimeAxis'},
+  {num:'15',name:'GRC',cube:'ume.grc.risks',dims:3,state:'running',health:85,domain:'GRC',extra_dim:'TimeAxis'},
+  {num:'16',name:'Human Resources',cube:'ume.hr.employees',dims:3,state:'running',health:88,domain:'HR',extra_dim:'TimeAxis'},
+  {num:'17',name:'Investment Management',cube:'ume.investment.portfolio',dims:4,state:'running',health:79,domain:'Finance',extra_dim:'TimeAxis+CategoryAxis'},
+  {num:'18',name:'IT & Asset Management',cube:'ume.it.assets',dims:3,state:'running',health:86,domain:'IT',extra_dim:'CategoryAxis'},
+  {num:'19',name:'Enterprise Knowledge',cube:'ume.knowledge.articles',dims:3,state:'running',health:77,domain:'Knowledge',extra_dim:'TimeAxis'},
+  {num:'20',name:'Learning & Development',cube:'ume.learning.programs',dims:3,state:'running',health:83,domain:'HR',extra_dim:'TimeAxis'},
+  {num:'21',name:'Management & Strategy',cube:'ume.strategy.okrs',dims:3,state:'running',health:91,domain:'Strategy',extra_dim:'TimeAxis'},
+  {num:'22',name:'Marketing (Soko)',cube:'ume.soko.campaigns',dims:4,state:'running',health:81,domain:'Marketing',extra_dim:'TimeAxis+CategoryAxis'},
+  {num:'23',name:'Master Data Management',cube:'ume.mdm.entities',dims:3,state:'running',health:94,domain:'Data',extra_dim:'CategoryAxis'},
+  {num:'24',name:'Office & Facility',cube:'ume.facilities.sites',dims:3,state:'running',health:87,domain:'Ops',extra_dim:'CategoryAxis'},
+  {num:'25',name:'Operations Management',cube:'ume.ops.processes',dims:3,state:'running',health:84,domain:'Ops',extra_dim:'TimeAxis'},
+  {num:'26',name:'Portal / Hub / Dashboard',cube:'ume.portal.dashboards',dims:2,state:'running',health:92,domain:'Portal'},
+  {num:'27',name:'Portfolio & Program',cube:'ume.portfolio.programs',dims:3,state:'running',health:80,domain:'Portfolio',extra_dim:'TimeAxis'},
+  {num:'28',name:'PR & Branding',cube:'ume.branding.assets',dims:3,state:'running',health:78,domain:'Marketing',extra_dim:'TimeAxis'},
+  {num:'29',name:'Process & Workflow',cube:'ume.process.workflows',dims:3,state:'running',health:86,domain:'Ops',extra_dim:'TimeAxis'},
+  {num:'30',name:'Product & Services',cube:'ume.product.catalog',dims:4,state:'running',health:88,domain:'Product',extra_dim:'TimeAxis+CategoryAxis'},
+  {num:'31',name:'Procurement & Supply Chain',cube:'ume.procurement.orders',dims:3,state:'degraded',health:58,domain:'Supply',extra_dim:'CategoryAxis'},
+  {num:'32',name:'Project Management',cube:'ume.projects.tracker',dims:3,state:'running',health:85,domain:'PM',extra_dim:'TimeAxis'},
+  {num:'33',name:'Quality Assurance',cube:'ume.qa.tests',dims:3,state:'running',health:91,domain:'QA',extra_dim:'CategoryAxis'},
+  {num:'34',name:'Real Estate & Property',cube:'ume.realestate.assets',dims:3,state:'running',health:82,domain:'Finance',extra_dim:'CategoryAxis'},
+  {num:'35',name:'Research & Development',cube:'ume.rd.projects',dims:3,state:'running',health:76,domain:'R&D',extra_dim:'TimeAxis'},
+  {num:'36',name:'Risk Management',cube:'ume.risk.register',dims:3,state:'running',health:89,domain:'GRC',extra_dim:'TimeAxis'},
+  {num:'37',name:'Sales & Revenue',cube:'ume.sales.pipeline',dims:3,state:'running',health:83,domain:'Sales',extra_dim:'TimeAxis'},
+  {num:'38',name:'Security & Compliance',cube:'ume.security.controls',dims:3,state:'running',health:96,domain:'Security',extra_dim:'CategoryAxis'},
+  {num:'39',name:'Talent Acquisition',cube:'ume.talent.candidates',dims:3,state:'running',health:80,domain:'HR',extra_dim:'TimeAxis'},
+  {num:'40',name:'Tax & Treasury',cube:'ume.tax.filings',dims:3,state:'running',health:90,domain:'Finance',extra_dim:'CategoryAxis'},
+  {num:'41',name:'Vendor Management',cube:'ume.vendors.register',dims:3,state:'running',health:84,domain:'Supply',extra_dim:'CategoryAxis'},
+  {num:'42',name:'Workspace & Collaboration',cube:'ume.workspace.rooms',dims:2,state:'running',health:93,domain:'Collab'},
+];
+
+let uState = { filter:'all', search:'', tab:'modules', selected:null };
+const dimColors = ['var(--kogi)','var(--ume)','var(--violet)','var(--gold)'];
+
+function getVisibleModules() {
+  return UME_MODULES.filter(m => {
+    if (uState.filter==='running' && m.state!=='running') return false;
+    if (uState.filter==='degraded' && m.state!=='degraded') return false;
+    if (uState.filter==='n3' && m.dims!==3) return false;
+    if (uState.filter==='n4' && m.dims!==4) return false;
+    if (uState.search && !m.name.toLowerCase().includes(uState.search) && !m.cube.toLowerCase().includes(uState.search)) return false;
+    return true;
+  });
+}
+
+function renderUme() {
+  const body = document.getElementById('ume-main-body');
+  if (uState.tab==='modules') renderModules(body);
+  else if (uState.tab==='kernel') renderKernel(body);
+  else if (uState.tab==='chombo') renderChombo(body);
+  else if (uState.tab==='soko') renderSoko(body);
+  else if (uState.tab==='rbac') renderRBAC(body);
+}
+
+function renderModules(body) {
+  const vis = getVisibleModules();
+  body.innerHTML = `
+    <div class="ume-hero">
+      <div style="font-family:var(--mono);font-size:16px;font-weight:700;color:var(--ume);margin-bottom:4px">Ume Business OS</div>
+      <div style="font-family:var(--mono);font-size:9px;color:var(--text3);margin-bottom:10px">42 domain modules · each a domain-specific Hypercube · Kernel-supervised</div>
+      <div class="stat-grid grid-4">
+        ${[['Modules',UME_MODULES.length,'var(--ume)'],['Running',UME_MODULES.filter(m=>m.state==='running').length,'var(--green)'],['Degraded',UME_MODULES.filter(m=>m.state==='degraded').length,'var(--rose)'],['N=4 Cubes',UME_MODULES.filter(m=>m.dims===4).length,'var(--violet)']].map(([l,v,c])=>`
+          <div class="stat-cell"><div class="stat-label">${l}</div><div class="stat-val" style="color:${c}">${v}</div></div>`).join('')}
+      </div>
+    </div>
+    <div class="module-grid">
+      ${vis.map(m => `
+        <div class="module-card${uState.selected===m.num?' selected':''}" onclick="selectModule('${m.num}')">
+          <div class="module-num">#${m.num} · ${m.domain}</div>
+          <div class="module-name">${m.name}</div>
+          <div class="module-cube">${m.cube.split('.').slice(-1)[0]}</div>
+          <div class="module-health-bar">
+            <div class="module-health-fill" style="background:${m.health>80?'var(--green)':m.health>60?'var(--gold)':'var(--rose)'};width:${m.health}%"></div>
+          </div>
+          <div class="ndim-indicator">
+            ${Array.from({length:m.dims},(v,i)=>`<div class="ndim-axis" style="background:${dimColors[i]};opacity:${0.5+i*0.15}"></div>`).join('')}
+          </div>
+          <div class="flex flex-center" style="margin-top:4px;justify-content:space-between">
+            <span class="module-state ms-${m.state}">${m.state}</span>
+            <span style="font-family:var(--mono);font-size:7px;color:var(--text3)">N=${m.dims} · ${m.health}</span>
+          </div>
+        </div>`).join('')}
+    </div>`;
+}
+
+function renderKernel(body) {
+  body.innerHTML = `
+    <div class="ume-hero">
+      <div style="font-family:var(--mono);font-size:16px;font-weight:700;color:var(--ume);margin-bottom:4px">Ume Kernel</div>
+      <div style="font-family:var(--mono);font-size:9px;color:var(--text3)">Supervises all 42 modules · Maps to Hypergrid ume.kernel.modules Hypercube</div>
+    </div>
+    <div class="hg-card mb-3">
+      <div class="hg-card-header"><div class="hg-card-title">ume.kernel.modules — Hypercube Schema</div><span class="badge badge-ume">N=2</span></div>
+      <div class="hg-card-body">
+        <table class="hg-table">
+          <thead><tr><th>D₂ Key</th><th>Type</th><th>CRDT</th><th>Notes</th></tr></thead>
+          <tbody>
+            ${[['module_id','Text','LWW','Canonical identifier'],['name','Text','LWW','Display name'],['domain_area','Json','LWW','DomainArea enum'],['version','Text','MaxRegister','Module semver'],['lifecycle_state','Json','LWW','Registered→Starting→Running→Degraded→Stopped'],['status','Json','LWW','Active|Suspended|Disabled'],['dependencies','Json','OrSet','Vec<ModuleId>'],['restart_count','Number','GrowOnlyCounter','Supervisor restart counter'],['health_score','Number','LWW','AI-computed 0–100'],['config','Json','LWW','Module configuration blob']].map(([k,t,c,n])=>`
+              <tr><td style="color:var(--ume)">${k}</td><td><span class="badge badge-gray">${t}</span></td><td><span class="crdt crdt-${c.toLowerCase()}">${c}</span></td><td style="color:var(--text3);font-size:9px">${n}</td></tr>`).join('')}
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="hg-card">
+      <div class="hg-card-header"><div class="hg-card-title">Module Lifecycle State Machine</div></div>
+      <div class="hg-card-body">
+        <div style="font-family:var(--mono);font-size:11px;color:var(--text2);background:var(--bg3);border-radius:4px;padding:12px;line-height:2">
+          Registered → Starting → <span style="color:var(--green)">Running</span> → <span style="color:var(--rose)">Degraded</span> → Stopped<br>
+          <span style="color:var(--text3);font-size:9px">↓ Supervisor restart_count++ on failure · health_score via UmeKernelHealth AI engine</span>
+        </div>
+      </div>
+    </div>`;
+}
+
+function renderChombo(body) {
+  body.innerHTML = `
+    <div class="ume-hero">
+      <div style="font-family:var(--mono);font-size:16px;font-weight:700;color:var(--ume);margin-bottom:4px">Chombo — Legal Entity Module</div>
+      <div style="font-family:var(--mono);font-size:9px;color:var(--text3)">N=3 Hypercube — D₁=EntityId · D₂=PropertyAxis · D₃=JurisdictionAxis</div>
+    </div>
+    <div class="hg-card mb-3">
+      <div class="hg-card-header">
+        <div><div class="hg-card-title">ume.chombo.entities</div><div class="hg-card-sub">Jurisdiction-sliced legal entity data</div></div>
+        <span class="badge badge-violet">N=3</span>
+      </div>
+      <div class="hg-card-body">
+        <div class="flex gap-2 mb-3">
+          <span class="dim-badge">D₁<span class="sub"> EntityId</span></span>
+          <span class="dim-badge" style="color:var(--blue)">D₂<span class="sub"> PropertyAxis</span></span>
+          <span class="dim-badge" style="color:var(--violet)">D₃<span class="sub"> JurisdictionAxis</span></span>
+        </div>
+        <p style="font-family:var(--mono);font-size:9px;color:var(--text3);margin-bottom:10px">Each legal entity (D₁) has properties (D₂) that vary <em>per jurisdiction</em> (D₃). A company may be incorporated in UK, US, and EU simultaneously — each with different compliance status, filing dates, and risk flags.</p>
+        <div style="overflow-x:auto;font-family:var(--mono);font-size:9px">
+          <table style="border-collapse:collapse;min-width:600px">
+            <thead><tr>
+              <th style="padding:5px 10px;background:var(--bg3);color:var(--text3);border:1px solid var(--border)">Entity / Property</th>
+              ${['UK (D₃)','US (D₃)','EU (D₃)','SG (D₃)'].map(j=>`<th style="padding:5px 10px;background:var(--bg3);color:var(--violet);border:1px solid var(--border)">${j}</th>`).join('')}
+            </tr></thead>
+            <tbody>
+              ${[['Acme Corp · status','Active','Active','Active','Active'],['Acme Corp · compliance','Compliant','Compliant','Review Required','N/A'],['Acme Corp · risk_score','12','18','34','—'],['Startup XYZ · status','Pending','Active','Draft','—'],['Startup XYZ · filing_date','2026-02','2025-11','—','—']].map(([e,...vals])=>`
+                <tr><td style="padding:5px 10px;border:1px solid var(--border);color:var(--text2)">${e}</td>${vals.map(v=>`<td style="padding:5px 10px;border:1px solid var(--border);color:${v==='Compliant'||v==='Active'?'var(--green)':v==='Review Required'?'var(--gold)':v==='—'?'var(--text4)':'var(--text2)'}">${v}</td>`).join('')}</tr>`).join('')}
+            </tbody>
+          </table>
+        </div>
+        <div style="margin-top:10px;font-family:var(--mono);font-size:9px;background:var(--bg3);border-radius:4px;padding:8px;color:var(--text3)">
+          HyperQL: SELECT D1, D3, cell("status"), cell("compliance"), cell("risk_score") FROM ume.chombo.entities WHERE DimSlice(D3 IN ["UK","US","EU"])
+        </div>
+      </div>
+    </div>`;
+}
+
+function renderSoko(body) {
+  body.innerHTML = `
+    <div class="ume-hero">
+      <div style="font-family:var(--mono);font-size:16px;font-weight:700;color:var(--ume);margin-bottom:4px">Soko — Marketing Module</div>
+      <div style="font-family:var(--mono);font-size:9px;color:var(--text3)">N=4 Hypercube — D₁=CampaignId · D₂=PropertyAxis · D₃=TimeAxis · D₄=CategoryAxis</div>
+    </div>
+    <div class="hg-card mb-3">
+      <div class="hg-card-header">
+        <div><div class="hg-card-title">ume.soko.campaigns</div><div class="hg-card-sub">Marketing campaigns sliced across time AND category simultaneously</div></div>
+        <span class="badge badge-gold">N=4</span>
+      </div>
+      <div class="hg-card-body">
+        <div class="flex gap-2 mb-3">
+          <span class="dim-badge">D₁<span class="sub"> CampaignId</span></span>
+          <span class="dim-badge" style="color:var(--blue)">D₂<span class="sub"> PropertyAxis</span></span>
+          <span class="dim-badge" style="color:var(--violet)">D₃<span class="sub"> TimeAxis (Quarter)</span></span>
+          <span class="dim-badge" style="color:var(--gold)">D₄<span class="sub"> CategoryAxis (Channel)</span></span>
+        </div>
+        <p style="font-family:var(--mono);font-size:9px;color:var(--text3);margin-bottom:10px">
+          Each campaign row (D₁) has properties (D₂) that vary by both time period (D₃=Q1/Q2/Q3) AND marketing channel (D₄=digital/email/social). This gives a true 4-dimensional view: performance per campaign per property per quarter per channel — all in one cube.
+        </p>
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:12px">
+          ${[['Campaign A · digital · Q1','Spend: $12k','Conv: 840','CTR: 2.1%'],['Campaign A · email · Q1','Spend: $3k','Conv: 420','CTR: 4.8%'],['Campaign A · digital · Q2','Spend: $15k','Conv: 1020','CTR: 2.4%'],['Campaign B · social · Q1','Spend: $8k','Conv: 620','CTR: 1.9%']].map(([title,...vals])=>`
+            <div style="background:var(--bg3);border:1px solid var(--border);border-radius:4px;padding:8px">
+              <div style="font-family:var(--mono);font-size:8px;color:var(--gold);margin-bottom:4px">${title}</div>
+              ${vals.map(v=>`<div style="font-family:var(--mono);font-size:9px;color:var(--text2)">${v}</div>`).join('')}
+            </div>`).join('')}
+        </div>
+        <div style="font-family:var(--mono);font-size:9px;background:var(--bg3);border-radius:4px;padding:8px;color:var(--text3)">
+          HyperQL: SELECT D1, D3, D4, FOLD(cell("spend")) AS total_spend, FOLD(cell("conversions")) AS total_conv<br>
+          FROM ume.soko.campaigns WHERE DimSlice(D3="2026-Q1") AND DimSlice(D4 IN ["digital","email"]) GROUP BY D1, D4
+        </div>
+      </div>
+    </div>`;
+}
+
+function renderRBAC(body) {
+  body.innerHTML = `
+    <div class="ume-hero">
+      <div style="font-family:var(--mono);font-size:16px;font-weight:700;color:var(--ume);margin-bottom:4px">RBAC — Permission Model</div>
+      <div style="font-family:var(--mono);font-size:9px;color:var(--text3)">Maps to Hypergrid PermissionTier + AttrVisibility per attribute key</div>
+    </div>
+    <div class="hg-card mb-3">
+      <div class="hg-card-header"><div class="hg-card-title">PermissionTier Hierarchy</div></div>
+      <div class="hg-card-body">
+        ${[['0','Viewer','Read-only access · anonymous'],['1','Subscriber','Bookmark · follow · subscribe'],['2','Contributor','Comment · react · join · poll'],['3','Editor','Edit content · bump version'],['4','Manager','Manage settings and members'],['5','Owner','Full ownership · all actions'],['6','Admin','Platform-level override']].map(([t,n,d])=>`
+          <div class="kv"><span class="kv-key">Tier ${t} · ${n}</span><span style="font-family:var(--mono);font-size:9px;color:var(--text3)">${d}</span></div>`).join('')}
+      </div>
+    </div>
+    <div class="hg-card">
+      <div class="hg-card-header"><div class="hg-card-title">AttrVisibility per Attribute Key</div><div class="hg-card-sub">Per-attribute access control in the HyperCell model</div></div>
+      <div class="hg-card-body">
+        <table class="hg-table">
+          <thead><tr><th>Attribute Key</th><th>Visibility</th><th>Min Write Tier</th><th>Notes</th></tr></thead>
+          <tbody>
+            ${[['name','Public','Contributor','Visible to all'],['health_score','Follower','System','AI-written; visible to followers+'],['budget','Owner','Manager','Sensitive financial data'],['risk_score','Connection','System','Visible to connections only'],['vector_clock','Owner','System','Internal CRDT field']].map(([k,v,t,n])=>`
+              <tr><td style="color:var(--ume)">${k}</td><td><span class="badge badge-gray">${v}</span></td><td><span class="badge badge-gray">${t}</span></td><td style="color:var(--text3);font-size:9px">${n}</td></tr>`).join('')}
+          </tbody>
+        </table>
+      </div>
+    </div>`;
+}
+
+function selectModule(num) {
+  uState.selected = uState.selected===num ? null : num;
+  const m = UME_MODULES.find(x=>x.num===uState.selected);
+  renderModuleInspector(m);
+  renderUme();
+}
+
+function renderModuleInspector(m) {
+  const title = document.getElementById('ume-right-title');
+  const body = document.getElementById('ume-right-body');
+  if (!m) { title.textContent='Module Inspector'; body.innerHTML='<div style="padding:20px;text-align:center;color:var(--text3);font-family:var(--mono);font-size:9px"><div style="font-size:20px;opacity:0.25;margin-bottom:8px">◫</div>Select a module</div>'; return; }
+  title.textContent = '#'+m.num+' '+m.name.split(' ')[0];
+  body.innerHTML = `
+    <div style="height:3px;background:var(--ume)"></div>
+    <div style="padding:10px 12px">
+      <div class="section-label">Module</div>
+      <div class="kv"><span class="kv-key">#</span><span class="kv-val c-blue">${m.num}</span></div>
+      <div class="kv"><span class="kv-key">Name</span><span class="kv-val">${m.name}</span></div>
+      <div class="kv"><span class="kv-key">Domain</span><span class="kv-val">${m.domain}</span></div>
+      <div class="kv"><span class="kv-key">State</span><span class="badge ms-${m.state}">${m.state}</span></div>
+      <div class="kv"><span class="kv-key">Health</span><span class="kv-val" style="color:${m.health>80?'var(--green)':m.health>60?'var(--gold)':'var(--rose)'}">${m.health}/100</span></div>
+      <div class="kv"><span class="kv-key">Cube</span><span class="kv-val" style="font-size:8px;color:var(--ume)">${m.cube}</span></div>
+      <div class="kv"><span class="kv-key">Dims</span><span class="kv-val c-violet">N=${m.dims}</span></div>
+      ${m.extra_dim?`<div class="kv"><span class="kv-key">Extra Axes</span><span class="kv-val" style="font-size:8px">${m.extra_dim}</span></div>`:''}
+
+      <div class="section-label mt-3">Hypercell Address</div>
+      <div style="font-family:var(--mono);font-size:9px;color:var(--text3);background:var(--bg3);border-radius:4px;padding:8px;line-height:1.7;margin-bottom:10px">
+        Cube: <span style="color:var(--ume)">${m.cube}</span><br>
+        D₁: ModuleId (Uuid)<br>
+        D₂: PropertyAxis<br>
+        ${m.extra_dim?`D₃–D${m.dims}: ${m.extra_dim}<br>`:''}
+        Namespace: ume://acme-corp/kernel/${m.num}/
+      </div>
+
+      <div class="section-label">Actions</div>
+      <div style="display:flex;flex-direction:column;gap:4px">
+        <button class="btn btn-ghost btn-sm" onclick="showToast('Restarting module ${m.num}…')">⟳ Restart Module</button>
+        <button class="btn btn-ghost btn-sm" onclick="showToast('Opening cube…');window.location='cubes.html'">Open Hypercube</button>
+        <button class="btn btn-danger btn-sm" onclick="showToast('Stopping module ${m.num}…')">⊘ Stop Module</button>
+      </div>
+    </div>`;
+}
+
+function switchUmeTab(tab, el) {
+  uState.tab = tab;
+  document.querySelectorAll('.hg-tab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+  renderUme();
+}
+function filterModules(f, el) {
+  uState.filter=f;
+  document.querySelectorAll('.pill').forEach(p=>p.classList.remove('active'));
+  el.classList.add('active');
+  renderUme();
+}
+function searchModules(text) { uState.search=text.toLowerCase(); renderUme(); }
+
+renderUme();
+</script>
+</body>
+</html>

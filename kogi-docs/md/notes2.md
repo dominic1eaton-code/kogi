@@ -1311,6 +1311,7 @@ marketplace
 - housecallpro
 - zendesk
 - app.cal.com
+- scribe
 
 spaces|community
 - slack
@@ -1320,6 +1321,7 @@ spaces|community
 - facebook
 - facebook messenger
 - LinkedIn
+- skool
 - youtube
 - X/twitter
 - bluesky
@@ -2149,3 +2151,54 @@ ume L-system seed:
     - ume organization bootstrapper serves as bootup/starting seed for generating rest of system (AI assisted hypergrid/tree L-system generation)
 
 ---
+
+kogi independent workers:
+- creator
+- contractor
+- consultant
+- gig worker
+- freelancer
+- coach
+- hobbyist
+- enthusiast
+- entreprenuer
+- micropreneur
+
+organization:
+- autonomous organization
+- cooperative
+- collective
+- federation
+- team
+- group
+- cell
+
+user:
+- editor
+- owner
+- collaborator
+
+personas:
+- professional
+- developer
+- donor
+- investor
+- contributor
+- partner
+
+action:
+- like
+- subscribe
+- follow
+- donate
+- invest
+- comment
+- post
+- watch
+- bookmark
+- friend
+- connect
+- share
+- tag
+- edit
+- view

@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Apapo · Qala — Solution Factory OS</title>
+<link rel="stylesheet" href="hg-shared.css">
+<style>
+.qala-hero{background:linear-gradient(135deg,rgba(139,92,246,0.06) 0%,var(--bg2) 60%);
+  border:1px solid rgba(139,92,246,0.15);border-radius:8px;padding:16px 20px;margin-bottom:14px}
+.solution-card{background:var(--bg2);border:1px solid var(--border);border-radius:6px;
+  overflow:hidden;cursor:pointer;transition:all 0.12s;margin-bottom:6px}
+.solution-card:hover{border-color:var(--qala)}
+.solution-card.selected{border-color:var(--qala);box-shadow:0 0 0 1px var(--qala)}
+.sc-header{display:flex;align-items:center;gap:8px;padding:8px 12px;border-bottom:1px solid var(--border)}
+.sc-body{padding:8px 12px}
+.lifecycle-flow{display:flex;align-items:center;gap:0;flex-wrap:wrap;margin-top:8px}
+.lc-stage{padding:4px 10px;border:1px solid var(--border);font-family:var(--mono);
+  font-size:8px;color:var(--text3);cursor:pointer;transition:all 0.1s}
+.lc-stage:first-child{border-radius:4px 0 0 4px}
+.lc-stage:last-child{border-radius:0 4px 4px 0}
+.lc-stage.active{background:var(--qala);border-color:var(--qala);color:#fff}
+.lc-stage.done{background:var(--green-dim);border-color:var(--green);color:var(--green)}
+.lc-arrow{font-family:var(--mono);font-size:10px;color:var(--text4);padding:0 2px}
+
+.sde-cube{background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:10px;overflow-x:auto}
+.sde-grid{display:grid;gap:2px;min-width:400px}
+.sde-cell{border-radius:2px;padding:3px 6px;font-family:var(--mono);font-size:7px;
+  display:flex;align-items:center;justify-content:center;min-height:24px;cursor:pointer}
+.sde-cell.filled{background:var(--bg5);color:var(--text3)}
+.sde-cell.active{background:var(--violet-dim);border:1px solid var(--violet);color:var(--violet)}
+.sde-cell.pending{background:var(--gold-dim);border:1px solid var(--gold);color:var(--gold)}
+.sde-cell.hdr{background:var(--bg3);color:var(--text3);font-size:7px;cursor:default}
+</style>
+</head>
+<body>
+
+<nav class="topnav">
+  <span class="topnav-logo">APAPO</span>
+  <div class="topnav-sep"></div>
+  <div class="topnav-breadcrumb">
+    <a href="index.html">Dashboard</a><span class="sep">›</span>
+    <span class="cur" style="color:var(--qala)">Qala SF-OS</span>
+  </div>
+  <div class="topnav-spacer"></div>
+  <div class="topnav-system">
+    <a class="sys-pill sp-kogi" href="kogi.html">Kogi</a>
+    <a class="sys-pill sp-ume" href="ume.html">Ume</a>
+    <a class="sys-pill sp-qala" href="qala.html">Qala</a>
+  </div>
+  <div class="topnav-actions" style="margin-left:10px">
+    <button class="btn btn-ghost btn-sm" onclick="showToast('New CCR…')">+ CCR</button>
+    <button class="btn btn-primary btn-sm" style="background:var(--qala);border-color:var(--qala)" onclick="showToast('Opening Root Factory…')">◆ Root Factory</button>
+  </div>
+</nav>
+<nav class="iconav" id="hg-iconav"></nav>
+
+<div class="hg-main no-subnav" style="left:var(--nav-w)">
+  <div class="hg-toolbar">
+    <span class="hg-toolbar-title" style="color:var(--qala)">Qala</span>
+    <span class="hg-toolbar-sub">Solution Factory OS · SDE · CCR · Release · Domain Packs</span>
+    <div class="ml-auto flex gap-2">
+      <a href="crdt.html" class="btn btn-ghost btn-sm">⟳ CRDT</a>
+      <a href="ai.html" class="btn btn-ghost btn-sm">✦ AI</a>
+      <a href="eventlog.html" class="btn btn-ghost btn-sm">↯ Events</a>
+    </div>
+  </div>
+
+  <div class="hg-tabs">
+    <div class="hg-tab active" onclick="switchQTab('solutions',this)">Solutions</div>
+    <div class="hg-tab" onclick="switchQTab('sde',this)">SDEs N=3</div>
+    <div class="hg-tab" onclick="switchQTab('ccr',this)">CCR Queue</div>
+    <div class="hg-tab" onclick="switchQTab('factory',this)">Root Factory</div>
+    <div class="hg-tab" onclick="switchQTab('packs',this)">Domain Packs</div>
+  </div>
+
+  <div class="hg-split">
+    <div style="flex:1;overflow:auto;padding:14px" id="qala-main-body"></div>
+    <div class="hg-panel-right">
+      <div class="panel-hdr"><span class="panel-hdr-title" id="qala-right-title">Solution Inspector</span></div>
+      <div style="flex:1;overflow-y:auto" id="qala-right-body">
+        <div style="padding:20px;text-align:center;color:var(--text3);font-family:var(--mono);font-size:9px">
+          <div style="font-size:20px;opacity:0.25;margin-bottom:8px">◆</div>Select a solution
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="hg-toast"></div>
+<script src="hg-nav.js"></script>
+<script src="hg-data.js"></script>
+<script>
+renderNav('qala');
+
+const SOLUTIONS = [
+  {id:'sol-1',name:'Kogi Platform',type:'Platform',lifecycle:'Production',version:'2.1.3',health:88,risk:22,factory:'Root Factory',domain_pack:'Software',ccrs:2,color:'#00d8b0',desc:'Kogi IW-OS — produced by Root Factory, tracked as a Solution in Qala.'},
+  {id:'sol-2',name:'Ume Platform',type:'Platform',lifecycle:'Production',version:'1.8.0',health:82,risk:31,factory:'Root Factory',domain_pack:'Software',ccrs:5,color:'#3d84e8',desc:'Ume B-OS — governed through the same CCR pipeline as customer solutions.'},
+  {id:'sol-3',name:'Apapo Grid Core',type:'Infrastructure',lifecycle:'Production',version:'2.1.0',health:94,risk:12,factory:'Root Factory',domain_pack:'Infrastructure',ccrs:0,color:'#e8a832',desc:'The Hypergrid substrate itself — self-governing via Root Factory.'},
+  {id:'sol-4',name:'PharmaSuite v3',type:'Pharmaceutical',lifecycle:'RegulatoryReview',version:'3.0.0-rc.2',health:71,risk:58,factory:'PharmaFactory-EU',domain_pack:'Pharmaceutical',ccrs:14,color:'#8b5cf6',desc:'Drug formulation management system under EMA review.'},
+  {id:'sol-5',name:'FinLedger API',type:'FinTech',lifecycle:'Development',version:'0.8.0',health:64,risk:44,factory:'FinFactory-US',domain_pack:'FinTech',ccrs:8,color:'#3cb878',desc:'Regulated financial ledger API under FCA pre-approval review.'},
+  {id:'sol-6',name:'HealthOS Mobile',type:'Healthcare',lifecycle:'Testing',version:'1.2.0-beta',health:78,risk:38,factory:'HealthFactory-US',domain_pack:'Healthcare',ccrs:6,color:'#e8526a',desc:'Patient data management mobile platform — HIPAA compliance testing.'},
+];
+
+const CCRs = [
+  {id:'ccr-001',solution:'Kogi Platform',change:'Add BenefitAccount lifecycle states',type:'Feature',risk:'Low',status:'Approved',reviewer:'@alice-dev'},
+  {id:'ccr-002',solution:'Kogi Platform',change:'CRDT Lattice for status field',type:'Architecture',risk:'Medium',status:'PendingReview',reviewer:'@qala-agent'},
+  {id:'ccr-003',solution:'Ume Platform',change:'Chombo N=4 jurisdiction expansion',type:'Schema',risk:'Medium',status:'GovernanceVote',reviewer:'Board'},
+  {id:'ccr-004',solution:'PharmaSuite v3',change:'Add FDA 21 CFR Part 11 audit trail',type:'Compliance',risk:'High',status:'PendingReview',reviewer:'Compliance Eng'},
+  {id:'ccr-005',solution:'FinLedger API',change:'PSD2 open banking endpoint',type:'Feature',risk:'High',status:'Rejected',reviewer:'Risk Mgmt'},
+];
+
+const PACKS = [
+  {name:'Software',solutions:3,rules:['SAST scan','DAST scan','Build attestation','SemVer required'],color:'#00d8b0'},
+  {name:'Pharmaceutical',solutions:1,rules:['GMP compliance','21 CFR Part 11 audit','Regulatory submission log','Ingredient traceability'],color:'#8b5cf6'},
+  {name:'FinTech',solutions:2,rules:['SOC 2 Type II','PCI DSS controls','AML/KYC workflow','Immutable transaction log'],color:'#3cb878'},
+  {name:'Healthcare',solutions:1,rules:['HIPAA BAA required','PHI encryption at rest','HITECH audit trail','Patient consent workflow'],color:'#e8526a'},
+  {name:'Infrastructure',solutions:1,rules:['Zero-downtime deploy','Rollback capability','Multi-region HA','Disaster recovery test'],color:'#e8a832'},
+];
+
+let qState = { tab:'solutions', selected:null };
+
+const lcColors = {Development:'var(--blue)',Testing:'var(--gold)',Staging:'var(--orange)',Production:'var(--green)',RegulatoryReview:'var(--rose)',Archived:'var(--text3)'};
+const ccrStatusBadge = {Approved:'badge-green',PendingReview:'badge-gold',GovernanceVote:'badge-violet',Rejected:'badge-rose'};
+
+function renderQala() {
+  const body = document.getElementById('qala-main-body');
+  if (qState.tab==='solutions') renderSolutions(body);
+  else if (qState.tab==='sde') renderSDE(body);
+  else if (qState.tab==='ccr') renderCCR(body);
+  else if (qState.tab==='factory') renderFactory(body);
+  else if (qState.tab==='packs') renderPacks(body);
+}
+
+function renderSolutions(body) {
+  body.innerHTML = `
+    <div class="qala-hero">
+      <div style="font-family:var(--mono);font-size:16px;font-weight:700;color:var(--qala);margin-bottom:4px">Qala Solution Factory OS</div>
+      <div style="font-family:var(--mono);font-size:9px;color:var(--text3);margin-bottom:10px">Every solution is a HyperRow in qala.solutions · Kogi and Ume are Solutions too</div>
+      <div class="stat-grid grid-4">
+        ${[['Solutions',SOLUTIONS.length,'var(--qala)'],['In Production',SOLUTIONS.filter(s=>s.lifecycle==='Production').length,'var(--green)'],['Open CCRs',CCRs.filter(c=>c.status!=='Approved'&&c.status!=='Rejected').length,'var(--gold)'],['At Risk',SOLUTIONS.filter(s=>s.risk>40).length,'var(--rose)']].map(([l,v,c])=>`
+          <div class="stat-cell"><div class="stat-label">${l}</div><div class="stat-val" style="color:${c}">${v}</div></div>`).join('')}
+      </div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:6px">
+      ${SOLUTIONS.map(s=>`
+        <div class="solution-card${qState.selected===s.id?' selected':''}" onclick="selectSolution('${s.id}')">
+          <div class="sc-header">
+            <div style="width:8px;height:8px;border-radius:50%;background:${s.color};flex-shrink:0"></div>
+            <span style="font-family:var(--mono);font-size:10px;font-weight:600;color:var(--text);flex:1">${s.name}</span>
+            <span class="badge badge-gray">${s.type}</span>
+            <span class="badge" style="border-color:${lcColors[s.lifecycle]||'var(--text3)'}40;color:${lcColors[s.lifecycle]||'var(--text3)'}">${s.lifecycle}</span>
+          </div>
+          <div class="sc-body">
+            <div class="flex flex-center flex-between">
+              <span style="font-family:var(--mono);font-size:9px;color:var(--text3)">${s.domain_pack} Pack · ${s.factory} · v${s.version}</span>
+              <div class="flex gap-2">
+                ${s.ccrs>0?`<span class="badge badge-gold">${s.ccrs} CCRs</span>`:''}
+                <span style="font-family:var(--mono);font-size:8px;color:${s.health>80?'var(--green)':s.health>60?'var(--gold)':'var(--rose)'}">Health: ${s.health}</span>
+              </div>
+            </div>
+            <div style="height:2px;background:var(--bg5);border-radius:1px;margin-top:6px;overflow:hidden">
+              <div style="height:100%;background:${s.color};width:${s.health}%"></div>
+            </div>
+          </div>
+        </div>`).join('')}
+    </div>`;
+}
+
+function renderSDE(body) {
+  const versions = ['v1.0','v1.1','v1.2','v2.0','v2.1'];
+  const envs = ['dev','staging','prod'];
+  const props = ['status','tests_pass','coverage','security_scan','deploy_ok'];
+  body.innerHTML = `
+    <div class="qala-hero">
+      <div style="font-family:var(--mono);font-size:14px;font-weight:700;color:var(--qala);margin-bottom:4px">Solution Development Environments</div>
+      <div style="font-family:var(--mono);font-size:9px;color:var(--text3)">N=3 Hypercube: D₁=SDE_Id · D₂=PropertyAxis · D₃=VersionAxis</div>
+    </div>
+    <div class="hg-card mb-3">
+      <div class="hg-card-header">
+        <div><div class="hg-card-title">qala.sdes — N=3 SDE Hypercube</div>
+        <div class="hg-card-sub">Each SDE tracks properties (D₂) across all versions simultaneously (D₃)</div></div>
+        <span class="badge badge-violet">N=3</span>
+      </div>
+      <div class="hg-card-body">
+        <div class="flex gap-2 mb-3">
+          <span class="dim-badge">D₁<span class="sub"> SDE_Id</span></span>
+          <span class="dim-badge" style="color:var(--blue)">D₂<span class="sub"> PropertyAxis</span></span>
+          <span class="dim-badge" style="color:var(--violet)">D₃<span class="sub"> VersionAxis</span></span>
+        </div>
+        <div class="sde-cube">
+          <div class="sde-grid" style="grid-template-columns:120px repeat(5,1fr)">
+            <div class="sde-cell hdr">SDE / Prop → Ver</div>
+            ${versions.map(v=>`<div class="sde-cell hdr" style="color:var(--violet)">${v}</div>`).join('')}
+            ${props.map(p => [
+              `<div class="sde-cell hdr" style="text-align:left;color:var(--blue)">${p}</div>`,
+              ...versions.map((v,vi) => {
+                const val = p==='status'?['draft','dev','staging','prod','prod'][vi]:p==='tests_pass'?['—','83%','94%','98%','99%'][vi]:p==='coverage'?['—','71%','82%','91%','93%'][vi]:p==='security_scan'?['—','Pass','Pass','Pass','Pass'][vi]:['—','—','Staged','✓','✓'][vi];
+                const cls = val==='✓'||val==='Pass'||val==='99%'||val==='prod'?'active':val==='—'?'filled':'pending';
+                return `<div class="sde-cell ${cls}">${val}</div>`;
+              })
+            ].join('')).join('')}
+          </div>
+        </div>
+        <div style="margin-top:8px;font-family:var(--mono);font-size:9px;background:var(--bg3);border-radius:4px;padding:8px;color:var(--text3)">
+          HyperQL: SELECT D1, D3 AS version, cell("status"), cell("tests_pass"), cell("security_scan")<br>
+          FROM qala.sdes WHERE DimSlice(D3 IN ["v2.0","v2.1"]) ORDER BY D3 DESC
+        </div>
+      </div>
+    </div>`;
+}
+
+function renderCCR(body) {
+  const statusColors2 = {Approved:'var(--green)',PendingReview:'var(--gold)',GovernanceVote:'var(--violet)',Rejected:'var(--rose)'};
+  body.innerHTML = `
+    <div class="qala-hero">
+      <div style="font-family:var(--mono);font-size:14px;font-weight:700;color:var(--qala);margin-bottom:4px">Change Control Request Queue</div>
+      <div style="font-family:var(--mono);font-size:9px;color:var(--text3)">All platform and solution changes go through CCR · stored in qala.ccrs Hypercube</div>
+    </div>
+    <table class="hg-table">
+      <thead><tr><th>CCR ID</th><th>Solution</th><th>Change</th><th>Type</th><th>Risk</th><th>Status</th><th>Reviewer</th><th>Actions</th></tr></thead>
+      <tbody>
+        ${CCRs.map(c=>`<tr>
+          <td style="color:var(--qala)">${c.id}</td>
+          <td>${c.solution}</td>
+          <td style="max-width:200px;white-space:normal;font-size:9px">${c.change}</td>
+          <td><span class="badge badge-gray">${c.type}</span></td>
+          <td><span class="badge ${c.risk==='High'?'badge-rose':c.risk==='Medium'?'badge-gold':'badge-green'}">${c.risk}</span></td>
+          <td><span class="badge ${ccrStatusBadge[c.status]||'badge-gray'}">${c.status}</span></td>
+          <td style="font-family:var(--mono);font-size:9px;color:var(--text3)">${c.reviewer}</td>
+          <td>
+            <div class="flex gap-1">
+              ${c.status==='PendingReview'?`<button class="btn btn-ghost btn-xs" onclick="showToast('Approving ${c.id}…')">✓</button><button class="btn btn-danger btn-xs" onclick="showToast('Rejecting ${c.id}…')">✕</button>`:''}
+            </div>
+          </td>
+        </tr>`).join('')}
+      </tbody>
+    </table>
+    <button class="btn btn-primary btn-sm mt-3" style="background:var(--qala);border-color:var(--qala)" onclick="showToast('New CCR created')">+ New CCR</button>`;
+}
+
+function renderFactory(body) {
+  body.innerHTML = `
+    <div class="qala-hero">
+      <div style="font-family:var(--mono);font-size:14px;font-weight:700;color:var(--qala);margin-bottom:4px">Root Factory — Self-Governing Platform</div>
+      <div style="font-family:var(--mono);font-size:9px;color:var(--text3)">The Root Factory produced Kogi, Ume, and Qala itself. It is a Solution of type Platform.</div>
+    </div>
+    <div class="hg-card mb-3">
+      <div class="hg-card-header"><div class="hg-card-title">Self-Reference Principle</div></div>
+      <div class="hg-card-body">
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px">
+          ${[['Kogi Platform','Solution of type Platform. Produced by Root Factory. Versioned + governed.','var(--kogi)'],['Ume Platform','Solution of type Platform. Same CCR pipeline as any customer solution.','var(--ume)'],['Qala Root Factory','A Solution of type Platform that produced itself. Self-governing.','var(--qala)']].map(([n,d,c])=>`
+            <div style="background:var(--bg3);border:1px solid ${c}20;border-radius:6px;padding:10px">
+              <div style="font-family:var(--mono);font-size:10px;font-weight:600;color:${c};margin-bottom:6px">${n}</div>
+              <div style="font-family:var(--sans);font-size:10px;color:var(--text3);line-height:1.5">${d}</div>
+            </div>`).join('')}
+        </div>
+        <div style="margin-top:12px;font-family:var(--mono);font-size:9px;color:var(--text3);background:var(--bg3);border-radius:4px;padding:10px;line-height:1.7">
+          Every Kogi feature release follows the exact same CCR→review→approval→release pipeline.<br>
+          The audit trail for the platform's own evolution lives in the same qala.ccrs Hypercube as customer solution trails.<br>
+          <span style="color:var(--qala)">The platform continuously demonstrates its governance by exercising it on itself.</span>
+        </div>
+      </div>
+    </div>
+    <div class="hg-card">
+      <div class="hg-card-header"><div class="hg-card-title">Factory Configuration</div></div>
+      <div class="hg-card-body">
+        ${[['Factory ID','qala://root-factory/'],['Owner','Apapo Platform Team'],['Domain Packs','Software, Infrastructure, All'],['AI Agent','QalaCCRReviewer.v1 (GPT-4o + Rules)'],['Governance Model','Multi-sig + GovernanceVote for breaking changes'],['Release Cadence','Monthly minor · Quarterly major'],['Health','94/100']].map(([k,v])=>`<div class="kv"><span class="kv-key">${k}</span><span class="kv-val" style="color:${k==='Health'?'var(--green)':k==='Factory ID'?'var(--qala)':'var(--text2)'}">${v}</span></div>`).join('')}
+      </div>
+    </div>`;
+}
+
+function renderPacks(body) {
+  body.innerHTML = `
+    <div class="qala-hero">
+      <div style="font-family:var(--mono);font-size:14px;font-weight:700;color:var(--qala);margin-bottom:4px">Domain Packs — HypercubePlugin Extensions</div>
+      <div style="font-family:var(--mono);font-size:9px;color:var(--text3)">Domain packs extend Qala via the HypercubePlugin trait · custom governance rules per industry</div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+      ${PACKS.map(p=>`
+        <div class="hg-card" onclick="showToast('Opening ${p.name} pack…')">
+          <div class="hg-card-header">
+            <div><div class="hg-card-title" style="color:${p.color}">${p.name} Domain Pack</div>
+            <div class="hg-card-sub">${p.solutions} solution(s) using this pack</div></div>
+            <span class="badge" style="border-color:${p.color}40;color:${p.color}">Active</span>
+          </div>
+          <div class="hg-card-body">
+            <div class="section-label">Required governance rules</div>
+            ${p.rules.map(r=>`<div style="display:flex;align-items:center;gap:6px;padding:3px 0;border-bottom:1px solid var(--border)">
+              <span style="color:var(--green)">✓</span>
+              <span style="font-family:var(--mono);font-size:9px;color:var(--text2)">${r}</span>
+            </div>`).join('')}
+          </div>
+        </div>`).join('')}
+    </div>
+    <button class="btn btn-ghost btn-sm mt-3" onclick="showToast('Installing new Domain Pack…')">+ Install Domain Pack</button>`;
+}
+
+function selectSolution(id) {
+  qState.selected = qState.selected===id?null:id;
+  const s = SOLUTIONS.find(x=>x.id===qState.selected);
+  renderSolutionInspector(s);
+  renderQala();
+}
+
+function renderSolutionInspector(s) {
+  const title = document.getElementById('qala-right-title');
+  const body = document.getElementById('qala-right-body');
+  if (!s) { title.textContent='Solution Inspector'; body.innerHTML='<div style="padding:20px;text-align:center;color:var(--text3);font-family:var(--mono);font-size:9px"><div style="font-size:20px;opacity:0.25;margin-bottom:8px">◆</div>Select a solution</div>'; return; }
+  title.textContent = s.name;
+  body.innerHTML = `
+    <div style="height:3px;background:${s.color}"></div>
+    <div style="padding:10px 12px">
+      <div class="section-label">Solution</div>
+      <div class="kv"><span class="kv-key">Name</span><span class="kv-val" style="color:${s.color}">${s.name}</span></div>
+      <div class="kv"><span class="kv-key">Type</span><span class="kv-val">${s.type}</span></div>
+      <div class="kv"><span class="kv-key">Lifecycle</span><span class="kv-val" style="color:${lcColors[s.lifecycle]||'var(--text2)'}">${s.lifecycle}</span></div>
+      <div class="kv"><span class="kv-key">Version</span><span class="kv-val c-gold">${s.version}</span></div>
+      <div class="kv"><span class="kv-key">Health</span><span class="kv-val" style="color:${s.health>80?'var(--green)':s.health>60?'var(--gold)':'var(--rose)'}">${s.health}/100</span></div>
+      <div class="kv"><span class="kv-key">Risk</span><span class="kv-val" style="color:${s.risk>40?'var(--rose)':'var(--green)'}">${s.risk}/100</span></div>
+      <div class="kv"><span class="kv-key">Factory</span><span class="kv-val" style="font-size:8px">${s.factory}</span></div>
+      <div class="kv"><span class="kv-key">Domain Pack</span><span class="kv-val">${s.domain_pack}</span></div>
+      <div class="kv"><span class="kv-key">Open CCRs</span><span class="kv-val ${s.ccrs>0?'c-gold':''}">${s.ccrs}</span></div>
+      <div class="section-label mt-3">Lifecycle Pipeline</div>
+      <div class="lifecycle-flow">
+        ${['Concept','Development','Testing','Staging','Production'].map(stage=>{
+          const stages=['Concept','Development','Testing','Staging','Production'];
+          const idx=stages.indexOf(s.lifecycle);
+          const si=stages.indexOf(stage);
+          const cls=stage===s.lifecycle?'active':si<idx?'done':'';
+          return `<span class="lc-stage ${cls}">${stage}</span>${stage!=='Production'?'<span class="lc-arrow">›</span>':''}`;
+        }).join('')}
+      </div>
+      <div class="section-label mt-3">Description</div>
+      <p style="font-family:var(--sans);font-size:10px;color:var(--text2);line-height:1.5;margin-bottom:10px">${s.desc}</p>
+      <div class="section-label">Actions</div>
+      <div style="display:flex;flex-direction:column;gap:4px">
+        <button class="btn btn-ghost btn-sm" onclick="switchQTab('ccr',document.querySelectorAll('.hg-tab')[2])">View CCRs</button>
+        <button class="btn btn-ghost btn-sm" onclick="switchQTab('sde',document.querySelectorAll('.hg-tab')[1])">Open SDE</button>
+        <button class="btn btn-danger btn-sm" onclick="showToast('Archiving solution…')">Archive</button>
+      </div>
+    </div>`;
+}
+
+function switchQTab(tab, el) {
+  qState.tab=tab;
+  document.querySelectorAll('.hg-tab').forEach(t=>t.classList.remove('active'));
+  if(el) el.classList.add('active');
+  renderQala();
+}
+
+renderQala();
+</script>
+</body>
+</html>

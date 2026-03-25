@@ -1,0 +1,31 @@
+#![allow(dead_code, unused_variables, unused_imports)]
+
+pub mod cell;
+pub mod crdt;
+pub mod dim;
+pub mod graph;
+pub mod plugin;
+pub mod space;
+pub mod view;
+pub mod ql;
+pub mod comp;
+pub mod ops;
+pub mod export;
+pub mod core;
+pub mod domain;
+pub mod error;
+
+pub use cell::*;
+pub use crdt::{VectorClock,LatticeOrder,LatticeNode,CrdtSemantics,CrdtOperation,CrdtMergeEngine,CrdtLog,MergeResult,ConflictRecord,OrSetEntry,PerNodeCounter};
+pub use dim::{DimensionAxis,AxisType,StorageEncoding,HypercubeStats,DimSlice,DimSlicePredicate,DimKeyPredicate};
+pub use graph::{Hypergraph,HypergraphEdge,HypergraphNode,EdgeType,EdgeDirection,ConsentStatus,ShadowCellConfig,TraversalConfig,TraversalResult};
+pub use plugin::{HypercubePlugin,ComputedModelPlugin,PluginRegistry,PluginCapability,PluginHealth,ComputeContext,ComputeResult,AIComputeQueue,AIComputeRequest,KogiHealthScoreEngine,EventKind};
+pub use space::{Space,SpaceType,SpaceRegistry,WorkspaceStore,Workspace,NamespaceRegistry,NamespaceEntry,TenantPartition,VisibilityMask,IdentityStore,FederationPeer,FederationManager,FederationTrustLevel,PeerStatus};
+pub use view::{HypercubeView,RenderMode,ViewRegistry,DimFold,DimExpand,SortDirection};
+pub use ql::{HyperQuery,QueryResult,ResultRow,SelectExpr,FromClause,WhereExpr,PhysicalPlan,HyperQLPlanner,QueryError};
+pub use comp::{ComputationEngine,WritebackService,WritebackRequest,AnomalyEngine,Tier2AIPipeline};
+pub use ops::{EventLog,EventEntry,CrdtOpKind,PolicyEngine,PolicyDecision,GridStatus,GridStats,GridMetrics,HealthReport};
+pub use export::{ExportFormat,ExportRequest,ExportResult,HypergridExporter,Snapshot,SnapshotStore,SnapshotStatus};
+pub use core::{Grid,Hypercube,DomainSystem,InMemoryCellStore};
+pub use domain::{DomainStore,PortfolioComponent,PortfolioSystem,ComponentStore,ComponentStatus,ComponentCategory,OrgModule,UmeKernel,ModuleStore,ModuleLifecycleState,Solution,QalaOS,SolutionStore,SolutionType,coord2,as_json,from_json};
+pub use error::{HypergridError,CrdtError,PluginError};
