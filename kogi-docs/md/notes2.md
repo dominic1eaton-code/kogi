@@ -2542,7 +2542,9 @@ then also,
 * Decide whether risk/health/utilization should prefer AI signals or policy‑driven inputs ( tune the scoring).
 
 
-now implement the C:\dev\ws\kogi_dev\kogi-client\web_client_dev\kogi-ui\src\app\marketplace backend in C:\dev\ws\kogi_dev\kogi-marketplace, same rust library + go microservice + documentation structure, incorporating the market docs features in C:\dev\ws\kogi_dev\kogi-docs\md
+now implement the C:\dev\ws\kogi_dev\kogi-client\web_client_dev\kogi-ui\src\app\marketplace backend in C:\dev\ws\kogi_dev\kogi-marketplace, rust backend library + go frontend microservice + documentation structure, incorporating the market docs features in C:\dev\ws\kogi_dev\kogi-docs\md, where all marketplace resources/elements/items are tracked+managed+administered+version controlled+maintained by the C:\dev\ws\kogi_dev\kogi-portfolio system+master speadsheet
+
+now implement the C:\dev\ws\kogi_dev\kogi-client\web_client_dev\kogi-ui\src\app\spaces backend in C:\dev\ws\kogi_dev\kogi-spaces, rust backend library + go frontend microservice + documentation structure, incorporating the spaces docs features in C:\dev\ws\kogi_dev\kogi-docs\md, where all spaces resources/elements/items are tracked+managed+administered+version controlled+maintained by the C:\dev\ws\kogi_dev\kogi-portfolio system+master speadsheet
 
 ---
 
