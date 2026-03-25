@@ -1,3 +1,5 @@
 go 1.22
 
 use ./kogi-network
+use ./kogi-portfolio/service
+use ./kogi-wallet/service

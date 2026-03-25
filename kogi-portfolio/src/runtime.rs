@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use chrono::Utc;
+use chrono::{DateTime, Utc};
 use rust_decimal::prelude::FromPrimitive;
 use rust_decimal::Decimal;
 use serde_json::json;
@@ -44,7 +44,7 @@ pub struct KogiPortfolioRuntime {
     pub master: MasterPortfolioSpreadsheet,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub struct LinkEdgeView {
     pub link_id: Uuid,
     pub phase: apapo::LinkPhase,
@@ -53,15 +53,19 @@ pub struct LinkEdgeView {
     pub target: EntityRef,
     pub source_row: Option<PortfolioRow>,
     pub target_row: Option<PortfolioRow>,
+    pub mirrored_attrs: Vec<String>,
+    pub writeback_attrs: Vec<String>,
+    pub shadow_cell_id: Option<Uuid>,
+    pub last_synced_at: Option<DateTime<Utc>>,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub struct LinkForestView {
     pub root: EntityRef,
     pub links: Vec<LinkEdgeView>,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub struct LinkForestSheet {
     pub root: EntityRef,
     pub sheet_id: String,
@@ -100,8 +104,9 @@ impl KogiPortfolioRuntime {
             root_component_id,
             workbook,
         };
+        master.workbook.score_preference = config.score_preference;
         master.sync_from_grid(&apapo.grid, components_cube)?;
-        let engine = ComputationEngine::default_columns();
+        let engine = ComputationEngine::default_with_preference(config.score_preference);
         master.workbook.write_computed_columns(&engine, "kogi-engine");
         let _ = link_workbook_to_root(&apapo.grid, components_cube, root_component_id, workbook_id, &config.node_id);
         master.persist_metadata(&apapo.grid, &spreadsheet, &config.node_id)?;
@@ -132,24 +137,36 @@ impl KogiPortfolioRuntime {
     }
 
     pub fn link_forest_rows(&self, root_component_id: Uuid) -> Vec<PortfolioRow> {
-    let view = self.link_forest_view(root_component_id);
-    let mut rows = HashMap::new();
-    for link in view.links {
-        let source_row = link.source_row.clone();
-        let target_row = link.target_row.clone();
-        if let Some(row) = source_row {
-            rows.insert(row.component_id, row);
-        } else {
-            let shadow = shadow_row_from_link(&link.source, &link, "source");
-            rows.insert(shadow.component_id, shadow);
+        let view = self.link_forest_view(root_component_id);
+        let mut rows = HashMap::new();
+        for link in view.links {
+            let source_row = link.source_row.clone();
+            let target_row = link.target_row.clone();
+            if let Some(row) = source_row {
+                rows.insert(row.component_id, row);
+            } else {
+                let shadow = shadow_row_from_link(
+                    &self.apapo.grid,
+                    self.cubes.components_cube,
+                    &link.source,
+                    &link,
+                    "source",
+                );
+                rows.insert(shadow.component_id, shadow);
+            }
+            if let Some(row) = target_row {
+                rows.insert(row.component_id, row);
+            } else {
+                let shadow = shadow_row_from_link(
+                    &self.apapo.grid,
+                    self.cubes.components_cube,
+                    &link.target,
+                    &link,
+                    "target",
+                );
+                rows.insert(shadow.component_id, shadow);
+            }
         }
-        if let Some(row) = target_row {
-            rows.insert(row.component_id, row);
-        } else {
-            let shadow = shadow_row_from_link(&link.target, &link, "target");
-            rows.insert(shadow.component_id, shadow);
-        }
-    }
         rows.into_values().collect()
     }
 
@@ -300,7 +317,7 @@ fn load_workbook_from_grid(
     None
 }
 
-fn portfolio_row_from_component(component: &PortfolioComponent) -> PortfolioRow {
+pub(crate) fn portfolio_row_from_component(component: &PortfolioComponent) -> PortfolioRow {
     let owner = component.metadata.owners.first().copied().unwrap_or(Uuid::nil());
     let mut row = PortfolioRow::new(component.metadata.id, component_type_string(&component.category), component.name.clone(), owner);
     row.item_type = item_type_string(&component.category);
@@ -365,20 +382,42 @@ fn link_edge_view(workbook: &SpreadsheetWorkbook, link: CrossGridLink) -> LinkEd
         target: link.target,
         source_row,
         target_row,
+        mirrored_attrs: link.mirrored_attrs,
+        writeback_attrs: link.writeback_attrs,
+        shadow_cell_id: link.shadow_cell_id,
+        last_synced_at: link.last_synced_at,
     }
 }
 
-fn shadow_row_from_link(entity: &EntityRef, link: &LinkEdgeView, role: &str) -> PortfolioRow {
-    let mut row = PortfolioRow::new(
-        entity.d1_key,
-        "shadow",
-        format!("Shadow {}", entity.d1_key),
-        Uuid::nil(),
-    );
-    row.item_type = Some("Shadow".to_owned());
-    row.status = "Shadow".to_owned();
-    row.state = "Shadow".to_owned();
-    row.visibility = "Protected".to_owned();
+fn shadow_row_from_link(
+    grid: &Grid,
+    components_cube: hypergrid::CubeId,
+    entity: &EntityRef,
+    link: &LinkEdgeView,
+    role: &str,
+) -> PortfolioRow {
+    let mut row = None;
+    if entity.grid_id.is_none() || entity.grid_id == Some(grid.grid_id) {
+        if entity.cube_id == components_cube {
+            if let Ok(Some(component)) = ComponentStore::read(grid, components_cube, entity.d1_key) {
+                row = Some(portfolio_row_from_component(&component));
+            }
+        }
+    }
+
+    let mut row = row.unwrap_or_else(|| {
+        let mut row = PortfolioRow::new(
+            entity.d1_key,
+            "shadow",
+            format!("Shadow {}", entity.d1_key),
+            Uuid::nil(),
+        );
+        row.item_type = Some("Shadow".to_owned());
+        row.status = "Shadow".to_owned();
+        row.state = "Shadow".to_owned();
+        row.visibility = "Protected".to_owned();
+        row
+    });
     row.ext.insert("shadow".to_owned(), json!(true));
     row.ext.insert("shadow_role".to_owned(), json!(role));
     if let Some(grid_id) = entity.grid_id {
@@ -388,6 +427,18 @@ fn shadow_row_from_link(entity: &EntityRef, link: &LinkEdgeView, role: &str) -> 
     row.ext.insert("link_id".to_owned(), json!(link.link_id.to_string()));
     row.ext.insert("link_phase".to_owned(), json!(format!("{:?}", link.phase)));
     row.ext.insert("link_consent".to_owned(), json!(format!("{:?}", link.consent)));
+    if !link.mirrored_attrs.is_empty() {
+        row.ext.insert("shadow_mirrored_attrs".to_owned(), json!(link.mirrored_attrs.clone()));
+    }
+    if !link.writeback_attrs.is_empty() {
+        row.ext.insert("shadow_writeback_attrs".to_owned(), json!(link.writeback_attrs.clone()));
+    }
+    if let Some(shadow_cell_id) = link.shadow_cell_id {
+        row.ext.insert("shadow_cell_id".to_owned(), json!(shadow_cell_id.to_string()));
+    }
+    if let Some(last_synced_at) = link.last_synced_at {
+        row.ext.insert("shadow_last_synced_at".to_owned(), json!(last_synced_at));
+    }
     row
 }
 

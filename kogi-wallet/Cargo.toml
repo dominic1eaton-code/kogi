@@ -1,24 +1,19 @@
 [package]
-name = "kogi-portfolio"
+name = "kogi-wallet"
 version = "0.1.0"
 edition = "2021"
 authors = ["Kogi Platform Team"]
-description = "Kogi Portfolio System + Master Spreadsheet (KPMS/KPSS/KPRG)"
+description = "Kogi Wallet backend system (kogi-bank wallet layer)"
 license = "Proprietary"
 
 [lib]
 crate-type = ["rlib", "cdylib"]
 
 [dependencies]
-apapo = { path = "../../apapo" }
-hypergrid = { path = "../../hypergrid" }
+kogi-portfolio = { path = "../kogi-portfolio" }
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 uuid = { version = "1", features = ["v4", "serde"] }
 chrono = { version = "0.4", features = ["serde"] }
-thiserror = "1"
 rust_decimal = { version = "1", features = ["serde-with-str"] }
-tracing = "0.1"
-
-[dev-dependencies]
-pretty_assertions = "1"
+thiserror = "1"

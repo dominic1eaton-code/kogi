@@ -4,8 +4,8 @@ use rust_decimal::prelude::ToPrimitive;
 
 use crate::spreadsheet::{
     SpreadsheetWorkbook, PortfolioRow, ColumnGroup, ColumnType,
-    compute_health_score, compute_risk_score, compute_resource_utilization_pct,
-    compute_health_rollup, compute_resource_utilization_rollup_pct,
+    compute_health_score_with_pref, compute_risk_score_with_pref, compute_resource_utilization_pct_with_pref,
+    compute_health_rollup_with_pref, compute_resource_utilization_rollup_pct_with_pref,
 };
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -280,7 +280,12 @@ impl SpreadsheetWorkbook {
         ).0.unwrap_or(0.0);
         let subportfolio_rollup = average_score(
             rows.iter().filter(|row| row.item_type.as_deref() == Some("SubPortfolio")).map(|row| {
-                Some(compute_health_rollup(row, &self.cell_store, &self.row_store))
+                Some(compute_health_rollup_with_pref(
+                    row,
+                    &self.cell_store,
+                    &self.row_store,
+                    self.score_preference,
+                ))
             }),
         ).0.unwrap_or(0.0);
         let resource_util = average_score(
@@ -592,21 +597,29 @@ fn status_tone(status: &str) -> String {
 }
 
 fn row_health(workbook: &SpreadsheetWorkbook, row: &PortfolioRow) -> Option<f64> {
-    cell_f64(workbook, row, "health_score").or_else(|| Some(compute_health_score(row, &workbook.cell_store)))
+    cell_f64(workbook, row, "health_score").or_else(|| Some(
+        compute_health_score_with_pref(row, &workbook.cell_store, workbook.score_preference),
+    ))
 }
 
 fn row_risk(workbook: &SpreadsheetWorkbook, row: &PortfolioRow) -> Option<f64> {
-    cell_f64(workbook, row, "risk_score").or_else(|| Some(compute_risk_score(row, &workbook.cell_store)))
+    cell_f64(workbook, row, "risk_score").or_else(|| Some(
+        compute_risk_score_with_pref(row, &workbook.cell_store, workbook.score_preference),
+    ))
 }
 
 fn row_utilization(workbook: &SpreadsheetWorkbook, row: &PortfolioRow) -> Option<f64> {
     cell_f64(workbook, row, "resource_utilization_pct")
-        .or_else(|| compute_resource_utilization_pct(row, &workbook.cell_store))
+        .or_else(|| compute_resource_utilization_pct_with_pref(
+            row, &workbook.cell_store, workbook.score_preference,
+        ))
 }
 
 fn row_utilization_rollup(workbook: &SpreadsheetWorkbook, row: &PortfolioRow) -> Option<f64> {
     cell_f64(workbook, row, "resource_utilization_rollup_pct")
-        .or_else(|| compute_resource_utilization_rollup_pct(row, &workbook.cell_store, &workbook.row_store))
+        .or_else(|| compute_resource_utilization_rollup_pct_with_pref(
+            row, &workbook.cell_store, &workbook.row_store, workbook.score_preference,
+        ))
 }
 
 fn row_budget_efficiency(row: &PortfolioRow) -> Option<f64> {

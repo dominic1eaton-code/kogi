@@ -3,6 +3,7 @@ use uuid::Uuid;
 
 use apapo::{ApapoConfig, DomainKind, PersistenceMode};
 use hypergrid::DomainSystem;
+use crate::spreadsheet::ScorePreference;
 
 #[derive(Debug, Clone)]
 pub struct KogiPortfolioConfig {
@@ -13,6 +14,7 @@ pub struct KogiPortfolioConfig {
     pub persistence: PersistenceMode,
     pub owner_id: Uuid,
     pub enabled_domains: Vec<DomainKind>,
+    pub score_preference: ScorePreference,
 }
 
 impl Default for KogiPortfolioConfig {
@@ -25,6 +27,7 @@ impl Default for KogiPortfolioConfig {
             persistence: PersistenceMode::Memory,
             owner_id: Uuid::new_v4(),
             enabled_domains: vec![DomainKind::Kogi],
+            score_preference: ScorePreference::default(),
         }
     }
 }

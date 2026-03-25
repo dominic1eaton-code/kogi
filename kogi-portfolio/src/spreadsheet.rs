@@ -85,6 +85,20 @@ pub enum ColumnType {
     AiSignal,
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
+pub enum ScorePreference {
+    /// Prefer policy-driven scores when both AI + policy values are present.
+    PolicyFirst,
+    /// Prefer AI-driven scores when both AI + policy values are present.
+    AiFirst,
+    /// Blend AI + policy scores (ai_weight in 0.0..=1.0).
+    Blend { ai_weight: f64 },
+}
+
+impl Default for ScorePreference {
+    fn default() -> Self { ScorePreference::PolicyFirst }
+}
+
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub enum ColumnGroup {
     Identity,
@@ -745,13 +759,22 @@ pub struct ComputedColumnSpec {
     pub kind: ComputedColumnKind,
 }
 
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Clone)]
 pub struct ComputationEngine {
     pub columns: Vec<ComputedColumnSpec>,
+    pub score_preference: ScorePreference,
+}
+
+impl Default for ComputationEngine {
+    fn default() -> Self { Self::default_columns() }
 }
 
 impl ComputationEngine {
     pub fn default_columns() -> Self {
+        Self::default_with_preference(ScorePreference::default())
+    }
+
+    pub fn default_with_preference(score_preference: ScorePreference) -> Self {
         Self {
             columns: vec![
                 ComputedColumnSpec { column_id: "budget_remaining".into(), kind: ComputedColumnKind::BudgetRemaining },
@@ -764,6 +787,7 @@ impl ComputationEngine {
                 ComputedColumnSpec { column_id: "health_rollup".into(), kind: ComputedColumnKind::HealthRollup },
                 ComputedColumnSpec { column_id: "resource_utilization_rollup_pct".into(), kind: ComputedColumnKind::ResourceUtilizationRollupPct },
             ],
+            score_preference,
         }
     }
 
@@ -774,12 +798,24 @@ impl ComputationEngine {
                 ComputedColumnKind::BudgetRemaining => row.budget_remaining().map(CellValue::Decimal),
                 ComputedColumnKind::BudgetUtilizationPct => row.budget_utilization_pct().map(CellValue::Percent),
                 ComputedColumnKind::EarningsNet => Some(CellValue::Decimal(row.earnings_net())),
-                ComputedColumnKind::RiskScore => Some(CellValue::Number(compute_risk_score(row, cells))),
-                ComputedColumnKind::HealthScore => Some(CellValue::Number(compute_health_score(row, cells))),
-                ComputedColumnKind::ResourceUtilizationPct => compute_resource_utilization_pct(row, cells).map(CellValue::Percent),
-                ComputedColumnKind::RiskRollup => Some(CellValue::Number(compute_risk_rollup(row, cells, rows))),
-                ComputedColumnKind::HealthRollup => Some(CellValue::Number(compute_health_rollup(row, cells, rows))),
-                ComputedColumnKind::ResourceUtilizationRollupPct => compute_resource_utilization_rollup_pct(row, cells, rows).map(CellValue::Percent),
+                ComputedColumnKind::RiskScore => Some(CellValue::Number(
+                    compute_risk_score_with_pref(row, cells, self.score_preference),
+                )),
+                ComputedColumnKind::HealthScore => Some(CellValue::Number(
+                    compute_health_score_with_pref(row, cells, self.score_preference),
+                )),
+                ComputedColumnKind::ResourceUtilizationPct => compute_resource_utilization_pct_with_pref(
+                    row, cells, self.score_preference,
+                ).map(CellValue::Percent),
+                ComputedColumnKind::RiskRollup => Some(CellValue::Number(
+                    compute_risk_rollup_with_pref(row, cells, rows, self.score_preference),
+                )),
+                ComputedColumnKind::HealthRollup => Some(CellValue::Number(
+                    compute_health_rollup_with_pref(row, cells, rows, self.score_preference),
+                )),
+                ComputedColumnKind::ResourceUtilizationRollupPct => compute_resource_utilization_rollup_pct_with_pref(
+                    row, cells, rows, self.score_preference,
+                ).map(CellValue::Percent),
             };
             if let Some(val) = value {
                 out.push((spec.column_id.clone(), val));
@@ -815,6 +851,37 @@ fn cell_override_f64(row: &PortfolioRow, cells: &CellStore, column_id: &str) -> 
         .or_else(|| row.ext.get(column_id).and_then(|v| v.as_f64()))
 }
 
+fn score_override_f64(
+    row: &PortfolioRow,
+    cells: &CellStore,
+    column_id: &str,
+    preference: ScorePreference,
+) -> Option<f64> {
+    let direct = cell_override_f64(row, cells, column_id);
+    if direct.is_some() {
+        return direct.map(clamp_score);
+    }
+
+    let ai_key = format!("{column_id}_ai");
+    let policy_key = format!("{column_id}_policy");
+    let ai = cell_override_f64(row, cells, &ai_key);
+    let policy = cell_override_f64(row, cells, &policy_key);
+
+    match preference {
+        ScorePreference::AiFirst => ai.or(policy).map(clamp_score),
+        ScorePreference::PolicyFirst => policy.or(ai).map(clamp_score),
+        ScorePreference::Blend { ai_weight } => {
+            let w = ai_weight.max(0.0).min(1.0);
+            match (ai, policy) {
+                (Some(ai), Some(policy)) => Some(clamp_score(ai * w + policy * (1.0 - w))),
+                (Some(ai), None) => Some(clamp_score(ai)),
+                (None, Some(policy)) => Some(clamp_score(policy)),
+                _ => None,
+            }
+        }
+    }
+}
+
 fn resource_utilization_pct_from_row(row: &PortfolioRow) -> Option<f64> {
     if let Some(total) = row.resource_units_total {
         if total > 0.0 {
@@ -829,14 +896,22 @@ fn resource_utilization_pct_from_row(row: &PortfolioRow) -> Option<f64> {
     }
 }
 
-pub(crate) fn compute_resource_utilization_pct(row: &PortfolioRow, cells: &CellStore) -> Option<f64> {
-    cell_override_f64(row, cells, "resource_utilization_pct")
+pub(crate) fn compute_resource_utilization_pct_with_pref(
+    row: &PortfolioRow,
+    cells: &CellStore,
+    preference: ScorePreference,
+) -> Option<f64> {
+    score_override_f64(row, cells, "resource_utilization_pct", preference)
         .or_else(|| resource_utilization_pct_from_row(row))
         .map(clamp_score)
 }
 
-pub(crate) fn compute_risk_score(row: &PortfolioRow, cells: &CellStore) -> f64 {
-    if let Some(score) = cell_override_f64(row, cells, "risk_score") {
+pub(crate) fn compute_resource_utilization_pct(row: &PortfolioRow, cells: &CellStore) -> Option<f64> {
+    compute_resource_utilization_pct_with_pref(row, cells, ScorePreference::default())
+}
+
+pub(crate) fn compute_risk_score_with_pref(row: &PortfolioRow, cells: &CellStore, preference: ScorePreference) -> f64 {
+    if let Some(score) = score_override_f64(row, cells, "risk_score", preference) {
         return clamp_score(score);
     }
 
@@ -865,7 +940,7 @@ pub(crate) fn compute_risk_score(row: &PortfolioRow, cells: &CellStore) -> f64 {
         score += 15.0;
     }
 
-    if let Some(util) = compute_resource_utilization_pct(row, cells) {
+    if let Some(util) = compute_resource_utilization_pct_with_pref(row, cells, preference) {
         if util > 100.0 {
             score += ((util - 100.0) * 0.2).min(15.0);
         }
@@ -874,15 +949,19 @@ pub(crate) fn compute_risk_score(row: &PortfolioRow, cells: &CellStore) -> f64 {
     clamp_score(score)
 }
 
-pub(crate) fn compute_health_score(row: &PortfolioRow, cells: &CellStore) -> f64 {
-    if let Some(score) = cell_override_f64(row, cells, "health_score") {
+pub(crate) fn compute_risk_score(row: &PortfolioRow, cells: &CellStore) -> f64 {
+    compute_risk_score_with_pref(row, cells, ScorePreference::default())
+}
+
+pub(crate) fn compute_health_score_with_pref(row: &PortfolioRow, cells: &CellStore, preference: ScorePreference) -> f64 {
+    if let Some(score) = score_override_f64(row, cells, "health_score", preference) {
         return clamp_score(score);
     }
 
-    let risk = compute_risk_score(row, cells);
+    let risk = compute_risk_score_with_pref(row, cells, preference);
     let mut health = (100.0 - risk + row.progress_pct) / 2.0;
 
-    if let Some(util) = compute_resource_utilization_pct(row, cells) {
+    if let Some(util) = compute_resource_utilization_pct_with_pref(row, cells, preference) {
         if util > 100.0 {
             health -= (util - 100.0) * 0.25;
         }
@@ -899,40 +978,90 @@ pub(crate) fn compute_health_score(row: &PortfolioRow, cells: &CellStore) -> f64
     clamp_score(health)
 }
 
-pub(crate) fn compute_risk_rollup(row: &PortfolioRow, cells: &CellStore, rows: &RowStore) -> f64 {
+pub(crate) fn compute_health_score(row: &PortfolioRow, cells: &CellStore) -> f64 {
+    compute_health_score_with_pref(row, cells, ScorePreference::default())
+}
+
+pub(crate) fn compute_risk_rollup_with_pref(
+    row: &PortfolioRow,
+    cells: &CellStore,
+    rows: &RowStore,
+    preference: ScorePreference,
+) -> f64 {
     if row.child_ids.is_empty() {
-        return compute_risk_score(row, cells);
+        return compute_risk_score_with_pref(row, cells, preference);
     }
 
     let mut max_score: Option<f64> = None;
     for child_id in &row.child_ids {
         if let Some(child) = rows.get(child_id) {
-            let score = compute_risk_score(child, cells);
+            let score = compute_risk_score_with_pref(child, cells, preference);
             max_score = Some(max_score.map(|v| v.max(score)).unwrap_or(score));
         }
     }
 
-    max_score.unwrap_or_else(|| compute_risk_score(row, cells))
+    max_score.unwrap_or_else(|| compute_risk_score_with_pref(row, cells, preference))
 }
 
-pub(crate) fn compute_health_rollup(row: &PortfolioRow, cells: &CellStore, rows: &RowStore) -> f64 {
+pub(crate) fn compute_risk_rollup(row: &PortfolioRow, cells: &CellStore, rows: &RowStore) -> f64 {
+    compute_risk_rollup_with_pref(row, cells, rows, ScorePreference::default())
+}
+
+pub(crate) fn compute_health_rollup_with_pref(
+    row: &PortfolioRow,
+    cells: &CellStore,
+    rows: &RowStore,
+    preference: ScorePreference,
+) -> f64 {
     if row.child_ids.is_empty() {
-        return compute_health_score(row, cells);
+        return compute_health_score_with_pref(row, cells, preference);
     }
 
     let mut total = 0.0;
     let mut count = 0;
     for child_id in &row.child_ids {
         if let Some(child) = rows.get(child_id) {
-            total += compute_health_score(child, cells);
+            total += compute_health_score_with_pref(child, cells, preference);
             count += 1;
         }
     }
 
     if count == 0 {
-        compute_health_score(row, cells)
+        compute_health_score_with_pref(row, cells, preference)
     } else {
         clamp_score(total / count as f64)
+    }
+}
+
+pub(crate) fn compute_health_rollup(row: &PortfolioRow, cells: &CellStore, rows: &RowStore) -> f64 {
+    compute_health_rollup_with_pref(row, cells, rows, ScorePreference::default())
+}
+
+pub(crate) fn compute_resource_utilization_rollup_pct_with_pref(
+    row: &PortfolioRow,
+    cells: &CellStore,
+    rows: &RowStore,
+    preference: ScorePreference,
+) -> Option<f64> {
+    if row.child_ids.is_empty() {
+        return compute_resource_utilization_pct_with_pref(row, cells, preference);
+    }
+
+    let mut total = 0.0;
+    let mut count = 0;
+    for child_id in &row.child_ids {
+        if let Some(child) = rows.get(child_id) {
+            if let Some(util) = compute_resource_utilization_pct_with_pref(child, cells, preference) {
+                total += util;
+                count += 1;
+            }
+        }
+    }
+
+    if count == 0 {
+        compute_resource_utilization_pct_with_pref(row, cells, preference)
+    } else {
+        Some(clamp_score(total / count as f64))
     }
 }
 
@@ -941,26 +1070,7 @@ pub(crate) fn compute_resource_utilization_rollup_pct(
     cells: &CellStore,
     rows: &RowStore,
 ) -> Option<f64> {
-    if row.child_ids.is_empty() {
-        return compute_resource_utilization_pct(row, cells);
-    }
-
-    let mut total = 0.0;
-    let mut count = 0;
-    for child_id in &row.child_ids {
-        if let Some(child) = rows.get(child_id) {
-            if let Some(util) = compute_resource_utilization_pct(child, cells) {
-                total += util;
-                count += 1;
-            }
-        }
-    }
-
-    if count == 0 {
-        compute_resource_utilization_pct(row, cells)
-    } else {
-        Some(clamp_score(total / count as f64))
-    }
+    compute_resource_utilization_rollup_pct_with_pref(row, cells, rows, ScorePreference::default())
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -1334,6 +1444,7 @@ pub struct SpreadsheetWorkbook {
     pub sheets: SheetRegistry,
     pub views: ViewRegistry,
     pub registry: ComponentRegistry,
+    pub score_preference: ScorePreference,
 }
 
 impl SpreadsheetWorkbook {
@@ -1347,6 +1458,7 @@ impl SpreadsheetWorkbook {
             sheets: SheetRegistry::new(),
             views: ViewRegistry::new(),
             registry: ComponentRegistry::default(),
+            score_preference: ScorePreference::default(),
         }
     }
 
@@ -1360,6 +1472,7 @@ impl SpreadsheetWorkbook {
             sheets: SheetRegistry::empty(),
             views: ViewRegistry::empty(),
             registry: ComponentRegistry::default(),
+            score_preference: ScorePreference::default(),
         }
     }
 
