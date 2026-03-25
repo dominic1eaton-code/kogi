@@ -2410,7 +2410,7 @@ Key Project Portfolio Management Steps
 1. Strategic Alignment: Mapping projects and programs directly to business objectives. 
 2. Prioritization: Ranking initiatives based on value, risk, and urgency. 
 3. Resource Management: Allocating key personnel and funds. 
-4. Control Cycle: Regular (quarterly/monthly) reviews to pivot or scrap underperforming assets. [1, 3, 4, 9, 10]  
+4. Control Cycle: Regular (quarterly/monthly) reviews to pivot or scrap underperforming assets. [1, 3, 4, 9, 10]
 
 AI can make mistakes, so double-check responses
 
