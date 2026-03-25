@@ -2292,6 +2292,7 @@ items:
 
 portfolio.component
 portfolio.item
+portfolio.executor
 
 item.binder
 item.book
@@ -2302,4 +2303,45 @@ item.linktree
 item.owner[s]
 item.data
 item.metadata
+item.space
+
+---
+
+A portfolio component represents the high-level, strategic building blocks (projects, programs) aimed at business goals, while a portfolio item is a specific, actionable, or deliverable unit (a feature, case study, or work sample) designed for tactical planning, tracking, or showcasing. Components align to strategy; items are the granular work. 
+Portfolio Components (Strategic View)
+Definition: High-level, often large-scale initiatives within a portfolio.
+Examples: Projects, programs, sub-portfolios, or distinct lines of business.
+Purpose: To group work based on strategic objectives, allowing for better risk management and resource allocation.
+Scope: Broad and strategic; they often span multiple teams or long timeframes.
+
+Portfolio Items (Tactical View)
+Definition: Specific initiatives, features, or work samples that form the detailed components.
+Examples: A "new checkout page" feature, a UX project case study, a specific client deliverable.
+Purpose: To plan, track progress, and showcase specific value. In tools like Digital.ai or Agile, they can be broken down into smaller tasks or user stories.
+Scope: Focused and granular; often used to plan work across sprints or for portfolio roadmaps.
+
+Key Differences Summary
+Granularity: Components are larger (e.g., "Implement New CRM System"), while items are smaller (e.g., "Migrate Data").
+Context: "Component" is often used in management/strategic contexts (PMI), whereas "item" is frequently used in Agile/Software development tools.
+Showcase vs. Structure: In creative industries, an "item" is a single project in a portfolio, while a "component" might be an entire category of work.
+
+---
+
+Portfolio operational building blocks are the core components used to structure, manage, and optimize a collection of investments or projects to meet strategic goals. Key elements include defining the investment strategy (asset allocation, diversification), establishing governance for monitoring, tracking performance, risk management, and ensuring alignment with organizational objectives. 
+
+Key Portfolio Operational Building Blocks
+Strategy & Asset Allocation: Defining the investment thesis, diversification across asset classes (equities, fixed income, real estate), and setting target returns/risks.
+Performance Monitoring: Tracking key metrics such as ROI, IRR, MOIC, and TVPI to measure fund health.
+Risk Management & Rebalancing: Mitigating potential losses through scenario planning, hedging, and adjusting allocations to maintain the target structure.
+Capital Allocation & Reserves: Managing capital deployment, including initial checks, follow-on reserves, and recycling proceeds.
+Governance & Decision-Making: Establishing a steering group and PMO support to prioritize projects, manage budgets, and align with strategic goals.
+Operational Technology (for Facilities/Real Estate): Utilizing IoT sensors, AI/analytics, and automation for self-optimizing portfolio management. 
+
+Key Project Portfolio Management Steps
+Strategic Alignment: Mapping projects and programs directly to business objectives.
+Prioritization: Ranking initiatives based on value, risk, and urgency.
+Resource Management: Allocating key personnel and funds.
+Control Cycle: Regular (quarterly/monthly) reviews to pivot or scrap underperforming assets.
+
+---
 
