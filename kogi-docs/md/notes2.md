@@ -2578,6 +2578,6 @@ persona-PC
 - persona-PC can join spaces associate with the game project, chat and meet others interesting in the game project and connect with the game's project community
 
 collective
--
-s
+- 
+
 ---
