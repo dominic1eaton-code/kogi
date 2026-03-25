@@ -2556,10 +2556,14 @@ persona-entre/microprenuer
 
 persona-freelancer/consultant early career
 - looking for clients on the marketplace
+- has little organization in the work system and needs more systematic processes
+
+cooperative
+- 
 
 producer personas:
 persona-PA
-- busy consultant+entrepreneur who has assistants, high level of AI automation for the work systems, has network of resources/contacts to help them with endeavors, ideas, concepts, etc...
+- busy+seasoned+veteran consultant+entrepreneur who already has assistants, high level of AI automation for their work systems, has network of resources/contacts to help them with endeavors, ideas, concepts, etc...
   - can have assistants+agents manage their professional portfolio of entrepreneurial+consulting services, where other users can search for them and their portfolio
     - persona-PA portfolio has items that contains their consulting service packages, courses, artifacts that can be traded and sold on the market AND has spaces associated with it for communities to form around their professional service portfolio (conencts skool, upwork, fiverr, oddwork, etc...)
 
@@ -2573,4 +2577,7 @@ persona-PC
 - developer persona-PC may want to contribute their skills+expertise+knowledge to the game project, and perhaps trade skills for liquidity/equity on the marketplace
 - persona-PC can join spaces associate with the game project, chat and meet others interesting in the game project and connect with the game's project community
 
+collective
+-
+s
 ---
