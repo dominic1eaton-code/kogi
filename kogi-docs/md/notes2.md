@@ -2202,3 +2202,72 @@ action:
 - tag
 - edit
 - view
+
+containers:
+- record
+- book
+- note
+- memo
+- binder
+- archive
+- record
+- dossier
+- folder
+- schedule
+- directory
+- calendar
+- gantt
+- roadmap
+- timebox
+- wallet
+- account
+- room
+- chat
+- graph
+- matrix
+- grid
+
+items:
+- solution
+- resource
+- asset
+- artifact
+- investment
+- entity
+- estate
+- real estate
+- capital
+- land
+- labor
+- skill
+- knowledge
+- contact
+- charter
+- document
+- file
+- work package
+- project
+- program
+- portfolio
+- gig
+- contract
+- consultation
+- meeting
+- appointment
+- conference
+- space
+- listing
+- booking
+- benefit
+- security
+- liquidity
+- cash
+- credit
+- debt
+- tax
+- invoice
+- offer
+- deal
+- bid
+- request
+- proposal
