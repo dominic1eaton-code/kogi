@@ -2485,7 +2485,7 @@ Quick Comparison Table
 A component is the highest-level element in this context, representing a project, program, or sub-portfolio that is being managed centrally. These components compete for resources and are selected to support an organization's strategic objectives. 
 
 * Purpose: To achieve strategic objectives and align with business goals.
-* Key Aspect: Components can be independent of each other, unlike projects within a program. 
+* Key Aspect: Components can be independent of each other, unlike projects within a program.
 
 ## 2. Portfolio Item
 
@@ -2497,8 +2497,6 @@ Portfolio Items (sometimes referred to as items in an Agile Portfolio Tree) are 
 ## 3. Portfolio Task
 
 A Portfolio Task is a specific action item within a portfolio. While portfolio items are large "work units," tasks are often granular actions assigned to individuals. In educational or specialized software contexts (like OpenOlat), a "portfolio task" is an assignment or folder meant to be filled with work.
-Northeastern University Graduate Programs
-Northeastern University Graduate Programs
 
 * Purpose: To track specific, manageable actions or to collect "artifacts" for assessment.
 * Key Aspect: Focused on the execution and completion of specific steps. 
