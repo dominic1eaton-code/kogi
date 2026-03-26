@@ -2575,6 +2575,8 @@ IP management system
     - branding, logos, marks
     - contracts, agreements
 
+expand C:\dev\ws\kogi_dev\kogi-portfolio to fully support the other modules (marketplace, hub, office, wallet, spaces) and also be their ground source of truth, maintaining all of their elements+components+resources+items+etc... in the master portfolio hyperspreadsheet and portfolio system
+
 ---
 
 consumer persona:
