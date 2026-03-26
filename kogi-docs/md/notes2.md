@@ -861,6 +861,13 @@ work management system
         - frameworks
         - models
     - work boards
+      - agile boards
+      - kanband boards
+      - scrum boards
+      - note boards
+      - pipeline boards
+      - idea+concept+design boards
+      - custom boards
     - work timelines
         - schedules
         - gantts
@@ -2545,7 +2552,28 @@ then also,
 
 now implement the C:\dev\ws\kogi_dev\kogi-client\web_client_dev\kogi-ui\src\app\marketplace backend in C:\dev\ws\kogi_dev\kogi-marketplace, rust backend library + go frontend microservice + documentation structure, incorporating the market docs features in C:\dev\ws\kogi_dev\kogi-docs\md, where all marketplace resources/elements/items are tracked+managed+administered+version controlled+maintained by the C:\dev\ws\kogi_dev\kogi-portfolio system+master speadsheet
 
-now implement the C:\dev\ws\kogi_dev\kogi-client\web_client_dev\kogi-ui\src\app\spaces backend in C:\dev\ws\kogi_dev\kogi-spaces, rust backend library + go frontend microservice + documentation structure, incorporating the spaces docs features in C:\dev\ws\kogi_dev\kogi-docs\md, where all spaces resources/elements/items are tracked+managed+administered+version controlled+maintained by the C:\dev\ws\kogi_dev\kogi-portfolio system+master speadsheet
+now implement the C:\dev\ws\kogi_dev\kogi-client\web_client_dev\kogi-ui\src\app\spaces backend in C:\dev\ws\kogi_dev\kogi-spaces, rust backend library + go frontend microservice + documentation structure, incorporating the spaces docs features in C:\dev\ws\kogi_dev\kogi-docs\md, where all spaces resources/elements/items are tracked+managed+administered+version controlled+maintained by the C:\dev\ws\kogi_dev\kogi-portfolio system+master speadsheet. generate the spaces go microservice in C:\dev\ws\kogi_dev\kogi-spaces\service and the spaces docs in C:\dev\ws\kogi_dev\kogi-spaces\docs
+
+now implement the C:\dev\ws\kogi_dev\kogi-client\web_client_dev\kogi-ui\src\app\office backend in C:\dev\ws\kogi_dev\kogi-office, rust backend library + go frontend microservice + documentation structure, incorporating the office docs features in C:\dev\ws\kogi_dev\kogi-docs\md, where all office resources/elements/items are tracked+managed+administered+version controlled+maintained by the C:\dev\ws\kogi_dev\kogi-portfolio system+master speadsheet. generate the office go microservice in C:\dev\ws\kogi_dev\kogi-office\service and the office docs in C:\dev\ws\kogi_dev\kogi-office\docs
+
+also make sure the WorkManagementSystem is implemented in the kogi OfficeSystem along with the other office systems+components+modules+services+features:
+
+now implement the C:\dev\ws\kogi_dev\kogi-client\web_client_dev\kogi-ui\src\app\hub backend in C:\dev\ws\kogi_dev\kogi-hub, with voting + teams + collectives + cooperatives + federations + (decentralized) autonomous organizations/cells + contract management + rights + independent worker members management + decentralized governance management + all of the other features in the hub UIUX app, with rust backend library + go frontend microservice + documentation structure, incorporating the hub docs features in C:\dev\ws\kogi_dev\kogi-docs\md, where all hub resources/elements/items are tracked+managed+administered+version controlled+maintained by the C:\dev\ws\kogi_dev\kogi-portfolio system+master speadsheet. generate the hub go microservice in C:\dev\ws\kogi_dev\kogi-hub\service and the hub docs in C:\dev\ws\kogi_dev\kogi-hub\docs
+
+* contracting, agreements, licencising, IP management, entity management
+    * studio agreements, contracts, licencing, entity management
+    * organization agreements, contracts, licencing, entity management
+    * fund agreements, contracts, licencing, entity management
+
+IP management system
+    - patents
+    - rights
+    - copyrights
+    - trademarks
+    - watermarks
+    - licenses
+    - branding, logos, marks
+    - contracts, agreements
 
 ---
 

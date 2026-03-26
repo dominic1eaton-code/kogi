@@ -1,0 +1,18 @@
+[package]
+name = "kogi-spaces"
+version = "0.1.0"
+edition = "2021"
+authors = ["Kogi Platform Team"]
+description = "Kogi Spaces backend system"
+license = "Proprietary"
+
+[lib]
+crate-type = ["rlib", "cdylib"]
+
+[dependencies]
+kogi-portfolio = { path = "../kogi-portfolio" }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+uuid = { version = "1", features = ["v4", "serde"] }
+chrono = { version = "0.4", features = ["serde"] }
+thiserror = "1"
