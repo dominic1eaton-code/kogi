@@ -1,0 +1,1103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KOGI · Dashboard</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;600;700&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap');
+:root{
+  --bg:#0a0b0f;--bg1:#0f1117;--bg2:#13151e;--bg3:#181c28;--bg4:#1e2235;
+  --border:rgba(255,255,255,0.06);--border2:rgba(255,255,255,0.1);--border3:#232a42;
+  --text:#c8ccdb;--text2:#7a8099;--text3:#4a5068;
+  --cyan:#00d4aa;--gold:#c8a84b;--violet:#7c5cbf;--rose:#c45c7a;
+  --orange:#c87c3a;--blue:#3a7cc8;--green:#4aab6d;--pink:#bf5ca0;
+  --pnav-w:58px;--snav-w:168px;
+  --mono:'IBM Plex Mono',monospace;--sans:'IBM Plex Sans',sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{width:100%;height:100%;background:var(--bg);font-family:var(--sans);color:var(--text);font-size:10px;overflow:hidden}
+.app{display:flex;width:100%;height:100vh;overflow:hidden}
+
+/* ── Primary Nav ── */
+.p-nav{width:var(--pnav-w);background:var(--bg1);border-right:1px solid var(--border);flex-shrink:0;display:flex;flex-direction:column;align-items:center;z-index:20}
+.p-nav-top{display:flex;flex-direction:column;align-items:center;gap:1px;flex:1;padding:8px 0;width:100%}
+.p-nav-bottom{display:flex;flex-direction:column;align-items:center;padding:8px 0;width:100%}
+.p-logo{font-family:var(--mono);font-size:11px;font-weight:700;color:var(--cyan);letter-spacing:0.1em;padding:8px 0 5px;text-align:center;cursor:pointer}
+.p-avatar{width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,var(--cyan),var(--violet));display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:9px;font-weight:700;color:#000;cursor:pointer;text-decoration:none;margin-bottom:4px;transition:all 0.15s;border:2px solid transparent}
+.p-avatar:hover{border-color:var(--cyan)}
+.p-divider{width:32px;height:1px;background:var(--border);margin:4px 0}
+.p-link{display:flex;flex-direction:column;align-items:center;gap:2px;padding:8px 0;cursor:pointer;color:var(--text3);text-decoration:none;width:100%;transition:all 0.12s;border-left:2px solid transparent}
+.p-link:hover{color:var(--text2);background:rgba(255,255,255,0.02)}
+.p-link.active{color:var(--cyan);border-left-color:var(--cyan);background:rgba(0,212,170,0.05)}
+.p-link-label{font-family:var(--mono);font-size:6px;letter-spacing:0.06em;text-transform:uppercase}
+.p-link svg{width:15px;height:15px}
+
+/* ── Secondary Nav ── */
+.s-nav{width:var(--snav-w);background:var(--bg1);border-right:1px solid var(--border);flex-shrink:0;display:flex;flex-direction:column;overflow:hidden}
+.s-nav-header{padding:12px 13px 9px;border-bottom:1px solid var(--border);flex-shrink:0}
+.s-nav-title{font-family:var(--mono);font-size:10px;font-weight:700;color:var(--text)}
+.s-nav-meta{font-family:var(--mono);font-size:7px;color:var(--text3);margin-top:2px}
+.s-nav-items{flex:1;overflow-y:auto;padding:4px 0}
+.s-sec-label{font-family:var(--mono);font-size:6px;letter-spacing:0.14em;text-transform:uppercase;color:var(--text3);padding:8px 13px 3px}
+.s-item{display:flex;align-items:center;gap:6px;padding:5px 13px;font-family:var(--mono);font-size:8px;color:var(--text3);cursor:pointer;border-left:2px solid transparent;transition:all 0.1s;white-space:nowrap;text-decoration:none}
+.s-item:hover{background:var(--bg2);color:var(--text2)}
+.s-item.active{background:var(--bg2);color:var(--text);border-left-color:var(--cyan)}
+.s-dot{width:5px;height:5px;border-radius:50%;background:currentColor;flex-shrink:0}
+.s-badge{margin-left:auto;font-family:var(--mono);font-size:6px;padding:1px 4px;border-radius:2px;background:var(--bg3);color:var(--text3)}
+.s-item.active .s-badge{background:rgba(0,212,170,0.12);color:var(--cyan)}
+.s-pulse{width:5px;height:5px;border-radius:50%;background:var(--cyan);flex-shrink:0;animation:pulse 2s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.3}}
+
+/* ── Main ── */
+.main{flex:1;display:flex;flex-direction:column;min-width:0;overflow:hidden}
+.toolbar{height:34px;background:var(--bg1);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 14px;gap:8px;flex-shrink:0}
+.tb-title{font-family:var(--mono);font-size:10px;font-weight:600;color:var(--text)}
+.tb-sub{font-family:var(--mono);font-size:8px;color:var(--text3)}
+.tb-spacer{flex:1}
+.g-btn{background:var(--bg2);border:1px solid var(--border2);border-radius:3px;padding:3px 9px;font-family:var(--mono);font-size:8px;color:var(--text2);cursor:pointer;transition:all 0.12s;white-space:nowrap}
+.g-btn:hover{border-color:var(--cyan);color:var(--cyan)}
+.g-btn.primary{background:var(--cyan);border-color:var(--cyan);color:#000;font-weight:600}
+.g-btn.primary:hover{background:#00efc0}
+.g-btn.danger{border-color:var(--rose);color:var(--rose)}
+
+/* ── Stat Row ── */
+.stat-row{display:flex;background:var(--bg2);border-bottom:1px solid var(--border);flex-shrink:0}
+.stat-cell{flex:1;padding:9px 14px;border-right:1px solid var(--border);cursor:default}
+.stat-cell:last-child{border-right:none}
+.stat-lbl{font-family:var(--mono);font-size:7px;letter-spacing:0.1em;text-transform:uppercase;color:var(--text3);margin-bottom:3px}
+.stat-num{font-family:var(--mono);font-size:17px;font-weight:700;color:var(--text);line-height:1}
+.stat-num.cyan{color:var(--cyan)}.stat-num.gold{color:var(--gold)}.stat-num.rose{color:var(--rose)}.stat-num.green{color:var(--green)}
+.stat-delta{font-family:var(--mono);font-size:7px;color:var(--green);margin-top:2px}
+.stat-delta.neg{color:var(--rose)}
+.stat-bar-bg{height:2px;background:var(--bg3);border-radius:1px;margin-top:5px;overflow:hidden}
+.stat-bar-fill{height:100%;border-radius:1px;transition:width 1s ease}
+
+/* ── Content & Subpages ── */
+.content{flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:12px}
+.subpage{display:none}.subpage.active{display:flex;flex-direction:column;gap:12px}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+.row-70-30{display:grid;grid-template-columns:2fr 1fr;gap:12px}
+.row-60-40{display:grid;grid-template-columns:3fr 2fr;gap:12px}
+
+/* ── Cards ── */
+.card{background:var(--bg1);border:1px solid var(--border);border-radius:4px;overflow:hidden}
+.card-hdr{padding:9px 12px 8px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px}
+.card-hdr-title{font-family:var(--mono);font-size:9px;font-weight:600;color:var(--text);flex:1}
+.card-hdr-badge{font-family:var(--mono);font-size:7px;padding:1px 5px;border-radius:2px;border:1px solid}
+.badge-cyan{border-color:rgba(0,212,170,0.3);color:var(--cyan);background:rgba(0,212,170,0.06)}
+.badge-gold{border-color:rgba(200,168,75,0.3);color:var(--gold);background:rgba(200,168,75,0.06)}
+.badge-rose{border-color:rgba(196,92,122,0.3);color:var(--rose);background:rgba(196,92,122,0.06)}
+.badge-green{border-color:rgba(74,171,109,0.3);color:var(--green);background:rgba(74,171,109,0.06)}
+.badge-violet{border-color:rgba(124,92,191,0.3);color:var(--violet);background:rgba(124,92,191,0.06)}
+.card-body{padding:11px 12px}
+.sec-label{font-family:var(--mono);font-size:7px;letter-spacing:0.12em;text-transform:uppercase;color:var(--text3);margin-bottom:7px}
+
+/* ── Insight Cards ── */
+.insight{border-radius:4px;padding:11px 13px;border:1px solid;margin-bottom:8px}
+.insight:last-child{margin-bottom:0}
+.insight.amber{border-color:rgba(200,168,75,0.3);background:rgba(200,168,75,0.04)}
+.insight.rose{border-color:rgba(196,92,122,0.3);background:rgba(196,92,122,0.04)}
+.insight.cyan{border-color:rgba(0,212,170,0.3);background:rgba(0,212,170,0.04)}
+.insight.blue{border-color:rgba(58,124,200,0.3);background:rgba(58,124,200,0.04)}
+.insight.violet{border-color:rgba(124,92,191,0.3);background:rgba(124,92,191,0.04)}
+.insight-type{font-family:var(--mono);font-size:6px;letter-spacing:0.14em;text-transform:uppercase;font-weight:700;margin-bottom:4px}
+.amber .insight-type{color:var(--gold)}.rose .insight-type{color:var(--rose)}.cyan .insight-type{color:var(--cyan)}.blue .insight-type{color:var(--blue)}.violet .insight-type{color:var(--violet)}
+.insight-title{font-family:var(--mono);font-size:10px;font-weight:600;color:var(--text);margin-bottom:4px}
+.insight-body{font-family:var(--sans);font-size:9px;color:var(--text2);line-height:1.55;margin-bottom:9px}
+.insight-acts{display:flex;gap:6px;flex-wrap:wrap}
+.i-act{font-family:var(--mono);font-size:7px;padding:3px 9px;border-radius:3px;border:1px solid;cursor:pointer;transition:all 0.1s}
+.i-act.primary{background:var(--cyan);border-color:var(--cyan);color:#000;font-weight:600}
+.i-act.primary:hover{background:#00efc0}
+.i-act.ghost{border-color:var(--border2);color:var(--text3)}
+.i-act.ghost:hover{border-color:var(--text2);color:var(--text2)}
+
+/* ── KV Rows ── */
+.kv{display:flex;justify-content:space-between;align-items:center;padding:4px 0;border-bottom:1px solid var(--border)}
+.kv:last-child{border-bottom:none}
+.kv-k{font-family:var(--mono);font-size:8px;color:var(--text3)}
+.kv-v{font-family:var(--mono);font-size:8px;color:var(--text2);font-weight:500}
+.kv-v.cyan{color:var(--cyan)}.kv-v.gold{color:var(--gold)}.kv-v.rose{color:var(--rose)}.kv-v.green{color:var(--green)}
+
+/* ── Activity/Timeline ── */
+.feed-item{display:flex;gap:10px;padding:7px 0;border-bottom:1px solid var(--border)}
+.feed-item:last-child{border-bottom:none}
+.feed-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0;margin-top:2px}
+.feed-dot.cyan{background:var(--cyan)}.feed-dot.gold{background:var(--gold)}.feed-dot.rose{background:var(--rose)}.feed-dot.green{background:var(--green)}.feed-dot.violet{background:var(--violet)}.feed-dot.blue{background:var(--blue)}
+.feed-body{flex:1}
+.feed-title{font-family:var(--mono);font-size:8px;color:var(--text);margin-bottom:1px}
+.feed-meta{font-family:var(--mono);font-size:7px;color:var(--text3)}
+.feed-amt{font-family:var(--mono);font-size:8px;font-weight:600}
+.feed-amt.pos{color:var(--cyan)}.feed-amt.neg{color:var(--rose)}
+
+/* ── Client Rows ── */
+.client-mini{display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--border);cursor:pointer;transition:all 0.1s}
+.client-mini:last-child{border-bottom:none}
+.client-mini:hover{background:rgba(255,255,255,0.01);margin:0 -12px;padding:6px 12px}
+.cm-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.cm-name{font-family:var(--mono);font-size:8px;color:var(--text);flex:1;font-weight:500}
+.cm-tag{font-family:var(--mono);font-size:6px;padding:1px 4px;border-radius:2px;background:var(--bg2);border:1px solid var(--border);color:var(--text3)}
+.cm-ehr{font-family:var(--mono);font-size:8px;color:var(--text2)}
+.cm-share{font-family:var(--mono);font-size:7px;color:var(--text3)}
+
+/* ── Progress / EHR Bars ── */
+.prog-row{display:flex;align-items:center;gap:8px;padding:4px 0}
+.prog-label{font-family:var(--mono);font-size:7px;color:var(--text3);width:80px;flex-shrink:0}
+.prog-track{flex:1;height:4px;background:var(--bg3);border-radius:2px;overflow:hidden}
+.prog-fill{height:100%;border-radius:2px;transition:width 0.8s ease}
+.prog-val{font-family:var(--mono);font-size:7px;color:var(--text2);width:36px;text-align:right;flex-shrink:0}
+
+/* ── Shock Insight Hero ── */
+.shock-hero{background:var(--bg1);border:1px solid rgba(0,212,170,0.2);border-radius:6px;padding:20px 22px;position:relative;overflow:hidden}
+.shock-hero::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--cyan),var(--violet))}
+.shock-badge{font-family:var(--mono);font-size:6px;letter-spacing:0.18em;text-transform:uppercase;color:var(--cyan);background:rgba(0,212,170,0.08);border:1px solid rgba(0,212,170,0.2);padding:2px 7px;border-radius:2px;display:inline-block;margin-bottom:10px}
+.shock-compare{display:flex;align-items:center;gap:16px;margin-bottom:12px}
+.shock-num{font-family:var(--mono);font-size:28px;font-weight:700;line-height:1}
+.shock-num.hi{color:var(--cyan)}.shock-num.lo{color:var(--rose)}
+.shock-label{font-family:var(--mono);font-size:8px;color:var(--text3);margin-top:3px}
+.shock-vs{font-family:var(--mono);font-size:11px;color:var(--text3);padding:0 4px}
+.shock-insight{font-family:var(--sans);font-size:10px;color:var(--text2);line-height:1.6;margin-bottom:14px}
+.shock-insight strong{color:var(--text)}
+.shock-hook{font-family:var(--mono);font-size:8px;color:var(--gold);margin-bottom:12px;padding:7px 10px;background:rgba(200,168,75,0.06);border-left:2px solid var(--gold);border-radius:0 3px 3px 0}
+
+/* ── Wallet Summary ── */
+.wallet-ring{display:flex;gap:10px;align-items:center}
+.wallet-segment{flex:1;border-radius:3px;padding:9px 10px}
+.ws-label{font-family:var(--mono);font-size:6px;letter-spacing:0.12em;text-transform:uppercase;color:var(--text3);margin-bottom:4px}
+.ws-val{font-family:var(--mono);font-size:13px;font-weight:700}
+.ws-pct{font-family:var(--mono);font-size:7px;color:var(--text3);margin-top:1px}
+
+/* ── Project Cards ── */
+.proj-card{background:var(--bg2);border:1px solid var(--border);border-radius:3px;padding:10px 12px;cursor:pointer;transition:border-color 0.1s}
+.proj-card:hover{border-color:var(--border2)}
+.proj-status{font-family:var(--mono);font-size:6px;letter-spacing:0.1em;text-transform:uppercase;font-weight:600;padding:2px 5px;border-radius:2px;display:inline-block;margin-bottom:6px}
+.status-active{color:var(--cyan);background:rgba(0,212,170,0.1);border:1px solid rgba(0,212,170,0.2)}
+.status-review{color:var(--gold);background:rgba(200,168,75,0.1);border:1px solid rgba(200,168,75,0.2)}
+.status-draft{color:var(--text3);background:var(--bg3);border:1px solid var(--border)}
+.status-complete{color:var(--green);background:rgba(74,171,109,0.1);border:1px solid rgba(74,171,109,0.2)}
+.status-paused{color:var(--orange);background:rgba(200,124,58,0.1);border:1px solid rgba(200,124,58,0.2)}
+.proj-name{font-family:var(--mono);font-size:9px;font-weight:600;color:var(--text);margin-bottom:3px}
+.proj-client{font-family:var(--mono);font-size:7px;color:var(--text3);margin-bottom:8px}
+.proj-metrics{display:flex;gap:12px}
+.proj-metric-val{font-family:var(--mono);font-size:10px;font-weight:600;color:var(--text)}
+.proj-metric-lbl{font-family:var(--mono);font-size:6px;color:var(--text3);text-transform:uppercase;letter-spacing:0.08em}
+.proj-progress{margin-top:8px}
+.proj-prog-track{height:3px;background:var(--bg3);border-radius:2px;overflow:hidden}
+.proj-prog-fill{height:100%;border-radius:2px}
+.proj-prog-label{display:flex;justify-content:space-between;font-family:var(--mono);font-size:6px;color:var(--text3);margin-top:3px}
+
+/* ── Mini Chart (CSS bars) ── */
+.mini-chart{display:flex;align-items:flex-end;gap:3px;height:40px}
+.bar{flex:1;border-radius:2px 2px 0 0;min-height:2px;transition:height 0.4s ease;cursor:pointer}
+.bar:hover{opacity:0.8}
+.bar.cyan{background:var(--cyan)}.bar.gold{background:var(--gold)}.bar.violet{background:var(--violet)}.bar.blue{background:var(--blue)}
+
+/* ── Goals ── */
+.goal-row{display:flex;align-items:center;gap:10px;padding:6px 0;border-bottom:1px solid var(--border)}
+.goal-row:last-child{border-bottom:none}
+.goal-icon{font-size:13px;flex-shrink:0}
+.goal-info{flex:1}
+.goal-title{font-family:var(--mono);font-size:8px;color:var(--text);margin-bottom:2px}
+.goal-meta{font-family:var(--mono);font-size:7px;color:var(--text3)}
+.goal-pct{font-family:var(--mono);font-size:8px;font-weight:600;color:var(--cyan)}
+
+/* ── Allocation heat ── */
+.alloc-grid{display:flex;flex-direction:column;gap:5px}
+.alloc-row{display:flex;align-items:center;gap:8px}
+.alloc-name{font-family:var(--mono);font-size:7px;color:var(--text2);width:85px;flex-shrink:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.alloc-bar{flex:1;height:14px;border-radius:2px;display:flex;overflow:hidden}
+.alloc-seg{height:100%;transition:width 0.6s ease}
+.alloc-seg.cyan{background:var(--cyan)}.alloc-seg.gold{background:var(--gold)}.alloc-seg.violet{background:var(--violet)}.alloc-seg.rose{background:var(--rose)}.alloc-seg.blue{background:var(--blue)}.alloc-seg.empty{background:var(--bg3)}
+.alloc-pct{font-family:var(--mono);font-size:7px;color:var(--text3);width:28px;text-align:right;flex-shrink:0}
+
+/* ── Health Score Ring ── */
+.health-ring{display:flex;align-items:center;gap:14px}
+.ring-svg{flex-shrink:0}
+.health-score{font-family:var(--mono);font-size:22px;font-weight:700;color:var(--cyan)}
+.health-label{font-family:var(--mono);font-size:7px;color:var(--text3);text-transform:uppercase;letter-spacing:0.1em;margin-top:2px}
+.health-state{font-family:var(--mono);font-size:8px;color:var(--green);margin-top:4px}
+
+/* ── Notification dot ── */
+.notif-dot{width:5px;height:5px;border-radius:50%;background:var(--rose);margin-left:auto}
+
+/* ── Pipeline mini ── */
+.pipe-stage{display:flex;align-items:center;gap:6px;padding:5px 0;border-bottom:1px solid var(--border)}
+.pipe-stage:last-child{border-bottom:none}
+.pipe-icon{font-size:11px}
+.pipe-info{flex:1}
+.pipe-name{font-family:var(--mono);font-size:8px;color:var(--text)}
+.pipe-meta{font-family:var(--mono);font-size:7px;color:var(--text3)}
+.pipe-val{font-family:var(--mono);font-size:8px;font-weight:600;color:var(--text2)}
+
+/* ── Scrollbar ── */
+::-webkit-scrollbar{width:4px;height:4px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px}
+
+/* ── Toast ── */
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--bg3);border:1px solid var(--border2);border-radius:4px;padding:7px 14px;font-family:var(--mono);font-size:8px;color:var(--text2);opacity:0;transition:all 0.2s;z-index:200;pointer-events:none;white-space:nowrap}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+</style>
+</head>
+<body>
+<div class="app">
+
+<!-- ══ PRIMARY NAV ══ -->
+<nav class="p-nav">
+  <div class="p-nav-top">
+    <div class="p-logo">K</div>
+    <a href="profile.html" class="p-avatar" title="Profile">MJ</a>
+    <div class="p-divider"></div>
+    <a href="dashboard.html" class="p-link active" title="Dashboard">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+      <span class="p-link-label">Dash</span>
+    </a>
+    <a href="portfolio.html" class="p-link" title="Portfolio">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="3"/><path d="M3 12h3m12 0h3M12 3v3m0 12v3"/><circle cx="12" cy="12" r="9"/></svg>
+      <span class="p-link-label">Portfolio</span>
+    </a>
+    <a href="wallet.html" class="p-link" title="Wallet">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 14a1 1 0 1 1 0-2 1 1 0 0 1 0 2z" fill="currentColor"/><path d="M2 10h20M7 7V5a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v2"/></svg>
+      <span class="p-link-label">Wallet</span>
+    </a>
+    <a href="office.html" class="p-link" title="Office">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+      <span class="p-link-label">Office</span>
+    </a>
+  </div>
+  <div class="p-nav-bottom">
+    <a href="settings.html" class="p-link" title="Settings">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      <span class="p-link-label">Settings</span>
+    </a>
+  </div>
+</nav>
+
+<!-- ══ SECONDARY NAV ══ -->
+<nav class="s-nav">
+  <div class="s-nav-header">
+    <div class="s-nav-title">Dashboard</div>
+    <div class="s-nav-meta">Marcus Johnson · March 2026</div>
+  </div>
+  <div class="s-nav-items">
+    <div class="s-sec-label">Overview</div>
+    <div class="s-item active" onclick="showPage('overview')"><div class="s-pulse"></div>Overview<span class="s-badge">Live</span></div>
+    <div class="s-item" onclick="showPage('insights')"><div class="s-dot"></div>Insights<span class="s-badge">4</span></div>
+    <div class="s-item" onclick="showPage('activity')"><div class="s-dot"></div>Activity Feed</div>
+
+    <div class="s-sec-label">Income</div>
+    <div class="s-item" onclick="showPage('pulse')"><div class="s-dot"></div>Income Pulse</div>
+    <div class="s-item" onclick="showPage('allocation')"><div class="s-dot"></div>Time Allocation</div>
+    <div class="s-item" onclick="showPage('ehr')"><div class="s-dot"></div>EHR Analysis</div>
+
+    <div class="s-sec-label">Projects</div>
+    <div class="s-item" onclick="showPage('projects')"><div class="s-dot"></div>All Projects<span class="s-badge">6</span></div>
+    <div class="s-item" onclick="showPage('proj-income')"><div class="s-dot"></div>Project Income</div>
+    <div class="s-item" onclick="showPage('proj-health')"><div class="s-dot"></div>Project Health</div>
+
+    <div class="s-sec-label">Portfolio</div>
+    <div class="s-item" onclick="showPage('clients')"><div class="s-dot"></div>Top Clients</div>
+    <div class="s-item" onclick="showPage('pipeline')"><div class="s-dot"></div>Pipeline Snapshot</div>
+
+    <div class="s-sec-label">Goals</div>
+    <div class="s-item" onclick="showPage('goals')"><div class="s-dot"></div>Goals & Progress</div>
+    <div class="s-item" onclick="showPage('health')"><div class="s-dot"></div>Portfolio Health</div>
+  </div>
+</nav>
+
+<!-- ══ MAIN ══ -->
+<div class="main">
+  <!-- Toolbar -->
+  <div class="toolbar">
+    <span class="tb-title">Dashboard</span>
+    <span class="tb-sub">/ Overview</span>
+    <div class="tb-spacer"></div>
+    <button class="g-btn" onclick="toast('Syncing all accounts…')">↻ Sync</button>
+    <button class="g-btn" onclick="showPage('insights')">4 Insights</button>
+    <button class="g-btn primary" onclick="showModal('add-income')">+ Log Income</button>
+  </div>
+
+  <!-- Stat Row -->
+  <div class="stat-row">
+    <div class="stat-cell">
+      <div class="stat-lbl">Available to Spend</div>
+      <div class="stat-num cyan">$3,841</div>
+      <div class="stat-delta">↑ $420 from last month</div>
+      <div class="stat-bar-bg"><div class="stat-bar-fill" style="width:68%;background:var(--cyan)"></div></div>
+    </div>
+    <div class="stat-cell">
+      <div class="stat-lbl">Monthly Income</div>
+      <div class="stat-num gold">$9,200</div>
+      <div class="stat-delta">↑ 12.4% vs prior month</div>
+      <div class="stat-bar-bg"><div class="stat-bar-fill" style="width:82%;background:var(--gold)"></div></div>
+    </div>
+    <div class="stat-cell">
+      <div class="stat-lbl">Avg EHR (est.)</div>
+      <div class="stat-num">$62/hr</div>
+      <div class="stat-delta neg">↓ $4 vs 3-month avg</div>
+      <div class="stat-bar-bg"><div class="stat-bar-fill" style="width:54%;background:var(--text2)"></div></div>
+    </div>
+    <div class="stat-cell">
+      <div class="stat-lbl">Active Clients</div>
+      <div class="stat-num">7</div>
+      <div class="stat-delta">2 new this month</div>
+      <div class="stat-bar-bg"><div class="stat-bar-fill" style="width:40%;background:var(--violet)"></div></div>
+    </div>
+    <div class="stat-cell">
+      <div class="stat-lbl">Portfolio Score</div>
+      <div class="stat-num green">0.68</div>
+      <div class="stat-delta">Developing → Strong</div>
+      <div class="stat-bar-bg"><div class="stat-bar-fill" style="width:68%;background:var(--green)"></div></div>
+    </div>
+  </div>
+
+  <!-- Content -->
+  <div class="content">
+
+    <!-- ── OVERVIEW ── -->
+    <div id="page-overview" class="subpage active">
+      <!-- Shock Insight Hero -->
+      <div class="shock-hero">
+        <div class="shock-badge">⚡ Shock Insight</div>
+        <div class="shock-compare">
+          <div>
+            <div class="shock-num hi">$94/hr</div>
+            <div class="shock-label">Meridian Creative</div>
+          </div>
+          <div class="shock-vs">vs</div>
+          <div>
+            <div class="shock-num lo">$18/hr</div>
+            <div class="shock-label">RetailCo Group</div>
+          </div>
+        </div>
+        <div class="shock-hook">You are earning 5.2× more from one client than another — and RetailCo takes 34% of your estimated hours.</div>
+        <div class="shock-insight">You have worked with RetailCo for <strong>2 years</strong>. Their effective rate places them at the <strong>bottom 12%</strong> of your client portfolio. Meanwhile, Meridian — your newest client — delivers your highest EHR with <strong>half the time investment</strong>.</div>
+        <div class="insight-acts">
+          <button class="i-act primary" onclick="toast('Opening rate review for RetailCo…')">Review RetailCo Rate</button>
+          <button class="i-act ghost" onclick="toast('Snoozing for 14 days…')">Snooze 14d</button>
+          <button class="i-act ghost" onclick="showPage('ehr')">Full EHR View</button>
+        </div>
+      </div>
+
+      <div class="row-70-30">
+        <!-- Left column -->
+        <div style="display:flex;flex-direction:column;gap:12px">
+          <!-- Active Projects -->
+          <div class="card">
+            <div class="card-hdr">
+              <span class="card-hdr-title">Active Projects</span>
+              <span class="card-hdr-badge badge-cyan">6 Active</span>
+              <button class="g-btn" onclick="showPage('projects')" style="margin-left:4px">View All →</button>
+            </div>
+            <div class="card-body">
+              <div class="row3">
+                <div class="proj-card" onclick="showPage('projects')">
+                  <div class="proj-status status-active">Active</div>
+                  <div class="proj-name">Brand Identity Refresh</div>
+                  <div class="proj-client">Meridian Creative</div>
+                  <div class="proj-metrics">
+                    <div><div class="proj-metric-val">$4,800</div><div class="proj-metric-lbl">Earned</div></div>
+                    <div><div class="proj-metric-val">$94/hr</div><div class="proj-metric-lbl">EHR</div></div>
+                    <div><div class="proj-metric-val">18d</div><div class="proj-metric-lbl">Left</div></div>
+                  </div>
+                  <div class="proj-progress">
+                    <div class="proj-prog-track"><div class="proj-prog-fill" style="width:68%;background:var(--cyan)"></div></div>
+                    <div class="proj-prog-label"><span>68% Complete</span><span>$7,000 total</span></div>
+                  </div>
+                </div>
+                <div class="proj-card" onclick="showPage('projects')">
+                  <div class="proj-status status-review">In Review</div>
+                  <div class="proj-name">Mobile App UI</div>
+                  <div class="proj-client">TechVault Inc</div>
+                  <div class="proj-metrics">
+                    <div><div class="proj-metric-val">$3,200</div><div class="proj-metric-lbl">Earned</div></div>
+                    <div><div class="proj-metric-val">$67/hr</div><div class="proj-metric-lbl">EHR</div></div>
+                    <div><div class="proj-metric-val">5d</div><div class="proj-metric-lbl">Left</div></div>
+                  </div>
+                  <div class="proj-progress">
+                    <div class="proj-prog-track"><div class="proj-prog-fill" style="width:90%;background:var(--gold)"></div></div>
+                    <div class="proj-prog-label"><span>90% Complete</span><span>$3,600 total</span></div>
+                  </div>
+                </div>
+                <div class="proj-card" onclick="showPage('projects')">
+                  <div class="proj-status status-active">Active</div>
+                  <div class="proj-name">Quarterly Reports</div>
+                  <div class="proj-client">RetailCo Group</div>
+                  <div class="proj-metrics">
+                    <div><div class="proj-metric-val">$600</div><div class="proj-metric-lbl">Earned</div></div>
+                    <div><div class="proj-metric-val">$18/hr</div><div class="proj-metric-lbl">EHR</div></div>
+                    <div><div class="proj-metric-val">31d</div><div class="proj-metric-lbl">Left</div></div>
+                  </div>
+                  <div class="proj-progress">
+                    <div class="proj-prog-track"><div class="proj-prog-fill" style="width:18%;background:var(--rose)"></div></div>
+                    <div class="proj-prog-label"><span>18% Complete</span><span>$3,200 total</span></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Income Pulse Chart -->
+          <div class="card">
+            <div class="card-hdr">
+              <span class="card-hdr-title">Income Pulse — Last 8 Weeks</span>
+              <span class="card-hdr-badge badge-green">↑ Trending Up</span>
+              <button class="g-btn" onclick="showPage('pulse')" style="margin-left:4px">Full View →</button>
+            </div>
+            <div class="card-body">
+              <div style="display:flex;gap:8px;align-items:flex-end">
+                <div class="mini-chart" style="flex:1;height:55px">
+                  <div class="bar cyan" style="height:45%"></div>
+                  <div class="bar cyan" style="height:60%"></div>
+                  <div class="bar gold" style="height:72%"></div>
+                  <div class="bar cyan" style="height:55%"></div>
+                  <div class="bar cyan" style="height:80%"></div>
+                  <div class="bar gold" style="height:68%"></div>
+                  <div class="bar cyan" style="height:90%"></div>
+                  <div class="bar cyan" style="height:100%"></div>
+                </div>
+                <div style="display:flex;flex-direction:column;gap:6px;min-width:90px">
+                  <div class="kv"><span class="kv-k">This week</span><span class="kv-v cyan">$2,300</span></div>
+                  <div class="kv"><span class="kv-k">Last week</span><span class="kv-v">$1,840</span></div>
+                  <div class="kv"><span class="kv-k">8-wk avg</span><span class="kv-v">$1,725</span></div>
+                </div>
+              </div>
+              <div style="display:flex;gap:4px;margin-top:8px;flex-wrap:wrap">
+                <div class="cm-tag" style="color:var(--cyan);border-color:rgba(0,212,170,0.2)">■ Meridian</div>
+                <div class="cm-tag" style="color:var(--gold);border-color:rgba(200,168,75,0.2)">■ TechVault</div>
+                <div class="cm-tag">■ RetailCo</div>
+                <div class="cm-tag">■ Others</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Recent Activity -->
+          <div class="card">
+            <div class="card-hdr">
+              <span class="card-hdr-title">Recent Activity</span>
+              <button class="g-btn" onclick="showPage('activity')" style="margin-left:auto">All Activity →</button>
+            </div>
+            <div class="card-body">
+              <div class="feed-item">
+                <div class="feed-dot cyan"></div>
+                <div class="feed-body">
+                  <div class="feed-title">Payment received — Meridian Creative</div>
+                  <div class="feed-meta">Brand Identity Milestone 3 · Stripe · Mar 27</div>
+                </div>
+                <div class="feed-amt pos">+$2,100</div>
+              </div>
+              <div class="feed-item">
+                <div class="feed-dot gold"></div>
+                <div class="feed-body">
+                  <div class="feed-title">Invoice sent — TechVault Inc</div>
+                  <div class="feed-meta">Mobile App UI Final · INV-0041 · Mar 26</div>
+                </div>
+                <div class="feed-amt" style="color:var(--text2)">$3,600</div>
+              </div>
+              <div class="feed-item">
+                <div class="feed-dot violet"></div>
+                <div class="feed-body">
+                  <div class="feed-title">New project created — Bloom Agency</div>
+                  <div class="feed-meta">Social Media Kit Q2 · $2,400 estimated · Mar 25</div>
+                </div>
+                <div class="feed-amt" style="color:var(--violet)">New</div>
+              </div>
+              <div class="feed-item">
+                <div class="feed-dot rose"></div>
+                <div class="feed-body">
+                  <div class="feed-title">Rate gap alert — RetailCo Group</div>
+                  <div class="feed-meta">EHR 71% below portfolio avg · Action suggested</div>
+                </div>
+                <div class="feed-amt neg">⚠ Alert</div>
+              </div>
+              <div class="feed-item">
+                <div class="feed-dot green"></div>
+                <div class="feed-body">
+                  <div class="feed-title">Tax reserve auto-allocated</div>
+                  <div class="feed-meta">28% of $2,100 · Smart Wallet · Mar 27</div>
+                </div>
+                <div class="feed-amt pos">$588</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right column -->
+        <div style="display:flex;flex-direction:column;gap:12px">
+          <!-- Smart Wallet Snapshot -->
+          <div class="card">
+            <div class="card-hdr">
+              <span class="card-hdr-title">Smart Wallet</span>
+              <button class="g-btn" onclick="window.location.href='wallet.html'">Open →</button>
+            </div>
+            <div class="card-body">
+              <div style="margin-bottom:10px">
+                <div class="stat-lbl">Total Balance</div>
+                <div style="font-family:var(--mono);font-size:20px;font-weight:700;color:var(--text)">$11,340</div>
+              </div>
+              <div style="display:flex;flex-direction:column;gap:5px">
+                <div class="wallet-segment" style="background:rgba(0,212,170,0.06);border:1px solid rgba(0,212,170,0.15)">
+                  <div class="ws-label">Spendable</div>
+                  <div class="ws-val" style="color:var(--cyan)">$3,841</div>
+                  <div class="ws-pct">34% of balance</div>
+                </div>
+                <div class="wallet-segment" style="background:rgba(200,168,75,0.06);border:1px solid rgba(200,168,75,0.15)">
+                  <div class="ws-label">Tax Reserve</div>
+                  <div class="ws-val" style="color:var(--gold)">$3,176</div>
+                  <div class="ws-pct">28% · Q2 est due Jun 15</div>
+                </div>
+                <div class="wallet-segment" style="background:rgba(124,92,191,0.06);border:1px solid rgba(124,92,191,0.15)">
+                  <div class="ws-label">Savings</div>
+                  <div class="ws-val" style="color:var(--violet)">$4,323</div>
+                  <div class="ws-pct">38% · Emergency fund</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Top Clients -->
+          <div class="card">
+            <div class="card-hdr">
+              <span class="card-hdr-title">Top Clients</span>
+              <button class="g-btn" onclick="window.location.href='portfolio.html'">Portfolio →</button>
+            </div>
+            <div class="card-body">
+              <div class="client-mini">
+                <div class="cm-dot" style="background:var(--cyan)"></div>
+                <div class="cm-name">Meridian Creative</div>
+                <div class="cm-tag" style="color:var(--cyan);border-color:rgba(0,212,170,0.2)">Top</div>
+                <div class="cm-ehr">$94/hr</div>
+              </div>
+              <div class="client-mini">
+                <div class="cm-dot" style="background:var(--gold)"></div>
+                <div class="cm-name">TechVault Inc</div>
+                <div class="cm-ehr">$67/hr</div>
+              </div>
+              <div class="client-mini">
+                <div class="cm-dot" style="background:var(--violet)"></div>
+                <div class="cm-name">Bloom Agency</div>
+                <div class="cm-ehr">$55/hr</div>
+              </div>
+              <div class="client-mini">
+                <div class="cm-dot" style="background:var(--blue)"></div>
+                <div class="cm-name">Apex Studios</div>
+                <div class="cm-ehr">$48/hr</div>
+              </div>
+              <div class="client-mini">
+                <div class="cm-dot" style="background:var(--rose)"></div>
+                <div class="cm-name">RetailCo Group</div>
+                <div class="cm-tag" style="color:var(--rose);border-color:rgba(196,92,122,0.2)">Rate Gap</div>
+                <div class="cm-ehr" style="color:var(--rose)">$18/hr</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Portfolio Health -->
+          <div class="card">
+            <div class="card-hdr">
+              <span class="card-hdr-title">Portfolio Health</span>
+              <button class="g-btn" onclick="showPage('health')">Details →</button>
+            </div>
+            <div class="card-body">
+              <div class="health-ring">
+                <svg class="ring-svg" width="56" height="56" viewBox="0 0 56 56">
+                  <circle cx="28" cy="28" r="22" fill="none" stroke="var(--bg3)" stroke-width="5"/>
+                  <circle cx="28" cy="28" r="22" fill="none" stroke="var(--cyan)" stroke-width="5"
+                    stroke-dasharray="138.2 138.2" stroke-dashoffset="44.2" stroke-linecap="round"
+                    transform="rotate(-90 28 28)"/>
+                </svg>
+                <div>
+                  <div class="health-score">0.68</div>
+                  <div class="health-label">KVA Score</div>
+                  <div class="health-state">↑ Developing</div>
+                </div>
+              </div>
+              <div style="margin-top:10px">
+                <div class="prog-row"><span class="prog-label">Time (T)</span><div class="prog-track"><div class="prog-fill" style="width:72%;background:var(--blue)"></div></div><span class="prog-val">0.72</span></div>
+                <div class="prog-row"><span class="prog-label">Money (M)</span><div class="prog-track"><div class="prog-fill" style="width:68%;background:var(--cyan)"></div></div><span class="prog-val">0.68</span></div>
+                <div class="prog-row"><span class="prog-label">Effort (E)</span><div class="prog-track"><div class="prog-fill" style="width:61%;background:var(--violet)"></div></div><span class="prog-val">0.61</span></div>
+                <div class="prog-row"><span class="prog-label">Connections (C)</span><div class="prog-track"><div class="prog-fill" style="width:74%;background:var(--green)"></div></div><span class="prog-val">0.74</span></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Pipeline Snapshot -->
+          <div class="card">
+            <div class="card-hdr">
+              <span class="card-hdr-title">Pipeline Snapshot</span>
+              <button class="g-btn" onclick="window.location.href='office.html'">Office →</button>
+            </div>
+            <div class="card-body">
+              <div class="pipe-stage">
+                <div class="pipe-icon">💬</div>
+                <div class="pipe-info"><div class="pipe-name">Initial Call — NovaBrands</div><div class="pipe-meta">Tomorrow, 2pm</div></div>
+                <div class="pipe-val">$8K est.</div>
+              </div>
+              <div class="pipe-stage">
+                <div class="pipe-icon">📄</div>
+                <div class="pipe-info"><div class="pipe-name">Proposal Out — GreenLeaf Co</div><div class="pipe-meta">Sent Mar 25 · 4d waiting</div></div>
+                <div class="pipe-val">$5K</div>
+              </div>
+              <div class="pipe-stage">
+                <div class="pipe-icon">🤝</div>
+                <div class="pipe-info"><div class="pipe-name">Negotiation — Skyline Labs</div><div class="pipe-meta">Counter-offer received</div></div>
+                <div class="pipe-val">$12K</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── INSIGHTS ── -->
+    <div id="page-insights" class="subpage">
+      <div class="insight amber">
+        <div class="insight-type">⚠ Rate Gap Alert</div>
+        <div class="insight-title">RetailCo pays 71% below your portfolio average</div>
+        <div class="insight-body">Your effective hourly rate with RetailCo Group ($18/hr) is dramatically below your $62/hr portfolio average. You have logged an estimated 34 hours with them this month — at your average rate, that would be worth $2,108 more. This client represents a significant value leak.</div>
+        <div class="insight-acts">
+          <button class="i-act primary" onclick="toast('Opening renegotiation template…')">Send Rate Increase</button>
+          <button class="i-act ghost" onclick="toast('Adjusting time estimate…')">Adjust Hours Est.</button>
+          <button class="i-act ghost">View RetailCo →</button>
+        </div>
+      </div>
+      <div class="insight rose">
+        <div class="insight-type">⚡ Concentration Risk</div>
+        <div class="insight-title">Meridian Creative = 48% of your monthly income</div>
+        <div class="insight-body">A single client providing nearly half your revenue creates significant financial fragility. If Meridian reduces scope or pauses, your monthly income drops by $4,416. Recommended: bring in at least one mid-size client before month end.</div>
+        <div class="insight-acts">
+          <button class="i-act primary" onclick="window.location.href='office.html'">Open Pipeline</button>
+          <button class="i-act ghost">Snooze 30d</button>
+        </div>
+      </div>
+      <div class="insight cyan">
+        <div class="insight-type">↑ Growth Signal</div>
+        <div class="insight-title">Bloom Agency shows repeat engagement pattern</div>
+        <div class="insight-body">Bloom Agency has paid 3 consecutive months with increasing amounts. They represent a "Growing" signal with a 3-month upward revenue trend. Now is the optimal time to propose a monthly retainer agreement.</div>
+        <div class="insight-acts">
+          <button class="i-act primary" onclick="toast('Generating retainer proposal…')">Draft Retainer</button>
+          <button class="i-act ghost">View Client</button>
+        </div>
+      </div>
+      <div class="insight blue">
+        <div class="insight-type">📈 EHR Opportunity</div>
+        <div class="insight-title">TechVault project closing — propose follow-on scope</div>
+        <div class="insight-body">Your Mobile App UI project for TechVault is 90% complete. At $67/hr EHR, this has been a high-value engagement. Proposing a Phase 2 now — while momentum is high — has historically 3× the close rate versus cold outreach.</div>
+        <div class="insight-acts">
+          <button class="i-act primary" onclick="toast('Opening follow-on proposal template…')">Propose Phase 2</button>
+          <button class="i-act ghost">Snooze 7d</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── ACTIVITY FEED ── -->
+    <div id="page-activity" class="subpage">
+      <div class="card">
+        <div class="card-hdr"><span class="card-hdr-title">All Activity — March 2026</span>
+          <button class="g-btn" style="margin-left:auto" onclick="toast('Exporting activity log…')">Export</button>
+        </div>
+        <div class="card-body">
+          <div class="feed-item"><div class="feed-dot cyan"></div><div class="feed-body"><div class="feed-title">Payment received — Meridian Creative</div><div class="feed-meta">Brand Identity M3 · Stripe · Mar 27, 11:04am</div></div><div class="feed-amt pos">+$2,100</div></div>
+          <div class="feed-item"><div class="feed-dot green"></div><div class="feed-body"><div class="feed-title">Tax reserve auto-split — 28%</div><div class="feed-meta">Smart Wallet · Applied to $2,100 deposit · Mar 27</div></div><div class="feed-amt" style="color:var(--gold)">$588</div></div>
+          <div class="feed-item"><div class="feed-dot gold"></div><div class="feed-body"><div class="feed-title">Invoice sent — TechVault Inc</div><div class="feed-meta">INV-0041 · Mobile App UI Final · $3,600 · Mar 26</div></div><div class="feed-amt" style="color:var(--text2)">Pending</div></div>
+          <div class="feed-item"><div class="feed-dot violet"></div><div class="feed-body"><div class="feed-title">Project created — Social Media Kit Q2</div><div class="feed-meta">Bloom Agency · $2,400 fixed · Mar 25</div></div><div class="feed-amt" style="color:var(--violet)">New</div></div>
+          <div class="feed-item"><div class="feed-dot rose"></div><div class="feed-body"><div class="feed-title">Insight triggered — Rate Gap: RetailCo</div><div class="feed-meta">System · EHR $18/hr detected · Mar 24</div></div><div class="feed-amt neg">Alert</div></div>
+          <div class="feed-item"><div class="feed-dot blue"></div><div class="feed-body"><div class="feed-title">Proposal sent — GreenLeaf Co</div><div class="feed-meta">Brand Strategy Package · $5,000 · Mar 25</div></div><div class="feed-amt" style="color:var(--text2)">Awaiting</div></div>
+          <div class="feed-item"><div class="feed-dot cyan"></div><div class="feed-body"><div class="feed-title">Payment received — Bloom Agency</div><div class="feed-meta">Social Campaign March · Stripe · Mar 22</div></div><div class="feed-amt pos">+$1,200</div></div>
+          <div class="feed-item"><div class="feed-dot gold"></div><div class="feed-body"><div class="feed-title">Client merged — "Apex" → "Apex Studios"</div><div class="feed-meta">System correction · 4 income events consolidated · Mar 21</div></div><div class="feed-amt" style="color:var(--text3)">Fixed</div></div>
+          <div class="feed-item"><div class="feed-dot violet"></div><div class="feed-body"><div class="feed-title">Pipeline stage update — Skyline Labs</div><div class="feed-meta">Proposal → Negotiation · $12,000 deal · Mar 20</div></div><div class="feed-amt" style="color:var(--violet)">Progressed</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── INCOME PULSE ── -->
+    <div id="page-pulse" class="subpage">
+      <div class="card">
+        <div class="card-hdr"><span class="card-hdr-title">Income Pulse — Weekly View</span><span class="card-hdr-badge badge-green">Trending Up</span></div>
+        <div class="card-body">
+          <div class="mini-chart" style="height:80px;margin-bottom:8px">
+            <div class="bar cyan" style="height:38%"></div>
+            <div class="bar cyan" style="height:52%"></div>
+            <div class="bar gold" style="height:65%"></div>
+            <div class="bar cyan" style="height:44%"></div>
+            <div class="bar cyan" style="height:78%"></div>
+            <div class="bar gold" style="height:60%"></div>
+            <div class="bar cyan" style="height:88%"></div>
+            <div class="bar cyan" style="height:100%"></div>
+          </div>
+          <div style="display:flex;justify-content:space-between;font-family:var(--mono);font-size:7px;color:var(--text3);margin-bottom:12px">
+            <span>Jan 27</span><span>Feb 3</span><span>Feb 10</span><span>Feb 17</span><span>Feb 24</span><span>Mar 3</span><span>Mar 17</span><span>Mar 27</span>
+          </div>
+          <div class="row3">
+            <div class="kv"><span class="kv-k">This week</span><span class="kv-v cyan">$2,300</span></div>
+            <div class="kv"><span class="kv-k">This month</span><span class="kv-v gold">$9,200</span></div>
+            <div class="kv"><span class="kv-k">8-week total</span><span class="kv-v">$16,850</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="row2">
+        <div class="card">
+          <div class="card-hdr"><span class="card-hdr-title">Income by Client</span></div>
+          <div class="card-body">
+            <div class="prog-row"><span class="prog-label">Meridian</span><div class="prog-track"><div class="prog-fill" style="width:48%;background:var(--cyan)"></div></div><span class="prog-val">$4,416</span></div>
+            <div class="prog-row"><span class="prog-label">TechVault</span><div class="prog-track"><div class="prog-fill" style="width:22%;background:var(--gold)"></div></div><span class="prog-val">$2,024</span></div>
+            <div class="prog-row"><span class="prog-label">Bloom</span><div class="prog-track"><div class="prog-fill" style="width:13%;background:var(--violet)"></div></div><span class="prog-val">$1,196</span></div>
+            <div class="prog-row"><span class="prog-label">Apex</span><div class="prog-track"><div class="prog-fill" style="width:10%;background:var(--blue)"></div></div><span class="prog-val">$920</span></div>
+            <div class="prog-row"><span class="prog-label">RetailCo</span><div class="prog-track"><div class="prog-fill" style="width:7%;background:var(--rose)"></div></div><span class="prog-val">$644</span></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-hdr"><span class="card-hdr-title">Income by Project</span></div>
+          <div class="card-body">
+            <div class="prog-row"><span class="prog-label">Brand ID</span><div class="prog-track"><div class="prog-fill" style="width:52%;background:var(--cyan)"></div></div><span class="prog-val">$4,800</span></div>
+            <div class="prog-row"><span class="prog-label">Mobile UI</span><div class="prog-track"><div class="prog-fill" style="width:35%;background:var(--gold)"></div></div><span class="prog-val">$3,200</span></div>
+            <div class="prog-row"><span class="prog-label">Soc. Kit</span><div class="prog-track"><div class="prog-fill" style="width:13%;background:var(--violet)"></div></div><span class="prog-val">$1,200</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── TIME ALLOCATION ── -->
+    <div id="page-allocation" class="subpage">
+      <div class="card">
+        <div class="card-hdr"><span class="card-hdr-title">Estimated Time Allocation — This Month</span><span class="card-hdr-badge badge-gold">Estimated</span></div>
+        <div class="card-body">
+          <div class="sec-label">Hours per Client (Estimated)</div>
+          <div class="alloc-grid">
+            <div class="alloc-row">
+              <div class="alloc-name">Meridian Creative</div>
+              <div class="alloc-bar"><div class="alloc-seg cyan" style="width:28%"></div><div class="alloc-seg empty" style="width:72%"></div></div>
+              <div class="alloc-pct">~47h</div>
+            </div>
+            <div class="alloc-row">
+              <div class="alloc-name">RetailCo Group</div>
+              <div class="alloc-bar"><div class="alloc-seg rose" style="width:34%"></div><div class="alloc-seg empty" style="width:66%"></div></div>
+              <div class="alloc-pct">~56h ⚠</div>
+            </div>
+            <div class="alloc-row">
+              <div class="alloc-name">TechVault Inc</div>
+              <div class="alloc-bar"><div class="alloc-seg gold" style="width:18%"></div><div class="alloc-seg empty" style="width:82%"></div></div>
+              <div class="alloc-pct">~30h</div>
+            </div>
+            <div class="alloc-row">
+              <div class="alloc-name">Bloom Agency</div>
+              <div class="alloc-bar"><div class="alloc-seg violet" style="width:12%"></div><div class="alloc-seg empty" style="width:88%"></div></div>
+              <div class="alloc-pct">~20h</div>
+            </div>
+            <div class="alloc-row">
+              <div class="alloc-name">Apex Studios</div>
+              <div class="alloc-bar"><div class="alloc-seg blue" style="width:8%"></div><div class="alloc-seg empty" style="width:92%"></div></div>
+              <div class="alloc-pct">~14h</div>
+            </div>
+          </div>
+          <div style="margin-top:12px;padding:10px;background:rgba(196,92,122,0.06);border:1px solid rgba(196,92,122,0.2);border-radius:3px">
+            <div style="font-family:var(--mono);font-size:8px;color:var(--rose);margin-bottom:4px">⚠ Allocation Mismatch Detected</div>
+            <div style="font-family:var(--sans);font-size:9px;color:var(--text2)">RetailCo takes an estimated 34% of your hours but generates only 7% of your income. This is your lowest-value time block. Reducing time with RetailCo by 50% would free ~28 hours/month.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── EHR ANALYSIS ── -->
+    <div id="page-ehr" class="subpage">
+      <div class="row2">
+        <div class="card">
+          <div class="card-hdr"><span class="card-hdr-title">EHR by Client</span><span class="card-hdr-badge badge-gold">Estimated Ranges</span></div>
+          <div class="card-body">
+            <div class="prog-row"><span class="prog-label">Meridian</span><div class="prog-track"><div class="prog-fill" style="width:100%;background:var(--cyan)"></div></div><span class="prog-val" style="color:var(--cyan)">$94/hr</span></div>
+            <div class="prog-row"><span class="prog-label">TechVault</span><div class="prog-track"><div class="prog-fill" style="width:71%;background:var(--gold)"></div></div><span class="prog-val">$67/hr</span></div>
+            <div class="prog-row"><span class="prog-label">Bloom</span><div class="prog-track"><div class="prog-fill" style="width:58%;background:var(--violet)"></div></div><span class="prog-val">$55/hr</span></div>
+            <div class="prog-row"><span class="prog-label">Apex</span><div class="prog-track"><div class="prog-fill" style="width:51%;background:var(--blue)"></div></div><span class="prog-val">$48/hr</span></div>
+            <div class="prog-row"><span class="prog-label">RetailCo</span><div class="prog-track"><div class="prog-fill" style="width:19%;background:var(--rose)"></div></div><span class="prog-val" style="color:var(--rose)">$18/hr</span></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-hdr"><span class="card-hdr-title">EHR Benchmarks</span></div>
+          <div class="card-body">
+            <div class="kv"><span class="kv-k">Your avg EHR</span><span class="kv-v">$62/hr</span></div>
+            <div class="kv"><span class="kv-k">Highest EHR</span><span class="kv-v cyan">$94/hr · Meridian</span></div>
+            <div class="kv"><span class="kv-k">Lowest EHR</span><span class="kv-v rose">$18/hr · RetailCo</span></div>
+            <div class="kv"><span class="kv-k">EHR spread</span><span class="kv-v gold">5.2× gap</span></div>
+            <div class="kv"><span class="kv-k">Target EHR</span><span class="kv-v green">$75/hr</span></div>
+            <div class="kv"><span class="kv-k">All estimates</span><span class="kv-v" style="color:var(--text3)">±20% (time est.)</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── PROJECTS ── -->
+    <div id="page-projects" class="subpage">
+      <div class="card">
+        <div class="card-hdr">
+          <span class="card-hdr-title">All Projects</span>
+          <span class="card-hdr-badge badge-cyan">6 Active</span>
+          <div class="tb-spacer"></div>
+          <button class="g-btn">Filter</button>
+          <button class="g-btn primary" onclick="toast('Opening new project form…')">+ New Project</button>
+        </div>
+        <div class="card-body">
+          <div class="row3">
+            <div class="proj-card">
+              <div class="proj-status status-active">Active</div>
+              <div class="proj-name">Brand Identity Refresh</div>
+              <div class="proj-client">Meridian Creative · Design</div>
+              <div class="proj-metrics">
+                <div><div class="proj-metric-val">$4,800</div><div class="proj-metric-lbl">Earned</div></div>
+                <div><div class="proj-metric-val">$94/hr</div><div class="proj-metric-lbl">EHR</div></div>
+              </div>
+              <div class="proj-progress"><div class="proj-prog-track"><div class="proj-prog-fill" style="width:68%;background:var(--cyan)"></div></div><div class="proj-prog-label"><span>68%</span><span>$7,000</span></div></div>
+            </div>
+            <div class="proj-card">
+              <div class="proj-status status-review">In Review</div>
+              <div class="proj-name">Mobile App UI</div>
+              <div class="proj-client">TechVault Inc · Development</div>
+              <div class="proj-metrics">
+                <div><div class="proj-metric-val">$3,200</div><div class="proj-metric-lbl">Earned</div></div>
+                <div><div class="proj-metric-val">$67/hr</div><div class="proj-metric-lbl">EHR</div></div>
+              </div>
+              <div class="proj-progress"><div class="proj-prog-track"><div class="proj-prog-fill" style="width:90%;background:var(--gold)"></div></div><div class="proj-prog-label"><span>90%</span><span>$3,600</span></div></div>
+            </div>
+            <div class="proj-card">
+              <div class="proj-status status-active">Active</div>
+              <div class="proj-name">Social Media Kit Q2</div>
+              <div class="proj-client">Bloom Agency · Creative</div>
+              <div class="proj-metrics">
+                <div><div class="proj-metric-val">$1,200</div><div class="proj-metric-lbl">Earned</div></div>
+                <div><div class="proj-metric-val">$55/hr</div><div class="proj-metric-lbl">EHR</div></div>
+              </div>
+              <div class="proj-progress"><div class="proj-prog-track"><div class="proj-prog-fill" style="width:50%;background:var(--violet)"></div></div><div class="proj-prog-label"><span>50%</span><span>$2,400</span></div></div>
+            </div>
+            <div class="proj-card">
+              <div class="proj-status status-active">Active</div>
+              <div class="proj-name">Quarterly Reports</div>
+              <div class="proj-client">RetailCo Group · Strategy</div>
+              <div class="proj-metrics">
+                <div><div class="proj-metric-val">$600</div><div class="proj-metric-lbl">Earned</div></div>
+                <div><div class="proj-metric-val" style="color:var(--rose)">$18/hr</div><div class="proj-metric-lbl">EHR ⚠</div></div>
+              </div>
+              <div class="proj-progress"><div class="proj-prog-track"><div class="proj-prog-fill" style="width:18%;background:var(--rose)"></div></div><div class="proj-prog-label"><span>18%</span><span>$3,200</span></div></div>
+            </div>
+            <div class="proj-card">
+              <div class="proj-status status-paused">Paused</div>
+              <div class="proj-name">Logo Suite</div>
+              <div class="proj-client">Apex Studios · Design</div>
+              <div class="proj-metrics">
+                <div><div class="proj-metric-val">$960</div><div class="proj-metric-lbl">Earned</div></div>
+                <div><div class="proj-metric-val">$48/hr</div><div class="proj-metric-lbl">EHR</div></div>
+              </div>
+              <div class="proj-progress"><div class="proj-prog-track"><div class="proj-prog-fill" style="width:60%;background:var(--orange)"></div></div><div class="proj-prog-label"><span>60%</span><span>$1,600</span></div></div>
+            </div>
+            <div class="proj-card">
+              <div class="proj-status status-draft">Draft</div>
+              <div class="proj-name">Brand Strategy Pack</div>
+              <div class="proj-client">GreenLeaf Co · Strategy</div>
+              <div class="proj-metrics">
+                <div><div class="proj-metric-val">$0</div><div class="proj-metric-lbl">Earned</div></div>
+                <div><div class="proj-metric-val">$5,000</div><div class="proj-metric-lbl">Proposed</div></div>
+              </div>
+              <div class="proj-progress"><div class="proj-prog-track"><div class="proj-prog-fill" style="width:0%;background:var(--text3)"></div></div><div class="proj-prog-label"><span>Pending Approval</span><span>$5,000</span></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── PROJECT INCOME ── -->
+    <div id="page-proj-income" class="subpage">
+      <div class="row2">
+        <div class="card">
+          <div class="card-hdr"><span class="card-hdr-title">Project Income Attribution</span></div>
+          <div class="card-body">
+            <div class="prog-row"><span class="prog-label">Brand ID</span><div class="prog-track"><div class="prog-fill" style="width:53%;background:var(--cyan)"></div></div><span class="prog-val">$4,800</span></div>
+            <div class="prog-row"><span class="prog-label">Mobile UI</span><div class="prog-track"><div class="prog-fill" style="width:35%;background:var(--gold)"></div></div><span class="prog-val">$3,200</span></div>
+            <div class="prog-row"><span class="prog-label">Soc. Kit Q2</span><div class="prog-track"><div class="prog-fill" style="width:13%;background:var(--violet)"></div></div><span class="prog-val">$1,200</span></div>
+            <div class="prog-row"><span class="prog-label">Reports</span><div class="prog-track"><div class="prog-fill" style="width:7%;background:var(--rose)"></div></div><span class="prog-val">$600</span></div>
+            <div class="prog-row"><span class="prog-label">Logo Suite</span><div class="prog-track"><div class="prog-fill" style="width:10%;background:var(--blue)"></div></div><span class="prog-val">$960</span></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-hdr"><span class="card-hdr-title">Project EHR Comparison</span></div>
+          <div class="card-body">
+            <div class="prog-row"><span class="prog-label">Brand ID</span><div class="prog-track"><div class="prog-fill" style="width:100%;background:var(--cyan)"></div></div><span class="prog-val cyan">$94/hr</span></div>
+            <div class="prog-row"><span class="prog-label">Mobile UI</span><div class="prog-track"><div class="prog-fill" style="width:71%;background:var(--gold)"></div></div><span class="prog-val">$67/hr</span></div>
+            <div class="prog-row"><span class="prog-label">Soc. Kit</span><div class="prog-track"><div class="prog-fill" style="width:58%;background:var(--violet)"></div></div><span class="prog-val">$55/hr</span></div>
+            <div class="prog-row"><span class="prog-label">Logo Suite</span><div class="prog-track"><div class="prog-fill" style="width:51%;background:var(--blue)"></div></div><span class="prog-val">$48/hr</span></div>
+            <div class="prog-row"><span class="prog-label">Reports</span><div class="prog-track"><div class="prog-fill" style="width:19%;background:var(--rose)"></div></div><span class="prog-val rose">$18/hr</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── PROJECT HEALTH ── -->
+    <div id="page-proj-health" class="subpage">
+      <div class="card">
+        <div class="card-hdr"><span class="card-hdr-title">Project Health Dashboard</span></div>
+        <div class="card-body">
+          <div style="display:flex;flex-direction:column;gap:6px">
+            <div style="display:grid;grid-template-columns:2fr 1fr 1fr 1fr 1fr 90px;gap:6px;padding:4px 0;border-bottom:1px solid var(--border2)">
+              <div style="font-family:var(--mono);font-size:7px;color:var(--text3);text-transform:uppercase">Project</div>
+              <div style="font-family:var(--mono);font-size:7px;color:var(--text3);text-transform:uppercase;text-align:right">EHR</div>
+              <div style="font-family:var(--mono);font-size:7px;color:var(--text3);text-transform:uppercase;text-align:right">Earned</div>
+              <div style="font-family:var(--mono);font-size:7px;color:var(--text3);text-transform:uppercase;text-align:right">Total</div>
+              <div style="font-family:var(--mono);font-size:7px;color:var(--text3);text-transform:uppercase;text-align:right">Progress</div>
+              <div style="font-family:var(--mono);font-size:7px;color:var(--text3);text-transform:uppercase;text-align:right">Status</div>
+            </div>
+            <div style="display:grid;grid-template-columns:2fr 1fr 1fr 1fr 1fr 90px;gap:6px;padding:4px 0;border-bottom:1px solid var(--border);align-items:center">
+              <div style="font-family:var(--mono);font-size:8px;color:var(--text)">Brand Identity Refresh</div>
+              <div style="font-family:var(--mono);font-size:8px;color:var(--cyan);text-align:right">$94/hr</div>
+              <div style="font-family:var(--mono);font-size:8px;text-align:right">$4,800</div>
+              <div style="font-family:var(--mono);font-size:8px;text-align:right">$7,000</div>
+              <div style="font-family:var(--mono);font-size:8px;text-align:right">68%</div>
+              <div style="text-align:right"><span class="proj-status status-active">Active</span></div>
+            </div>
+            <div style="display:grid;grid-template-columns:2fr 1fr 1fr 1fr 1fr 90px;gap:6px;padding:4px 0;border-bottom:1px solid var(--border);align-items:center">
+              <div style="font-family:var(--mono);font-size:8px;color:var(--text)">Mobile App UI</div>
+              <div style="font-family:var(--mono);font-size:8px;color:var(--gold);text-align:right">$67/hr</div>
+              <div style="font-family:var(--mono);font-size:8px;text-align:right">$3,200</div>
+              <div style="font-family:var(--mono);font-size:8px;text-align:right">$3,600</div>
+              <div style="font-family:var(--mono);font-size:8px;text-align:right">90%</div>
+              <div style="text-align:right"><span class="proj-status status-review">Review</span></div>
+            </div>
+            <div style="display:grid;grid-template-columns:2fr 1fr 1fr 1fr 1fr 90px;gap:6px;padding:4px 0;border-bottom:1px solid var(--border);align-items:center">
+              <div style="font-family:var(--mono);font-size:8px;color:var(--text)">Quarterly Reports</div>
+              <div style="font-family:var(--mono);font-size:8px;color:var(--rose);text-align:right">$18/hr ⚠</div>
+              <div style="font-family:var(--mono);font-size:8px;text-align:right">$600</div>
+              <div style="font-family:var(--mono);font-size:8px;text-align:right">$3,200</div>
+              <div style="font-family:var(--mono);font-size:8px;text-align:right">18%</div>
+              <div style="text-align:right"><span class="proj-status status-active">Active</span></div>
+            </div>
+            <div style="display:grid;grid-template-columns:2fr 1fr 1fr 1fr 1fr 90px;gap:6px;padding:4px 0;align-items:center">
+              <div style="font-family:var(--mono);font-size:8px;color:var(--text)">Logo Suite</div>
+              <div style="font-family:var(--mono);font-size:8px;color:var(--blue);text-align:right">$48/hr</div>
+              <div style="font-family:var(--mono);font-size:8px;text-align:right">$960</div>
+              <div style="font-family:var(--mono);font-size:8px;text-align:right">$1,600</div>
+              <div style="font-family:var(--mono);font-size:8px;text-align:right">60%</div>
+              <div style="text-align:right"><span class="proj-status status-paused">Paused</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── TOP CLIENTS ── -->
+    <div id="page-clients" class="subpage">
+      <div class="card">
+        <div class="card-hdr"><span class="card-hdr-title">Top Clients — Portfolio Snapshot</span><button class="g-btn" onclick="window.location.href='portfolio.html'" style="margin-left:auto">Full Portfolio →</button></div>
+        <div class="card-body">
+          <div style="display:flex;flex-direction:column;gap:6px">
+            <div class="client-mini" style="border:1px solid rgba(0,212,170,0.15);background:rgba(0,212,170,0.03);border-radius:3px;padding:8px 10px;margin:0">
+              <div class="cm-dot" style="background:var(--cyan);width:9px;height:9px"></div>
+              <div class="cm-name" style="font-size:9px">Meridian Creative</div>
+              <div class="cm-tag" style="color:var(--cyan);border-color:rgba(0,212,170,0.25)">Highest Value</div>
+              <div class="cm-ehr" style="font-size:9px;color:var(--cyan)">$94/hr</div>
+              <div class="cm-share" style="margin-left:6px">48% income</div>
+            </div>
+            <div class="client-mini" style="padding:8px 10px;margin:0">
+              <div class="cm-dot" style="background:var(--gold);width:9px;height:9px"></div>
+              <div class="cm-name" style="font-size:9px">TechVault Inc</div>
+              <div class="cm-tag">Growing</div>
+              <div class="cm-ehr" style="font-size:9px">$67/hr</div>
+              <div class="cm-share" style="margin-left:6px">22% income</div>
+            </div>
+            <div class="client-mini" style="padding:8px 10px;margin:0">
+              <div class="cm-dot" style="background:var(--violet);width:9px;height:9px"></div>
+              <div class="cm-name" style="font-size:9px">Bloom Agency</div>
+              <div class="cm-tag">Stable Income</div>
+              <div class="cm-ehr" style="font-size:9px">$55/hr</div>
+              <div class="cm-share" style="margin-left:6px">13% income</div>
+            </div>
+            <div class="client-mini" style="border:1px solid rgba(196,92,122,0.15);background:rgba(196,92,122,0.03);border-radius:3px;padding:8px 10px;margin:0">
+              <div class="cm-dot" style="background:var(--rose);width:9px;height:9px"></div>
+              <div class="cm-name" style="font-size:9px">RetailCo Group</div>
+              <div class="cm-tag" style="color:var(--rose);border-color:rgba(196,92,122,0.25)">Rate Gap</div>
+              <div class="cm-ehr" style="font-size:9px;color:var(--rose)">$18/hr</div>
+              <div class="cm-share" style="margin-left:6px">7% income</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── PIPELINE ── -->
+    <div id="page-pipeline" class="subpage">
+      <div class="card">
+        <div class="card-hdr"><span class="card-hdr-title">Pipeline Snapshot</span><button class="g-btn" onclick="window.location.href='office.html'" style="margin-left:auto">Full Office →</button></div>
+        <div class="card-body">
+          <div class="pipe-stage"><div class="pipe-icon">💬</div><div class="pipe-info"><div class="pipe-name">Initial Call — NovaBrands</div><div class="pipe-meta">Tomorrow, 2pm · Discovery</div></div><div class="pipe-val">$8K est.</div></div>
+          <div class="pipe-stage"><div class="pipe-icon">📄</div><div class="pipe-info"><div class="pipe-name">Proposal Out — GreenLeaf Co</div><div class="pipe-meta">Sent Mar 25 · 4d waiting</div></div><div class="pipe-val">$5K</div></div>
+          <div class="pipe-stage"><div class="pipe-icon">🤝</div><div class="pipe-info"><div class="pipe-name">Negotiation — Skyline Labs</div><div class="pipe-meta">Counter-offer received · Decide by Apr 2</div></div><div class="pipe-val">$12K</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── GOALS ── -->
+    <div id="page-goals" class="subpage">
+      <div class="card">
+        <div class="card-hdr"><span class="card-hdr-title">Goals & Progress — Q1 2026</span><button class="g-btn primary" onclick="toast('Opening goal editor…')">+ Add Goal</button></div>
+        <div class="card-body">
+          <div class="goal-row"><div class="goal-icon">💰</div><div class="goal-info"><div class="goal-title">Monthly income $10,000</div><div class="goal-meta">$9,200 earned · On track</div><div class="stat-bar-bg" style="margin-top:5px"><div class="stat-bar-fill" style="width:92%;background:var(--cyan)"></div></div></div><div class="goal-pct">92%</div></div>
+          <div class="goal-row"><div class="goal-icon">⏱</div><div class="goal-info"><div class="goal-title">Raise avg EHR to $75/hr</div><div class="goal-meta">Currently $62/hr · Renegotiate RetailCo</div><div class="stat-bar-bg" style="margin-top:5px"><div class="stat-bar-fill" style="width:65%;background:var(--gold)"></div></div></div><div class="goal-pct">65%</div></div>
+          <div class="goal-row"><div class="goal-icon">🧩</div><div class="goal-info"><div class="goal-title">Diversify — no client > 35% income</div><div class="goal-meta">Meridian at 48% · 2 new clients needed</div><div class="stat-bar-bg" style="margin-top:5px"><div class="stat-bar-fill" style="width:27%;background:var(--rose)"></div></div></div><div class="goal-pct">27%</div></div>
+          <div class="goal-row"><div class="goal-icon">💼</div><div class="goal-info"><div class="goal-title">Tax reserve $4,000 by Apr 15</div><div class="goal-meta">$3,176 saved · $824 to go</div><div class="stat-bar-bg" style="margin-top:5px"><div class="stat-bar-fill" style="width:79%;background:var(--green)"></div></div></div><div class="goal-pct">79%</div></div>
+          <div class="goal-row"><div class="goal-icon">🚀</div><div class="goal-info"><div class="goal-title">Close 1 new client ≥ $3,000/mo</div><div class="goal-meta">3 prospects in pipeline · Skyline Labs ($12K) in negotiation</div><div class="stat-bar-bg" style="margin-top:5px"><div class="stat-bar-fill" style="width:50%;background:var(--violet)"></div></div></div><div class="goal-pct">50%</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── PORTFOLIO HEALTH ── -->
+    <div id="page-health" class="subpage">
+      <div class="row2">
+        <div class="card">
+          <div class="card-hdr"><span class="card-hdr-title">KVA Score Breakdown</span></div>
+          <div class="card-body">
+            <div class="health-ring" style="margin-bottom:14px">
+              <svg width="64" height="64" viewBox="0 0 64 64"><circle cx="32" cy="32" r="26" fill="none" stroke="var(--bg3)" stroke-width="6"/><circle cx="32" cy="32" r="26" fill="none" stroke="var(--cyan)" stroke-width="6" stroke-dasharray="163.4 163.4" stroke-dashoffset="52.3" stroke-linecap="round" transform="rotate(-90 32 32)"/></svg>
+              <div><div class="health-score">0.68</div><div class="health-label">KVA Score</div><div class="health-state">Developing</div></div>
+            </div>
+            <div class="prog-row"><span class="prog-label">Time (T) 25%</span><div class="prog-track"><div class="prog-fill" style="width:72%;background:var(--blue)"></div></div><span class="prog-val">0.72</span></div>
+            <div class="prog-row"><span class="prog-label">Money (M) 35%</span><div class="prog-track"><div class="prog-fill" style="width:68%;background:var(--cyan)"></div></div><span class="prog-val">0.68</span></div>
+            <div class="prog-row"><span class="prog-label">Effort (E) 20%</span><div class="prog-track"><div class="prog-fill" style="width:61%;background:var(--violet)"></div></div><span class="prog-val">0.61</span></div>
+            <div class="prog-row"><span class="prog-label">Connections (C) 20%</span><div class="prog-track"><div class="prog-fill" style="width:74%;background:var(--green)"></div></div><span class="prog-val">0.74</span></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-hdr"><span class="card-hdr-title">V Range Interpretation</span></div>
+          <div class="card-body">
+            <div class="kv"><span class="kv-k">Current state</span><span class="kv-v cyan">Developing (0.5–0.7)</span></div>
+            <div class="kv"><span class="kv-k">Next threshold</span><span class="kv-v">Strong (0.70)</span></div>
+            <div class="kv"><span class="kv-k">Gap to Strong</span><span class="kv-v gold">+0.02 needed</span></div>
+            <div style="margin-top:10px;font-family:var(--sans);font-size:8px;color:var(--text2);line-height:1.55">Refinement recommendations and diversification guidance apply. Raise EHR on 1 low-value client and add 1 new relationship to cross into Strong portfolio state.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /content -->
+</div><!-- /main -->
+</div><!-- /app -->
+
+<div id="toast" class="toast"></div>
+
+<script>
+function showPage(id){
+  document.querySelectorAll('.subpage').forEach(p=>p.classList.remove('active'));
+  const el=document.getElementById('page-'+id);
+  if(el) el.classList.add('active');
+  document.querySelectorAll('.s-item').forEach(i=>i.classList.remove('active'));
+  event.currentTarget && event.currentTarget.classList.add('active');
+  const titles={overview:'Overview',insights:'Insights',activity:'Activity Feed',pulse:'Income Pulse',allocation:'Time Allocation',ehr:'EHR Analysis',projects:'All Projects','proj-income':'Project Income','proj-health':'Project Health',clients:'Top Clients',pipeline:'Pipeline Snapshot',goals:'Goals & Progress',health:'Portfolio Health'};
+  document.querySelector('.tb-sub').textContent='/ '+(titles[id]||id);
+}
+function toast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2500);
+}
+// Click s-items properly
+document.querySelectorAll('.s-item').forEach(item=>{
+  item.addEventListener('click',function(){
+    document.querySelectorAll('.s-item').forEach(i=>i.classList.remove('active'));
+    this.classList.add('active');
+  });
+});
+</script>
+</body>
+</html>

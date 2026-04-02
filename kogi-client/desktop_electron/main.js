@@ -1,5 +1,15 @@
-const { app, BrowserWindow } = require('electron');
+const { app, BrowserWindow, ipcMain } = require('electron');
 const path = require('node:path');
+
+const PAGE_TITLES = {
+  'dashboard.html':     'KOGI · Dashboard',
+  'dashboard.html': 'KOGI · Dashboard',
+  'portfolio.html': 'KOGI · Portfolio',
+  'wallet.html':    'KOGI · Wallet',
+  'office.html':    'KOGI · Office',
+  'profile.html':   'KOGI · Profile',
+  'settings.html':  'KOGI · Settings',
+};
 
 function createWindow() {
   const win = new BrowserWindow({
@@ -7,7 +17,7 @@ function createWindow() {
     height: 800,
     minWidth: 900,
     minHeight: 600,
-    backgroundColor: '#0d1117',
+    backgroundColor: '#091310',
     titleBarStyle: process.platform === 'darwin' ? 'hiddenInset' : 'default',
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
@@ -17,7 +27,30 @@ function createWindow() {
     title: 'KOGI',
   });
 
-  win.loadFile('index.html');
+  win.loadFile('dashboard.html');
+
+  // Update window title whenever the page changes
+  win.webContents.on('did-navigate', (_event, url) => {
+    const filename = path.basename(new URL(url).pathname);
+    const title = PAGE_TITLES[filename] || 'KOGI';
+    win.setTitle(title);
+  });
+
+  // Keep navigation confined to local app files
+  win.webContents.on('will-navigate', (event, url) => {
+    try {
+      const parsed = new URL(url);
+      // Allow only file:// protocol navigations (local pages)
+      if (parsed.protocol !== 'file:') {
+        event.preventDefault();
+      }
+    } catch {
+      event.preventDefault();
+    }
+  });
+
+  // Block any attempt to open a new browser window
+  win.webContents.setWindowOpenHandler(() => ({ action: 'deny' }));
 }
 
 app.whenReady().then(() => {

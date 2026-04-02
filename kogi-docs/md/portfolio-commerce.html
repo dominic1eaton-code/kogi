@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KOGI · Portfolio · Commerce</title>
+<link rel="stylesheet" href="kogi-styles.css">
+<style>
+.content { flex:1; overflow:auto; padding:14px; display:flex; flex-direction:column; gap:12px; }
+.commerce-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(280px,1fr)); gap:10px; }
+.com-card { background:var(--bg1); border:1px solid var(--border); border-radius:4px; overflow:hidden; transition:border-color .12s; cursor:pointer; }
+.com-card:hover { border-color:var(--border2); }
+.cc-hdr { display:flex; align-items:center; gap:8px; padding:9px 12px; border-bottom:1px solid var(--border); }
+.cc-dot { width:8px; height:8px; border-radius:50%; flex-shrink:0; }
+.cc-info { flex:1; }
+.cc-name { font-family:var(--mono); font-size:10px; font-weight:700; color:var(--text); }
+.cc-type { font-family:var(--mono); font-size:7px; color:var(--text3); margin-top:1px; }
+.cc-status { font-family:var(--mono); font-size:7px; padding:1px 5px; border-radius:2px; border:1px solid; flex-shrink:0; }
+.cc-body { padding:9px 12px; display:flex; flex-direction:column; gap:6px; }
+.cc-desc { font-family:var(--sans); font-size:8.5px; color:var(--text3); line-height:1.4; }
+.cc-kv { display:flex; justify-content:space-between; align-items:center; padding:2px 0; border-bottom:1px solid var(--border); }
+.cc-kv:last-child { border-bottom:none; }
+.cc-k { font-family:var(--mono); font-size:8px; color:var(--text3); }
+.cc-v { font-family:var(--mono); font-size:8px; color:var(--text2); font-weight:500; }
+.cc-prog { height:4px; background:var(--bg3); border-radius:2px; overflow:hidden; margin-top:2px; }
+.cc-pfill { height:100%; border-radius:2px; }
+.cc-ftr { display:flex; align-items:center; gap:6px; padding:7px 12px; border-top:1px solid var(--border); }
+.cc-val { font-family:var(--mono); font-size:11px; font-weight:700; }
+.cc-val-lbl { font-family:var(--mono); font-size:7px; color:var(--text3); }
+.cc-tags { display:flex; gap:3px; margin-left:auto; flex-wrap:wrap; }
+.cc-tag { font-family:var(--mono); font-size:7px; padding:1px 4px; border-radius:2px; background:var(--bg3); border:1px solid var(--border); color:var(--text3); }
+/* pipeline */
+.pipeline { display:flex; gap:0; overflow-x:auto; }
+.pipe-stage { flex:1; min-width:130px; background:var(--bg2); border:1px solid var(--border); border-radius:3px; padding:8px 10px; margin-right:6px; }
+.pipe-stage:last-child { margin-right:0; }
+.ps-name { font-family:var(--mono); font-size:8px; font-weight:600; color:var(--text); margin-bottom:4px; }
+.ps-count { font-family:var(--mono); font-size:14px; font-weight:700; line-height:1; }
+.ps-val { font-family:var(--mono); font-size:7px; color:var(--text3); margin-top:2px; }
+.ps-bar { height:2px; border-radius:1px; margin-top:5px; }
+</style>
+</head>
+<body>
+<div class="screen">
+  <div class="g-hdr">
+    <span class="g-logo">KOGI</span>
+    <div class="g-bc"><span>OS</span><span class="sep"> / </span><span>Portfolio</span><span class="sep"> / </span><span class="cur">Commerce</span></div>
+    <div class="g-dot" style="margin-left:auto"></div>
+  </div>
+  <div class="sub-nav" id="sub-nav"></div>
+  <div class="body-layout">
+    <div class="l-nav">
+      <div class="nav-sec">Portfolio</div>
+      <a href="portfolio-grid.html" class="nav-it">⊞ Grid</a>
+      <a href="portfolio-components.html" class="nav-it">◫ All Types</a>
+      <a href="portfolio-items.html" class="nav-it">◈ Items</a>
+      <a href="portfolio-containers.html" class="nav-it">▣ Containers</a>
+      <div class="nav-sec">Work</div>
+      <a href="portfolio-programs.html" class="nav-it">◎ Programs</a>
+      <a href="portfolio-resources.html" class="nav-it">⊙ Resources</a>
+      <a href="portfolio-people.html" class="nav-it">◉ People</a>
+      <div class="nav-sec">Commerce</div>
+      <a href="portfolio-commerce.html" class="nav-it active">◆ Commerce</a>
+      <a href="portfolio-finance.html" class="nav-it">$ Finance</a>
+      <a href="portfolio-timelines.html" class="nav-it">⌇ Timelines</a>
+      <div class="nav-sec">Tools</div>
+      <a href="portfolio-analytics.html" class="nav-it">∿ Analytics</a>
+      <a href="portfolio-governance.html" class="nav-it">⊛ Governance</a>
+      <a href="portfolio-graph.html" class="nav-it">⋈ Graph</a>
+      <div class="nav-sec">Platform</div>
+      <a href="portfolio-benefits.html" class="nav-it">⊕ Benefits</a>
+      <a href="portfolio-collaboration.html" class="nav-it">⊗ Collab</a>
+    </div>
+    <div class="main">
+      <div class="toolbar">
+        <span class="tb-title">Commerce & Deals</span>
+        <span class="tb-sub" style="margin-left:6px">Gigs · Contracts · Offers · Deals · Bids · Bookings · Proposals · Subscriptions</span>
+        <div style="margin-left:auto;display:flex;gap:6px">
+          <span class="g-btn">Pipeline</span>
+          <span class="g-btn pri">+ New</span>
+        </div>
+      </div>
+      <div class="content">
+        <!-- STAT STRIP -->
+        <div class="stat-strip">
+          <div class="ss-c"><div class="ss-l">Active Gigs</div><div class="ss-v" style="color:var(--orange)">3</div><div class="ss-s">$23.4k value</div></div>
+          <div class="ss-c"><div class="ss-l">Open Contracts</div><div class="ss-v" style="color:var(--blue)">4</div><div class="ss-s">$48k total</div></div>
+          <div class="ss-c"><div class="ss-l">MRR (Subscriptions)</div><div class="ss-v" style="color:var(--green)">$11.8k</div><div class="ss-s">240 subscribers</div></div>
+          <div class="ss-c"><div class="ss-l">Deals in Progress</div><div class="ss-v" style="color:var(--cyan)">2</div><div class="ss-s">$262k pipeline</div></div>
+          <div class="ss-c"><div class="ss-l">Pending Proposals</div><div class="ss-v" style="color:var(--gold)">3</div><div class="ss-s">Awaiting decision</div></div>
+          <div class="ss-c"><div class="ss-l">ARR Total</div><div class="ss-v" style="color:var(--violet)">$148k</div><div class="ss-s">Annualized</div></div>
+        </div>
+
+        <!-- CRM PIPELINE -->
+        <div class="widget">
+          <div class="w-hdr"><span class="w-title">CRM Pipeline</span><span class="w-badge">CRMEngine · 7 stages</span></div>
+          <div class="pipeline">
+            <div class="pipe-stage"><div class="ps-name">Inquiry</div><div class="ps-count" style="color:var(--text3)">4</div><div class="ps-val">$18k</div><div class="ps-bar" style="background:var(--text3);width:100%"></div></div>
+            <div class="pipe-stage"><div class="ps-name">Qualified</div><div class="ps-count" style="color:var(--blue)">6</div><div class="ps-val">$42k</div><div class="ps-bar" style="background:var(--blue);width:100%"></div></div>
+            <div class="pipe-stage"><div class="ps-name">Quoted</div><div class="ps-count" style="color:var(--violet)">3</div><div class="ps-val">$27k</div><div class="ps-bar" style="background:var(--violet);width:100%"></div></div>
+            <div class="pipe-stage"><div class="ps-name">Negotiating</div><div class="ps-count" style="color:var(--gold)">2</div><div class="ps-val">$262k</div><div class="ps-bar" style="background:var(--gold);width:100%"></div></div>
+            <div class="pipe-stage"><div class="ps-name">Booked</div><div class="ps-count" style="color:var(--cyan)">7</div><div class="ps-val">$48k</div><div class="ps-bar" style="background:var(--cyan);width:100%"></div></div>
+            <div class="pipe-stage"><div class="ps-name">Retained</div><div class="ps-count" style="color:var(--green)">14</div><div class="ps-val">$148k ARR</div><div class="ps-bar" style="background:var(--green);width:100%"></div></div>
+            <div class="pipe-stage"><div class="ps-name">Lapsed</div><div class="ps-count" style="color:var(--rose)">3</div><div class="ps-val">$9k lost</div><div class="ps-bar" style="background:var(--rose);width:100%"></div></div>
+          </div>
+        </div>
+
+        <!-- ACTIVE GIGS -->
+        <div class="sec-hdr"><span class="sec-hdr-lbl">Active Gigs</span><div class="sec-hdr-line"></div></div>
+        <div class="commerce-grid">
+          <div class="com-card" style="border-left:3px solid var(--orange)">
+            <div class="cc-hdr"><div class="cc-dot" style="background:var(--orange)"></div><div class="cc-info"><div class="cc-name">Brand Design Sprint · S3</div><div class="cc-type">Gig · Creative · Sprint-based</div></div><span class="cc-status" style="color:var(--green);border-color:rgba(74,171,109,.3)">Active</span></div>
+            <div class="cc-body">
+              <div class="cc-desc">40hr/wk creative sprint — motion tokens, design system components, and brand docs.</div>
+              <div class="cc-kv"><span class="cc-k">Rate</span><span class="cc-v" style="color:var(--orange)">$145/hour</span></div>
+              <div class="cc-kv"><span class="cc-k">Hours Committed</span><span class="cc-v">40h/wk</span></div>
+              <div class="cc-kv"><span class="cc-k">Worker</span><span class="cc-v">@jordan</span></div>
+              <div class="cc-kv"><span class="cc-k">Sprint Progress</span><span class="cc-v" style="color:var(--orange)">68%</span></div>
+              <div class="cc-prog"><div class="cc-pfill" style="background:var(--orange);width:68%"></div></div>
+            </div>
+            <div class="cc-ftr"><span class="cc-val" style="color:var(--orange)">$5,800</span><span class="cc-val-lbl">Contract Value</span><div class="cc-tags"><span class="cc-tag">gig</span><span class="cc-tag">design</span></div></div>
+          </div>
+
+          <div class="com-card" style="border-left:3px solid var(--blue)">
+            <div class="cc-hdr"><div class="cc-dot" style="background:var(--blue)"></div><div class="cc-info"><div class="cc-name">Podcast Production Retainer</div><div class="cc-type">Gig · Media · Monthly Retainer</div></div><span class="cc-status" style="color:var(--green);border-color:rgba(74,171,109,.3)">Active</span></div>
+            <div class="cc-body">
+              <div class="cc-desc">Monthly podcast production: recording, editing, show notes, and distribution — 8 episodes.</div>
+              <div class="cc-kv"><span class="cc-k">Rate</span><span class="cc-v" style="color:var(--blue)">$1,200/episode</span></div>
+              <div class="cc-kv"><span class="cc-k">Episodes Remaining</span><span class="cc-v">6 of 8</span></div>
+              <div class="cc-kv"><span class="cc-k">Next Delivery</span><span class="cc-v">Apr 7</span></div>
+              <div class="cc-prog"><div class="cc-pfill" style="background:var(--blue);width:25%"></div></div>
+            </div>
+            <div class="cc-ftr"><span class="cc-val" style="color:var(--blue)">$9,600</span><span class="cc-val-lbl">Total Value</span><div class="cc-tags"><span class="cc-tag">podcast</span><span class="cc-tag">media</span></div></div>
+          </div>
+
+          <div class="com-card" style="border-left:3px solid var(--cyan)">
+            <div class="cc-hdr"><div class="cc-dot" style="background:var(--cyan)"></div><div class="cc-info"><div class="cc-name">API Dev Consulting</div><div class="cc-type">Gig · Engineering · Consulting</div></div><span class="cc-status" style="color:var(--green);border-color:rgba(74,171,109,.3)">Active</span></div>
+            <div class="cc-body">
+              <div class="cc-desc">Consulting on payment API integration architecture — 4-week engagement, deliverable-based.</div>
+              <div class="cc-kv"><span class="cc-k">Rate</span><span class="cc-v" style="color:var(--cyan)">$165/hour</span></div>
+              <div class="cc-kv"><span class="cc-k">Estimated Hours</span><span class="cc-v">48h total</span></div>
+              <div class="cc-kv"><span class="cc-k">Worker</span><span class="cc-v">@mia</span></div>
+              <div class="cc-prog"><div class="cc-pfill" style="background:var(--cyan);width:45%"></div></div>
+            </div>
+            <div class="cc-ftr"><span class="cc-val" style="color:var(--cyan)">$7,920</span><span class="cc-val-lbl">Contract Value</span><div class="cc-tags"><span class="cc-tag">API</span><span class="cc-tag">consulting</span></div></div>
+          </div>
+        </div>
+
+        <!-- DEALS -->
+        <div class="sec-hdr"><span class="sec-hdr-lbl">Deals & Investments</span><div class="sec-hdr-line"></div></div>
+        <div class="commerce-grid">
+          <div class="com-card" style="border-left:3px solid var(--green)">
+            <div class="cc-hdr"><div class="cc-dot" style="background:var(--green)"></div><div class="cc-info"><div class="cc-name">Obatala VC Seed Round</div><div class="cc-type">Deal · Investment · SAFE Note</div></div><span class="cc-status" style="color:var(--gold);border-color:rgba(200,168,75,.3)">Negotiating</span></div>
+            <div class="cc-body">
+              <div class="cc-desc">Seed round with Obatala VC Studios — SAFE note, post-money cap $3.1M, 8% equity.</div>
+              <div class="cc-kv"><span class="cc-k">Investment</span><span class="cc-v" style="color:var(--green)">$250,000</span></div>
+              <div class="cc-kv"><span class="cc-k">Equity</span><span class="cc-v">8% (SAFE)</span></div>
+              <div class="cc-kv"><span class="cc-k">Post-Money Cap</span><span class="cc-v">$3.1M</span></div>
+              <div class="cc-kv"><span class="cc-k">Lead Investor</span><span class="cc-v">Obatala VC</span></div>
+              <div class="cc-kv"><span class="cc-k">Board Seat</span><span class="cc-v">Observer seat</span></div>
+              <div class="cc-prog"><div class="cc-pfill" style="background:var(--green);width:55%"></div></div>
+            </div>
+            <div class="cc-ftr"><span class="cc-val" style="color:var(--green)">$250k</span><span class="cc-val-lbl">Deal Size</span><div class="cc-tags"><span class="cc-tag">SAFE</span><span class="cc-tag">equity</span><span class="cc-tag">seed</span></div></div>
+          </div>
+
+          <div class="com-card" style="border-left:3px solid var(--violet)">
+            <div class="cc-hdr"><div class="cc-dot" style="background:var(--violet)"></div><div class="cc-info"><div class="cc-name">Design IP License Deal</div><div class="cc-type">Deal · IP License · Revenue-Share</div></div><span class="cc-status" style="color:var(--green);border-color:rgba(74,171,109,.3)">Active</span></div>
+            <div class="cc-body">
+              <div class="cc-desc">Design System Library licensed to Wolof.io — perpetual license + 15% revenue share on sub-licenses.</div>
+              <div class="cc-kv"><span class="cc-k">License Fee</span><span class="cc-v" style="color:var(--violet)">$7,200/yr</span></div>
+              <div class="cc-kv"><span class="cc-k">Rev Share</span><span class="cc-v">15% of sub-licenses</span></div>
+              <div class="cc-kv"><span class="cc-k">Licensees</span><span class="cc-v">3 active</span></div>
+              <div class="cc-prog"><div class="cc-pfill" style="background:var(--violet);width:100%"></div></div>
+            </div>
+            <div class="cc-ftr"><span class="cc-val" style="color:var(--violet)">$7.2k</span><span class="cc-val-lbl">Annual</span><div class="cc-tags"><span class="cc-tag">license</span><span class="cc-tag">IP</span></div></div>
+          </div>
+        </div>
+
+        <!-- PROPOSALS & BIDS -->
+        <div class="sec-hdr"><span class="sec-hdr-lbl">Proposals, Bids & Requests</span><div class="sec-hdr-line"></div></div>
+        <div class="commerce-grid">
+          <div class="com-card" style="border-left:3px solid var(--gold)">
+            <div class="cc-hdr"><div class="cc-dot" style="background:var(--gold)"></div><div class="cc-info"><div class="cc-name">Community Fund Governance Proposal</div><div class="cc-type">Proposal · Strategic · Governance</div></div><span class="cc-status" style="color:var(--gold);border-color:rgba(200,168,75,.3)">Submitted</span></div>
+            <div class="cc-body">
+              <div class="cc-desc">Proposal to launch cooperative community fund and governance framework for collective decision-making.</div>
+              <div class="cc-kv"><span class="cc-k">Status</span><span class="cc-v" style="color:var(--gold)">Under Review</span></div>
+              <div class="cc-kv"><span class="cc-k">Decision Due</span><span class="cc-v">Apr 10</span></div>
+              <div class="cc-kv"><span class="cc-k">Votes Needed</span><span class="cc-v">Supermajority (67%)</span></div>
+            </div>
+            <div class="cc-ftr"><div class="cc-tags"><span class="cc-tag">proposal</span><span class="cc-tag">governance</span></div></div>
+          </div>
+
+          <div class="com-card" style="border-left:3px solid var(--teal)">
+            <div class="cc-hdr"><div class="cc-dot" style="background:var(--teal)"></div><div class="cc-info"><div class="cc-name">Strategy Workshop Request</div><div class="cc-type">Request · Consultation · Workshop</div></div><span class="cc-status" style="color:var(--text3);border-color:var(--border)">Draft</span></div>
+            <div class="cc-body">
+              <div class="cc-desc">3-hour strategic roadmap workshop requested by Wolof.io. Platform growth strategy, Q3–Q4.</div>
+              <div class="cc-kv"><span class="cc-k">Rate</span><span class="cc-v" style="color:var(--teal)">$350/hour</span></div>
+              <div class="cc-kv"><span class="cc-k">Duration</span><span class="cc-v">3 hours</span></div>
+              <div class="cc-kv"><span class="cc-k">Format</span><span class="cc-v">Remote workshop</span></div>
+            </div>
+            <div class="cc-ftr"><span class="cc-val" style="color:var(--teal)">$1,050</span><span class="cc-val-lbl">Quote</span><div class="cc-tags"><span class="cc-tag">consultation</span><span class="cc-tag">workshop</span></div></div>
+          </div>
+
+          <div class="com-card" style="border-left:3px solid var(--rose)">
+            <div class="cc-hdr"><div class="cc-dot" style="background:var(--rose)"></div><div class="cc-info"><div class="cc-name">Equipment Rental Bid</div><div class="cc-type">Bid · Asset · Rental</div></div><span class="cc-status" style="color:var(--blue);border-color:rgba(58,124,200,.3)">Submitted</span></div>
+            <div class="cc-body">
+              <div class="cc-desc">Competitive bid on podcast equipment rental package — 3-day shoot, full kit including lighting.</div>
+              <div class="cc-kv"><span class="cc-k">Bid Amount</span><span class="cc-v" style="color:var(--rose)">$840</span></div>
+              <div class="cc-kv"><span class="cc-k">Duration</span><span class="cc-v">3 days</span></div>
+              <div class="cc-kv"><span class="cc-k">Competing Bids</span><span class="cc-v">2 others</span></div>
+            </div>
+            <div class="cc-ftr"><span class="cc-val" style="color:var(--rose)">$840</span><span class="cc-val-lbl">Bid</span><div class="cc-tags"><span class="cc-tag">bid</span><span class="cc-tag">equipment</span></div></div>
+          </div>
+        </div>
+
+        <!-- SUBSCRIPTIONS -->
+        <div class="sec-hdr"><span class="sec-hdr-lbl">Subscriptions & Recurring</span><div class="sec-hdr-line"></div></div>
+        <div class="page-grid four">
+          <div class="widget"><div class="w-hdr"><span class="w-title" style="color:var(--lime)">Pro Tier</span><span class="w-badge">SaaS</span></div><div style="font-family:var(--mono);font-size:22px;font-weight:700;color:var(--lime)">240</div><div class="kv"><span class="kk">MRR</span><span class="kv2">$11,760</span></div><div class="kv"><span class="kk">Churn</span><span class="kv2" style="color:var(--rose)">2.1%</span></div></div>
+          <div class="widget"><div class="w-hdr"><span class="w-title" style="color:var(--gold)">Starter Tier</span><span class="w-badge">SaaS</span></div><div style="font-family:var(--mono);font-size:22px;font-weight:700;color:var(--gold)">87</div><div class="kv"><span class="kk">MRR</span><span class="kv2">$1,740</span></div><div class="kv"><span class="kk">Churn</span><span class="kv2" style="color:var(--rose)">3.8%</span></div></div>
+          <div class="widget"><div class="w-hdr"><span class="w-title" style="color:var(--cyan)">Design Licenses</span><span class="w-badge">IP</span></div><div style="font-family:var(--mono);font-size:22px;font-weight:700;color:var(--cyan)">3</div><div class="kv"><span class="kk">ARR</span><span class="kv2">$7,200</span></div><div class="kv"><span class="kk">Rev Share</span><span class="kv2">15%</span></div></div>
+          <div class="widget"><div class="w-hdr"><span class="w-title" style="color:var(--violet)">Podcast Retainer</span><span class="w-badge">Media</span></div><div style="font-family:var(--mono);font-size:22px;font-weight:700;color:var(--violet)">1</div><div class="kv"><span class="kk">Monthly</span><span class="kv2">$2,400</span></div><div class="kv"><span class="kk">Episodes</span><span class="kv2">8 remaining</span></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<script src="kogi-shared.js"></script>
+<script>buildSubNav('commerce');</script>
+</body>
+</html>

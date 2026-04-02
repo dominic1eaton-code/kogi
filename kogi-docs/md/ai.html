@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Apapo · AI Engine Dashboard</title>
+<link rel="stylesheet" href="hg-shared.css">
+<style>
+.engine-card{background:var(--bg2);border:1px solid var(--border);border-radius:8px;overflow:hidden;cursor:pointer;transition:all 0.12s}
+.engine-card:hover{border-color:var(--border3)}
+.engine-card.selected{box-shadow:0 0 0 1px var(--gold)}
+.engine-header{display:flex;align-items:center;gap:10px;padding:12px 14px;border-bottom:1px solid var(--border)}
+.engine-name{font-family:var(--mono);font-size:10px;font-weight:600;color:var(--text);flex:1}
+.conf-bar{flex:1;height:6px;background:var(--bg5);border-radius:3px;overflow:hidden}
+.conf-fill{height:100%;border-radius:3px}
+.ai-signal{display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid var(--border)}
+.ai-sig-name{font-family:var(--mono);font-size:9px;color:var(--text2);flex:1}
+.ai-sig-val{font-family:var(--mono);font-size:10px;font-weight:600}
+.ai-sig-conf{font-family:var(--mono);font-size:8px;color:var(--text3)}
+.nl-area{background:var(--bg);border:1px solid var(--border2);border-radius:6px;padding:12px;font-family:var(--mono);font-size:11px;color:var(--text2);min-height:60px;outline:none;resize:none;width:100%}
+.nl-area:focus{border-color:var(--cyan)}
+.translated-query{background:var(--bg3);border:1px solid var(--border);border-radius:4px;padding:10px;font-family:var(--mono);font-size:10px;color:var(--text2);line-height:1.6;white-space:pre-wrap}
+</style>
+</head>
+<body>
+<nav class="topnav">
+  <span class="topnav-logo">APAPO</span>
+  <div class="topnav-sep"></div>
+  <div class="topnav-breadcrumb"><a href="index.html">Dashboard</a><span class="sep">›</span><span class="cur">AI Engine</span></div>
+  <div class="topnav-spacer"></div>
+  <div class="topnav-actions">
+    <button class="btn btn-primary btn-sm" onclick="runAllEngines()">▶ Run All Engines</button>
+  </div>
+</nav>
+<nav class="iconav" id="hg-iconav"></nav>
+
+<div class="hg-main no-subnav" style="left:var(--nav-w)">
+  <div class="hg-toolbar">
+    <span class="hg-toolbar-title">AI Engine Dashboard</span>
+    <span class="hg-toolbar-sub">HG-AI · Pluggable intelligence · AttrComputation · WritebackService</span>
+    <div class="ml-auto flex gap-2">
+      <button class="btn btn-ghost btn-sm" onclick="showToast('Registering new engine…')">+ Register Engine</button>
+    </div>
+  </div>
+  <div class="hg-tabs">
+    <div class="hg-tab active" onclick="switchAITab('engines',this)">Engines</div>
+    <div class="hg-tab" onclick="switchAITab('signals',this)">AI Signals</div>
+    <div class="hg-tab" onclick="switchAITab('nl',this)">NL → HyperQL</div>
+    <div class="hg-tab" onclick="switchAITab('writeback',this)">WritebackService</div>
+  </div>
+  <div class="hg-content" id="ai-body"></div>
+</div>
+
+<div class="toast" id="hg-toast"></div>
+<script src="hg-nav.js"></script>
+<script src="hg-data.js"></script>
+<script>
+renderNav('ai');
+const { aiEngines } = HGData;
+let aiTab='engines';
+let selectedEngine=null;
+
+function renderAI() {
+  const body=document.getElementById('ai-body');
+  if(aiTab==='engines') renderEngines(body);
+  else if(aiTab==='signals') renderSignals(body);
+  else if(aiTab==='nl') renderNL(body);
+  else if(aiTab==='writeback') renderWriteback(body);
+}
+
+function renderEngines(body) {
+  body.innerHTML=`
+    <div class="stat-grid grid-4 mb-3">
+      ${[['Registered',aiEngines.length,'var(--gold)'],['Running',aiEngines.filter(e=>e.status==='running').length,'var(--green)'],['Avg Confidence',Math.round(aiEngines.reduce((s,e)=>s+e.confidence_avg,0)/aiEngines.length*100)+'%','var(--gold)'],['Total Attrs Written',aiEngines.length*2,'var(--violet)']].map(([l,v,c])=>`
+      <div class="stat-cell"><div class="stat-label">${l}</div><div class="stat-val" style="color:${c};font-size:14px">${v}</div></div>`).join('')}
+    </div>
+    <div class="grid-2 gap-3">
+      ${aiEngines.map(e=>`
+        <div class="engine-card${selectedEngine===e.id?' selected':''}" onclick="selectEngine('${e.id}')">
+          <div class="engine-header">
+            <div style="width:10px;height:10px;border-radius:50%;background:${e.color};flex-shrink:0"></div>
+            <span class="engine-name">${e.name} <span style="color:var(--text3);font-size:9px">${e.v}</span></span>
+            <span class="badge ${e.status==='running'?'badge-green':'badge-gray'}">${e.status}</span>
+          </div>
+          <div style="padding:10px 14px">
+            <div class="flex flex-center gap-2 mb-2">
+              <span style="font-family:var(--mono);font-size:8px;color:var(--text3)">Writes:</span>
+              <span style="font-family:var(--mono);font-size:9px;color:${e.color}">${e.attr}</span>
+              <span style="font-family:var(--mono);font-size:8px;color:var(--text3);margin-left:auto">${e.model}</span>
+            </div>
+            <div class="health-row" style="margin:0">
+              <span class="health-label">Confidence</span>
+              <div class="conf-bar"><div class="conf-fill" style="background:${e.color};width:${Math.round(e.confidence_avg*100)}%"></div></div>
+              <span class="health-val">${Math.round(e.confidence_avg*100)}%</span>
+            </div>
+            <div style="font-family:var(--mono);font-size:8px;color:var(--text3);margin-top:5px;display:flex;justify-content:space-between">
+              <span>Domain: ${e.domain}</span>
+              <span>Last run: ${e.last_run}</span>
+            </div>
+          </div>
+        </div>`).join('')}
+    </div>`;
+}
+
+function renderSignals(body) {
+  const signals = [
+    {entity:'Alpha Platform',attr:'health_score',val:87,conf:0.91,engine:'KogiHealthEngine',ts:'2m ago',color:'#00d8b0'},
+    {entity:'Brand Identity',attr:'health_score',val:91,conf:0.88,engine:'KogiHealthEngine',ts:'2m ago',color:'#8b5cf6'},
+    {entity:'Finance Infrastructure',attr:'risk_score',val:72,conf:0.84,engine:'KogiRiskEngine',ts:'5m ago',color:'#e8526a'},
+    {entity:'Mobile App MVP',attr:'anomaly_flag',val:'true',conf:0.79,engine:'KogiAnomalyEngine',ts:'1m ago',color:'#e8a832'},
+    {entity:'PharmaSuite v3',attr:'ccr_risk',val:58,conf:0.92,engine:'QalaCCRReviewer',ts:'7m ago',color:'#8b5cf6'},
+    {entity:'UmeKernel #10',attr:'health_score',val:62,conf:0.85,engine:'UmeKernelHealth',ts:'3m ago',color:'#3d84e8'},
+    {entity:'HSA Benefit Account',attr:'health_score',val:96,conf:0.93,engine:'KogiHealthEngine',ts:'2m ago',color:'#3cb878'},
+  ];
+  body.innerHTML=`
+    <div class="hg-card">
+      <div class="hg-card-header"><div class="hg-card-title">AI Signal Stream</div><div class="hg-card-sub">AI-computed HyperCell attributes · confidence intervals · AttrComputation::AiEngine</div></div>
+      <div class="hg-card-body" style="padding:0">
+        <table class="hg-table">
+          <thead><tr><th>Entity</th><th>Attribute</th><th>Value</th><th>Confidence</th><th>Engine</th><th>computed_at</th><th>Actions</th></tr></thead>
+          <tbody>
+            ${signals.map(s=>`<tr>
+              <td style="color:${s.color}">${s.entity}</td>
+              <td style="color:var(--gold)">${s.attr}</td>
+              <td style="font-weight:600;color:${typeof s.val==='number'&&s.val>80?'var(--green)':typeof s.val==='number'&&s.val>60?'var(--gold)':'var(--rose)'}">${s.val}</td>
+              <td>
+                <div class="flex flex-center gap-2">
+                  <div class="conf-bar" style="width:60px;height:4px"><div class="conf-fill" style="background:${s.color};width:${Math.round(s.conf*100)}%"></div></div>
+                  <span style="font-family:var(--mono);font-size:9px">${Math.round(s.conf*100)}%</span>
+                </div>
+              </td>
+              <td style="font-size:9px;color:var(--text3)">${s.engine}</td>
+              <td style="color:var(--text3)">${s.ts}</td>
+              <td><button class="btn btn-ghost btn-xs" onclick="showToast('Recomputing ${s.attr} for ${s.entity}…')">Recompute</button></td>
+            </tr>`).join('')}
+          </tbody>
+        </table>
+      </div>
+    </div>`;
+}
+
+function renderNL(body) {
+  body.innerHTML=`
+    <div class="hg-card mb-3">
+      <div class="hg-card-header"><div class="hg-card-title">NL-to-HyperQL Translation</div><div class="hg-card-sub">GPT-4o powered · NL → HyperQL → execute on any cube</div><span class="badge badge-green">Running</span></div>
+      <div class="hg-card-body">
+        <div class="form-group mb-3">
+          <div class="form-label">Natural Language Query</div>
+          <textarea class="nl-area" id="nl-input" placeholder="e.g. Show me all active Kogi portfolio items with health score below 75, sorted by risk…">Show me all active portfolio items where the health score is below 80, ranked by risk score, including their version and budget</textarea>
+        </div>
+        <div class="flex gap-2 mb-3">
+          <select class="form-select" style="width:200px">
+            <option>Kogi Grid</option><option>Ume Grid</option><option>Qala Grid</option>
+          </select>
+          <button class="btn btn-primary btn-sm" onclick="translateNL()">✦ Translate & Run</button>
+          <button class="btn btn-ghost btn-sm" onclick="showToast('Translation saved to library')">Save</button>
+        </div>
+        <div class="form-label mb-1">Generated HyperQL</div>
+        <div class="translated-query" id="translated-query">-- Click "Translate & Run" to generate HyperQL</div>
+        <div id="nl-result-section" style="display:none;margin-top:12px">
+          <div class="form-label mb-1">Results</div>
+          <div id="nl-results"></div>
+        </div>
+      </div>
+    </div>
+    <div class="hg-card">
+      <div class="hg-card-header"><div class="hg-card-title">Translation Examples</div></div>
+      <div class="hg-card-body">
+        ${[["Show active projects with budget overrun","SELECT D1, cell(\"name\"), cell(\"budget\"), cell(\"budget_spent\")\nFROM kogi.portfolio.components\nWHERE cell(\"status\").value = \"active\"\nAND cell(\"budget_spent\").value > cell(\"budget\").value\nORDER BY budget_spent DESC;"],["Which Ume modules are degraded?","SELECT D1, cell(\"name\"), cell(\"lifecycle_state\"), cell(\"health_score\"), cell(\"restart_count\")\nFROM ume.kernel.modules\nWHERE cell(\"lifecycle_state\").value = \"Degraded\";"],["What are the cross-grid connections between Kogi and Ume?","TRAVERSE GRAPH\n  FROM kogi.portfolio.components\n  EDGE_TYPES [CrossGridLink]\n  DEPTH 1\nSELECT source.label, edge.edge_type, target.label, target.domain\nWHERE edge.grid2 = \"grid-ume\";"]].map(([nl,hql])=>`
+          <div style="margin-bottom:10px;padding-bottom:10px;border-bottom:1px solid var(--border)">
+            <div style="font-family:var(--sans);font-size:11px;color:var(--text2);margin-bottom:5px;cursor:pointer" onclick="document.getElementById('nl-input').value='${nl}';showToast('Loaded example')">"${nl}"</div>
+            <div style="font-family:var(--mono);font-size:9px;color:var(--text3);background:var(--bg3);border-radius:3px;padding:6px;white-space:pre">${hql}</div>
+          </div>`).join('')}
+      </div>
+    </div>`;
+}
+
+function renderWriteback(body) {
+  body.innerHTML=`
+    <div class="hg-card mb-3">
+      <div class="hg-card-header"><div class="hg-card-title">WritebackService</div><div class="hg-card-sub">AI agent writes computed values back to HyperCells via permission-gated protocol</div></div>
+      <div class="hg-card-body">
+        <p style="font-family:var(--mono);font-size:9px;color:var(--text3);margin-bottom:10px;line-height:1.6">
+          AI engines write computed attributes back to HyperCells through the WritebackService. Every writeback:<br>
+          1. Validates caller has System tier permission on the target attribute<br>
+          2. Sets cell.computed_by = "{engine_id}.{version}"<br>
+          3. Sets cell.confidence = {confidence_score}<br>
+          4. Appends EventLog: AiComputationCompleted{entity, attr, value, confidence}<br>
+          5. Triggers dependent computations via plugin hooks
+        </p>
+        <table class="hg-table">
+          <thead><tr><th>Engine</th><th>Target Attr</th><th>Cube</th><th>Trigger</th><th>TTL</th><th>Last Write</th></tr></thead>
+          <tbody>
+            ${aiEngines.map(e=>`<tr>
+              <td style="color:${e.color}">${e.name}</td>
+              <td style="color:var(--gold)">${e.attr}</td>
+              <td style="font-size:9px;color:var(--text3)">kogi.portfolio.components</td>
+              <td style="font-size:9px">ComponentUpdated</td>
+              <td style="font-size:9px">24h</td>
+              <td style="color:var(--text3)">${e.last_run}</td>
+            </tr>`).join('')}
+          </tbody>
+        </table>
+      </div>
+    </div>`;
+}
+
+function translateNL() {
+  const btn=document.querySelector('.hg-tab.active~.hg-tab'); // dummy
+  document.getElementById('translated-query').textContent='-- Translating…';
+  setTimeout(()=>{
+    document.getElementById('translated-query').textContent=`SELECT D1 AS entity_id,
+  cell("name").value AS name,
+  cell("status").value AS status,
+  cell("health_score").value AS health_score,
+  cell("risk_score").value AS risk_score,
+  cell("version").value AS version,
+  cell("budget").value AS budget
+FROM kogi.portfolio.components
+WHERE
+  cell("status").value = "active"
+  AND cell("health_score").value < 80
+ORDER BY risk_score DESC
+LIMIT 50;`;
+    document.getElementById('nl-result-section').style.display='';
+    document.getElementById('nl-results').innerHTML=`<div style="font-family:var(--mono);font-size:9px;color:var(--green)">✓ 4 rows returned in 18ms · <a href="query.html" style="color:var(--cyan)">View in HyperQL Console →</a></div>`;
+    showToast('NL translated and executed in 18ms','success');
+  },800);
+}
+
+function selectEngine(id) { selectedEngine=selectedEngine===id?null:id; renderAI(); }
+function switchAITab(tab, el) { aiTab=tab; document.querySelectorAll('.hg-tab').forEach(t=>t.classList.remove('active')); el.classList.add('active'); renderAI(); }
+function runAllEngines() { showToast('Running all AI engines…'); setTimeout(()=>showToast('All engines complete','success'),1200); }
+
+renderAI();
+</script>
+</body>
+</html>

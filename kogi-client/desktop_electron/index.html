@@ -1,1314 +1,1406 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>KOGI</title>
-  <style>
-    @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&display=swap');
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    :root {
-      --bg: #0d1117; --bg-1: #111520; --bg-2: #161b26; --bg-3: #1b2030;
-      --border: #1e2535; --border-1: #252d3e;
-      --text: #e2e8f0; --text-1: #94a3b8; --text-2: #4b5a72;
-      --font: 'JetBrains Mono', 'SF Mono', 'Fira Code', Consolas, monospace;
-      --blue: #38bdf8; --blue-bg: rgba(56,189,248,.08); --blue-border: rgba(56,189,248,.25);
-      --teal: #2dd4bf; --teal-bg: rgba(45,212,191,.08); --teal-border: rgba(45,212,191,.25);
-      --emerald: #34d399; --emerald-bg: rgba(52,211,153,.08); --emerald-border: rgba(52,211,153,.25);
-      --amber: #fbbf24; --amber-bg: rgba(251,191,36,.08); --amber-border: rgba(251,191,36,.25);
-      --rose: #f87171; --rose-bg: rgba(248,113,113,.08); --rose-border: rgba(248,113,113,.25);
-      --purple: #c084fc; --purple-bg: rgba(192,132,252,.08); --purple-border: rgba(192,132,252,.25);
-      --indigo: #818cf8; --indigo-bg: rgba(129,140,248,.08); --indigo-border: rgba(129,140,248,.25);
-      --cyan: #67e8f9; --cyan-bg: rgba(103,232,249,.08); --cyan-border: rgba(103,232,249,.25);
-      --slate: #94a3b8; --slate-bg: rgba(148,163,184,.08); --slate-border: rgba(148,163,184,.25);
-    }
-    html, body { height: 100%; background: var(--bg); color: var(--text); font-family: var(--font); font-size: 13px; line-height: 1.5; -webkit-font-smoothing: antialiased; }
-    ::-webkit-scrollbar { width: 4px; height: 4px; }
-    ::-webkit-scrollbar-track { background: transparent; }
-    ::-webkit-scrollbar-thumb { background: var(--border-1); border-radius: 2px; }
-    .app-shell { display: flex; height: 100vh; overflow: hidden; }
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KOGI · Dashboard</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=IBM+Plex+Mono:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap');
 
-    /* SIDEBAR */
-    .sidebar { width: 168px; min-width: 168px; background: var(--bg-1); border-right: 1px solid var(--border); display: flex; flex-direction: column; overflow-y: auto; overflow-x: hidden; }
-    .brand { padding: 18px 16px 14px; font-size: 16px; font-weight: 700; letter-spacing: .1em; color: var(--text); border-bottom: 1px solid var(--border); user-select: none; }
-    .nav { flex: 1; padding: 8px 0; display: flex; flex-direction: column; gap: 1px; }
-    .nav-item { display: flex; align-items: center; gap: 8px; padding: 7px 12px 7px 0; background: none; border: none; color: var(--text-1); font-family: var(--font); font-size: 11.5px; font-weight: 400; letter-spacing: .04em; text-transform: uppercase; cursor: pointer; width: 100%; text-align: left; position: relative; transition: color .15s, background .15s; border-radius: 0 4px 4px 0; }
-    .nav-item:hover { color: var(--text); background: var(--bg-2); }
-    .nav-item.active { color: var(--text); background: var(--bg-2); font-weight: 600; }
-    .nav-indicator { display: block; width: 3px; min-width: 3px; height: 16px; border-radius: 0 2px 2px 0; background: transparent; transition: background .15s; margin-right: 4px; }
-    .nav-item.active .nav-indicator { background: var(--blue); }
-    .nav-icon { font-size: 12px; width: 16px; text-align: center; flex-shrink: 0; }
-    .sidebar-footer { padding: 12px; border-top: 1px solid var(--border); }
-    .sidebar-card { padding: 10px 12px; }
-    .sidebar-metric { font-size: 11px; color: var(--text-1); margin: 4px 0 6px; }
+:root {
+  /* ── Brand Palette ── */
+  --canvas:    #fcf8ec;
+  --amber:     #cbb27a;
+  --bark:      #4a401d;
+  --honey:     #fdca89;
+  --jade:      #2a7f5e;
+  --evergreen: #132f20;
 
-    /* MAIN */
-    .main { flex: 1; display: flex; flex-direction: column; min-width: 0; overflow: hidden; }
-    .topbar { display: flex; align-items: center; justify-content: space-between; padding: 0 20px; height: 56px; min-height: 56px; background: var(--bg-1); border-bottom: 1px solid var(--border); gap: 16px; }
-    .topbar-left { display: flex; align-items: center; gap: 12px; min-width: 0; }
-    .topbar-icon { font-size: 18px; flex-shrink: 0; width: 24px; text-align: center; }
-    .topbar-title-group { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
-    .topbar-title { font-size: 15px; font-weight: 700; letter-spacing: .01em; color: var(--text); white-space: nowrap; }
-    .topbar-tabs { display: flex; align-items: center; gap: 0; }
-    .topbar-tab { font-size: 10.5px; font-weight: 500; letter-spacing: .08em; text-transform: uppercase; color: var(--text-2); background: none; border: none; cursor: pointer; font-family: var(--font); padding: 0; transition: color .15s; }
-    .topbar-tab:hover { color: var(--text-1); }
-    .topbar-tab.active { color: var(--blue); }
-    .topbar-sep { font-size: 10px; color: var(--text-2); margin: 0 5px; user-select: none; }
-    .topbar-actions { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
-    .search input { background: var(--bg-2); border: 1px solid var(--border-1); border-radius: 6px; color: var(--text-1); font-family: var(--font); font-size: 12px; padding: 6px 12px; width: 220px; outline: none; transition: border-color .15s; }
-    .search input::placeholder { color: var(--text-2); }
-    .search input:focus { border-color: var(--blue); }
-    .pill { padding: 4px 10px; border-radius: 4px; border: 1px solid var(--blue-border); background: var(--blue-bg); color: var(--blue); font-family: var(--font); font-size: 11px; font-weight: 600; letter-spacing: .06em; cursor: pointer; }
-    .avatar { width: 30px; height: 30px; border-radius: 50%; background: linear-gradient(135deg,#4a5568,#2d3748); border: 2px solid var(--border-1); color: var(--text); font-size: 13px; font-weight: 700; font-family: var(--font); cursor: pointer; display: flex; align-items: center; justify-content: center; }
+  /* ── Background Scale (Dark Forest) ── */
+  --bg:  #091310;
+  --bg1: #0d1a14;
+  --bg2: #111e17;
+  --bg3: #16271b;
+  --bg4: #1c3122;
 
-    /* CONTENT */
-    .content { flex: 1; overflow-y: auto; overflow-x: hidden; padding: 16px 20px; }
-    .screen { display: none; flex-direction: column; gap: 14px; }
-    .screen.active { display: flex; }
-    .stats-row { display: grid; grid-template-columns: repeat(auto-fit,minmax(160px,1fr)); gap: 10px; }
+  /* ── Text Scale ── */
+  --text:  #f5f0e6;
+  --text2: #c4a86a;
+  --text3: #63543a;
+  --text4: #3a2f1a;
 
-    /* CARD */
-    .card { background: var(--bg-2); border: 1px solid var(--border); border-radius: 8px; padding: 14px 16px; }
-    .card-title { font-size: 10px; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; color: var(--text-2); margin-bottom: 12px; }
-    .card-title-sm { font-size: 11px; font-weight: 600; letter-spacing: .05em; color: var(--text-1); margin-bottom: 2px; }
-    .card-subtitle { font-size: 11px; color: var(--text-2); margin-bottom: 4px; }
-    .card-meta { font-size: 11px; color: var(--text-2); }
-    .sub-card { padding: 11px 13px; border-radius: 6px; }
+  /* ── Borders ── */
+  --border:  rgba(203,178,122,0.08);
+  --border2: rgba(203,178,122,0.18);
+  --border3: rgba(42,127,94,0.35);
 
-    /* METRIC */
-    .metric-card { padding: 14px 16px 10px; display: flex; flex-direction: column; gap: 2px; min-height: 90px; position: relative; overflow: hidden; }
-    .metric-label { font-size: 10px; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; color: var(--text-2); }
-    .metric-value { font-size: 26px; font-weight: 700; line-height: 1.1; color: var(--text); letter-spacing: -.01em; }
-    .metric-meta { display: flex; align-items: center; gap: 6px; margin-top: 2px; flex-wrap: wrap; }
-    .metric-caption { font-size: 11px; color: var(--text-1); }
-    .trend { font-size: 11px; font-weight: 600; display: inline-flex; align-items: center; gap: 2px; }
-    .trend.up { color: var(--emerald); }
-    .trend.up::before { content: '▲ '; font-size: 9px; }
-    .trend.down { color: var(--rose); }
-    .trend.down::before { content: '▼ '; font-size: 9px; }
+  /* ── Vibrant Accent Colors (data ink) ── */
+  --cyan:   #1ecfb0;
+  --gold:   #fdca89;
+  --rose:   #f84f6e;
+  --violet: #b07ef8;
+  --blue:   #38bdf8;
+  --green:  #4ade80;
+  --pink:   #f472b6;
+  --orange: #fb923c;
 
-    /* PROGRESS */
-    .progress { height: 3px; background: var(--bg-3); border-radius: 2px; overflow: hidden; margin-top: auto; width: 100%; }
-    .progress span { display: block; height: 100%; border-radius: 2px; background: var(--blue); transition: width .3s ease; }
+  /* ── Layout ── */
+  --pnav-w: 62px;
+  --snav-w: 182px;
+  --mono: 'IBM Plex Mono', monospace;
+  --sans: 'Syne', sans-serif;
 
-    /* TONES */
-    .tone-blue    { --tone: var(--blue);    --tone-bg: var(--blue-bg);    --tone-border: var(--blue-border); }
-    .tone-teal    { --tone: var(--teal);    --tone-bg: var(--teal-bg);    --tone-border: var(--teal-border); }
-    .tone-emerald { --tone: var(--emerald); --tone-bg: var(--emerald-bg); --tone-border: var(--emerald-border); }
-    .tone-amber   { --tone: var(--amber);   --tone-bg: var(--amber-bg);   --tone-border: var(--amber-border); }
-    .tone-rose    { --tone: var(--rose);    --tone-bg: var(--rose-bg);    --tone-border: var(--rose-border); }
-    .tone-purple  { --tone: var(--purple);  --tone-bg: var(--purple-bg);  --tone-border: var(--purple-border); }
-    .tone-indigo  { --tone: var(--indigo);  --tone-bg: var(--indigo-bg);  --tone-border: var(--indigo-border); }
-    .tone-cyan    { --tone: var(--cyan);    --tone-bg: var(--cyan-bg);    --tone-border: var(--cyan-border); }
-    .tone-slate   { --tone: var(--slate);   --tone-bg: var(--slate-bg);   --tone-border: var(--slate-border); }
-    .metric-card[class*="tone-"] { background: var(--tone-bg); border-color: var(--tone-border); }
-    .metric-card.tone-blue .metric-value { color: var(--blue); }
-    .metric-card.tone-teal .metric-value { color: var(--teal); }
-    .metric-card.tone-emerald .metric-value { color: var(--emerald); }
-    .metric-card.tone-amber .metric-value { color: var(--amber); }
-    .metric-card.tone-rose .metric-value { color: var(--rose); }
-    .metric-card.tone-purple .metric-value { color: var(--purple); }
-    .metric-card.tone-indigo .metric-value { color: var(--indigo); }
-    .metric-card.tone-cyan .metric-value { color: var(--cyan); }
-    .metric-card.tone-slate .metric-value { color: var(--slate); }
-    .metric-card .progress span { background: var(--tone, var(--blue)); }
-    .sub-card[class*="tone-"] { background: var(--tone-bg); border-color: var(--tone-border); }
-    .sub-card .card-title-sm { color: var(--tone, var(--text-1)); }
-    .sub-card .progress span { background: var(--tone, var(--blue)); }
+  /* ── Shadows ── */
+  --shadow-sm: 0 2px 8px rgba(0,0,0,0.35);
+  --shadow-md: 0 4px 16px rgba(0,0,0,0.45);
+  --shadow-lg: 0 8px 32px rgba(0,0,0,0.55);
+}
 
-    /* BADGES / CHIPS */
-    .status { display: inline-block; font-size: 10px; font-weight: 600; letter-spacing: .06em; color: var(--tone, var(--text-1)); padding: 0; }
-    .chip { display: inline-flex; align-items: center; padding: 3px 8px; border-radius: 4px; font-size: 10.5px; font-weight: 500; background: var(--tone-bg, var(--bg-3)); color: var(--tone, var(--text-1)); border: 1px solid var(--tone-border, var(--border-1)); white-space: nowrap; }
-    .chip-row { display: flex; flex-wrap: wrap; gap: 6px; }
+/* ── Reset ── */
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{width:100%;height:100%;background:var(--bg);font-family:var(--mono);color:var(--text);font-size:10px;overflow:hidden}
+.app{display:flex;width:100%;height:100vh;overflow:hidden}
 
-    /* LAYOUT */
-    .layout-2 { display: grid; grid-template-columns: 1fr 280px; gap: 14px; align-items: start; }
-    .stack { display: flex; flex-direction: column; gap: 14px; }
+/* ══ PRIMARY NAV ══ */
+.p-nav{
+  width:var(--pnav-w);
+  background:var(--bg1);
+  border-right:1px solid var(--border);
+  flex-shrink:0;
+  display:flex;flex-direction:column;align-items:center;
+  z-index:20;
+  position:relative;
+}
+.p-nav::after{
+  content:'';position:absolute;top:0;right:-1px;bottom:0;width:1px;
+  background:linear-gradient(to bottom, transparent 0%, rgba(42,127,94,0.5) 30%, rgba(203,178,122,0.3) 70%, transparent 100%);
+  pointer-events:none;
+}
+.p-nav-top{display:flex;flex-direction:column;align-items:center;gap:1px;flex:1;padding:8px 0;width:100%}
+.p-nav-bottom{display:flex;flex-direction:column;align-items:center;padding:8px 0;width:100%}
 
-    /* TABLE */
-    .table-header { font-size: 10px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--text-2); border-bottom: 1px solid var(--border); padding-bottom: 6px; margin-bottom: 4px; }
-    .table-row { display: grid; grid-template-columns: var(--cols, 1fr 1fr 1fr); gap: 8px; padding: 7px 0; border-bottom: 1px solid var(--border); align-items: center; font-size: 12px; }
-    .table-row:last-child { border-bottom: none; }
-    .muted { color: var(--text-1); }
+.p-logo{
+  font-family:var(--sans);font-size:17px;font-weight:800;
+  color:var(--honey);
+  letter-spacing:-0.02em;
+  padding:10px 0 6px;text-align:center;cursor:pointer;
+  text-shadow:0 0 24px rgba(253,202,137,0.5), 0 0 8px rgba(253,202,137,0.3);
+}
+.p-avatar{
+  width:32px;height:32px;border-radius:8px;
+  background:linear-gradient(135deg, var(--jade) 0%, var(--honey) 100%);
+  display:flex;align-items:center;justify-content:center;
+  font-family:var(--sans);font-size:10px;font-weight:800;
+  color:var(--evergreen);cursor:pointer;text-decoration:none;
+  margin-bottom:4px;
+  transition:all 0.18s cubic-bezier(0.4,0,0.2,1);
+  border:1.5px solid transparent;
+  box-shadow:0 2px 10px rgba(42,127,94,0.25);
+}
+.p-avatar:hover{border-color:var(--honey);box-shadow:0 2px 14px rgba(253,202,137,0.35);transform:translateY(-1px)}
 
-    /* LIST */
-    .list { display: flex; flex-direction: column; gap: 0; }
-    .list-item { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px solid var(--border); }
-    .list-item:last-child { border-bottom: none; }
-    .list-body { flex: 1; min-width: 0; }
-    .list-title { font-size: 12px; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .list-meta { font-size: 11px; color: var(--text-2); margin-top: 1px; }
+.p-divider{width:28px;height:1px;background:var(--border);margin:4px 0}
 
-    /* AVATAR */
-    .avatar-chip { width: 26px; height: 26px; border-radius: 50%; background: var(--bg-3); border: 1px solid var(--border-1); color: var(--text); font-size: 11px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-    .avatar-row { display: flex; gap: 4px; margin-top: 6px; }
-    .avatar-lg { width: 56px; height: 56px; border-radius: 50%; background: linear-gradient(135deg,#b45309,#78350f); border: 2px solid var(--amber-border); color: var(--text); font-size: 22px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.p-link{
+  display:flex;flex-direction:column;align-items:center;gap:3px;
+  padding:10px 0;cursor:pointer;
+  color:var(--text3);text-decoration:none;width:100%;
+  transition:all 0.15s ease;
+  border-left:2.5px solid transparent;
+  position:relative;
+}
+.p-link:hover{color:var(--amber);background:rgba(203,178,122,0.05)}
+.p-link.active{
+  color:var(--jade);
+  border-left-color:var(--jade);
+  background:rgba(42,127,94,0.1);
+}
+.p-link.active svg{filter:drop-shadow(0 0 5px rgba(30,207,176,0.55))}
+.p-link-label{font-family:var(--mono);font-size:6px;letter-spacing:0.09em;text-transform:uppercase;font-weight:500}
+.p-link svg{width:16px;height:16px;transition:filter 0.15s}
 
-    /* PROGRESS LIST */
-    .progress-list { display: flex; flex-direction: column; gap: 10px; }
-    .progress-item {}
-    .progress-meta { display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; font-size: 12px; }
-    .progress-meta .muted { font-size: 11px; }
-    .progress.tone-blue span { background: var(--blue); }
-    .progress.tone-teal span { background: var(--teal); }
-    .progress.tone-emerald span { background: var(--emerald); }
-    .progress.tone-amber span { background: var(--amber); }
-    .progress.tone-rose span { background: var(--rose); }
-    .progress.tone-purple span { background: var(--purple); }
-    .progress.tone-indigo span { background: var(--indigo); }
-    .progress.tone-cyan span { background: var(--cyan); }
+/* ══ SECONDARY NAV ══ */
+.s-nav{
+  width:var(--snav-w);
+  background:var(--bg1);
+  border-right:1px solid var(--border);
+  flex-shrink:0;display:flex;flex-direction:column;overflow:hidden;
+}
+.s-nav-header{padding:14px 15px 11px;border-bottom:1px solid var(--border);flex-shrink:0}
+.s-nav-title{font-family:var(--sans);font-size:11px;font-weight:700;color:var(--text);letter-spacing:-0.01em}
+.s-nav-meta{font-family:var(--mono);font-size:7px;color:var(--text3);margin-top:3px;letter-spacing:0.02em}
+.s-nav-items{flex:1;overflow-y:auto;padding:6px 0}
 
-    /* GRIDS */
-    .quick-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 8px; }
-    .quick-card { padding: 18px 12px; border-radius: 6px; border: 1px solid var(--tone-border,var(--border)); background: var(--tone-bg,var(--bg-3)); color: var(--tone,var(--text-1)); font-family: var(--font); font-size: 12px; font-weight: 600; cursor: pointer; text-align: center; display: flex; flex-direction: column; align-items: center; gap: 6px; transition: opacity .15s, transform .1s; }
-    .quick-card:hover { opacity: .85; transform: translateY(-1px); }
-    .quick-label { font-size: 12px; }
-    .quick-icon { font-size: 22px; }
-    .program-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 8px; }
-    .asset-grid { display: grid; grid-template-columns: repeat(5,1fr); gap: 7px; }
-    .asset-card { padding: 12px 8px; border-radius: 6px; border: 1px solid var(--tone-border,var(--border)); background: var(--tone-bg,var(--bg-3)); color: var(--tone,var(--text-1)); font-family: var(--font); font-size: 11px; font-weight: 500; cursor: pointer; text-align: center; display: flex; flex-direction: column; align-items: center; gap: 6px; transition: opacity .15s; }
-    .asset-card:hover { opacity: .8; }
-    .asset-icon { font-size: 16px; }
-    .portfolio-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 8px; }
-    .portfolio-item { padding: 12px 14px; border-radius: 6px; border: 1px solid var(--border); background: var(--bg-3); }
-    .portfolio-tag { font-size: 10px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--tone,var(--text-2)); margin-bottom: 4px; }
-    .portfolio-name { font-size: 12px; font-weight: 600; color: var(--text); margin-bottom: 6px; }
-    .kanban { display: grid; grid-template-columns: repeat(4,1fr); gap: 8px; }
-    .kanban-col { background: var(--tone-bg,var(--bg-3)); border: 1px solid var(--tone-border,var(--border)); border-radius: 6px; padding: 10px; }
-    .kanban-title { font-size: 10px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--tone,var(--text-1)); margin-bottom: 8px; padding-bottom: 6px; border-bottom: 1px solid var(--tone-border,var(--border)); }
-    .kanban-item { padding: 6px 8px; margin-bottom: 5px; background: var(--bg-2); border: 1px solid var(--border); border-radius: 4px; font-size: 11.5px; color: var(--text); cursor: default; }
-    .gantt { display: flex; flex-direction: column; gap: 6px; }
-    .gantt-row { display: grid; grid-template-columns: 140px 1fr; gap: 10px; align-items: center; }
-    .gantt-label { font-size: 11.5px; color: var(--text-1); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .gantt-track { position: relative; height: 16px; background: var(--bg-3); border-radius: 4px; overflow: hidden; }
-    .gantt-bar { position: absolute; height: 100%; border-radius: 3px; opacity: .85; }
-    .gantt-bar.tone-blue { background: var(--blue); }
-    .gantt-bar.tone-teal { background: var(--teal); }
-    .gantt-bar.tone-emerald { background: var(--emerald); }
-    .gantt-bar.tone-amber { background: var(--amber); }
-    .gantt-bar.tone-rose { background: var(--rose); }
-    .gantt-bar.tone-purple { background: var(--purple); }
-    .gantt-bar.tone-indigo { background: var(--indigo); }
-    .gantt-bar.tone-cyan { background: var(--cyan); }
-    .wallet-grid  { display: grid; grid-template-columns: repeat(3,1fr); gap: 8px; }
-    .fund-grid    { display: grid; grid-template-columns: repeat(3,1fr); gap: 8px; }
-    .tax-grid     { display: grid; grid-template-columns: repeat(2,1fr); gap: 8px; }
-    .deal-grid    { display: grid; grid-template-columns: repeat(2,1fr); gap: 8px; }
-    .market-grid  { display: grid; grid-template-columns: repeat(3,1fr); gap: 8px; }
-    .studio-grid  { display: grid; grid-template-columns: repeat(3,1fr); gap: 8px; }
-    .extension-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 8px; }
-    .tactic-grid  { display: grid; grid-template-columns: repeat(4,1fr); gap: 8px; }
-    .strategy-grid{ display: grid; grid-template-columns: repeat(3,1fr); gap: 8px; }
-    .org-grid     { display: grid; grid-template-columns: repeat(3,1fr); gap: 8px; }
-    .legal-grid   { display: grid; grid-template-columns: repeat(4,1fr); gap: 8px; }
-    .persona-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 8px; }
-    .settings-grid{ display: grid; grid-template-columns: repeat(4,1fr); gap: 8px; }
-    .event-grid   { display: grid; grid-template-columns: repeat(3,1fr); gap: 8px; }
+.s-sec-label{
+  font-family:var(--sans);font-size:7px;letter-spacing:0.16em;
+  text-transform:uppercase;color:var(--text3);
+  padding:10px 15px 4px;font-weight:600;
+}
+.s-item{
+  display:flex;align-items:center;gap:7px;
+  padding:6px 15px;
+  font-family:var(--mono);font-size:8px;color:var(--text3);
+  cursor:pointer;border-left:2px solid transparent;
+  transition:all 0.12s ease;white-space:nowrap;text-decoration:none;
+  letter-spacing:0.01em;
+}
+.s-item:hover{background:rgba(203,178,122,0.05);color:var(--amber)}
+.s-item.active{
+  background:rgba(42,127,94,0.09);
+  color:var(--canvas);
+  border-left-color:var(--jade);
+}
+.s-dot{width:5px;height:5px;border-radius:50%;background:currentColor;flex-shrink:0}
+.s-badge{
+  margin-left:auto;font-family:var(--mono);font-size:6px;
+  padding:1px 5px;border-radius:3px;
+  background:var(--bg3);color:var(--text3);border:1px solid var(--border);
+}
+.s-item.active .s-badge{background:rgba(42,127,94,0.18);color:var(--jade);border-color:rgba(42,127,94,0.35)}
+.s-pulse{
+  width:6px;height:6px;border-radius:50%;background:var(--jade);flex-shrink:0;
+  animation:pulse 2.2s ease-in-out infinite;
+}
+@keyframes pulse{
+  0%,100%{opacity:1;box-shadow:0 0 0 0 rgba(30,207,176,0.5)}
+  50%{opacity:0.45;box-shadow:0 0 0 3px rgba(30,207,176,0)}
+}
 
-    /* FEED */
-    .feed-list { display: flex; flex-direction: column; gap: 0; }
-    .feed-item { display: flex; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--border); align-items: flex-start; }
-    .feed-item:last-child { border-bottom: none; }
-    .feed-body { flex: 1; min-width: 0; }
-    .feed-author { font-size: 12px; font-weight: 600; color: var(--text); margin-bottom: 3px; }
-    .feed-message { font-size: 12px; color: var(--text-1); margin-bottom: 4px; line-height: 1.5; }
-    .feed-meta { font-size: 11px; color: var(--text-2); display: flex; gap: 8px; }
-    .feed-time { font-size: 11px; color: var(--text-2); flex-shrink: 0; }
+/* ══ MAIN ══ */
+.main{flex:1;display:flex;flex-direction:column;min-width:0;overflow:hidden}
 
-    /* API */
-    .api-list { display: flex; flex-direction: column; gap: 4px; }
-    .api-row { display: grid; grid-template-columns: 70px 200px 1fr; gap: 10px; align-items: center; padding: 7px 0; border-bottom: 1px solid var(--border); font-size: 12px; }
-    .api-row:last-child { border-bottom: none; }
-    .api-method { font-weight: 700; font-size: 11px; letter-spacing: .05em; color: var(--tone,var(--text-1)); padding: 2px 6px; background: var(--tone-bg,var(--bg-3)); border: 1px solid var(--tone-border,var(--border)); border-radius: 3px; text-align: center; }
-    .api-path { font-size: 12px; color: var(--text); font-family: var(--font); }
-    .api-desc { font-size: 11px; color: var(--text-2); }
+.toolbar{
+  height:38px;background:var(--bg1);border-bottom:1px solid var(--border);
+  display:flex;align-items:center;padding:0 16px;gap:8px;flex-shrink:0;
+}
+.tb-title{font-family:var(--sans);font-size:11px;font-weight:700;color:var(--text);letter-spacing:-0.01em}
+.tb-sub{font-family:var(--mono);font-size:8px;color:var(--text3);margin-left:1px}
+.tb-spacer{flex:1}
 
-    /* PROFILE */
-    .profile-header { display: grid; grid-template-columns: 260px 1fr; gap: 14px; align-items: stretch; }
-    .profile-card { display: flex; align-items: center; gap: 14px; }
-    .profile-name { font-size: 14px; font-weight: 700; color: var(--text); margin-bottom: 4px; }
-    .profile-title { font-size: 11px; color: var(--text-1); margin-bottom: 8px; }
-    .profile-stats { display: grid; grid-template-columns: repeat(4,1fr); }
+.g-btn{
+  background:var(--bg3);border:1px solid var(--border2);
+  border-radius:4px;padding:4px 11px;
+  font-family:var(--mono);font-size:8px;color:var(--text2);
+  cursor:pointer;transition:all 0.15s ease;white-space:nowrap;
+}
+.g-btn:hover{border-color:var(--jade);color:var(--canvas);background:rgba(42,127,94,0.1)}
+.g-btn.primary{
+  background:var(--jade);border-color:var(--jade);
+  color:var(--canvas);font-weight:600;
+  box-shadow:0 0 14px rgba(42,127,94,0.35);
+}
+.g-btn.primary:hover{background:#339e6d;box-shadow:0 0 20px rgba(42,127,94,0.5)}
+.g-btn.danger{border-color:rgba(248,79,110,0.35);color:var(--rose)}
+.g-btn.danger:hover{background:rgba(248,79,110,0.08);border-color:var(--rose)}
 
-    /* ACTION */
-    .action-list { display: flex; flex-direction: column; gap: 6px; }
-    .action-button { display: flex; align-items: center; gap: 8px; padding: 8px 12px; background: var(--tone-bg,var(--bg-3)); border: 1px solid var(--tone-border,var(--border)); border-radius: 5px; color: var(--tone,var(--text-1)); font-family: var(--font); font-size: 12px; font-weight: 500; cursor: pointer; text-align: left; width: 100%; transition: opacity .15s; }
-    .action-button::before { content: '📝'; font-size: 12px; }
-    .action-button:hover { opacity: .8; }
-    .section-header { font-size: 10px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--text-2); padding: 2px 0 8px; border-bottom: 1px solid var(--border); margin-bottom: 2px; }
-  </style>
+/* ══ STAT ROW ══ */
+.stat-row{
+  display:flex;
+  background:var(--bg2);
+  border-bottom:1px solid var(--border);
+  flex-shrink:0;
+}
+.stat-cell{
+  flex:1;padding:11px 16px;border-right:1px solid var(--border);
+  cursor:default;position:relative;
+  transition:background 0.18s;
+}
+.stat-cell:last-child{border-right:none}
+/* Accent line per column via nth-child */
+.stat-cell:nth-child(1)::before{background:var(--cyan)}
+.stat-cell:nth-child(2)::before{background:linear-gradient(90deg,var(--bark),var(--gold))}
+.stat-cell:nth-child(3)::before{background:var(--amber)}
+.stat-cell:nth-child(4)::before{background:var(--violet)}
+.stat-cell:nth-child(5)::before{background:var(--green)}
+.stat-cell::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:2px;
+  background:var(--cell-top,transparent);
+}
+.stat-cell:hover{background:rgba(203,178,122,0.03)}
+
+.stat-lbl{font-family:var(--mono);font-size:7px;letter-spacing:0.1em;text-transform:uppercase;color:var(--text3);margin-bottom:4px}
+.stat-num{font-family:var(--mono);font-size:18px;font-weight:700;color:var(--text);line-height:1}
+.stat-num.cyan{color:var(--cyan);text-shadow:0 0 12px rgba(30,207,176,0.3)}
+.stat-num.gold{color:var(--gold);text-shadow:0 0 12px rgba(253,202,137,0.25)}
+.stat-num.rose{color:var(--rose)}
+.stat-num.green{color:var(--green);text-shadow:0 0 12px rgba(74,222,128,0.25)}
+.stat-delta{font-family:var(--mono);font-size:7px;color:var(--green);margin-top:3px}
+.stat-delta.neg{color:var(--rose)}
+.stat-bar-bg{height:3px;background:var(--bg4);border-radius:2px;margin-top:7px;overflow:hidden}
+.stat-bar-fill{height:100%;border-radius:2px;transition:width 1.2s cubic-bezier(0.4,0,0.2,1)}
+
+/* ══ CONTENT ══ */
+.content{
+  flex:1;overflow-y:auto;padding:16px;
+  display:flex;flex-direction:column;gap:14px;
+  background:
+    radial-gradient(ellipse at 15% 5%, rgba(42,127,94,0.06) 0%, transparent 45%),
+    radial-gradient(ellipse at 85% 95%, rgba(253,202,137,0.05) 0%, transparent 45%),
+    var(--bg);
+}
+.subpage{display:none}.subpage.active{display:flex;flex-direction:column;gap:14px}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px}
+.row-70-30{display:grid;grid-template-columns:2fr 1fr;gap:14px}
+.row-60-40{display:grid;grid-template-columns:3fr 2fr;gap:14px}
+
+/* ══ CARDS ══ */
+.card{
+  background:var(--bg2);border:1px solid var(--border);
+  border-radius:7px;overflow:hidden;
+  box-shadow:var(--shadow-sm);
+  transition:border-color 0.2s ease, box-shadow 0.2s ease;
+}
+.card:hover{border-color:rgba(203,178,122,0.16);box-shadow:var(--shadow-md)}
+
+.card-hdr{
+  padding:10px 15px 9px;border-bottom:1px solid var(--border);
+  display:flex;align-items:center;gap:8px;
+  background:rgba(0,0,0,0.12);
+}
+.card-hdr-title{font-family:var(--sans);font-size:10px;font-weight:700;color:var(--text);flex:1;letter-spacing:-0.01em}
+.card-hdr-badge{
+  font-family:var(--mono);font-size:7px;padding:2px 7px;
+  border-radius:3px;border:1px solid;font-weight:500;
+}
+.badge-cyan{border-color:rgba(30,207,176,0.3);color:var(--cyan);background:rgba(30,207,176,0.08)}
+.badge-gold{border-color:rgba(253,202,137,0.3);color:var(--gold);background:rgba(253,202,137,0.08)}
+.badge-rose{border-color:rgba(248,79,110,0.3);color:var(--rose);background:rgba(248,79,110,0.08)}
+.badge-green{border-color:rgba(74,222,128,0.3);color:var(--green);background:rgba(74,222,128,0.08)}
+.badge-violet{border-color:rgba(176,126,248,0.3);color:var(--violet);background:rgba(176,126,248,0.08)}
+
+.card-body{padding:13px 15px}
+.sec-label{
+  font-family:var(--sans);font-size:7px;letter-spacing:0.15em;
+  text-transform:uppercase;color:var(--text3);margin-bottom:8px;font-weight:600;
+}
+
+/* ══ INSIGHT CARDS ══ */
+.insight{border-radius:7px;padding:15px 17px;border:1px solid;margin-bottom:10px;position:relative;overflow:hidden}
+.insight:last-child{margin-bottom:0}
+.insight::before{content:'';position:absolute;top:0;left:0;bottom:0;width:3px}
+.insight.amber{border-color:rgba(253,202,137,0.22);background:rgba(253,202,137,0.04)}
+.insight.amber::before{background:linear-gradient(to bottom,var(--honey),var(--amber))}
+.insight.rose{border-color:rgba(248,79,110,0.22);background:rgba(248,79,110,0.04)}
+.insight.rose::before{background:linear-gradient(to bottom,var(--rose),#b91c3b)}
+.insight.cyan{border-color:rgba(30,207,176,0.22);background:rgba(30,207,176,0.04)}
+.insight.cyan::before{background:linear-gradient(to bottom,var(--cyan),var(--jade))}
+.insight.blue{border-color:rgba(56,189,248,0.22);background:rgba(56,189,248,0.04)}
+.insight.blue::before{background:linear-gradient(to bottom,var(--blue),#1d4ed8)}
+.insight.violet{border-color:rgba(176,126,248,0.22);background:rgba(176,126,248,0.04)}
+.insight.violet::before{background:linear-gradient(to bottom,var(--violet),#7c3aed)}
+
+.insight-type{
+  font-family:var(--sans);font-size:7px;letter-spacing:0.16em;
+  text-transform:uppercase;font-weight:700;margin-bottom:5px;padding-left:8px;
+}
+.amber .insight-type{color:var(--gold)}.rose .insight-type{color:var(--rose)}
+.cyan .insight-type{color:var(--cyan)}.blue .insight-type{color:var(--blue)}.violet .insight-type{color:var(--violet)}
+
+.insight-title{
+  font-family:var(--sans);font-size:12px;font-weight:700;
+  color:var(--text);margin-bottom:7px;padding-left:8px;letter-spacing:-0.01em;line-height:1.3;
+}
+.insight-body{
+  font-family:var(--mono);font-size:9px;color:var(--text2);
+  line-height:1.65;margin-bottom:12px;padding-left:8px;
+}
+.insight-acts{display:flex;gap:7px;flex-wrap:wrap;padding-left:8px}
+.i-act{
+  font-family:var(--mono);font-size:7.5px;padding:4px 11px;
+  border-radius:4px;border:1px solid;cursor:pointer;
+  transition:all 0.15s ease;font-weight:500;
+}
+.i-act.primary{
+  background:var(--jade);border-color:var(--jade);color:var(--canvas);
+  box-shadow:0 0 12px rgba(42,127,94,0.3);
+}
+.i-act.primary:hover{background:#339e6d;box-shadow:0 0 18px rgba(42,127,94,0.45)}
+.i-act.ghost{border-color:var(--border2);color:var(--text3)}
+.i-act.ghost:hover{border-color:var(--amber);color:var(--amber)}
+
+/* ══ KV ROWS ══ */
+.kv{display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid var(--border)}
+.kv:last-child{border-bottom:none}
+.kv-k{font-family:var(--mono);font-size:8px;color:var(--text3)}
+.kv-v{font-family:var(--mono);font-size:8px;color:var(--text2);font-weight:500}
+.kv-v.cyan{color:var(--cyan)}.kv-v.gold{color:var(--gold)}.kv-v.rose{color:var(--rose)}.kv-v.green{color:var(--green)}
+
+/* ══ ACTIVITY FEED ══ */
+.feed-item{display:flex;gap:11px;padding:9px 0;border-bottom:1px solid var(--border)}
+.feed-item:last-child{border-bottom:none}
+.feed-dot{
+  width:7px;height:7px;border-radius:50%;flex-shrink:0;margin-top:2px;
+}
+.feed-dot.cyan{background:var(--cyan);box-shadow:0 0 7px rgba(30,207,176,0.5)}
+.feed-dot.gold{background:var(--gold);box-shadow:0 0 7px rgba(253,202,137,0.4)}
+.feed-dot.rose{background:var(--rose);box-shadow:0 0 7px rgba(248,79,110,0.5)}
+.feed-dot.green{background:var(--green);box-shadow:0 0 7px rgba(74,222,128,0.5)}
+.feed-dot.violet{background:var(--violet);box-shadow:0 0 7px rgba(176,126,248,0.5)}
+.feed-dot.blue{background:var(--blue);box-shadow:0 0 7px rgba(56,189,248,0.5)}
+.feed-body{flex:1}
+.feed-title{font-family:var(--mono);font-size:8px;color:var(--text);margin-bottom:2px}
+.feed-meta{font-family:var(--mono);font-size:7px;color:var(--text3)}
+.feed-amt{font-family:var(--mono);font-size:8.5px;font-weight:600}
+.feed-amt.pos{color:var(--cyan)}.feed-amt.neg{color:var(--rose)}
+
+/* ══ CLIENT ROWS ══ */
+.client-mini{
+  display:flex;align-items:center;gap:9px;padding:7px 0;
+  border-bottom:1px solid var(--border);cursor:pointer;
+  transition:all 0.12s ease;
+}
+.client-mini:last-child{border-bottom:none}
+.client-mini:hover{background:rgba(203,178,122,0.04);margin:0 -15px;padding:7px 15px}
+.cm-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.cm-name{font-family:var(--mono);font-size:8px;color:var(--text);flex:1;font-weight:500}
+.cm-tag{
+  font-family:var(--mono);font-size:6px;padding:2px 6px;
+  border-radius:3px;background:var(--bg3);border:1px solid var(--border);color:var(--text3);
+}
+.cm-ehr{font-family:var(--mono);font-size:8.5px;color:var(--text2);font-weight:500}
+.cm-share{font-family:var(--mono);font-size:7px;color:var(--text3)}
+
+/* ══ PROGRESS BARS ══ */
+.prog-row{display:flex;align-items:center;gap:9px;padding:5px 0}
+.prog-label{font-family:var(--mono);font-size:7px;color:var(--text3);width:90px;flex-shrink:0}
+.prog-track{flex:1;height:5px;background:var(--bg4);border-radius:3px;overflow:hidden}
+.prog-fill{height:100%;border-radius:3px;transition:width 0.9s cubic-bezier(0.4,0,0.2,1)}
+.prog-val{font-family:var(--mono);font-size:7px;color:var(--text2);width:40px;text-align:right;flex-shrink:0;font-weight:500}
+
+/* ══ SHOCK HERO ══ */
+.shock-hero{
+  background:linear-gradient(140deg, var(--bg3) 0%, #1a3020 50%, #0f1e14 100%);
+  border:1px solid rgba(42,127,94,0.28);
+  border-radius:8px;padding:22px 24px;position:relative;overflow:hidden;
+  box-shadow:0 4px 20px rgba(0,0,0,0.4);
+}
+.shock-hero::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:2px;
+  background:linear-gradient(90deg, var(--jade) 0%, var(--cyan) 40%, var(--honey) 70%, var(--orange) 100%);
+}
+.shock-hero::after{
+  content:'';position:absolute;top:-60px;right:-60px;
+  width:250px;height:250px;border-radius:50%;
+  background:radial-gradient(circle, rgba(42,127,94,0.1) 0%, transparent 70%);
+  pointer-events:none;
+}
+.shock-badge{
+  font-family:var(--sans);font-size:7px;letter-spacing:0.18em;text-transform:uppercase;
+  color:var(--evergreen);background:var(--honey);
+  border:1px solid rgba(203,178,122,0.5);padding:3px 10px;border-radius:3px;
+  display:inline-block;margin-bottom:13px;font-weight:700;
+}
+.shock-compare{display:flex;align-items:center;gap:20px;margin-bottom:14px}
+.shock-num{font-family:var(--mono);font-size:32px;font-weight:700;line-height:1}
+.shock-num.hi{color:var(--cyan);text-shadow:0 0 24px rgba(30,207,176,0.4), 0 0 8px rgba(30,207,176,0.25)}
+.shock-num.lo{color:var(--rose);text-shadow:0 0 24px rgba(248,79,110,0.4), 0 0 8px rgba(248,79,110,0.25)}
+.shock-label{font-family:var(--mono);font-size:8px;color:var(--text3);margin-top:4px}
+.shock-vs{font-family:var(--mono);font-size:13px;color:var(--text3);padding:0 4px}
+.shock-insight{
+  font-family:var(--mono);font-size:10px;color:var(--text2);
+  line-height:1.7;margin-bottom:15px;
+}
+.shock-insight strong{color:var(--text)}
+.shock-hook{
+  font-family:var(--mono);font-size:8.5px;color:var(--honey);
+  margin-bottom:15px;padding:9px 13px;
+  background:rgba(253,202,137,0.08);
+  border-left:2.5px solid var(--honey);
+  border-radius:0 5px 5px 0;line-height:1.55;
+  box-shadow:inset 0 0 20px rgba(253,202,137,0.03);
+}
+
+/* ══ WALLET ══ */
+.wallet-ring{display:flex;gap:10px;align-items:center}
+.wallet-segment{flex:1;border-radius:5px;padding:10px 12px}
+.ws-label{font-family:var(--mono);font-size:6px;letter-spacing:0.12em;text-transform:uppercase;color:var(--text3);margin-bottom:5px}
+.ws-val{font-family:var(--mono);font-size:15px;font-weight:700}
+.ws-pct{font-family:var(--mono);font-size:7px;color:var(--text3);margin-top:2px}
+
+/* ══ PROJECT CARDS ══ */
+.proj-card{
+  background:var(--bg3);border:1px solid var(--border);
+  border-radius:6px;padding:12px 13px;cursor:pointer;
+  transition:all 0.18s cubic-bezier(0.4,0,0.2,1);
+}
+.proj-card:hover{
+  border-color:rgba(203,178,122,0.22);
+  box-shadow:0 6px 20px rgba(0,0,0,0.35);
+  transform:translateY(-2px);
+}
+.proj-status{
+  font-family:var(--mono);font-size:6px;letter-spacing:0.1em;
+  text-transform:uppercase;font-weight:600;
+  padding:2px 7px;border-radius:3px;display:inline-block;margin-bottom:7px;
+}
+.status-active{color:var(--cyan);background:rgba(30,207,176,0.1);border:1px solid rgba(30,207,176,0.28)}
+.status-review{color:var(--gold);background:rgba(253,202,137,0.1);border:1px solid rgba(253,202,137,0.28)}
+.status-draft{color:var(--text3);background:var(--bg4);border:1px solid var(--border)}
+.status-complete{color:var(--green);background:rgba(74,222,128,0.1);border:1px solid rgba(74,222,128,0.28)}
+.status-paused{color:var(--orange);background:rgba(251,146,60,0.1);border:1px solid rgba(251,146,60,0.28)}
+
+.proj-name{font-family:var(--sans);font-size:9px;font-weight:700;color:var(--text);margin-bottom:3px;letter-spacing:-0.01em}
+.proj-client{font-family:var(--mono);font-size:7px;color:var(--text3);margin-bottom:9px}
+.proj-metrics{display:flex;gap:13px}
+.proj-metric-val{font-family:var(--mono);font-size:10px;font-weight:600;color:var(--text)}
+.proj-metric-lbl{font-family:var(--mono);font-size:6px;color:var(--text3);text-transform:uppercase;letter-spacing:0.08em;margin-top:1px}
+.proj-progress{margin-top:9px}
+.proj-prog-track{height:4px;background:var(--bg4);border-radius:2px;overflow:hidden}
+.proj-prog-fill{height:100%;border-radius:2px;transition:width 0.9s ease}
+.proj-prog-label{display:flex;justify-content:space-between;font-family:var(--mono);font-size:6px;color:var(--text3);margin-top:4px}
+
+/* ══ MINI CHART BARS ══ */
+.mini-chart{display:flex;align-items:flex-end;gap:3px;height:40px}
+.bar{flex:1;border-radius:2px 2px 0 0;min-height:2px;transition:height 0.5s ease;cursor:pointer}
+.bar:hover{opacity:0.75}
+.bar.cyan{background:linear-gradient(to top, rgba(30,207,176,0.5), var(--cyan))}
+.bar.gold{background:linear-gradient(to top, rgba(74,64,29,0.8), var(--gold))}
+.bar.violet{background:linear-gradient(to top, rgba(109,40,217,0.7), var(--violet))}
+.bar.blue{background:linear-gradient(to top, rgba(29,78,216,0.7), var(--blue))}
+
+/* ══ GOALS ══ */
+.goal-row{display:flex;align-items:center;gap:12px;padding:8px 0;border-bottom:1px solid var(--border)}
+.goal-row:last-child{border-bottom:none}
+.goal-icon{font-size:14px;flex-shrink:0}
+.goal-info{flex:1}
+.goal-title{font-family:var(--mono);font-size:8px;color:var(--text);margin-bottom:2px}
+.goal-meta{font-family:var(--mono);font-size:7px;color:var(--text3)}
+.goal-pct{font-family:var(--mono);font-size:9px;font-weight:700;color:var(--jade)}
+
+/* ══ ALLOCATION BARS ══ */
+.alloc-grid{display:flex;flex-direction:column;gap:6px}
+.alloc-row{display:flex;align-items:center;gap:8px}
+.alloc-name{font-family:var(--mono);font-size:7px;color:var(--text2);width:92px;flex-shrink:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.alloc-bar{flex:1;height:15px;border-radius:3px;display:flex;overflow:hidden}
+.alloc-seg{height:100%;transition:width 0.7s ease}
+.alloc-seg.cyan{background:var(--cyan)}.alloc-seg.gold{background:var(--gold)}.alloc-seg.violet{background:var(--violet)}.alloc-seg.rose{background:var(--rose)}.alloc-seg.blue{background:var(--blue)}.alloc-seg.empty{background:var(--bg4)}
+.alloc-pct{font-family:var(--mono);font-size:7px;color:var(--text3);width:30px;text-align:right;flex-shrink:0}
+
+/* ══ HEALTH SCORE RING ══ */
+.health-ring{display:flex;align-items:center;gap:16px}
+.ring-svg{flex-shrink:0;filter:drop-shadow(0 0 8px rgba(42,127,94,0.3))}
+.health-score{font-family:var(--mono);font-size:26px;font-weight:700;color:var(--jade);text-shadow:0 0 18px rgba(42,127,94,0.45)}
+.health-label{font-family:var(--mono);font-size:7px;color:var(--text3);text-transform:uppercase;letter-spacing:0.1em;margin-top:2px}
+.health-state{font-family:var(--mono);font-size:8px;color:var(--green);margin-top:5px}
+
+/* ══ NOTIFICATION DOT ══ */
+.notif-dot{width:6px;height:6px;border-radius:50%;background:var(--rose);margin-left:auto;box-shadow:0 0 7px rgba(248,79,110,0.65)}
+
+/* ══ PIPELINE ══ */
+.pipe-stage{display:flex;align-items:center;gap:9px;padding:8px 0;border-bottom:1px solid var(--border)}
+.pipe-stage:last-child{border-bottom:none}
+.pipe-icon{font-size:14px}
+.pipe-info{flex:1}
+.pipe-name{font-family:var(--mono);font-size:8px;color:var(--text)}
+.pipe-meta{font-family:var(--mono);font-size:7px;color:var(--text3)}
+.pipe-val{font-family:var(--mono);font-size:9.5px;font-weight:700;color:var(--gold)}
+
+/* ══ SCROLLBAR ══ */
+::-webkit-scrollbar{width:4px;height:4px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:rgba(203,178,122,0.2);border-radius:2px}
+::-webkit-scrollbar-thumb:hover{background:rgba(203,178,122,0.4)}
+
+/* ══ TOAST ══ */
+.toast{
+  position:fixed;bottom:24px;left:50%;
+  transform:translateX(-50%) translateY(12px);
+  background:var(--bg4);border:1px solid var(--border3);
+  border-radius:6px;padding:8px 16px;
+  font-family:var(--mono);font-size:8px;color:var(--canvas);
+  opacity:0;transition:all 0.22s cubic-bezier(0.4,0,0.2,1);
+  z-index:200;pointer-events:none;white-space:nowrap;
+  box-shadow:var(--shadow-lg);
+}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+</style>
 </head>
 <body>
-<div class="app-shell">
+<div class="app">
 
-  <!-- SIDEBAR -->
-  <aside class="sidebar">
-    <div class="brand">KOGI</div>
-    <nav class="nav" id="nav"></nav>
-    <div class="sidebar-footer">
-      <div class="card sidebar-card">
-        <div class="card-title">System</div>
-        <div class="sidebar-metric">All modules healthy</div>
-        <div class="chip-row">
-          <span class="chip tone-emerald">Online</span>
-          <span class="chip tone-blue">Sync OK</span>
-        </div>
-      </div>
+<!-- ══ PRIMARY NAV ══ -->
+<nav class="p-nav">
+  <div class="p-nav-top">
+    <div class="p-logo">K</div>
+    <a href="profile.html" class="p-avatar" title="Profile">MJ</a>
+    <div class="p-divider"></div>
+    <a href="index.html" class="p-link active" title="Dashboard">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+      <span class="p-link-label">Dash</span>
+    </a>
+    <a href="portfolio.html" class="p-link" title="Portfolio">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="3"/><path d="M3 12h3m12 0h3M12 3v3m0 12v3"/><circle cx="12" cy="12" r="9"/></svg>
+      <span class="p-link-label">Portfolio</span>
+    </a>
+    <a href="wallet.html" class="p-link" title="Wallet">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 14a1 1 0 1 1 0-2 1 1 0 0 1 0 2z" fill="currentColor"/><path d="M2 10h20M7 7V5a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v2"/></svg>
+      <span class="p-link-label">Wallet</span>
+    </a>
+    <a href="office.html" class="p-link" title="Office">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+      <span class="p-link-label">Office</span>
+    </a>
+  </div>
+  <div class="p-nav-bottom">
+    <a href="settings.html" class="p-link" title="Settings">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      <span class="p-link-label">Settings</span>
+    </a>
+  </div>
+</nav>
+
+<!-- ══ SECONDARY NAV ══ -->
+<nav class="s-nav">
+  <div class="s-nav-header">
+    <div class="s-nav-title">Dashboard</div>
+    <div class="s-nav-meta">Marcus Johnson · March 2026</div>
+  </div>
+  <div class="s-nav-items">
+    <div class="s-sec-label">Overview</div>
+    <div class="s-item active" onclick="showPage('overview')"><div class="s-pulse"></div>Overview<span class="s-badge">Live</span></div>
+    <div class="s-item" onclick="showPage('insights')"><div class="s-dot"></div>Insights<span class="s-badge">4</span></div>
+    <div class="s-item" onclick="showPage('activity')"><div class="s-dot"></div>Activity Feed</div>
+
+    <div class="s-sec-label">Income</div>
+    <div class="s-item" onclick="showPage('pulse')"><div class="s-dot"></div>Income Pulse</div>
+    <div class="s-item" onclick="showPage('allocation')"><div class="s-dot"></div>Time Allocation</div>
+    <div class="s-item" onclick="showPage('ehr')"><div class="s-dot"></div>EHR Analysis</div>
+
+    <div class="s-sec-label">Projects</div>
+    <div class="s-item" onclick="showPage('projects')"><div class="s-dot"></div>All Projects<span class="s-badge">6</span></div>
+    <div class="s-item" onclick="showPage('proj-income')"><div class="s-dot"></div>Project Income</div>
+    <div class="s-item" onclick="showPage('proj-health')"><div class="s-dot"></div>Project Health</div>
+
+    <div class="s-sec-label">Portfolio</div>
+    <div class="s-item" onclick="showPage('clients')"><div class="s-dot"></div>Top Clients</div>
+    <div class="s-item" onclick="showPage('pipeline')"><div class="s-dot"></div>Pipeline Snapshot</div>
+
+    <div class="s-sec-label">Goals</div>
+    <div class="s-item" onclick="showPage('goals')"><div class="s-dot"></div>Goals & Progress</div>
+    <div class="s-item" onclick="showPage('health')"><div class="s-dot"></div>Portfolio Health</div>
+  </div>
+</nav>
+
+<!-- ══ MAIN ══ -->
+<div class="main">
+  <!-- Toolbar -->
+  <div class="toolbar">
+    <span class="tb-title">Dashboard</span>
+    <span class="tb-sub">/ Overview</span>
+    <div class="tb-spacer"></div>
+    <button class="g-btn" onclick="toast('Syncing all accounts…')">↻ Sync</button>
+    <button class="g-btn" onclick="showPage('insights')">4 Insights</button>
+    <button class="g-btn primary" onclick="toast('Opening income logger…')">+ Log Income</button>
+  </div>
+
+  <!-- Stat Row -->
+  <div class="stat-row">
+    <div class="stat-cell">
+      <div class="stat-lbl">Available to Spend</div>
+      <div class="stat-num cyan">$3,841</div>
+      <div class="stat-delta">↑ $420 from last month</div>
+      <div class="stat-bar-bg"><div class="stat-bar-fill" style="width:68%;background:linear-gradient(90deg,var(--jade),var(--cyan))"></div></div>
     </div>
-  </aside>
-
-  <!-- MAIN -->
-  <main class="main">
-    <header class="topbar">
-      <div class="topbar-left">
-        <span class="topbar-icon" id="topbar-icon"></span>
-        <div class="topbar-title-group">
-          <div class="topbar-title" id="topbar-title"></div>
-          <div class="topbar-tabs" id="topbar-tabs"></div>
-        </div>
-      </div>
-      <div class="topbar-actions">
-        <div class="search"><input type="text" placeholder="Search..." /></div>
-        <button class="pill" type="button">PRO</button>
-        <button class="avatar" type="button">J</button>
-      </div>
-    </header>
-    <section class="content" id="content"></section>
-  </main>
-</div>
-
-<script>
-// ── DATA ─────────────────────────────────────────────────────────────────────
-
-const NAV_ITEMS = [
-  { id: 'dashboard',     label: 'Dashboard',     icon: '▦' },
-  { id: 'office',        label: 'Office',        icon: '⊞' },
-  { id: 'portfolio',     label: 'Portfolio',     icon: '⊡' },
-  { id: 'workspace',     label: 'Workspace',     icon: '⚙' },
-  { id: 'timeline',      label: 'Timeline',      icon: '⊟' },
-  { id: 'strategy',      label: 'Strategy',      icon: '◎' },
-  { id: 'bank',          label: 'Bank',          icon: '⊠' },
-  { id: 'exchange',      label: 'Exchange',      icon: '⇄' },
-  { id: 'marketplace',   label: 'Marketplace',   icon: '⊕' },
-  { id: 'studio',        label: 'Studio',        icon: '◈' },
-  { id: 'community',     label: 'Community',     icon: '⊹' },
-  { id: 'developer',     label: 'Developer',     icon: '‹›' },
-  { id: 'profile',       label: 'Profile',       icon: '◯' },
-  { id: 'organizations', label: 'Organizations', icon: '⊛' },
-  { id: 'legal',         label: 'Legal',         icon: '⊖' },
-];
-
-const SCREEN_META = {
-  dashboard:     { title: 'Dashboard',     icon: '▦',  tabs: ['Overview','Activity','AI'] },
-  office:        { title: 'Office',        icon: '🏢', tabs: ['Projects','Programs','Portfolio'] },
-  portfolio:     { title: 'Portfolio',     icon: '💼', tabs: ['Assets','Solutions','Artifacts'] },
-  workspace:     { title: 'Workspace',     icon: '⚙️', tabs: ['Tasks','Kanban','Sprints'] },
-  timeline:      { title: 'Timeline',      icon: '📅', tabs: ['Calendar','Roadmap','Gantt'] },
-  strategy:      { title: 'Strategy',      icon: '🎯', tabs: ['Strategy','Tactics','Governance'] },
-  bank:          { title: 'Bank',          icon: '🏦', tabs: ['Wallets','Finance','Fundraising'] },
-  exchange:      { title: 'Exchange',      icon: '↔️', tabs: ['Bids','Deals','Due Diligence'] },
-  marketplace:   { title: 'Marketplace',   icon: '🛍️', tabs: ['Buy','Sell','Barter'] },
-  studio:        { title: 'Studio',        icon: '🎨', tabs: ['Ideas','Prototypes','Tools'] },
-  community:     { title: 'Community',     icon: '🌐', tabs: ['Feeds','Spaces','Messages'] },
-  developer:     { title: 'Developer',     icon: '⚡', tabs: ['API','SDK','Integrations'] },
-  profile:       { title: 'Profile',       icon: '👤', tabs: ['Personas','Settings','Config'] },
-  organizations: { title: 'Organizations', icon: '🏛️', tabs: ['Coops','Collectives','Teams'] },
-  legal:         { title: 'Legal',         icon: '⚖️', tabs: ['IP','Contracts','Compliance'] },
-};
-
-// ── TEMPLATE HELPERS ──────────────────────────────────────────────────────────
-const h = (tag, cls, content, style='') =>
-  `<${tag}${cls ? ` class="${cls}"` : ''}${style ? ` style="${style}"` : ''}>${content}</${tag}>`;
-
-const metrics = (items) => `<div class="stats-row">${items.map(s => `
-  <div class="card metric-card ${s.tone}">
-    <div class="metric-label">${s.label}</div>
-    <div class="metric-value">${s.value}</div>
-    <div class="metric-meta">
-      ${s.change ? `<span class="trend ${s.trend||''}">${s.change}</span>` : ''}
-      <span class="metric-caption">${s.caption||''}</span>
+    <div class="stat-cell">
+      <div class="stat-lbl">Monthly Income</div>
+      <div class="stat-num gold">$9,200</div>
+      <div class="stat-delta">↑ 12.4% vs prior month</div>
+      <div class="stat-bar-bg"><div class="stat-bar-fill" style="width:82%;background:linear-gradient(90deg,var(--bark),var(--gold))"></div></div>
     </div>
-    ${s.progress !== undefined ? `<div class="progress"><span style="width:${s.progress}%"></span></div>` : ''}
-  </div>`).join('')}</div>`;
-
-const chips = (items) => `<div class="chip-row">${items.map(c=>`<span class="chip ${c.tone}">→ ${c.label}</span>`).join('')}</div>`;
-
-const table = (cols, headers, rows) => `
-  <div class="table-row table-header" style="--cols:${cols}">${headers.map(h=>`<span>${h}</span>`).join('')}</div>
-  ${rows.map(r=>`<div class="table-row" style="--cols:${cols}">${r.cells.slice(0,-1).map((c,i)=>`<span class="${i>0?'muted':''}">${c}</span>`).join('')}<span class="status ${r.badgeTone}">${r.badge}</span></div>`).join('')}`;
-
-const list = (items, getRight='') => `<div class="list">${items.map(item=>`
-  <div class="list-item">
-    ${item.avatar ? `<div class="avatar-chip">${item.avatar}</div>` : ''}
-    <div class="list-body"><div class="list-title">${item.title}</div>${item.subtitle?`<div class="list-meta">${item.subtitle}</div>`:''}</div>
-    ${item.meta ? `<span class="status ${item.tone||''}">${item.meta}</span>` : ''}
-  </div>`).join('')}</div>`;
-
-const progressList = (items) => `<div class="progress-list">${items.map(r=>`
-  <div class="progress-item">
-    <div class="progress-meta"><span>${r.title}</span><span class="muted">${r.meta}</span></div>
-    <div class="progress ${r.tone}"><span style="width:${r.progress}%"></span></div>
-  </div>`).join('')}</div>`;
-
-const gantt = (rows) => `<div class="gantt">${rows.map(row=>`
-  <div class="gantt-row">
-    <div class="gantt-label">${row.icon?`<span style="margin-right:5px;font-size:10px;color:var(--text-2)">${row.icon}</span>`:''}${row.label}</div>
-    <div class="gantt-track">${row.bars.map(b=>`<span class="gantt-bar ${b.tone}" style="left:${b.start}%;width:${b.width}%"></span>`).join('')}</div>
-  </div>`).join('')}</div>`;
-
-const subCards = (gridCls, items, getContent) => `<div class="${gridCls}">${items.map(i=>`
-  <div class="card sub-card ${i.tone}">${getContent(i)}</div>`).join('')}</div>`;
-
-// ── SCREEN RENDERERS ──────────────────────────────────────────────────────────
-
-function renderDashboard() {
-  const dashboardMetrics = [
-    { label: 'Portfolio Health', value: '87%', change: '4%', trend: 'up', caption: '3 at risk', progress: 87, tone: 'tone-blue' },
-    { label: 'Active Projects',  value: '12',  change: '2%', trend: 'up', caption: 'Concurrent', tone: 'tone-teal' },
-    { label: 'Net Revenue',      value: '$24.8K', change: '11%', trend: 'up', caption: 'This month', tone: 'tone-emerald' },
-    { label: 'AI Credits',       value: '8,420', change: '2%', trend: 'down', caption: 'Remaining', progress: 66, tone: 'tone-purple' },
-  ];
-  const quickLinks = [
-    { label:'Office', icon:'🏢', tone:'tone-blue' }, { label:'Portfolio', icon:'💼', tone:'tone-purple' },
-    { label:'Bank', icon:'🏦', tone:'tone-emerald' }, { label:'Exchange', icon:'↔️', tone:'tone-amber' },
-    { label:'Marketplace', icon:'🛍️', tone:'tone-teal' }, { label:'Studio', icon:'🎨', tone:'tone-indigo' },
-    { label:'Community', icon:'🌐', tone:'tone-rose' }, { label:'Developer', icon:'⚡', tone:'tone-cyan' },
-  ];
-  const activity = [
-    { event:'Payment received — $3,200', module:'Exchange', time:'2 min ago', status:'Active', tone:'tone-emerald' },
-    { event:'New proposal: Brand Redesign', module:'Studio', time:'14 min ago', status:'Active', tone:'tone-blue' },
-    { event:'Project milestone hit', module:'Office', time:'1 hr ago', status:'Active', tone:'tone-purple' },
-    { event:'Community post: 24 reactions', module:'Community', time:'2 hr ago', status:'Active', tone:'tone-rose' },
-    { event:'Token distribution complete', module:'Bank', time:'5 hr ago', status:'Active', tone:'tone-teal' },
-  ];
-  return `
-    ${metrics(dashboardMetrics)}
-    <div class="layout-2">
-      <div class="card">
-        <div class="card-title">Quick Access — Modules</div>
-        <div class="quick-grid">${quickLinks.map(q=>`<button class="quick-card ${q.tone}" type="button"><span class="quick-icon">${q.icon}</span><span class="quick-label">${q.label}</span></button>`).join('')}</div>
-      </div>
-      <div class="card">
-        <div class="card-title">Recent Activity</div>
-        <div class="table-row table-header" style="--cols:2.2fr 1fr 1fr 1fr"><span>Event</span><span>Module</span><span>Time</span><span>Status</span></div>
-        ${activity.map(a=>`<div class="table-row" style="--cols:2.2fr 1fr 1fr 1fr"><span>${a.event}</span><span class="status ${a.tone}">${a.module}</span><span class="muted">${a.time}</span><span class="status tone-emerald">${a.status}</span></div>`).join('')}
-      </div>
-    </div>`;
-}
-
-function renderOffice() {
-  const officeMetrics = [
-    { label:'Programs', value:'4', caption:'2 delayed', tone:'tone-blue' },
-    { label:'Projects', value:'18', caption:'12 active', tone:'tone-teal', progress:70 },
-    { label:'Milestones Due', value:'6', caption:'Next 7 days', tone:'tone-amber' },
-    { label:'Team Capacity', value:'73%', caption:'-5%', tone:'tone-emerald', progress:73 },
-  ];
-  const programs = [
-    { title:'Alpha Platform', subtitle:'In Progress · 8/12', tone:'tone-blue', progress:67, members:['A','A','A'] },
-    { title:'Beta Campaign', subtitle:'Planning · 2/6', tone:'tone-teal', progress:33, members:['A','A','A'] },
-    { title:'Gamma Research', subtitle:'On Hold · 5/5', tone:'tone-emerald', progress:100, members:['A','A','A'] },
-    { title:'Delta Ops', subtitle:'In Progress · 11/15', tone:'tone-amber', progress:73, members:['A','A','A'] },
-    { title:'Epsilon Design', subtitle:'Active · 3/8', tone:'tone-purple', progress:38, members:['A','A','A'] },
-    { title:'Zeta Legal', subtitle:'Review · 7/9', tone:'tone-rose', progress:78, members:['A','A','A'] },
-  ];
-  const assets = ['Projects','Programs','Assets','Solutions','Artifacts','Resources','Blueprints','APIs','Components','Datasets'];
-  const assetTones = ['tone-blue','tone-teal','tone-purple','tone-emerald','tone-indigo','tone-rose','tone-amber','tone-cyan','tone-blue','tone-teal'];
-  const thirdParty = [{label:'Jira',tone:'tone-blue'},{label:'Monday',tone:'tone-amber'},{label:'GitHub',tone:'tone-indigo'},{label:'GitLab',tone:'tone-rose'},{label:'Notion',tone:'tone-teal'}];
-  const team = [
-    {avatar:'J', title:'Jordan C.', subtitle:'3 active projects'},
-    {avatar:'M', title:'Maria S.', subtitle:'3 active projects'},
-    {avatar:'D', title:'Devon P.', subtitle:'3 active projects'},
-    {avatar:'P', title:'Priya N.', subtitle:'3 active projects'},
-  ];
-  return `
-    ${metrics(officeMetrics)}
-    <div class="layout-2">
-      <div class="stack">
-        <div class="card">
-          <div class="card-title">Programs & Projects</div>
-          <div class="program-grid">${programs.map(p=>`
-            <div class="card sub-card ${p.tone}">
-              <div class="card-title-sm">${p.title}</div>
-              <div class="card-subtitle">${p.subtitle}</div>
-              <div class="progress"><span style="width:${p.progress}%"></span></div>
-              <div class="avatar-row">${p.members.map(_=>`<span class="avatar-chip">A</span>`).join('')}</div>
-            </div>`).join('')}</div>
-        </div>
-        <div class="card">
-          <div class="card-title">Portfolio Assets</div>
-          <div class="asset-grid">${assets.map((a,i)=>`<button class="asset-card ${assetTones[i]}" type="button"><span class="asset-icon">📁</span><span>${a}</span></button>`).join('')}</div>
-        </div>
-      </div>
-      <div class="stack">
-        <div class="card">
-          <div class="card-title">3rd Party</div>
-          ${chips(thirdParty)}
-        </div>
-        <div class="card">
-          <div class="card-title">Team</div>
-          <div class="list">${team.map(t=>`
-            <div class="list-item">
-              <div class="avatar-chip">${t.avatar}</div>
-              <div class="list-body"><div class="list-title">${t.title}</div><div class="list-meta">${t.subtitle}</div></div>
-              <span class="status tone-emerald">Active</span>
-            </div>`).join('')}</div>
-        </div>
-      </div>
-    </div>`;
-}
-
-function renderPortfolio() {
-  const portfolioMetrics = [
-    {label:'Projects',value:'12',caption:'Active',tone:'tone-blue'},
-    {label:'Programs',value:'4',caption:'Operating',tone:'tone-teal'},
-    {label:'Assets',value:'28',caption:'Managed',tone:'tone-purple'},
-    {label:'Solutions',value:'7',caption:'Live',tone:'tone-emerald'},
-    {label:'Artifacts',value:'15',caption:'Ready',tone:'tone-indigo'},
-  ];
-  const items = [
-    {title:'Brand Identity System',subtitle:'Design',status:'Active',tone:'tone-purple'},
-    {title:'API Gateway v2',subtitle:'Dev',status:'Released',tone:'tone-teal'},
-    {title:'Market Research',subtitle:'Research',status:'Draft',tone:'tone-amber'},
-    {title:'CRM Integration',subtitle:'Solution',status:'Active',tone:'tone-emerald'},
-    {title:'UI Component Lib',subtitle:'Asset',status:'Active',tone:'tone-rose'},
-    {title:'Tokenomics Model',subtitle:'Finance',status:'Review',tone:'tone-cyan'},
-    {title:'Legal Templates',subtitle:'Legal',status:'Active',tone:'tone-rose'},
-    {title:'Analytics Dashboard',subtitle:'Dev',status:'Active',tone:'tone-indigo'},
-    {title:'Product Roadmap',subtitle:'Strategy',status:'Active',tone:'tone-blue'},
-    {title:'Mobile App MVP',subtitle:'Dev',status:'Building',tone:'tone-purple'},
-    {title:'Content Strategy',subtitle:'Marketing',status:'Draft',tone:'tone-amber'},
-    {title:'Partnership Deck',subtitle:'Sales',status:'Active',tone:'tone-amber'},
-  ];
-  const platforms = [{label:'Behance',tone:'tone-blue'},{label:'GitHub',tone:'tone-indigo'},{label:'Dribbble',tone:'tone-rose'},{label:'Figma',tone:'tone-purple'},{label:'Notion',tone:'tone-teal'},{label:'Google Drive',tone:'tone-cyan'}];
-  return `
-    ${metrics(portfolioMetrics)}
-    <div class="card">
-      <div class="card-title">Portfolio Grid — Modular Tile View</div>
-      <div class="portfolio-grid">${items.map(p=>`
-        <div class="portfolio-item ${p.tone}">
-          <div class="portfolio-tag">${p.subtitle}</div>
-          <div class="portfolio-name">${p.title}</div>
-          <span class="status ${p.tone}">${p.status}</span>
-        </div>`).join('')}
-      </div>
+    <div class="stat-cell">
+      <div class="stat-lbl">Avg EHR (est.)</div>
+      <div class="stat-num">$62/hr</div>
+      <div class="stat-delta neg">↓ $4 vs 3-month avg</div>
+      <div class="stat-bar-bg"><div class="stat-bar-fill" style="width:54%;background:var(--amber)"></div></div>
     </div>
-    <div class="card">
-      <div class="card-title">Linked Platforms</div>
-      ${chips(platforms)}
-    </div>`;
-}
-
-function renderWorkspace() {
-  const wsMetrics = [
-    {label:'Open Tasks',value:'34',caption:'8 overdue',tone:'tone-blue'},
-    {label:'Sprints Active',value:'3',caption:'2 on track',tone:'tone-teal',progress:60},
-    {label:'Blocked',value:'5',caption:'Needs action',tone:'tone-amber'},
-    {label:'Done This Week',value:'21',caption:'+15%',tone:'tone-emerald'},
-  ];
-  const kanban = [
-    {title:'Backlog',tone:'tone-blue',items:['Auth redesign','Payment flow','API docs','Onboard UX']},
-    {title:'In Progress',tone:'tone-amber',items:['Mobile nav','Token calc','Legal review','Test suite']},
-    {title:'Review',tone:'tone-purple',items:['Brand deck','Coop model','RFC-009','Data model']},
-    {title:'Done',tone:'tone-emerald',items:['Login fix','CSV export','Error states','Docs v2']},
-  ];
-  const ganttRows = [
-    {label:'Alpha Platform', bars:[{tone:'tone-blue',start:5,width:55}]},
-    {label:'Beta Campaign', bars:[{tone:'tone-amber',start:30,width:40}]},
-    {label:'Gamma Research', bars:[{tone:'tone-emerald',start:5,width:70}]},
-    {label:'Delta Ops', bars:[{tone:'tone-purple',start:40,width:35}]},
-    {label:'Epsilon Design', bars:[{tone:'tone-rose',start:55,width:30}]},
-  ];
-  const calendar = [
-    {title:'Client sync 10am',subtitle:'Mon Mar 10',tone:'tone-blue'},
-    {title:'Sprint review 3pm',subtitle:'Mon Mar 10',tone:'tone-teal'},
-    {title:'Payment due',subtitle:'Tue Mar 11',tone:'tone-amber'},
-    {title:'Board meeting',subtitle:'Wed Mar 12',tone:'tone-rose'},
-    {title:'Milestone delivery',subtitle:'Thu Mar 13',tone:'tone-purple'},
-  ];
-  const roadmaps = [
-    {title:'Q1 2026 — Foundation',meta:'65%',progress:65,tone:'tone-blue'},
-    {title:'Q2 2026 — Growth',meta:'33%',progress:33,tone:'tone-teal'},
-    {title:'Q3 2026 — Scale',meta:'12%',progress:12,tone:'tone-rose'},
-  ];
-  return `
-    ${metrics(wsMetrics)}
-    <div class="layout-2">
-      <div class="stack">
-        <div class="card">
-          <div class="card-title">Kanban Board</div>
-          <div class="kanban">${kanban.map(col=>`
-            <div class="kanban-col ${col.tone}">
-              <div class="kanban-title">${col.title}</div>
-              ${col.items.map(t=>`<div class="kanban-item">${t}</div>`).join('')}
-            </div>`).join('')}</div>
-        </div>
-        <div class="card">
-          <div class="card-title">Gantt Timeline</div>
-          ${gantt(ganttRows)}
-        </div>
-      </div>
-      <div class="stack">
-        <div class="card">
-          <div class="card-title">Calendar</div>
-          <div class="list">${calendar.map(e=>`
-            <div class="list-item">
-              <div style="background:var(--${e.tone.replace('tone-','')});width:3px;min-width:3px;height:28px;border-radius:2px;flex-shrink:0;"></div>
-              <div class="list-body"><div class="list-title">${e.title}</div><div class="list-meta">${e.subtitle}</div></div>
-            </div>`).join('')}</div>
-        </div>
-        <div class="card">
-          <div class="card-title">Roadmaps</div>
-          ${progressList(roadmaps)}
-        </div>
-      </div>
-    </div>`;
-}
-
-function renderTimeline() {
-  const tlMetrics = [
-    {label:'Milestones',value:'24',caption:'Q1 2026',tone:'tone-blue'},
-    {label:'Scheduled Events',value:'18',caption:'Next 30 days',tone:'tone-teal'},
-    {label:'Overdue Items',value:'3',caption:'Needs attention',tone:'tone-rose'},
-    {label:'Completion Rate',value:'78%',caption:'This quarter',tone:'tone-emerald',progress:78},
-  ];
-  const master = [
-    {label:'Platform MVP',icon:'✓',bars:[{tone:'tone-blue',start:2,width:48}]},
-    {label:'Design System',icon:'✓',bars:[{tone:'tone-purple',start:20,width:52}]},
-    {label:'API v1 Launch',icon:'□',bars:[{tone:'tone-emerald',start:35,width:38}]},
-    {label:'Beta Onboarding',icon:'□',bars:[{tone:'tone-amber',start:45,width:45}]},
-    {label:'Legal Review',icon:'⚐',bars:[{tone:'tone-rose',start:28,width:28}]},
-    {label:'Exchange Module',icon:'□',bars:[{tone:'tone-cyan',start:58,width:40}]},
-    {label:'Community Beta',icon:'□',bars:[{tone:'tone-rose',start:65,width:33}]},
-    {label:'AI Agent v1',icon:'□',bars:[{tone:'tone-purple',start:52,width:46}]},
-  ];
-  const events = [
-    {title:'Client Sync',meta:'Mon Mar 10',tone:'tone-rose'},
-    {title:'Sprint Review',meta:'Mon Mar 10',tone:'tone-blue'},
-    {title:'Board Meeting',meta:'Wed Mar 12',tone:'tone-amber'},
-    {title:'Milestone Gate',meta:'Fri Mar 14',tone:'tone-rose'},
-    {title:'Tax Filing Due',meta:'Mar 22',tone:'tone-teal'},
-    {title:'Q1 Close',meta:'Mar 31',tone:'tone-purple'},
-  ];
-  const roadmap = [
-    {title:'Q1 Foundation',meta:'65%',progress:65,tone:'tone-blue'},
-    {title:'Q2 Growth',meta:'30%',progress:30,tone:'tone-teal'},
-    {title:'Q3 Scale',meta:'10%',progress:10,tone:'tone-amber'},
-    {title:'Q4 Expand',meta:'0%',progress:0,tone:'tone-purple'},
-  ];
-  const deadlines = [
-    {title:'Legal Review',subtitle:'In 7 days',tone:'tone-rose'},
-    {title:'API Launch',subtitle:'In 11 days',tone:'tone-emerald'},
-    {title:'Board Deck',subtitle:'In 18 days',tone:'tone-amber'},
-    {title:'Q1 Close',subtitle:'In 21 days',tone:'tone-blue'},
-  ];
-  return `
-    ${metrics(tlMetrics)}
-    <div class="card">
-      <div class="card-title">Master Timeline — Q1 2026</div>
-      ${gantt(master)}
+    <div class="stat-cell">
+      <div class="stat-lbl">Active Clients</div>
+      <div class="stat-num">7</div>
+      <div class="stat-delta">2 new this month</div>
+      <div class="stat-bar-bg"><div class="stat-bar-fill" style="width:40%;background:var(--violet)"></div></div>
     </div>
-    <div class="layout-2">
-      <div class="card">
-        <div class="card-title">Scheduled Events</div>
-        <div class="event-grid">${events.map(e=>`
-          <div class="card sub-card ${e.tone}">
-            <div class="card-subtitle">${e.meta}</div>
-            <div class="card-title-sm">${e.title}</div>
-          </div>`).join('')}</div>
-      </div>
-      <div class="stack">
-        <div class="card">
-          <div class="card-title">Roadmap Progress</div>
-          ${progressList(roadmap)}
-        </div>
-        <div class="card">
-          <div class="card-title">Next Deadlines</div>
-          <div class="list">${deadlines.map(d=>`
-            <div class="list-item">
-              <span style="width:6px;height:6px;border-radius:50%;background:var(--${d.tone.replace('tone-','')});display:inline-block;flex-shrink:0;"></span>
-              <div class="list-body"><div class="list-title">${d.title}</div><div class="list-meta">${d.subtitle}</div></div>
-            </div>`).join('')}</div>
-        </div>
-      </div>
-    </div>`;
-}
-
-function renderStrategy() {
-  const stMetrics = [
-    {label:'Strategic OKRs',value:'5',caption:'3 on track',tone:'tone-purple',progress:60},
-    {label:'Tactical Initiatives',value:'18',caption:'11 active',tone:'tone-blue'},
-    {label:'Ops Processes',value:'24',caption:'Documented',tone:'tone-emerald'},
-    {label:'Governance Items',value:'7',caption:'2 pending vote',tone:'tone-amber'},
-  ];
-  const tree = [
-    {title:'Be the OS for independent work',subtitle:'Vision',tone:'tone-blue'},
-    {title:'Unify tools · empower workers',subtitle:'Mission',tone:'tone-teal'},
-    {title:'Reach 50K users by Q4',subtitle:'Obj 1',tone:'tone-emerald'},
-    {title:'$1M ARR by Q3',subtitle:'Obj 2',tone:'tone-amber'},
-    {title:'Community 10K members',subtitle:'Obj 3',tone:'tone-purple'},
-    {title:'NPS > 60',subtitle:'Key Result',tone:'tone-rose'},
-  ];
-  const tactics = [
-    {title:'Pricing Experiments',subtitle:'Tactical · Active',tone:'tone-blue'},
-    {title:'Onboarding Funnel',subtitle:'Tactical · Active',tone:'tone-teal'},
-    {title:'Partnership Program',subtitle:'Tactical · Active',tone:'tone-emerald'},
-    {title:'Content Marketing',subtitle:'Tactical · Active',tone:'tone-purple'},
-    {title:'API Integrations',subtitle:'Tactical · Active',tone:'tone-blue'},
-    {title:'Support Playbook',subtitle:'Tactical · Active',tone:'tone-amber'},
-    {title:'Legal Frameworks',subtitle:'Tactical · Active',tone:'tone-rose'},
-    {title:'Data Infrastructure',subtitle:'Tactical · Active',tone:'tone-cyan'},
-  ];
-  const governance = [
-    {title:'RFC-009',subtitle:'Under Review',meta:'Review',tone:'tone-amber'},
-    {title:'Equity Policy',subtitle:'Approved',meta:'Approved',tone:'tone-emerald'},
-    {title:'Data Retention',subtitle:'Pending Vote',meta:'Vote',tone:'tone-rose'},
-    {title:'Member Charter',subtitle:'Draft',meta:'Draft',tone:'tone-teal'},
-  ];
-  const okrs = [
-    {title:'User Growth',meta:'78%',progress:78,tone:'tone-blue'},
-    {title:'Revenue',meta:'45%',progress:45,tone:'tone-emerald'},
-    {title:'Community',meta:'62%',progress:62,tone:'tone-rose'},
-  ];
-  return `
-    ${metrics(stMetrics)}
-    <div class="card">
-      <div class="card-title">Strategy Tree</div>
-      <div class="strategy-grid">${tree.map(t=>`<div class="card sub-card ${t.tone}"><div class="card-subtitle">${t.subtitle}</div><div class="card-title-sm">${t.title}</div></div>`).join('')}</div>
+    <div class="stat-cell">
+      <div class="stat-lbl">Portfolio Score</div>
+      <div class="stat-num green">0.68</div>
+      <div class="stat-delta">Developing → Strong</div>
+      <div class="stat-bar-bg"><div class="stat-bar-fill" style="width:68%;background:linear-gradient(90deg,var(--jade),var(--green))"></div></div>
     </div>
-    <div class="layout-2">
-      <div class="card">
-        <div class="card-title">Tactics & Operations</div>
-        <div class="tactic-grid">${tactics.map(t=>`<div class="card sub-card ${t.tone}"><div class="card-title-sm">${t.title}</div><div class="card-subtitle">${t.subtitle}</div></div>`).join('')}</div>
-      </div>
-      <div class="stack">
-        <div class="card">
-          <div class="card-title">Governance</div>
-          ${list(governance)}
-        </div>
-        <div class="card">
-          <div class="card-title">OKR Progress</div>
-          ${progressList(okrs)}
-        </div>
-      </div>
-    </div>`;
-}
+  </div>
 
-function renderBank() {
-  const bankMetrics = [
-    {label:'Total Balance',value:'$142,800',change:'8%',trend:'up',caption:'All wallets',tone:'tone-emerald'},
-    {label:'Operations',value:'$28,400',caption:'Ops Wallet',tone:'tone-blue',progress:55},
-    {label:'Investments',value:'$89,200',change:'12%',trend:'up',caption:'Portfolio',tone:'tone-purple'},
-    {label:'Trading',value:'$18,300',change:'3%',trend:'down',caption:'Exchange',tone:'tone-amber'},
-    {label:'Personal',value:'$6,900',caption:'Spending',tone:'tone-teal',progress:30},
-  ];
-  const wallets = [
-    {tag:'💳',title:'Personal Spending',value:'$6,900',subtitle:'Daily · bills',tone:'tone-teal'},
-    {tag:'💼',title:'Operations',value:'$28,400',subtitle:'Payroll · tools',tone:'tone-blue'},
-    {tag:'📈',title:'Investment',value:'$89,200',subtitle:'Stocks · bonds',tone:'tone-purple'},
-    {tag:'🔄',title:'Trading',value:'$18,300',subtitle:'Crypto · tokens',tone:'tone-amber'},
-    {tag:'🛍️',title:'Marketplace',value:'$4,200',subtitle:'Purchases',tone:'tone-rose'},
-    {tag:'🏛️',title:'Coop Pool',value:'$124,500',subtitle:'Collective capital',tone:'tone-indigo'},
-  ];
-  const fundraising = [
-    {title:'Seed Round',value:'$450K raised',progress:72,meta:'72% of goal',tone:'tone-blue'},
-    {title:'Community Bond',value:'$120K raised',progress:48,meta:'48% of goal',tone:'tone-emerald'},
-    {title:'Equipment Lease',value:'$28K raised',progress:90,meta:'90% of goal',tone:'tone-amber'},
-  ];
-  const platforms = [{label:'Stripe',tone:'tone-blue'},{label:'Wells Fargo',tone:'tone-rose'},{label:'Chase',tone:'tone-indigo'},{label:'GoFundMe',tone:'tone-emerald'},{label:'Patreon',tone:'tone-amber'}];
-  const transactions = [
-    {title:'Stripe payout',meta:'+$3,200',tone:'tone-emerald'},
-    {title:'Tool subscription',meta:'-$49',tone:'tone-rose'},
-    {title:'Coop distribution',meta:'+$840',tone:'tone-emerald'},
-    {title:'Tax payment',meta:'-$2,100',tone:'tone-rose'},
-    {title:'Invoice paid',meta:'+$8,400',tone:'tone-emerald'},
-  ];
-  const taxes = [
-    {subtitle:'Income Tax',value:'$18,400',tone:'tone-rose'},
-    {subtitle:'Self Employed',value:'$4,200',tone:'tone-amber'},
-    {subtitle:'Deductions',value:'-$6,800',tone:'tone-emerald'},
-    {subtitle:'Estimated',value:'$15,800',tone:'tone-blue'},
-  ];
-  return `
-    ${metrics(bankMetrics)}
-    <div class="layout-2">
-      <div class="stack">
-        <div class="card">
-          <div class="card-title">Wallet Types</div>
-          <div class="wallet-grid">${wallets.map(w=>`
-            <div class="card sub-card ${w.tone}">
-              <div class="card-subtitle" style="font-size:18px;margin-bottom:6px;">${w.tag}</div>
-              <div class="card-title-sm">${w.title}</div>
-              <div class="metric-value" style="font-size:18px;margin:4px 0;">${w.value}</div>
-              <div class="card-meta">${w.subtitle}</div>
-            </div>`).join('')}</div>
-        </div>
-        <div class="card">
-          <div class="card-title">Fundraising & Capital</div>
-          <div class="fund-grid">${fundraising.map(f=>`
-            <div class="card sub-card ${f.tone}">
-              <div class="card-title-sm">${f.title}</div>
-              <div class="metric-value" style="font-size:16px;margin:4px 0;">${f.value}</div>
-              <div class="progress"><span style="width:${f.progress}%"></span></div>
-              <div class="card-meta" style="margin-top:4px;">${f.meta}</div>
-            </div>`).join('')}</div>
-        </div>
-      </div>
-      <div class="stack">
-        <div class="card"><div class="card-title">Linked Platforms</div>${chips(platforms)}</div>
-        <div class="card">
-          <div class="card-title">Transactions</div>
-          <div class="list">${transactions.map(t=>`<div class="list-item"><div class="list-body"><div class="list-title">${t.title}</div></div><span class="status ${t.tone}">${t.meta}</span></div>`).join('')}</div>
-        </div>
-        <div class="card">
-          <div class="card-title">Tax Summary</div>
-          <div class="tax-grid">${taxes.map(t=>`<div class="card sub-card ${t.tone}"><div class="card-subtitle" style="font-size:9px;text-transform:uppercase;letter-spacing:.08em;">${t.subtitle}</div><div class="metric-value" style="font-size:16px;margin-top:4px;">${t.value}</div></div>`).join('')}</div>
-        </div>
-      </div>
-    </div>`;
-}
+  <!-- Content -->
+  <div class="content">
 
-function renderExchange() {
-  const exMetrics = [
-    {label:'Active Bids',value:'12',caption:'3 expiring',tone:'tone-blue'},
-    {label:'Offers Out',value:'8',caption:'$24K value',tone:'tone-purple'},
-    {label:'Closed Deals',value:'5',caption:'This month',tone:'tone-emerald'},
-    {label:'Pipeline',value:'$142K',caption:'Total value',tone:'tone-amber'},
-  ];
-  const bids = [
-    {cells:['Design System License','Offer','$12K','Active','Acme Corp'],badge:'Active',badgeTone:'tone-emerald'},
-    {cells:['API Access Token','Bid','$3,500','Pending','StartupXYZ'],badge:'Pending',badgeTone:'tone-amber'},
-    {cells:['Brand Strategy Pack','Offer','$8K','Active','DevDAO'],badge:'Active',badgeTone:'tone-emerald'},
-    {cells:['UX Audit Service','Bid','$5K','Review','Invest Club'],badge:'Review',badgeTone:'tone-purple'},
-    {cells:['Full-Stack Dev Sprint','Offer','$15K','Expiring','TechCorp Inc.'],badge:'Expiring',badgeTone:'tone-rose'},
-  ];
-  const pipeline = [
-    {title:'Acme Contract',subtitle:'Design + Dev',value:'$28K',progress:75,tone:'tone-blue'},
-    {title:'DevDAO Sprint',subtitle:'Engineering',value:'$48K',progress:50,tone:'tone-purple'},
-    {title:'Brand Package',subtitle:'Branding',value:'$18K',progress:90,tone:'tone-emerald'},
-    {title:'Startup Deal',subtitle:'Strategy',value:'$12K',progress:30,tone:'tone-amber'},
-  ];
-  const requests = [
-    {title:'Due Diligence Review',subtitle:'Acme Corp',meta:'Pending',tone:'tone-amber'},
-    {title:'Contract Signed',subtitle:'DevDAO',meta:'Done',tone:'tone-emerald'},
-    {title:'Proposal Sent',subtitle:'Invest Club',meta:'Sent',tone:'tone-blue'},
-  ];
-  const platforms = [{label:'AngelList',tone:'tone-blue'},{label:'Deel',tone:'tone-emerald'},{label:'Upwork',tone:'tone-amber'},{label:'Toptal',tone:'tone-purple'}];
-  return `
-    ${metrics(exMetrics)}
-    <div class="layout-2">
-      <div class="stack">
-        <div class="card">
-          <div class="card-title">Bids & Offers</div>
-          ${table('2fr 1fr 1fr 1fr 1.5fr',['Item','Type','Value','Status','Counterparty'],bids)}
+    <!-- ── OVERVIEW ── -->
+    <div id="page-overview" class="subpage active">
+      <!-- Shock Insight Hero -->
+      <div class="shock-hero">
+        <div class="shock-badge">⚡ Shock Insight</div>
+        <div class="shock-compare">
+          <div>
+            <div class="shock-num hi">$94/hr</div>
+            <div class="shock-label">Meridian Creative</div>
+          </div>
+          <div class="shock-vs">vs</div>
+          <div>
+            <div class="shock-num lo">$18/hr</div>
+            <div class="shock-label">RetailCo Group</div>
+          </div>
         </div>
-        <div class="card">
-          <div class="card-title">Deal Pipeline</div>
-          <div class="deal-grid">${pipeline.map(d=>`
-            <div class="card sub-card ${d.tone}">
-              <div class="card-title-sm">${d.title}</div>
-              <div class="card-subtitle">${d.subtitle}</div>
-              <div class="metric-value" style="font-size:16px;margin:4px 0;">${d.value}</div>
-              <div class="progress"><span style="width:${d.progress}%"></span></div>
-            </div>`).join('')}</div>
+        <div class="shock-hook">You are earning 5.2× more from one client than another — and RetailCo takes 34% of your estimated hours.</div>
+        <div class="shock-insight">You have worked with RetailCo for <strong>2 years</strong>. Their effective rate places them at the <strong>bottom 12%</strong> of your client portfolio. Meanwhile, Meridian — your newest client — delivers your highest EHR with <strong>half the time investment</strong>.</div>
+        <div class="insight-acts">
+          <button class="i-act primary" onclick="toast('Opening rate review for RetailCo…')">Review RetailCo Rate</button>
+          <button class="i-act ghost" onclick="toast('Snoozing for 14 days…')">Snooze 14d</button>
+          <button class="i-act ghost" onclick="showPage('ehr')">Full EHR View</button>
         </div>
       </div>
-      <div class="stack">
-        <div class="card"><div class="card-title">Requests</div>${list(requests)}</div>
-        <div class="card"><div class="card-title">Linked Platforms</div>${chips(platforms)}</div>
-      </div>
-    </div>`;
-}
 
-function renderMarketplace() {
-  const mpMetrics = [
-    {label:'Listed Items',value:'284',caption:'Skills · Assets',tone:'tone-blue'},
-    {label:'Active Orders',value:'18',caption:'$24K value',tone:'tone-teal'},
-    {label:'Barter Offers',value:'12',caption:'Active trades',tone:'tone-amber'},
-    {label:'My Sales',value:'$8,400',change:'18%',trend:'up',caption:'',tone:'tone-emerald'},
-    {label:'My Purchases',value:'$2,100',caption:'This month',tone:'tone-purple'},
-  ];
-  const items = [
-    {tag:'Labor',title:'Full-Stack Dev',value:'$120/hr',tone:'tone-blue'},
-    {tag:'Asset',title:'Logo Design',value:'$250',tone:'tone-purple'},
-    {tag:'Service',title:'Brand Strategy',value:'$3,500',tone:'tone-teal'},
-    {tag:'Artifact',title:'React Template',value:'$89',tone:'tone-amber'},
-    {tag:'Labor',title:'Data Analysis',value:'$85/hr',tone:'tone-blue'},
-    {tag:'Service',title:'Legal Review',value:'$200/hr',tone:'tone-rose'},
-    {tag:'Barter',title:'Office Chair',value:'Trade',tone:'tone-emerald'},
-    {tag:'Asset',title:'3D Models Pack',value:'$149',tone:'tone-cyan'},
-    {tag:'Labor',title:'Content Writing',value:'$0.12/wd',tone:'tone-indigo'},
-    {tag:'Resource',title:'API Access',value:'$29/mo',tone:'tone-teal'},
-    {tag:'Barter',title:'Photography Kit',value:'Trade',tone:'tone-purple'},
-    {tag:'Service',title:'Copywriting',value:'$1,200',tone:'tone-rose'},
-  ];
-  const barter = [
-    {title:'Camera gear',subtitle:'Want: Laptop',tone:'tone-amber'},
-    {title:'Adobe License',subtitle:'Want: Web dev',tone:'tone-blue'},
-    {title:'Studio Time',subtitle:'Want: Design work',tone:'tone-purple'},
-  ];
-  const orders = [
-    {title:'Brand Package',subtitle:'Active',meta:'$3,500',tone:'tone-blue'},
-    {title:'Dev Hours',subtitle:'Delivered',meta:'$1,200',tone:'tone-emerald'},
-    {title:'Legal Review',subtitle:'Pending',meta:'$200',tone:'tone-amber'},
-  ];
-  const platforms = [{label:'Behance',tone:'tone-blue'},{label:'Upwork',tone:'tone-teal'},{label:'Fiverr',tone:'tone-rose'},{label:'Etsy',tone:'tone-amber'}];
-  return `
-    ${metrics(mpMetrics)}
-    <div class="layout-2">
-      <div class="card">
-        <div class="card-title">Marketplace — Modular Grid</div>
-        <div class="market-grid">${items.map(m=>`
-          <div class="card sub-card ${m.tone}">
-            <div class="card-subtitle" style="font-size:9px;text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px;">${m.tag}</div>
-            <div class="card-title-sm">${m.title}</div>
-            <div style="margin-top:6px;font-weight:700;color:var(--tone,var(--text));">${m.value}</div>
-          </div>`).join('')}</div>
-      </div>
-      <div class="stack">
-        <div class="card">
-          <div class="card-title">Barter System</div>
-          ${list(barter)}
-        </div>
-        <div class="card">
-          <div class="card-title">My Orders</div>
-          ${list(orders)}
-        </div>
-        <div class="card"><div class="card-title">Linked Platforms</div>${chips(platforms)}</div>
-      </div>
-    </div>`;
-}
-
-function renderStudio() {
-  const stMetrics = [
-    {label:'Ideas',value:'42',caption:'In development',tone:'tone-purple'},
-    {label:'Prototypes',value:'8',caption:'3 testing',tone:'tone-blue',progress:38},
-    {label:'Published Assets',value:'24',caption:'Available',tone:'tone-emerald'},
-    {label:'Notes / Binders',value:'138',caption:'Organized',tone:'tone-amber'},
-  ];
-  const ideas = [
-    {tag:'Prototype',title:'Mobile App Concept',tone:'tone-blue'},{tag:'Blueprint',title:'Tokenomics v3',tone:'tone-purple'},
-    {tag:'Mockup',title:'Landing Page',tone:'tone-rose'},{tag:'Design',title:'AI Agent UX',tone:'tone-amber'},
-    {tag:'Document',title:'API Spec v2',tone:'tone-teal'},{tag:'Asset',title:'Brand System',tone:'tone-emerald'},
-    {tag:'Draft',title:'Community RFC',tone:'tone-cyan'},{tag:'Blueprint',title:'Data Schema',tone:'tone-indigo'},
-  ];
-  const testbeds = [
-    {title:'A/B Test: Onboarding',tone:'tone-blue'},{title:'Perf Benchmark',tone:'tone-teal'},
-    {title:'API Load Test',tone:'tone-amber'},{title:'UX Usability Study',tone:'tone-purple'},
-    {title:'Payment Flow Test',tone:'tone-rose'},{title:'AI Prompt Eval',tone:'tone-cyan'},
-  ];
-  const toolsets = [
-    {title:'Design Tools',subtitle:'Figma · Framer',tone:'tone-purple'},
-    {title:'Dev Stack',subtitle:'Node · React · PG',tone:'tone-blue'},
-    {title:'AI Toolkit',subtitle:'Claude · GPT · Grok',tone:'tone-emerald'},
-    {title:'Analytics',subtitle:'Posthog · Mixpanel',tone:'tone-amber'},
-  ];
-  const files = [{title:'Binders',tone:'tone-blue'},{title:'Books',tone:'tone-purple'},{title:'Content',tone:'tone-teal'},{title:'Files',tone:'tone-amber'}];
-  const platforms = [{label:'Google Drive',tone:'tone-blue'},{label:'Figma',tone:'tone-purple'},{label:'Notion',tone:'tone-teal'},{label:'MS Teams',tone:'tone-indigo'}];
-  return `
-    ${metrics(stMetrics)}
-    <div class="layout-2">
-      <div class="stack">
-        <div class="card">
-          <div class="card-title">Ideas & Concepts — Modular Grid</div>
-          <div class="studio-grid">${ideas.map(i=>`<div class="card sub-card ${i.tone}"><div class="card-subtitle" style="font-size:9px;text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px;">${i.tag}</div><div class="card-title-sm">${i.title}</div></div>`).join('')}</div>
-        </div>
-        <div class="card">
-          <div class="card-title">Testing & Testbeds</div>
-          <div class="studio-grid">${testbeds.map(t=>`<div class="card sub-card ${t.tone}"><div class="card-subtitle" style="font-size:9px;text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px;">Testbed</div><div class="card-title-sm">${t.title}</div></div>`).join('')}</div>
-        </div>
-      </div>
-      <div class="stack">
-        <div class="card"><div class="card-title">Toolsets & Toolkits</div>${list(toolsets)}</div>
-        <div class="card">
-          <div class="card-title">Files & Notes</div>
-          <div class="asset-grid" style="grid-template-columns:repeat(2,1fr);">${files.map(f=>`<button class="asset-card ${f.tone}" type="button"><span class="asset-icon">📒</span><span>${f.title}</span></button>`).join('')}</div>
-        </div>
-        <div class="card"><div class="card-title">Linked Platforms</div>${chips(platforms)}</div>
-      </div>
-    </div>`;
-}
-
-function renderCommunity() {
-  const cmMetrics = [
-    {label:'Members',value:'8,420',caption:'+12%',tone:'tone-rose'},
-    {label:'Active Spaces',value:'34',caption:'12 rooms open',tone:'tone-teal'},
-    {label:'Posts Today',value:'284',caption:'+18% vs yesterday',tone:'tone-purple'},
-    {label:'DMs Unread',value:'7',caption:'Priority',tone:'tone-amber'},
-  ];
-  const feeds = [
-    {author:'Jordan C.',message:"New project launched! Brand redesign for a VC-backed startup 🚀",time:'2min ago',likes:'12'},
-    {author:'Maria S.',message:"Coop milestone: $1M ARR achieved 🎉 Proud of our 35-member team!",time:'8min ago',likes:'48'},
-    {author:'Devon P.',message:"Side project update: photography clients ×3 this week!",time:'22min ago',likes:'23'},
-    {author:'Priya N.',message:"Investment club vote: 87% approve new property acquisition",time:'1hr ago',likes:'31'},
-  ];
-  const spaces = [
-    {title:'⊞ #Office',subtitle:'21 online',tone:'tone-blue'},
-    {title:'🎯 #Finance',subtitle:'18 online',tone:'tone-emerald'},
-    {title:'🎨 #Studio',subtitle:'31 online',tone:'tone-purple'},
-    {title:'🌐 #General',subtitle:'12 online',tone:'tone-cyan'},
-    {title:'🏛️ #Coops',subtitle:'9 online',tone:'tone-rose'},
-  ];
-  const dms = [
-    {title:'Jordan C.',subtitle:'Hey, quick question...',tone:'tone-blue'},
-    {title:'Maria S.',subtitle:'Hey, quick question...',tone:'tone-emerald'},
-    {title:'Devon P.',subtitle:'Hey, quick question...',tone:'tone-amber'},
-  ];
-  const platforms = [{label:'Slack',tone:'tone-purple'},{label:'Zoom',tone:'tone-emerald'},{label:'Discord',tone:'tone-blue'},{label:'WhatsApp',tone:'tone-amber'}];
-  return `
-    ${metrics(cmMetrics)}
-    <div class="layout-2">
-      <div class="card">
-        <div class="card-title">Feeds & Timelines</div>
-        <div class="feed-list">${feeds.map(f=>`
-          <div class="feed-item">
-            <div class="avatar-chip">${f.author.charAt(0)}</div>
-            <div class="feed-body">
-              <div class="feed-author">${f.author} <span class="feed-time" style="font-weight:400;">${f.time}</span></div>
-              <div class="feed-message">${f.message}</div>
-              <div class="feed-meta">♥ ${f.likes} · <span>Reply</span> · <span>Share</span></div>
+      <div class="row-70-30">
+        <!-- Left column -->
+        <div style="display:flex;flex-direction:column;gap:14px">
+          <!-- Active Projects -->
+          <div class="card">
+            <div class="card-hdr">
+              <span class="card-hdr-title">Active Projects</span>
+              <span class="card-hdr-badge badge-cyan">6 Active</span>
+              <button class="g-btn" onclick="showPage('projects')" style="margin-left:4px">View All →</button>
             </div>
-          </div>`).join('')}</div>
-      </div>
-      <div class="stack">
-        <div class="card"><div class="card-title">Spaces & Rooms</div>${list(spaces.map(s=>({...s,meta:'→'})))}</div>
-        <div class="card">
-          <div class="card-title">DMs</div>
-          <div class="list">${dms.map(d=>`
-            <div class="list-item">
-              <div class="avatar-chip">${d.title.charAt(0)}</div>
-              <div class="list-body"><div class="list-title">${d.title}</div><div class="list-meta">${d.subtitle}</div></div>
-            </div>`).join('')}</div>
-        </div>
-        <div class="card"><div class="card-title">Linked Platforms</div>${chips(platforms)}</div>
-      </div>
-    </div>`;
-}
+            <div class="card-body">
+              <div class="row3">
+                <div class="proj-card" onclick="showPage('projects')">
+                  <div class="proj-status status-active">Active</div>
+                  <div class="proj-name">Brand Identity Refresh</div>
+                  <div class="proj-client">Meridian Creative</div>
+                  <div class="proj-metrics">
+                    <div><div class="proj-metric-val">$4,800</div><div class="proj-metric-lbl">Earned</div></div>
+                    <div><div class="proj-metric-val">$94/hr</div><div class="proj-metric-lbl">EHR</div></div>
+                    <div><div class="proj-metric-val">18d</div><div class="proj-metric-lbl">Left</div></div>
+                  </div>
+                  <div class="proj-progress">
+                    <div class="proj-prog-track"><div class="proj-prog-fill" style="width:68%;background:linear-gradient(90deg,var(--jade),var(--cyan))"></div></div>
+                    <div class="proj-prog-label"><span>68% Complete</span><span>$7,000 total</span></div>
+                  </div>
+                </div>
+                <div class="proj-card" onclick="showPage('projects')">
+                  <div class="proj-status status-review">In Review</div>
+                  <div class="proj-name">Mobile App UI</div>
+                  <div class="proj-client">TechVault Inc</div>
+                  <div class="proj-metrics">
+                    <div><div class="proj-metric-val">$3,200</div><div class="proj-metric-lbl">Earned</div></div>
+                    <div><div class="proj-metric-val">$67/hr</div><div class="proj-metric-lbl">EHR</div></div>
+                    <div><div class="proj-metric-val">5d</div><div class="proj-metric-lbl">Left</div></div>
+                  </div>
+                  <div class="proj-progress">
+                    <div class="proj-prog-track"><div class="proj-prog-fill" style="width:90%;background:linear-gradient(90deg,var(--bark),var(--gold))"></div></div>
+                    <div class="proj-prog-label"><span>90% Complete</span><span>$3,600 total</span></div>
+                  </div>
+                </div>
+                <div class="proj-card" onclick="showPage('projects')">
+                  <div class="proj-status status-active">Active</div>
+                  <div class="proj-name">Quarterly Reports</div>
+                  <div class="proj-client">RetailCo Group</div>
+                  <div class="proj-metrics">
+                    <div><div class="proj-metric-val">$600</div><div class="proj-metric-lbl">Earned</div></div>
+                    <div><div class="proj-metric-val" style="color:var(--rose)">$18/hr</div><div class="proj-metric-lbl">EHR ⚠</div></div>
+                    <div><div class="proj-metric-val">31d</div><div class="proj-metric-lbl">Left</div></div>
+                  </div>
+                  <div class="proj-progress">
+                    <div class="proj-prog-track"><div class="proj-prog-fill" style="width:18%;background:var(--rose)"></div></div>
+                    <div class="proj-prog-label"><span>18% Complete</span><span>$3,200 total</span></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
 
-function renderDeveloper() {
-  const dvMetrics = [
-    {label:'API Calls (30d)',value:'284K',caption:'+34%',tone:'tone-purple'},
-    {label:'Active Keys',value:'5',caption:'2 production',tone:'tone-blue'},
-    {label:'Webhooks',value:'12',caption:'8 active',tone:'tone-teal',progress:66},
-    {label:'SDK Downloads',value:'1,240',caption:'+28%',tone:'tone-indigo'},
-  ];
-  const api = [
-    {method:'POST',path:'/api/v1/portfolio',description:'Create portfolio item',tone:'tone-emerald'},
-    {method:'GET',path:'/api/v1/projects',description:'List all projects',tone:'tone-blue'},
-    {method:'PUT',path:'/api/v1/exchange/bids',description:'Update a bid',tone:'tone-amber'},
-    {method:'DELETE',path:'/api/v1/wallet/tokens',description:'Remove token',tone:'tone-rose'},
-    {method:'POST',path:'/api/v1/community/post',description:'Create community post',tone:'tone-purple'},
-    {method:'GET',path:'/api/v1/ai/context',description:'Get AI context window',tone:'tone-cyan'},
-  ];
-  const extensions = [
-    {title:'Webhooks',subtitle:'Automation hooks',tone:'tone-blue'},{title:'OAuth 2.0',subtitle:'Identity + access',tone:'tone-emerald'},
-    {title:'Zapier',subtitle:'Workflow',tone:'tone-amber'},{title:'n8n',subtitle:'Pipelines',tone:'tone-purple'},
-    {title:'Slack Bot',subtitle:'Chat ops',tone:'tone-teal'},{title:'GitHub Action',subtitle:'CI/CD',tone:'tone-indigo'},
-    {title:'Chrome Ext',subtitle:'Browser tools',tone:'tone-rose'},{title:'VS Code Ext',subtitle:'Dev experience',tone:'tone-cyan'},
-  ];
-  const keys = [
-    {title:'prod_k1_****',subtitle:'Production',meta:'Active',tone:'tone-emerald'},
-    {title:'dev_k2_****',subtitle:'Development',meta:'Active',tone:'tone-blue'},
-    {title:'test_k3_****',subtitle:'Testing',meta:'Active',tone:'tone-amber'},
-  ];
-  const sdks = [{label:'Node.js',tone:'tone-emerald'},{label:'Python',tone:'tone-blue'},{label:'Go',tone:'tone-teal'},{label:'Rust',tone:'tone-amber'}];
-  const webhooks = [
-    {title:'portfolio.created',subtitle:'Active',meta:'Live',tone:'tone-emerald'},
-    {title:'payment.received',subtitle:'Active',meta:'Live',tone:'tone-blue'},
-    {title:'bid.accepted',subtitle:'Active',meta:'Live',tone:'tone-amber'},
-    {title:'project.updated',subtitle:'Active',meta:'Live',tone:'tone-purple'},
-  ];
-  return `
-    ${metrics(dvMetrics)}
-    <div class="layout-2">
-      <div class="stack">
-        <div class="card">
-          <div class="card-title">API Reference</div>
-          <div class="api-list">${api.map(r=>`
-            <div class="api-row">
-              <span class="api-method ${r.tone}">${r.method}</span>
-              <span class="api-path">${r.path}</span>
-              <span class="api-desc">${r.description}</span>
-            </div>`).join('')}</div>
-        </div>
-        <div class="card">
-          <div class="card-title">Extensions & Integrations</div>
-          <div class="extension-grid">${extensions.map(e=>`<div class="card sub-card ${e.tone}"><div class="card-title-sm">${e.title}</div><div class="card-subtitle">${e.subtitle}</div></div>`).join('')}</div>
-        </div>
-      </div>
-      <div class="stack">
-        <div class="card"><div class="card-title">API Keys</div>${list(keys)}</div>
-        <div class="card"><div class="card-title">SDKs</div><div class="chip-row">${sdks.map(s=>`<span class="chip ${s.tone}">${s.label}</span>`).join('')}</div></div>
-        <div class="card"><div class="card-title">Webhooks</div>${list(webhooks)}</div>
-      </div>
-    </div>`;
-}
+          <!-- Income Pulse Chart -->
+          <div class="card">
+            <div class="card-hdr">
+              <span class="card-hdr-title">Income Pulse — Last 8 Weeks</span>
+              <span class="card-hdr-badge badge-green">↑ Trending Up</span>
+              <button class="g-btn" onclick="showPage('pulse')" style="margin-left:4px">Full View →</button>
+            </div>
+            <div class="card-body">
+              <div style="display:flex;gap:8px;align-items:flex-end">
+                <div class="mini-chart" style="flex:1;height:55px">
+                  <div class="bar cyan" style="height:45%"></div>
+                  <div class="bar cyan" style="height:60%"></div>
+                  <div class="bar gold" style="height:72%"></div>
+                  <div class="bar cyan" style="height:55%"></div>
+                  <div class="bar cyan" style="height:80%"></div>
+                  <div class="bar gold" style="height:68%"></div>
+                  <div class="bar cyan" style="height:90%"></div>
+                  <div class="bar cyan" style="height:100%"></div>
+                </div>
+                <div style="display:flex;flex-direction:column;gap:6px;min-width:90px">
+                  <div class="kv"><span class="kv-k">This week</span><span class="kv-v cyan">$2,300</span></div>
+                  <div class="kv"><span class="kv-k">Last week</span><span class="kv-v">$1,840</span></div>
+                  <div class="kv"><span class="kv-k">8-wk avg</span><span class="kv-v">$1,725</span></div>
+                </div>
+              </div>
+              <div style="display:flex;gap:4px;margin-top:8px;flex-wrap:wrap">
+                <div class="cm-tag" style="color:var(--cyan);border-color:rgba(30,207,176,0.25)">■ Meridian</div>
+                <div class="cm-tag" style="color:var(--gold);border-color:rgba(253,202,137,0.25)">■ TechVault</div>
+                <div class="cm-tag">■ RetailCo</div>
+                <div class="cm-tag">■ Others</div>
+              </div>
+            </div>
+          </div>
 
-function renderProfile() {
-  const pfMetrics = [
-    {label:'Reputation',value:'94/100',caption:'+3%',tone:'tone-amber'},
-    {label:'Network',value:'1,240',caption:'Connections',tone:'tone-purple'},
-    {label:'Projects Done',value:'48',caption:'+8%',tone:'tone-blue'},
-    {label:'Earnings YTD',value:'$186K',caption:'+22%',tone:'tone-emerald'},
-  ];
-  const personas = [
-    {tag:'🧑‍💻',title:'Developer',subtitle:'Full-stack · Node · React',tone:'tone-blue'},
-    {tag:'🎨',title:'Designer',subtitle:'Brand · UX · Systems',tone:'tone-purple'},
-    {tag:'📊',title:'Strategist',subtitle:'Product · Growth',tone:'tone-emerald'},
-  ];
-  const settings = [
-    {title:'Preferences',tone:'tone-amber'},{title:'Notifications',tone:'tone-purple'},
-    {title:'Privacy',tone:'tone-rose'},{title:'Security',tone:'tone-emerald'},
-    {title:'Billing',tone:'tone-amber'},{title:'Integrations',tone:'tone-teal'},
-    {title:'AI Config',tone:'tone-indigo'},{title:'Data Export',tone:'tone-cyan'},
-  ];
-  const stats = [
-    {label:'Messages',value:'284',tone:'tone-rose'},{label:'Proposals',value:'18',tone:'tone-blue'},
-    {label:'Contributions',value:'142',tone:'tone-indigo'},{label:'Reviews',value:'37',tone:'tone-amber'},
-    {label:'Referrals',value:'12',tone:'tone-emerald'},
-  ];
-  return `
-    <div class="profile-header">
-      <div class="card profile-card">
-        <div class="avatar-lg">J</div>
-        <div class="profile-info">
-          <div class="profile-name">Jordan Chen</div>
-          <div class="profile-title">Independent Technology Consultant</div>
-          <div class="chip-row">
-            <span class="chip tone-amber">Pro</span>
-            <span class="chip tone-emerald">Verified</span>
-            <span class="chip tone-rose">Builder</span>
+          <!-- Recent Activity -->
+          <div class="card">
+            <div class="card-hdr">
+              <span class="card-hdr-title">Recent Activity</span>
+              <button class="g-btn" onclick="showPage('activity')" style="margin-left:auto">All Activity →</button>
+            </div>
+            <div class="card-body">
+              <div class="feed-item">
+                <div class="feed-dot cyan"></div>
+                <div class="feed-body">
+                  <div class="feed-title">Payment received — Meridian Creative</div>
+                  <div class="feed-meta">Brand Identity Milestone 3 · Stripe · Mar 27</div>
+                </div>
+                <div class="feed-amt pos">+$2,100</div>
+              </div>
+              <div class="feed-item">
+                <div class="feed-dot gold"></div>
+                <div class="feed-body">
+                  <div class="feed-title">Invoice sent — TechVault Inc</div>
+                  <div class="feed-meta">Mobile App UI Final · INV-0041 · Mar 26</div>
+                </div>
+                <div class="feed-amt" style="color:var(--text2)">$3,600</div>
+              </div>
+              <div class="feed-item">
+                <div class="feed-dot violet"></div>
+                <div class="feed-body">
+                  <div class="feed-title">New project created — Bloom Agency</div>
+                  <div class="feed-meta">Social Media Kit Q2 · $2,400 estimated · Mar 25</div>
+                </div>
+                <div class="feed-amt" style="color:var(--violet)">New</div>
+              </div>
+              <div class="feed-item">
+                <div class="feed-dot rose"></div>
+                <div class="feed-body">
+                  <div class="feed-title">Rate gap alert — RetailCo Group</div>
+                  <div class="feed-meta">EHR 71% below portfolio avg · Action suggested</div>
+                </div>
+                <div class="feed-amt neg">⚠ Alert</div>
+              </div>
+              <div class="feed-item">
+                <div class="feed-dot green"></div>
+                <div class="feed-body">
+                  <div class="feed-title">Tax reserve auto-allocated</div>
+                  <div class="feed-meta">28% of $2,100 · Smart Wallet · Mar 27</div>
+                </div>
+                <div class="feed-amt pos">$588</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right column -->
+        <div style="display:flex;flex-direction:column;gap:14px">
+          <!-- Smart Wallet Snapshot -->
+          <div class="card">
+            <div class="card-hdr">
+              <span class="card-hdr-title">Smart Wallet</span>
+              <button class="g-btn" onclick="window.location.href='wallet.html'">Open →</button>
+            </div>
+            <div class="card-body">
+              <div style="margin-bottom:10px">
+                <div class="stat-lbl">Total Balance</div>
+                <div style="font-family:var(--mono);font-size:22px;font-weight:700;color:var(--text)">$11,340</div>
+              </div>
+              <div style="display:flex;flex-direction:column;gap:6px">
+                <div class="wallet-segment" style="background:rgba(30,207,176,0.07);border:1px solid rgba(30,207,176,0.18)">
+                  <div class="ws-label">Spendable</div>
+                  <div class="ws-val" style="color:var(--cyan)">$3,841</div>
+                  <div class="ws-pct">34% of balance</div>
+                </div>
+                <div class="wallet-segment" style="background:rgba(253,202,137,0.07);border:1px solid rgba(253,202,137,0.18)">
+                  <div class="ws-label">Tax Reserve</div>
+                  <div class="ws-val" style="color:var(--gold)">$3,176</div>
+                  <div class="ws-pct">28% · Q2 est due Jun 15</div>
+                </div>
+                <div class="wallet-segment" style="background:rgba(176,126,248,0.07);border:1px solid rgba(176,126,248,0.18)">
+                  <div class="ws-label">Savings</div>
+                  <div class="ws-val" style="color:var(--violet)">$4,323</div>
+                  <div class="ws-pct">38% · Emergency fund</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Top Clients -->
+          <div class="card">
+            <div class="card-hdr">
+              <span class="card-hdr-title">Top Clients</span>
+              <button class="g-btn" onclick="window.location.href='portfolio.html'">Portfolio →</button>
+            </div>
+            <div class="card-body">
+              <div class="client-mini">
+                <div class="cm-dot" style="background:var(--cyan);box-shadow:0 0 8px rgba(30,207,176,0.5)"></div>
+                <div class="cm-name">Meridian Creative</div>
+                <div class="cm-tag" style="color:var(--cyan);border-color:rgba(30,207,176,0.25)">Top</div>
+                <div class="cm-ehr">$94/hr</div>
+              </div>
+              <div class="client-mini">
+                <div class="cm-dot" style="background:var(--gold);box-shadow:0 0 8px rgba(253,202,137,0.4)"></div>
+                <div class="cm-name">TechVault Inc</div>
+                <div class="cm-ehr">$67/hr</div>
+              </div>
+              <div class="client-mini">
+                <div class="cm-dot" style="background:var(--violet);box-shadow:0 0 8px rgba(176,126,248,0.4)"></div>
+                <div class="cm-name">Bloom Agency</div>
+                <div class="cm-ehr">$55/hr</div>
+              </div>
+              <div class="client-mini">
+                <div class="cm-dot" style="background:var(--blue);box-shadow:0 0 8px rgba(56,189,248,0.4)"></div>
+                <div class="cm-name">Apex Studios</div>
+                <div class="cm-ehr">$48/hr</div>
+              </div>
+              <div class="client-mini">
+                <div class="cm-dot" style="background:var(--rose);box-shadow:0 0 8px rgba(248,79,110,0.4)"></div>
+                <div class="cm-name">RetailCo Group</div>
+                <div class="cm-tag" style="color:var(--rose);border-color:rgba(248,79,110,0.25)">Rate Gap</div>
+                <div class="cm-ehr" style="color:var(--rose)">$18/hr</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Portfolio Health -->
+          <div class="card">
+            <div class="card-hdr">
+              <span class="card-hdr-title">Portfolio Health</span>
+              <button class="g-btn" onclick="showPage('health')">Details →</button>
+            </div>
+            <div class="card-body">
+              <div class="health-ring">
+                <svg class="ring-svg" width="56" height="56" viewBox="0 0 56 56">
+                  <circle cx="28" cy="28" r="22" fill="none" stroke="var(--bg4)" stroke-width="5"/>
+                  <circle cx="28" cy="28" r="22" fill="none" stroke="var(--jade)" stroke-width="5"
+                    stroke-dasharray="138.2 138.2" stroke-dashoffset="44.2" stroke-linecap="round"
+                    transform="rotate(-90 28 28)"/>
+                </svg>
+                <div>
+                  <div class="health-score">0.68</div>
+                  <div class="health-label">KVA Score</div>
+                  <div class="health-state">↑ Developing</div>
+                </div>
+              </div>
+              <div style="margin-top:11px">
+                <div class="prog-row"><span class="prog-label">Time (T)</span><div class="prog-track"><div class="prog-fill" style="width:72%;background:var(--blue)"></div></div><span class="prog-val">0.72</span></div>
+                <div class="prog-row"><span class="prog-label">Money (M)</span><div class="prog-track"><div class="prog-fill" style="width:68%;background:var(--cyan)"></div></div><span class="prog-val">0.68</span></div>
+                <div class="prog-row"><span class="prog-label">Effort (E)</span><div class="prog-track"><div class="prog-fill" style="width:61%;background:var(--violet)"></div></div><span class="prog-val">0.61</span></div>
+                <div class="prog-row"><span class="prog-label">Connections (C)</span><div class="prog-track"><div class="prog-fill" style="width:74%;background:var(--green)"></div></div><span class="prog-val">0.74</span></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Pipeline Snapshot -->
+          <div class="card">
+            <div class="card-hdr">
+              <span class="card-hdr-title">Pipeline Snapshot</span>
+              <button class="g-btn" onclick="window.location.href='office.html'">Office →</button>
+            </div>
+            <div class="card-body">
+              <div class="pipe-stage">
+                <div class="pipe-icon">💬</div>
+                <div class="pipe-info"><div class="pipe-name">Initial Call — NovaBrands</div><div class="pipe-meta">Tomorrow, 2pm</div></div>
+                <div class="pipe-val">$8K est.</div>
+              </div>
+              <div class="pipe-stage">
+                <div class="pipe-icon">📄</div>
+                <div class="pipe-info"><div class="pipe-name">Proposal Out — GreenLeaf Co</div><div class="pipe-meta">Sent Mar 25 · 4d waiting</div></div>
+                <div class="pipe-val">$5K</div>
+              </div>
+              <div class="pipe-stage">
+                <div class="pipe-icon">🤝</div>
+                <div class="pipe-info"><div class="pipe-name">Negotiation — Skyline Labs</div><div class="pipe-meta">Counter-offer received</div></div>
+                <div class="pipe-val">$12K</div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
-      <div class="stats-row profile-stats">${pfMetrics.map(s=>`
-        <div class="card metric-card ${s.tone}">
-          <div class="metric-label">${s.label}</div>
-          <div class="metric-value">${s.value}</div>
-          <div class="metric-meta"><span class="metric-caption">${s.caption||''}</span></div>
-        </div>`).join('')}</div>
     </div>
-    <div class="card">
-      <div class="card-title">Personas & Roles</div>
-      <div class="persona-grid">${personas.map(p=>`<div class="card sub-card ${p.tone}"><div class="card-subtitle" style="font-size:18px;margin-bottom:4px;">${p.tag}</div><div class="card-title-sm">${p.title}</div><div class="card-meta">${p.subtitle}</div></div>`).join('')}</div>
+
+    <!-- ── INSIGHTS ── -->
+    <div id="page-insights" class="subpage">
+      <div class="insight amber">
+        <div class="insight-type">⚠ Rate Gap Alert</div>
+        <div class="insight-title">RetailCo pays 71% below your portfolio average</div>
+        <div class="insight-body">Your effective hourly rate with RetailCo Group ($18/hr) is dramatically below your $62/hr portfolio average. You have logged an estimated 34 hours with them this month — at your average rate, that would be worth $2,108 more. This client represents a significant value leak.</div>
+        <div class="insight-acts">
+          <button class="i-act primary" onclick="toast('Opening renegotiation template…')">Send Rate Increase</button>
+          <button class="i-act ghost" onclick="toast('Adjusting time estimate…')">Adjust Hours Est.</button>
+          <button class="i-act ghost">View RetailCo →</button>
+        </div>
+      </div>
+      <div class="insight rose">
+        <div class="insight-type">⚡ Concentration Risk</div>
+        <div class="insight-title">Meridian Creative = 48% of your monthly income</div>
+        <div class="insight-body">A single client providing nearly half your revenue creates significant financial fragility. If Meridian reduces scope or pauses, your monthly income drops by $4,416. Recommended: bring in at least one mid-size client before month end.</div>
+        <div class="insight-acts">
+          <button class="i-act primary" onclick="window.location.href='office.html'">Open Pipeline</button>
+          <button class="i-act ghost">Snooze 30d</button>
+        </div>
+      </div>
+      <div class="insight cyan">
+        <div class="insight-type">↑ Growth Signal</div>
+        <div class="insight-title">Bloom Agency shows repeat engagement pattern</div>
+        <div class="insight-body">Bloom Agency has paid 3 consecutive months with increasing amounts. They represent a "Growing" signal with a 3-month upward revenue trend. Now is the optimal time to propose a monthly retainer agreement.</div>
+        <div class="insight-acts">
+          <button class="i-act primary" onclick="toast('Generating retainer proposal…')">Draft Retainer</button>
+          <button class="i-act ghost">View Client</button>
+        </div>
+      </div>
+      <div class="insight blue">
+        <div class="insight-type">📈 EHR Opportunity</div>
+        <div class="insight-title">TechVault project closing — propose follow-on scope</div>
+        <div class="insight-body">Your Mobile App UI project for TechVault is 90% complete. At $67/hr EHR, this has been a high-value engagement. Proposing a Phase 2 now — while momentum is high — has historically 3× the close rate versus cold outreach.</div>
+        <div class="insight-acts">
+          <button class="i-act primary" onclick="toast('Opening follow-on proposal template…')">Propose Phase 2</button>
+          <button class="i-act ghost">Snooze 7d</button>
+        </div>
+      </div>
     </div>
-    <div class="card">
-      <div class="card-title">Settings & Configuration</div>
-      <div class="settings-grid">${settings.map(s=>`<button class="asset-card ${s.tone}" type="button">${s.title}</button>`).join('')}</div>
+
+    <!-- ── ACTIVITY FEED ── -->
+    <div id="page-activity" class="subpage">
+      <div class="card">
+        <div class="card-hdr"><span class="card-hdr-title">All Activity — March 2026</span>
+          <button class="g-btn" style="margin-left:auto" onclick="toast('Exporting activity log…')">Export</button>
+        </div>
+        <div class="card-body">
+          <div class="feed-item"><div class="feed-dot cyan"></div><div class="feed-body"><div class="feed-title">Payment received — Meridian Creative</div><div class="feed-meta">Brand Identity M3 · Stripe · Mar 27, 11:04am</div></div><div class="feed-amt pos">+$2,100</div></div>
+          <div class="feed-item"><div class="feed-dot green"></div><div class="feed-body"><div class="feed-title">Tax reserve auto-split — 28%</div><div class="feed-meta">Smart Wallet · Applied to $2,100 deposit · Mar 27</div></div><div class="feed-amt" style="color:var(--gold)">$588</div></div>
+          <div class="feed-item"><div class="feed-dot gold"></div><div class="feed-body"><div class="feed-title">Invoice sent — TechVault Inc</div><div class="feed-meta">INV-0041 · Mobile App UI Final · $3,600 · Mar 26</div></div><div class="feed-amt" style="color:var(--text2)">Pending</div></div>
+          <div class="feed-item"><div class="feed-dot violet"></div><div class="feed-body"><div class="feed-title">Project created — Social Media Kit Q2</div><div class="feed-meta">Bloom Agency · $2,400 fixed · Mar 25</div></div><div class="feed-amt" style="color:var(--violet)">New</div></div>
+          <div class="feed-item"><div class="feed-dot rose"></div><div class="feed-body"><div class="feed-title">Insight triggered — Rate Gap: RetailCo</div><div class="feed-meta">System · EHR $18/hr detected · Mar 24</div></div><div class="feed-amt neg">Alert</div></div>
+          <div class="feed-item"><div class="feed-dot blue"></div><div class="feed-body"><div class="feed-title">Proposal sent — GreenLeaf Co</div><div class="feed-meta">Brand Strategy Package · $5,000 · Mar 25</div></div><div class="feed-amt" style="color:var(--text2)">Awaiting</div></div>
+          <div class="feed-item"><div class="feed-dot cyan"></div><div class="feed-body"><div class="feed-title">Payment received — Bloom Agency</div><div class="feed-meta">Social Campaign March · Stripe · Mar 22</div></div><div class="feed-amt pos">+$1,200</div></div>
+          <div class="feed-item"><div class="feed-dot gold"></div><div class="feed-body"><div class="feed-title">Client merged — "Apex" → "Apex Studios"</div><div class="feed-meta">System correction · 4 income events consolidated · Mar 21</div></div><div class="feed-amt" style="color:var(--text3)">Fixed</div></div>
+          <div class="feed-item"><div class="feed-dot violet"></div><div class="feed-body"><div class="feed-title">Pipeline stage update — Skyline Labs</div><div class="feed-meta">Proposal → Negotiation · $12,000 deal · Mar 20</div></div><div class="feed-amt" style="color:var(--violet)">Progressed</div></div>
+        </div>
+      </div>
     </div>
-    <div class="card">
-      <div class="card-title">Activity & Stats</div>
-      <div class="stats-row">${stats.map(s=>`<div class="card metric-card ${s.tone}"><div class="metric-label">${s.label}</div><div class="metric-value">${s.value}</div></div>`).join('')}</div>
-    </div>`;
-}
 
-function renderOrganizations() {
-  const orgMetrics = [
-    {label:'Organizations',value:'4',caption:'Member of',tone:'tone-rose'},
-    {label:'Collectives',value:'2',caption:'Co-founded',tone:'tone-blue'},
-    {label:'Teams',value:'3',caption:'Active',tone:'tone-teal'},
-    {label:'Total Members',value:'186',caption:'Across all orgs',tone:'tone-emerald'},
-  ];
-  const orgs = [
-    {title:'Delivery Coop',subtitle:'Worker Cooperative',meta:'35 members',status:'Active',tone:'tone-emerald'},
-    {title:'Design Collective',subtitle:'Creative Collective',meta:'12 members',status:'Active',tone:'tone-purple'},
-    {title:'Invest Club',subtitle:'Investment Club',meta:'22 members',status:'Active',tone:'tone-blue'},
-    {title:'Dev DAO',subtitle:'Autonomous Org',meta:'88 members',status:'Active',tone:'tone-indigo'},
-    {title:'Consulting Network',subtitle:'Professional Network',meta:'18 members',status:'Pending',tone:'tone-amber'},
-    {title:'Art Cooperative',subtitle:'Creative Cooperative',meta:'7 members',status:'Forming',tone:'tone-rose'},
-  ];
-  const proposals = [
-    {cells:['New vehicle fleet','Delivery Coop','32/35',''],badge:'Passed',badgeTone:'tone-emerald'},
-    {cells:['Q2 Budget','Invest Club','18/22',''],badge:'Active',badgeTone:'tone-blue'},
-    {cells:['Member Charter','Dev DAO','72/88',''],badge:'Active',badgeTone:'tone-purple'},
-    {cells:['Rate increase','Design Coll.','9/12',''],badge:'Draft',badgeTone:'tone-amber'},
-  ];
-  const roles = [
-    {title:'Delivery Coop',subtitle:'Co-Founder',tone:'tone-emerald'},
-    {title:'Invest Club',subtitle:'Organizer',tone:'tone-blue'},
-    {title:'Dev DAO',subtitle:'Member',tone:'tone-indigo'},
-    {title:'Design Coll.',subtitle:'Member',tone:'tone-purple'},
-  ];
-  const capTables = [
-    {title:'JC',subtitle:'18.5%',tone:'tone-blue'},{title:'MS',subtitle:'14.2%',tone:'tone-emerald'},
-    {title:'DP',subtitle:'8.8%',tone:'tone-amber'},{title:'PN',subtitle:'6.4%',tone:'tone-rose'},
-  ];
-  return `
-    ${metrics(orgMetrics)}
-    <div class="layout-2">
-      <div class="stack">
-        <div class="card">
-          <div class="card-title">Organizations — Modular Grid</div>
-          <div class="org-grid">${orgs.map(o=>`
-            <div class="card sub-card ${o.tone}">
-              <div class="card-subtitle" style="font-size:18px;margin-bottom:6px;">⊞</div>
-              <div class="card-title-sm">${o.title}</div>
-              <div class="card-meta">${o.subtitle}</div>
-              <div class="card-meta">${o.meta}</div>
-              <span class="status ${o.tone}" style="margin-top:4px;display:block;">${o.status}</span>
-            </div>`).join('')}</div>
-        </div>
-        <div class="card">
-          <div class="card-title">Governance & Proposals</div>
-          ${table('2fr 1fr 1fr 1fr',['Proposal','Org','Votes','Status'],proposals)}
+    <!-- ── INCOME PULSE ── -->
+    <div id="page-pulse" class="subpage">
+      <div class="card">
+        <div class="card-hdr"><span class="card-hdr-title">Income Pulse — Weekly View</span><span class="card-hdr-badge badge-green">Trending Up</span></div>
+        <div class="card-body">
+          <div class="mini-chart" style="height:80px;margin-bottom:8px">
+            <div class="bar cyan" style="height:38%"></div>
+            <div class="bar cyan" style="height:52%"></div>
+            <div class="bar gold" style="height:65%"></div>
+            <div class="bar cyan" style="height:44%"></div>
+            <div class="bar cyan" style="height:78%"></div>
+            <div class="bar gold" style="height:60%"></div>
+            <div class="bar cyan" style="height:88%"></div>
+            <div class="bar cyan" style="height:100%"></div>
+          </div>
+          <div style="display:flex;justify-content:space-between;font-family:var(--mono);font-size:7px;color:var(--text3);margin-bottom:12px">
+            <span>Jan 27</span><span>Feb 3</span><span>Feb 10</span><span>Feb 17</span><span>Feb 24</span><span>Mar 3</span><span>Mar 17</span><span>Mar 27</span>
+          </div>
+          <div class="row3">
+            <div class="kv"><span class="kv-k">This week</span><span class="kv-v cyan">$2,300</span></div>
+            <div class="kv"><span class="kv-k">This month</span><span class="kv-v gold">$9,200</span></div>
+            <div class="kv"><span class="kv-k">8-week total</span><span class="kv-v">$16,850</span></div>
+          </div>
         </div>
       </div>
-      <div class="stack">
+      <div class="row2">
         <div class="card">
-          <div class="card-title">My Roles</div>
-          <div class="list">${roles.map(r=>`<div class="list-item"><div class="list-body"><div class="list-title">${r.title}</div><div class="list-meta" style="color:var(--tone,var(--text-2));">${r.subtitle}</div></div></div>`).join('')}</div>
+          <div class="card-hdr"><span class="card-hdr-title">Income by Client</span></div>
+          <div class="card-body">
+            <div class="prog-row"><span class="prog-label">Meridian</span><div class="prog-track"><div class="prog-fill" style="width:48%;background:linear-gradient(90deg,var(--jade),var(--cyan))"></div></div><span class="prog-val">$4,416</span></div>
+            <div class="prog-row"><span class="prog-label">TechVault</span><div class="prog-track"><div class="prog-fill" style="width:22%;background:linear-gradient(90deg,var(--bark),var(--gold))"></div></div><span class="prog-val">$2,024</span></div>
+            <div class="prog-row"><span class="prog-label">Bloom</span><div class="prog-track"><div class="prog-fill" style="width:13%;background:var(--violet)"></div></div><span class="prog-val">$1,196</span></div>
+            <div class="prog-row"><span class="prog-label">Apex</span><div class="prog-track"><div class="prog-fill" style="width:10%;background:var(--blue)"></div></div><span class="prog-val">$920</span></div>
+            <div class="prog-row"><span class="prog-label">RetailCo</span><div class="prog-track"><div class="prog-fill" style="width:7%;background:var(--rose)"></div></div><span class="prog-val">$644</span></div>
+          </div>
         </div>
         <div class="card">
-          <div class="card-title">Cap Tables</div>
-          <div class="list">${capTables.map(c=>`
-            <div class="list-item">
-              <span class="avatar-chip ${c.tone}" style="background:var(--tone-bg);color:var(--tone);border-color:var(--tone-border);">${c.title}</span>
-              <div class="list-body"><div class="list-title">${c.subtitle}</div></div>
-            </div>`).join('')}</div>
-        </div>
-      </div>
-    </div>`;
-}
-
-function renderLegal() {
-  const lgMetrics = [
-    {label:'Active Contracts',value:'14',caption:'3 expiring soon',tone:'tone-rose'},
-    {label:'IP Assets',value:'8',caption:'Patents · TM · CR',tone:'tone-purple'},
-    {label:'Compliance Items',value:'6',caption:'2 action needed',tone:'tone-amber'},
-    {label:'Audit Status',value:'Clean',caption:'Last: Mar 2026',tone:'tone-emerald'},
-  ];
-  const ip = [
-    {tag:'Trademark',title:'Kogi™',status:'Registered',tone:'tone-rose'},
-    {tag:'Patent',title:'Kogi OS',status:'Pending',tone:'tone-amber'},
-    {tag:'Copyright',title:'Logo System',status:'Active',tone:'tone-emerald'},
-    {tag:'Copyright',title:'API Spec',status:'Active',tone:'tone-rose'},
-  ];
-  const contracts = [
-    {cells:['MSA — TechCorp','TechCorp Inc.','$120K','Dec 2026'],badge:'Active',badgeTone:'tone-emerald'},
-    {cells:['NDA — StartupX','StartupX LLC','—','Jun 2026'],badge:'Active',badgeTone:'tone-emerald'},
-    {cells:['Coop Charter','Members (35)','—','—'],badge:'Active',badgeTone:'tone-emerald'},
-    {cells:['Dev Contract','DevDAO','$48K','Mar 2026'],badge:'Expiring',badgeTone:'tone-amber'},
-    {cells:['License Agmt.','3rd Party','$8K/yr','Dec 2026'],badge:'Active',badgeTone:'tone-emerald'},
-  ];
-  const compliance = [
-    {title:'GDPR Compliance',subtitle:'Complete',tone:'tone-emerald'},{title:'SOC 2 Type II',subtitle:'In Progress',tone:'tone-amber'},
-    {title:'Tax Compliance',subtitle:'Complete',tone:'tone-emerald'},{title:'AML / KYC',subtitle:'Review Needed',tone:'tone-rose'},
-    {title:'Data Residency',subtitle:'Complete',tone:'tone-teal'},{title:'IP Audit',subtitle:'Scheduled',tone:'tone-blue'},
-  ];
-  const upcoming = [
-    {title:'DevDAO Contract expires',subtitle:'In 7 days',tone:'tone-rose'},
-    {title:'IP Audit scheduled',subtitle:'In 14 days',tone:'tone-blue'},
-    {title:'Q1 Tax filing',subtitle:'In 22 days',tone:'tone-amber'},
-    {title:'NDA renewal',subtitle:'In 45 days',tone:'tone-purple'},
-  ];
-  const actions = [{title:'Draft NDA',tone:'tone-blue'},{title:'Submit Patent',tone:'tone-amber'},{title:'Renew Contract',tone:'tone-rose'},{title:'File Compliance',tone:'tone-emerald'}];
-  return `
-    ${metrics(lgMetrics)}
-    <div class="layout-2">
-      <div class="stack">
-        <div class="card">
-          <div class="card-title">IP & Trademarks</div>
-          <div class="legal-grid">${ip.map(i=>`
-            <div class="card sub-card ${i.tone}">
-              <div class="card-subtitle" style="font-size:9px;text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px;">${i.tag}</div>
-              <div class="card-title-sm">${i.title}</div>
-              <span class="status ${i.tone}" style="margin-top:6px;display:inline-block;padding:2px 6px;background:var(--tone-bg);border:1px solid var(--tone-border);border-radius:3px;font-size:10px;">${i.status}</span>
-            </div>`).join('')}</div>
-        </div>
-        <div class="card">
-          <div class="card-title">Contracts & Agreements</div>
-          ${table('2fr 1.5fr 0.8fr 1fr 1fr',['Contract','Party','Value','Expires','Status'],contracts)}
-        </div>
-        <div class="card">
-          <div class="card-title">Compliance & Audit</div>
-          <div class="legal-grid" style="grid-template-columns:repeat(3,1fr);">${compliance.map(c=>`
-            <div class="card sub-card ${c.tone}">
-              <div class="card-title-sm">${c.title}</div>
-              <span class="status ${c.tone}" style="margin-top:4px;display:block;font-size:10.5px;">${c.subtitle}</span>
-            </div>`).join('')}</div>
+          <div class="card-hdr"><span class="card-hdr-title">Income by Project</span></div>
+          <div class="card-body">
+            <div class="prog-row"><span class="prog-label">Brand ID</span><div class="prog-track"><div class="prog-fill" style="width:52%;background:linear-gradient(90deg,var(--jade),var(--cyan))"></div></div><span class="prog-val">$4,800</span></div>
+            <div class="prog-row"><span class="prog-label">Mobile UI</span><div class="prog-track"><div class="prog-fill" style="width:35%;background:linear-gradient(90deg,var(--bark),var(--gold))"></div></div><span class="prog-val">$3,200</span></div>
+            <div class="prog-row"><span class="prog-label">Soc. Kit</span><div class="prog-track"><div class="prog-fill" style="width:13%;background:var(--violet)"></div></div><span class="prog-val">$1,200</span></div>
+          </div>
         </div>
       </div>
-      <div class="stack">
-        <div class="card">
-          <div class="card-title">Upcoming</div>
-          <div class="list">${upcoming.map(u=>`<div class="list-item"><div class="list-body"><div class="list-title">${u.title}</div><div class="list-meta" style="color:var(--tone,var(--text-2));" class="${u.tone}">${u.subtitle}</div></div></div>`).join('')}</div>
-        </div>
-        <div class="card">
-          <div class="card-title">Quick Actions</div>
-          <div class="action-list">${actions.map(a=>`<button class="action-button ${a.tone}" type="button">${a.title}</button>`).join('')}</div>
+    </div>
+
+    <!-- ── TIME ALLOCATION ── -->
+    <div id="page-allocation" class="subpage">
+      <div class="card">
+        <div class="card-hdr"><span class="card-hdr-title">Estimated Time Allocation — This Month</span><span class="card-hdr-badge badge-gold">Estimated</span></div>
+        <div class="card-body">
+          <div class="sec-label">Hours per Client (Estimated)</div>
+          <div class="alloc-grid">
+            <div class="alloc-row">
+              <div class="alloc-name">Meridian Creative</div>
+              <div class="alloc-bar"><div class="alloc-seg cyan" style="width:28%"></div><div class="alloc-seg empty" style="width:72%"></div></div>
+              <div class="alloc-pct">~47h</div>
+            </div>
+            <div class="alloc-row">
+              <div class="alloc-name">RetailCo Group</div>
+              <div class="alloc-bar"><div class="alloc-seg rose" style="width:34%"></div><div class="alloc-seg empty" style="width:66%"></div></div>
+              <div class="alloc-pct">~56h ⚠</div>
+            </div>
+            <div class="alloc-row">
+              <div class="alloc-name">TechVault Inc</div>
+              <div class="alloc-bar"><div class="alloc-seg gold" style="width:18%"></div><div class="alloc-seg empty" style="width:82%"></div></div>
+              <div class="alloc-pct">~30h</div>
+            </div>
+            <div class="alloc-row">
+              <div class="alloc-name">Bloom Agency</div>
+              <div class="alloc-bar"><div class="alloc-seg violet" style="width:12%"></div><div class="alloc-seg empty" style="width:88%"></div></div>
+              <div class="alloc-pct">~20h</div>
+            </div>
+            <div class="alloc-row">
+              <div class="alloc-name">Apex Studios</div>
+              <div class="alloc-bar"><div class="alloc-seg blue" style="width:8%"></div><div class="alloc-seg empty" style="width:92%"></div></div>
+              <div class="alloc-pct">~14h</div>
+            </div>
+          </div>
+          <div style="margin-top:14px;padding:11px 13px;background:rgba(248,79,110,0.06);border:1px solid rgba(248,79,110,0.22);border-radius:5px">
+            <div style="font-family:var(--sans);font-size:8px;color:var(--rose);margin-bottom:5px;font-weight:700;letter-spacing:0.05em">⚠ Allocation Mismatch Detected</div>
+            <div style="font-family:var(--mono);font-size:9px;color:var(--text2);line-height:1.6">RetailCo takes an estimated 34% of your hours but generates only 7% of your income. This is your lowest-value time block. Reducing time with RetailCo by 50% would free ~28 hours/month.</div>
+          </div>
         </div>
       </div>
-    </div>`;
-}
+    </div>
 
-// ── SCREEN MAP ────────────────────────────────────────────────────────────────
-const SCREENS = {
-  dashboard:     renderDashboard,
-  office:        renderOffice,
-  portfolio:     renderPortfolio,
-  workspace:     renderWorkspace,
-  timeline:      renderTimeline,
-  strategy:      renderStrategy,
-  bank:          renderBank,
-  exchange:      renderExchange,
-  marketplace:   renderMarketplace,
-  studio:        renderStudio,
-  community:     renderCommunity,
-  developer:     renderDeveloper,
-  profile:       renderProfile,
-  organizations: renderOrganizations,
-  legal:         renderLegal,
-};
+    <!-- ── EHR ANALYSIS ── -->
+    <div id="page-ehr" class="subpage">
+      <div class="row2">
+        <div class="card">
+          <div class="card-hdr"><span class="card-hdr-title">EHR by Client</span><span class="card-hdr-badge badge-gold">Estimated Ranges</span></div>
+          <div class="card-body">
+            <div class="prog-row"><span class="prog-label">Meridian</span><div class="prog-track"><div class="prog-fill" style="width:100%;background:linear-gradient(90deg,var(--jade),var(--cyan))"></div></div><span class="prog-val" style="color:var(--cyan)">$94/hr</span></div>
+            <div class="prog-row"><span class="prog-label">TechVault</span><div class="prog-track"><div class="prog-fill" style="width:71%;background:linear-gradient(90deg,var(--bark),var(--gold))"></div></div><span class="prog-val">$67/hr</span></div>
+            <div class="prog-row"><span class="prog-label">Bloom</span><div class="prog-track"><div class="prog-fill" style="width:58%;background:var(--violet)"></div></div><span class="prog-val">$55/hr</span></div>
+            <div class="prog-row"><span class="prog-label">Apex</span><div class="prog-track"><div class="prog-fill" style="width:51%;background:var(--blue)"></div></div><span class="prog-val">$48/hr</span></div>
+            <div class="prog-row"><span class="prog-label">RetailCo</span><div class="prog-track"><div class="prog-fill" style="width:19%;background:var(--rose)"></div></div><span class="prog-val" style="color:var(--rose)">$18/hr</span></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-hdr"><span class="card-hdr-title">EHR Benchmarks</span></div>
+          <div class="card-body">
+            <div class="kv"><span class="kv-k">Your avg EHR</span><span class="kv-v">$62/hr</span></div>
+            <div class="kv"><span class="kv-k">Highest EHR</span><span class="kv-v cyan">$94/hr · Meridian</span></div>
+            <div class="kv"><span class="kv-k">Lowest EHR</span><span class="kv-v rose">$18/hr · RetailCo</span></div>
+            <div class="kv"><span class="kv-k">EHR spread</span><span class="kv-v gold">5.2× gap</span></div>
+            <div class="kv"><span class="kv-k">Target EHR</span><span class="kv-v green">$75/hr</span></div>
+            <div class="kv"><span class="kv-k">All estimates</span><span class="kv-v" style="color:var(--text3)">±20% (time est.)</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
 
-// ── INIT ──────────────────────────────────────────────────────────────────────
-let activeScreen = 'dashboard';
+    <!-- ── PROJECTS ── -->
+    <div id="page-projects" class="subpage">
+      <div class="card">
+        <div class="card-hdr">
+          <span class="card-hdr-title">All Projects</span>
+          <span class="card-hdr-badge badge-cyan">6 Active</span>
+          <div class="tb-spacer"></div>
+          <button class="g-btn">Filter</button>
+          <button class="g-btn primary" onclick="toast('Opening new project form…')">+ New Project</button>
+        </div>
+        <div class="card-body">
+          <div class="row3">
+            <div class="proj-card">
+              <div class="proj-status status-active">Active</div>
+              <div class="proj-name">Brand Identity Refresh</div>
+              <div class="proj-client">Meridian Creative · Design</div>
+              <div class="proj-metrics">
+                <div><div class="proj-metric-val">$4,800</div><div class="proj-metric-lbl">Earned</div></div>
+                <div><div class="proj-metric-val">$94/hr</div><div class="proj-metric-lbl">EHR</div></div>
+              </div>
+              <div class="proj-progress"><div class="proj-prog-track"><div class="proj-prog-fill" style="width:68%;background:linear-gradient(90deg,var(--jade),var(--cyan))"></div></div><div class="proj-prog-label"><span>68%</span><span>$7,000</span></div></div>
+            </div>
+            <div class="proj-card">
+              <div class="proj-status status-review">In Review</div>
+              <div class="proj-name">Mobile App UI</div>
+              <div class="proj-client">TechVault Inc · Development</div>
+              <div class="proj-metrics">
+                <div><div class="proj-metric-val">$3,200</div><div class="proj-metric-lbl">Earned</div></div>
+                <div><div class="proj-metric-val">$67/hr</div><div class="proj-metric-lbl">EHR</div></div>
+              </div>
+              <div class="proj-progress"><div class="proj-prog-track"><div class="proj-prog-fill" style="width:90%;background:linear-gradient(90deg,var(--bark),var(--gold))"></div></div><div class="proj-prog-label"><span>90%</span><span>$3,600</span></div></div>
+            </div>
+            <div class="proj-card">
+              <div class="proj-status status-active">Active</div>
+              <div class="proj-name">Social Media Kit Q2</div>
+              <div class="proj-client">Bloom Agency · Creative</div>
+              <div class="proj-metrics">
+                <div><div class="proj-metric-val">$1,200</div><div class="proj-metric-lbl">Earned</div></div>
+                <div><div class="proj-metric-val">$55/hr</div><div class="proj-metric-lbl">EHR</div></div>
+              </div>
+              <div class="proj-progress"><div class="proj-prog-track"><div class="proj-prog-fill" style="width:50%;background:var(--violet)"></div></div><div class="proj-prog-label"><span>50%</span><span>$2,400</span></div></div>
+            </div>
+            <div class="proj-card">
+              <div class="proj-status status-active">Active</div>
+              <div class="proj-name">Quarterly Reports</div>
+              <div class="proj-client">RetailCo Group · Strategy</div>
+              <div class="proj-metrics">
+                <div><div class="proj-metric-val">$600</div><div class="proj-metric-lbl">Earned</div></div>
+                <div><div class="proj-metric-val" style="color:var(--rose)">$18/hr</div><div class="proj-metric-lbl">EHR ⚠</div></div>
+              </div>
+              <div class="proj-progress"><div class="proj-prog-track"><div class="proj-prog-fill" style="width:18%;background:var(--rose)"></div></div><div class="proj-prog-label"><span>18%</span><span>$3,200</span></div></div>
+            </div>
+            <div class="proj-card">
+              <div class="proj-status status-paused">Paused</div>
+              <div class="proj-name">Logo Suite</div>
+              <div class="proj-client">Apex Studios · Design</div>
+              <div class="proj-metrics">
+                <div><div class="proj-metric-val">$960</div><div class="proj-metric-lbl">Earned</div></div>
+                <div><div class="proj-metric-val">$48/hr</div><div class="proj-metric-lbl">EHR</div></div>
+              </div>
+              <div class="proj-progress"><div class="proj-prog-track"><div class="proj-prog-fill" style="width:60%;background:var(--orange)"></div></div><div class="proj-prog-label"><span>60%</span><span>$1,600</span></div></div>
+            </div>
+            <div class="proj-card">
+              <div class="proj-status status-draft">Draft</div>
+              <div class="proj-name">Brand Strategy Pack</div>
+              <div class="proj-client">GreenLeaf Co · Strategy</div>
+              <div class="proj-metrics">
+                <div><div class="proj-metric-val">$0</div><div class="proj-metric-lbl">Earned</div></div>
+                <div><div class="proj-metric-val">$5,000</div><div class="proj-metric-lbl">Proposed</div></div>
+              </div>
+              <div class="proj-progress"><div class="proj-prog-track"><div class="proj-prog-fill" style="width:0%;background:var(--text3)"></div></div><div class="proj-prog-label"><span>Pending Approval</span><span>$5,000</span></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
 
-function buildNav() {
-  const nav = document.getElementById('nav');
-  nav.innerHTML = NAV_ITEMS.map(item => `
-    <button type="button" class="nav-item${item.id === activeScreen ? ' active' : ''}" data-id="${item.id}">
-      <span class="nav-indicator"></span>
-      <span class="nav-icon">${item.icon}</span>
-      <span>${item.label}</span>
-    </button>`).join('');
-  nav.querySelectorAll('.nav-item').forEach(btn => {
-    btn.addEventListener('click', () => setScreen(btn.dataset.id));
+    <!-- ── PROJECT INCOME ── -->
+    <div id="page-proj-income" class="subpage">
+      <div class="row2">
+        <div class="card">
+          <div class="card-hdr"><span class="card-hdr-title">Project Income Attribution</span></div>
+          <div class="card-body">
+            <div class="prog-row"><span class="prog-label">Brand ID</span><div class="prog-track"><div class="prog-fill" style="width:53%;background:linear-gradient(90deg,var(--jade),var(--cyan))"></div></div><span class="prog-val">$4,800</span></div>
+            <div class="prog-row"><span class="prog-label">Mobile UI</span><div class="prog-track"><div class="prog-fill" style="width:35%;background:linear-gradient(90deg,var(--bark),var(--gold))"></div></div><span class="prog-val">$3,200</span></div>
+            <div class="prog-row"><span class="prog-label">Soc. Kit Q2</span><div class="prog-track"><div class="prog-fill" style="width:13%;background:var(--violet)"></div></div><span class="prog-val">$1,200</span></div>
+            <div class="prog-row"><span class="prog-label">Reports</span><div class="prog-track"><div class="prog-fill" style="width:7%;background:var(--rose)"></div></div><span class="prog-val">$600</span></div>
+            <div class="prog-row"><span class="prog-label">Logo Suite</span><div class="prog-track"><div class="prog-fill" style="width:10%;background:var(--blue)"></div></div><span class="prog-val">$960</span></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-hdr"><span class="card-hdr-title">Project EHR Comparison</span></div>
+          <div class="card-body">
+            <div class="prog-row"><span class="prog-label">Brand ID</span><div class="prog-track"><div class="prog-fill" style="width:100%;background:linear-gradient(90deg,var(--jade),var(--cyan))"></div></div><span class="prog-val" style="color:var(--cyan)">$94/hr</span></div>
+            <div class="prog-row"><span class="prog-label">Mobile UI</span><div class="prog-track"><div class="prog-fill" style="width:71%;background:linear-gradient(90deg,var(--bark),var(--gold))"></div></div><span class="prog-val">$67/hr</span></div>
+            <div class="prog-row"><span class="prog-label">Soc. Kit</span><div class="prog-track"><div class="prog-fill" style="width:58%;background:var(--violet)"></div></div><span class="prog-val">$55/hr</span></div>
+            <div class="prog-row"><span class="prog-label">Logo Suite</span><div class="prog-track"><div class="prog-fill" style="width:51%;background:var(--blue)"></div></div><span class="prog-val">$48/hr</span></div>
+            <div class="prog-row"><span class="prog-label">Reports</span><div class="prog-track"><div class="prog-fill" style="width:19%;background:var(--rose)"></div></div><span class="prog-val" style="color:var(--rose)">$18/hr</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── PROJECT HEALTH ── -->
+    <div id="page-proj-health" class="subpage">
+      <div class="card">
+        <div class="card-hdr"><span class="card-hdr-title">Project Health Dashboard</span></div>
+        <div class="card-body">
+          <div style="display:flex;flex-direction:column;gap:6px">
+            <div style="display:grid;grid-template-columns:2fr 1fr 1fr 1fr 1fr 90px;gap:6px;padding:5px 0;border-bottom:1px solid var(--border2)">
+              <div style="font-family:var(--sans);font-size:7px;color:var(--text3);text-transform:uppercase;letter-spacing:0.1em;font-weight:600">Project</div>
+              <div style="font-family:var(--sans);font-size:7px;color:var(--text3);text-transform:uppercase;text-align:right;letter-spacing:0.1em;font-weight:600">EHR</div>
+              <div style="font-family:var(--sans);font-size:7px;color:var(--text3);text-transform:uppercase;text-align:right;letter-spacing:0.1em;font-weight:600">Earned</div>
+              <div style="font-family:var(--sans);font-size:7px;color:var(--text3);text-transform:uppercase;text-align:right;letter-spacing:0.1em;font-weight:600">Total</div>
+              <div style="font-family:var(--sans);font-size:7px;color:var(--text3);text-transform:uppercase;text-align:right;letter-spacing:0.1em;font-weight:600">Progress</div>
+              <div style="font-family:var(--sans);font-size:7px;color:var(--text3);text-transform:uppercase;text-align:right;letter-spacing:0.1em;font-weight:600">Status</div>
+            </div>
+            <div style="display:grid;grid-template-columns:2fr 1fr 1fr 1fr 1fr 90px;gap:6px;padding:5px 0;border-bottom:1px solid var(--border);align-items:center">
+              <div style="font-family:var(--mono);font-size:8px;color:var(--text)">Brand Identity Refresh</div>
+              <div style="font-family:var(--mono);font-size:8px;color:var(--cyan);text-align:right">$94/hr</div>
+              <div style="font-family:var(--mono);font-size:8px;text-align:right">$4,800</div>
+              <div style="font-family:var(--mono);font-size:8px;text-align:right">$7,000</div>
+              <div style="font-family:var(--mono);font-size:8px;text-align:right">68%</div>
+              <div style="text-align:right"><span class="proj-status status-active">Active</span></div>
+            </div>
+            <div style="display:grid;grid-template-columns:2fr 1fr 1fr 1fr 1fr 90px;gap:6px;padding:5px 0;border-bottom:1px solid var(--border);align-items:center">
+              <div style="font-family:var(--mono);font-size:8px;color:var(--text)">Mobile App UI</div>
+              <div style="font-family:var(--mono);font-size:8px;color:var(--gold);text-align:right">$67/hr</div>
+              <div style="font-family:var(--mono);font-size:8px;text-align:right">$3,200</div>
+              <div style="font-family:var(--mono);font-size:8px;text-align:right">$3,600</div>
+              <div style="font-family:var(--mono);font-size:8px;text-align:right">90%</div>
+              <div style="text-align:right"><span class="proj-status status-review">Review</span></div>
+            </div>
+            <div style="display:grid;grid-template-columns:2fr 1fr 1fr 1fr 1fr 90px;gap:6px;padding:5px 0;border-bottom:1px solid var(--border);align-items:center">
+              <div style="font-family:var(--mono);font-size:8px;color:var(--text)">Quarterly Reports</div>
+              <div style="font-family:var(--mono);font-size:8px;color:var(--rose);text-align:right">$18/hr ⚠</div>
+              <div style="font-family:var(--mono);font-size:8px;text-align:right">$600</div>
+              <div style="font-family:var(--mono);font-size:8px;text-align:right">$3,200</div>
+              <div style="font-family:var(--mono);font-size:8px;text-align:right">18%</div>
+              <div style="text-align:right"><span class="proj-status status-active">Active</span></div>
+            </div>
+            <div style="display:grid;grid-template-columns:2fr 1fr 1fr 1fr 1fr 90px;gap:6px;padding:5px 0;align-items:center">
+              <div style="font-family:var(--mono);font-size:8px;color:var(--text)">Logo Suite</div>
+              <div style="font-family:var(--mono);font-size:8px;color:var(--blue);text-align:right">$48/hr</div>
+              <div style="font-family:var(--mono);font-size:8px;text-align:right">$960</div>
+              <div style="font-family:var(--mono);font-size:8px;text-align:right">$1,600</div>
+              <div style="font-family:var(--mono);font-size:8px;text-align:right">60%</div>
+              <div style="text-align:right"><span class="proj-status status-paused">Paused</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── TOP CLIENTS ── -->
+    <div id="page-clients" class="subpage">
+      <div class="card">
+        <div class="card-hdr"><span class="card-hdr-title">Top Clients — Portfolio Snapshot</span><button class="g-btn" onclick="window.location.href='portfolio.html'" style="margin-left:auto">Full Portfolio →</button></div>
+        <div class="card-body">
+          <div style="display:flex;flex-direction:column;gap:7px">
+            <div class="client-mini" style="border:1px solid rgba(30,207,176,0.2);background:rgba(30,207,176,0.04);border-radius:5px;padding:9px 12px;margin:0">
+              <div class="cm-dot" style="background:var(--cyan);width:9px;height:9px;box-shadow:0 0 10px rgba(30,207,176,0.5)"></div>
+              <div class="cm-name" style="font-size:9px">Meridian Creative</div>
+              <div class="cm-tag" style="color:var(--cyan);border-color:rgba(30,207,176,0.3)">Highest Value</div>
+              <div class="cm-ehr" style="font-size:9px;color:var(--cyan)">$94/hr</div>
+              <div class="cm-share" style="margin-left:6px">48% income</div>
+            </div>
+            <div class="client-mini" style="padding:9px 12px;margin:0">
+              <div class="cm-dot" style="background:var(--gold);width:9px;height:9px;box-shadow:0 0 10px rgba(253,202,137,0.4)"></div>
+              <div class="cm-name" style="font-size:9px">TechVault Inc</div>
+              <div class="cm-tag">Growing</div>
+              <div class="cm-ehr" style="font-size:9px">$67/hr</div>
+              <div class="cm-share" style="margin-left:6px">22% income</div>
+            </div>
+            <div class="client-mini" style="padding:9px 12px;margin:0">
+              <div class="cm-dot" style="background:var(--violet);width:9px;height:9px;box-shadow:0 0 10px rgba(176,126,248,0.4)"></div>
+              <div class="cm-name" style="font-size:9px">Bloom Agency</div>
+              <div class="cm-tag">Stable Income</div>
+              <div class="cm-ehr" style="font-size:9px">$55/hr</div>
+              <div class="cm-share" style="margin-left:6px">13% income</div>
+            </div>
+            <div class="client-mini" style="border:1px solid rgba(248,79,110,0.18);background:rgba(248,79,110,0.04);border-radius:5px;padding:9px 12px;margin:0">
+              <div class="cm-dot" style="background:var(--rose);width:9px;height:9px;box-shadow:0 0 10px rgba(248,79,110,0.4)"></div>
+              <div class="cm-name" style="font-size:9px">RetailCo Group</div>
+              <div class="cm-tag" style="color:var(--rose);border-color:rgba(248,79,110,0.3)">Rate Gap</div>
+              <div class="cm-ehr" style="font-size:9px;color:var(--rose)">$18/hr</div>
+              <div class="cm-share" style="margin-left:6px">7% income</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── PIPELINE ── -->
+    <div id="page-pipeline" class="subpage">
+      <div class="card">
+        <div class="card-hdr"><span class="card-hdr-title">Pipeline Snapshot</span><button class="g-btn" onclick="window.location.href='office.html'" style="margin-left:auto">Full Office →</button></div>
+        <div class="card-body">
+          <div class="pipe-stage"><div class="pipe-icon">💬</div><div class="pipe-info"><div class="pipe-name">Initial Call — NovaBrands</div><div class="pipe-meta">Tomorrow, 2pm · Discovery</div></div><div class="pipe-val">$8K est.</div></div>
+          <div class="pipe-stage"><div class="pipe-icon">📄</div><div class="pipe-info"><div class="pipe-name">Proposal Out — GreenLeaf Co</div><div class="pipe-meta">Sent Mar 25 · 4d waiting</div></div><div class="pipe-val">$5K</div></div>
+          <div class="pipe-stage"><div class="pipe-icon">🤝</div><div class="pipe-info"><div class="pipe-name">Negotiation — Skyline Labs</div><div class="pipe-meta">Counter-offer received · Decide by Apr 2</div></div><div class="pipe-val">$12K</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── GOALS ── -->
+    <div id="page-goals" class="subpage">
+      <div class="card">
+        <div class="card-hdr"><span class="card-hdr-title">Goals & Progress — Q1 2026</span><button class="g-btn primary" onclick="toast('Opening goal editor…')">+ Add Goal</button></div>
+        <div class="card-body">
+          <div class="goal-row"><div class="goal-icon">💰</div><div class="goal-info"><div class="goal-title">Monthly income $10,000</div><div class="goal-meta">$9,200 earned · On track</div><div class="stat-bar-bg" style="margin-top:5px"><div class="stat-bar-fill" style="width:92%;background:linear-gradient(90deg,var(--jade),var(--cyan))"></div></div></div><div class="goal-pct">92%</div></div>
+          <div class="goal-row"><div class="goal-icon">⏱</div><div class="goal-info"><div class="goal-title">Raise avg EHR to $75/hr</div><div class="goal-meta">Currently $62/hr · Renegotiate RetailCo</div><div class="stat-bar-bg" style="margin-top:5px"><div class="stat-bar-fill" style="width:65%;background:linear-gradient(90deg,var(--bark),var(--gold))"></div></div></div><div class="goal-pct">65%</div></div>
+          <div class="goal-row"><div class="goal-icon">🧩</div><div class="goal-info"><div class="goal-title">Diversify — no client > 35% income</div><div class="goal-meta">Meridian at 48% · 2 new clients needed</div><div class="stat-bar-bg" style="margin-top:5px"><div class="stat-bar-fill" style="width:27%;background:var(--rose)"></div></div></div><div class="goal-pct">27%</div></div>
+          <div class="goal-row"><div class="goal-icon">💼</div><div class="goal-info"><div class="goal-title">Tax reserve $4,000 by Apr 15</div><div class="goal-meta">$3,176 saved · $824 to go</div><div class="stat-bar-bg" style="margin-top:5px"><div class="stat-bar-fill" style="width:79%;background:linear-gradient(90deg,var(--jade),var(--green))"></div></div></div><div class="goal-pct">79%</div></div>
+          <div class="goal-row"><div class="goal-icon">🚀</div><div class="goal-info"><div class="goal-title">Close 1 new client ≥ $3,000/mo</div><div class="goal-meta">3 prospects in pipeline · Skyline Labs ($12K) in negotiation</div><div class="stat-bar-bg" style="margin-top:5px"><div class="stat-bar-fill" style="width:50%;background:var(--violet)"></div></div></div><div class="goal-pct">50%</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── PORTFOLIO HEALTH ── -->
+    <div id="page-health" class="subpage">
+      <div class="row2">
+        <div class="card">
+          <div class="card-hdr"><span class="card-hdr-title">KVA Score Breakdown</span></div>
+          <div class="card-body">
+            <div class="health-ring" style="margin-bottom:16px">
+              <svg width="64" height="64" viewBox="0 0 64 64" style="filter:drop-shadow(0 0 10px rgba(42,127,94,0.35))">
+                <circle cx="32" cy="32" r="26" fill="none" stroke="var(--bg4)" stroke-width="6"/>
+                <circle cx="32" cy="32" r="26" fill="none" stroke="var(--jade)" stroke-width="6" stroke-dasharray="163.4 163.4" stroke-dashoffset="52.3" stroke-linecap="round" transform="rotate(-90 32 32)"/>
+              </svg>
+              <div><div class="health-score">0.68</div><div class="health-label">KVA Score</div><div class="health-state">Developing</div></div>
+            </div>
+            <div class="prog-row"><span class="prog-label">Time (T) 25%</span><div class="prog-track"><div class="prog-fill" style="width:72%;background:var(--blue)"></div></div><span class="prog-val">0.72</span></div>
+            <div class="prog-row"><span class="prog-label">Money (M) 35%</span><div class="prog-track"><div class="prog-fill" style="width:68%;background:linear-gradient(90deg,var(--jade),var(--cyan))"></div></div><span class="prog-val">0.68</span></div>
+            <div class="prog-row"><span class="prog-label">Effort (E) 20%</span><div class="prog-track"><div class="prog-fill" style="width:61%;background:var(--violet)"></div></div><span class="prog-val">0.61</span></div>
+            <div class="prog-row"><span class="prog-label">Connections (C) 20%</span><div class="prog-track"><div class="prog-fill" style="width:74%;background:var(--green)"></div></div><span class="prog-val">0.74</span></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-hdr"><span class="card-hdr-title">V Range Interpretation</span></div>
+          <div class="card-body">
+            <div class="kv"><span class="kv-k">Current state</span><span class="kv-v cyan">Developing (0.5–0.7)</span></div>
+            <div class="kv"><span class="kv-k">Next threshold</span><span class="kv-v">Strong (0.70)</span></div>
+            <div class="kv"><span class="kv-k">Gap to Strong</span><span class="kv-v gold">+0.02 needed</span></div>
+            <div style="margin-top:12px;font-family:var(--mono);font-size:8.5px;color:var(--text2);line-height:1.65">Refinement recommendations and diversification guidance apply. Raise EHR on 1 low-value client and add 1 new relationship to cross into Strong portfolio state.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /content -->
+</div><!-- /main -->
+</div><!-- /app -->
+
+<div id="toast" class="toast"></div>
+
+<script>
+// ── Auto-highlight the correct primary nav link ──
+(function(){
+  const PAGE_MAP = {
+    'index.html':     'index.html',
+    'dashboard.html': 'index.html',
+    'portfolio.html': 'portfolio.html',
+    'wallet.html':    'wallet.html',
+    'office.html':    'office.html',
+    'profile.html':   'profile.html',
+    'settings.html':  'settings.html',
+  };
+  const current = (window.location.pathname.split('/').pop() || 'index.html');
+  const target  = PAGE_MAP[current] || current;
+  document.querySelectorAll('.p-link, .p-avatar').forEach(el => {
+    el.classList.remove('active');
+    const href = el.getAttribute('href') || '';
+    const hname = href.split('/').pop();
+    if (hname === target) el.classList.add('active');
+    // special-case: dashboard link uses index.html
+    if (target === 'index.html' && hname === 'index.html') el.classList.add('active');
   });
-}
+})();
 
-function buildTopbar() {
-  const m = SCREEN_META[activeScreen];
-  document.getElementById('topbar-icon').textContent = m.icon;
-  document.getElementById('topbar-title').textContent = m.title;
-  document.getElementById('topbar-tabs').innerHTML = m.tabs.map((tab, i) =>
-    `<button class="topbar-tab${i===0?' active':''}" type="button">${tab}</button>${i < m.tabs.length-1 ? '<span class="topbar-sep">·</span>' : ''}`
-  ).join('');
+function showPage(id){
+  document.querySelectorAll('.subpage').forEach(p=>p.classList.remove('active'));
+  const el=document.getElementById('page-'+id);
+  if(el) el.classList.add('active');
+  document.querySelectorAll('.s-item').forEach(i=>i.classList.remove('active'));
+  event.currentTarget && event.currentTarget.classList.add('active');
+  const titles={overview:'Overview',insights:'Insights',activity:'Activity Feed',pulse:'Income Pulse',allocation:'Time Allocation',ehr:'EHR Analysis',projects:'All Projects','proj-income':'Project Income','proj-health':'Project Health',clients:'Top Clients',pipeline:'Pipeline Snapshot',goals:'Goals & Progress',health:'Portfolio Health'};
+  document.querySelector('.tb-sub').textContent='/ '+(titles[id]||id);
 }
-
-function buildContent() {
-  const content = document.getElementById('content');
-  // Cache all screens in DOM, show only active
-  content.innerHTML = Object.keys(SCREENS).map(id =>
-    `<section id="screen-${id}" class="screen${id === activeScreen ? ' active' : ''}">${SCREENS[id]()}</section>`
-  ).join('');
+function toast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2500);
 }
-
-function setScreen(id) {
-  if (id === activeScreen) return;
-  // Update nav
-  document.querySelectorAll('.nav-item').forEach(btn => {
-    btn.classList.toggle('active', btn.dataset.id === id);
+document.querySelectorAll('.s-item').forEach(item=>{
+  item.addEventListener('click',function(){
+    document.querySelectorAll('.s-item').forEach(i=>i.classList.remove('active'));
+    this.classList.add('active');
   });
-  // Update content visibility
-  document.getElementById(`screen-${activeScreen}`)?.classList.remove('active');
-  document.getElementById(`screen-${id}`)?.classList.add('active');
-  activeScreen = id;
-  buildTopbar();
-}
-
-// Boot
-buildNav();
-buildTopbar();
-buildContent();
+});
 </script>
 </body>
 </html>

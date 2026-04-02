@@ -1,0 +1,1147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KOGI · Profile</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;600;700&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap');
+:root{
+  --bg:#0a0b0f;--bg1:#0f1117;--bg2:#13151e;--bg3:#181c28;--bg4:#1e2235;
+  --border:rgba(255,255,255,0.06);--border2:rgba(255,255,255,0.1);--border3:#232a42;
+  --text:#c8ccdb;--text2:#7a8099;--text3:#4a5068;
+  --cyan:#00d4aa;--gold:#c8a84b;--violet:#7c5cbf;--rose:#c45c7a;
+  --orange:#c87c3a;--blue:#3a7cc8;--green:#4aab6d;--pink:#bf5ca0;
+  --pnav-w:58px;--snav-w:168px;
+  --mono:'IBM Plex Mono',monospace;--sans:'IBM Plex Sans',sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{width:100%;height:100%;background:var(--bg);font-family:var(--sans);color:var(--text);font-size:10px;overflow:hidden}
+.app{display:flex;width:100%;height:100vh;overflow:hidden}
+
+/* ── Primary Nav ── */
+.p-nav{width:var(--pnav-w);background:var(--bg1);border-right:1px solid var(--border);flex-shrink:0;display:flex;flex-direction:column;align-items:center;z-index:20}
+.p-nav-top{display:flex;flex-direction:column;align-items:center;gap:1px;flex:1;padding:8px 0;width:100%}
+.p-nav-bottom{display:flex;flex-direction:column;align-items:center;padding:8px 0;width:100%}
+.p-logo{font-family:var(--mono);font-size:11px;font-weight:700;color:var(--cyan);letter-spacing:0.1em;padding:8px 0 5px;text-align:center;cursor:pointer}
+.p-avatar{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:9px;font-weight:700;color:#000;cursor:pointer;text-decoration:none;margin-bottom:4px;transition:all 0.15s;border:2px solid transparent;overflow:hidden;flex-shrink:0}
+.p-avatar:hover{border-color:var(--cyan)}
+.p-divider{width:32px;height:1px;background:var(--border);margin:4px 0}
+.p-link{display:flex;flex-direction:column;align-items:center;gap:2px;padding:8px 0;cursor:pointer;color:var(--text3);text-decoration:none;width:100%;transition:all 0.12s;border-left:2px solid transparent}
+.p-link:hover{color:var(--text2);background:rgba(255,255,255,0.02)}
+.p-link.active{color:var(--cyan);border-left-color:var(--cyan);background:rgba(0,212,170,0.05)}
+.p-link-label{font-family:var(--mono);font-size:6px;letter-spacing:0.06em;text-transform:uppercase}
+.p-link svg{width:15px;height:15px}
+
+/* ── Secondary Nav ── */
+.s-nav{width:var(--snav-w);background:var(--bg1);border-right:1px solid var(--border);flex-shrink:0;display:flex;flex-direction:column;overflow:hidden}
+.s-nav-header{padding:12px 13px 9px;border-bottom:1px solid var(--border);flex-shrink:0}
+.s-nav-title{font-family:var(--mono);font-size:10px;font-weight:700;color:var(--text)}
+.s-nav-meta{font-family:var(--mono);font-size:7px;color:var(--text3);margin-top:2px}
+.s-nav-items{flex:1;overflow-y:auto;padding:4px 0}
+.s-sec-label{font-family:var(--mono);font-size:6px;letter-spacing:0.14em;text-transform:uppercase;color:var(--text3);padding:8px 13px 3px}
+.s-item{display:flex;align-items:center;gap:6px;padding:5px 13px;font-family:var(--mono);font-size:8px;color:var(--text3);cursor:pointer;border-left:2px solid transparent;transition:all 0.1s;white-space:nowrap}
+.s-item:hover{background:var(--bg2);color:var(--text2)}
+.s-item.active{background:var(--bg2);color:var(--text);border-left-color:var(--cyan)}
+.s-dot{width:5px;height:5px;border-radius:50%;flex-shrink:0}
+.s-badge{margin-left:auto;font-family:var(--mono);font-size:6px;padding:1px 4px;border-radius:2px;background:var(--bg3);color:var(--text3)}
+.s-item.active .s-badge{background:rgba(0,212,170,0.12);color:var(--cyan)}
+
+/* ── Main ── */
+.main{flex:1;display:flex;flex-direction:column;min-width:0;overflow:hidden}
+.toolbar{height:34px;background:var(--bg1);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 14px;gap:8px;flex-shrink:0}
+.tb-title{font-family:var(--mono);font-size:10px;font-weight:600;color:var(--text)}
+.tb-sub{font-family:var(--mono);font-size:8px;color:var(--text3)}
+.tb-spacer{flex:1}
+.g-btn{background:var(--bg2);border:1px solid var(--border2);border-radius:3px;padding:3px 9px;font-family:var(--mono);font-size:8px;color:var(--text2);cursor:pointer;transition:all 0.12s;white-space:nowrap}
+.g-btn:hover{border-color:var(--cyan);color:var(--cyan)}
+.g-btn.primary{background:var(--cyan);border-color:var(--cyan);color:#000;font-weight:600}
+.g-btn.primary:hover{background:#00efc0}
+.g-btn.danger{border-color:var(--rose);color:var(--rose)}
+.g-btn.danger:hover{background:rgba(196,92,122,0.08)}
+
+/* ── Content ── */
+.content{flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:12px}
+.subpage{display:none}.subpage.active{display:flex;flex-direction:column;gap:12px}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.row-60-40{display:grid;grid-template-columns:3fr 2fr;gap:12px}
+.row-70-30{display:grid;grid-template-columns:2fr 1fr;gap:12px}
+
+/* ── Cards ── */
+.card{background:var(--bg1);border:1px solid var(--border);border-radius:4px;overflow:hidden}
+.card-hdr{padding:9px 12px 8px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px}
+.card-hdr-title{font-family:var(--mono);font-size:9px;font-weight:600;color:var(--text);flex:1}
+.card-hdr-badge{font-family:var(--mono);font-size:7px;padding:1px 5px;border-radius:2px;border:1px solid}
+.badge-cyan{border-color:rgba(0,212,170,0.3);color:var(--cyan);background:rgba(0,212,170,0.06)}
+.badge-gold{border-color:rgba(200,168,75,0.3);color:var(--gold);background:rgba(200,168,75,0.06)}
+.badge-violet{border-color:rgba(124,92,191,0.3);color:var(--violet);background:rgba(124,92,191,0.06)}
+.badge-rose{border-color:rgba(196,92,122,0.3);color:var(--rose);background:rgba(196,92,122,0.06)}
+.badge-blue{border-color:rgba(58,124,200,0.3);color:var(--blue);background:rgba(58,124,200,0.06)}
+.card-body{padding:11px 12px}
+.sec-label{font-family:var(--mono);font-size:7px;letter-spacing:0.12em;text-transform:uppercase;color:var(--text3);margin-bottom:7px}
+
+/* ── Profile Switcher ── */
+.profile-switcher{display:flex;flex-direction:column;gap:6px}
+.profile-switcher-header{display:flex;align-items:center;justify-content:space-between;padding:0 0 6px;border-bottom:1px solid var(--border)}
+.ps-label{font-family:var(--mono);font-size:7px;letter-spacing:0.14em;text-transform:uppercase;color:var(--text3)}
+.profile-cards{display:flex;flex-direction:column;gap:4px}
+.profile-card{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:3px;border:1px solid var(--border);cursor:pointer;transition:all 0.12s;background:var(--bg2)}
+.profile-card:hover{border-color:var(--border2);background:var(--bg3)}
+.profile-card.active-profile{border-color:rgba(0,212,170,0.3);background:rgba(0,212,170,0.04)}
+.pc-avatar{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:9px;font-weight:700;flex-shrink:0}
+.pc-info{flex:1;min-width:0}
+.pc-name{font-family:var(--mono);font-size:9px;color:var(--text);font-weight:600}
+.pc-type{font-family:var(--mono);font-size:7px;color:var(--text3);margin-top:1px}
+.pc-status{display:flex;align-items:center;gap:4px}
+.pc-dot{width:5px;height:5px;border-radius:50%}
+.pc-status-label{font-family:var(--mono);font-size:6px;text-transform:uppercase;letter-spacing:0.08em}
+.profile-card.active-profile .pc-dot{background:var(--cyan)}
+.profile-card.active-profile .pc-status-label{color:var(--cyan)}
+.add-profile-btn{display:flex;align-items:center;gap:6px;padding:7px 10px;border-radius:3px;border:1px dashed var(--border2);cursor:pointer;transition:all 0.12s;background:transparent;font-family:var(--mono);font-size:8px;color:var(--text3);width:100%}
+.add-profile-btn:hover{border-color:var(--cyan);color:var(--cyan)}
+
+/* ── Profile Identity ── */
+.profile-hero{display:flex;align-items:flex-start;gap:16px;padding:14px}
+.avatar-zone{display:flex;flex-direction:column;align-items:center;gap:6px;flex-shrink:0}
+.big-avatar{width:64px;height:64px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:20px;font-weight:700;color:#000;border:3px solid var(--border2);cursor:pointer;position:relative;overflow:hidden}
+.avatar-overlay{position:absolute;inset:0;background:rgba(0,0,0,0.6);display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity 0.15s;font-family:var(--mono);font-size:7px;color:#fff;text-align:center;letter-spacing:0.06em}
+.big-avatar:hover .avatar-overlay{opacity:1}
+.avatar-label{font-family:var(--mono);font-size:6px;color:var(--text3);letter-spacing:0.08em;text-transform:uppercase}
+.profile-fields{flex:1;display:flex;flex-direction:column;gap:8px}
+.field-row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.field-group{display:flex;flex-direction:column;gap:3px}
+.field-label{font-family:var(--mono);font-size:7px;color:var(--text3);letter-spacing:0.1em;text-transform:uppercase}
+.field-input{background:var(--bg2);border:1px solid var(--border2);border-radius:3px;padding:5px 8px;font-family:var(--mono);font-size:9px;color:var(--text);outline:none;transition:border-color 0.12s;width:100%}
+.field-input:focus{border-color:var(--cyan)}
+.field-input::placeholder{color:var(--text3)}
+textarea.field-input{resize:vertical;min-height:52px;font-size:8px;line-height:1.5}
+select.field-input{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='8' viewBox='0 0 8 8'%3E%3Cpath fill='%234a5068' d='M0 2l4 4 4-4z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 7px center}
+
+/* ── Profile Type Badge ── */
+.type-selector{display:flex;gap:5px;flex-wrap:wrap}
+.type-pill{padding:3px 9px;border-radius:20px;border:1px solid var(--border2);font-family:var(--mono);font-size:7px;color:var(--text3);cursor:pointer;transition:all 0.12s;letter-spacing:0.06em}
+.type-pill:hover{border-color:var(--border2);color:var(--text2)}
+.type-pill.active{font-weight:600}
+.type-pill.personal.active{border-color:rgba(0,212,170,0.4);color:var(--cyan);background:rgba(0,212,170,0.08)}
+.type-pill.professional.active{border-color:rgba(200,168,75,0.4);color:var(--gold);background:rgba(200,168,75,0.08)}
+.type-pill.work.active{border-color:rgba(58,124,200,0.4);color:var(--blue);background:rgba(58,124,200,0.08)}
+.type-pill.private.active{border-color:rgba(124,92,191,0.4);color:var(--violet);background:rgba(124,92,191,0.08)}
+
+/* ── Linktree ── */
+.linktree-list{display:flex;flex-direction:column;gap:5px}
+.link-item{display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:3px;border:1px solid var(--border);background:var(--bg2);cursor:pointer;transition:all 0.12s}
+.link-item:hover{border-color:var(--border2);background:var(--bg3)}
+.link-icon{width:22px;height:22px;border-radius:3px;display:flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0}
+.link-info{flex:1;min-width:0}
+.link-name{font-family:var(--mono);font-size:8px;color:var(--text);font-weight:500}
+.link-url{font-family:var(--mono);font-size:7px;color:var(--text3);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-top:1px}
+.link-type{font-family:var(--mono);font-size:6px;padding:1px 5px;border-radius:2px;border:1px solid;margin-left:auto;flex-shrink:0;letter-spacing:0.06em;text-transform:uppercase}
+.link-actions{display:flex;gap:3px;margin-left:6px}
+.link-act-btn{width:18px;height:18px;border-radius:2px;background:transparent;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all 0.12s;color:var(--text3)}
+.link-act-btn:hover{border-color:var(--cyan);color:var(--cyan)}
+.add-link-row{display:flex;gap:6px;align-items:center;padding:7px 10px;border-radius:3px;border:1px dashed var(--border2);cursor:pointer;transition:all 0.12s}
+.add-link-row:hover{border-color:var(--cyan)}
+.add-link-row span{font-family:var(--mono);font-size:8px;color:var(--text3)}
+.add-link-row:hover span{color:var(--cyan)}
+
+/* ── Identity Stats ── */
+.id-stats{display:flex;gap:6px}
+.id-stat{flex:1;background:var(--bg2);border:1px solid var(--border);border-radius:3px;padding:8px 10px;text-align:center}
+.id-stat-val{font-family:var(--mono);font-size:14px;font-weight:700;color:var(--text);line-height:1}
+.id-stat-lbl{font-family:var(--mono);font-size:6px;color:var(--text3);letter-spacing:0.1em;text-transform:uppercase;margin-top:3px}
+
+/* ── Preferences ── */
+.pref-group{display:flex;flex-direction:column;gap:6px;margin-bottom:14px}
+.pref-group:last-child{margin-bottom:0}
+.pref-row{display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border)}
+.pref-row:last-child{border-bottom:none}
+.pref-left{flex:1}
+.pref-name{font-family:var(--mono);font-size:8px;color:var(--text)}
+.pref-desc{font-family:var(--sans);font-size:8px;color:var(--text3);margin-top:2px;line-height:1.4}
+.toggle{width:30px;height:16px;border-radius:8px;background:var(--bg3);border:1px solid var(--border2);cursor:pointer;position:relative;transition:background 0.2s;flex-shrink:0}
+.toggle.on{background:var(--cyan)}
+.toggle::after{content:'';position:absolute;top:2px;left:2px;width:10px;height:10px;border-radius:50%;background:#fff;transition:left 0.2s}
+.toggle.on::after{left:16px}
+
+/* ── Integrations ── */
+.int-item{display:flex;align-items:center;gap:10px;padding:9px 12px;border-bottom:1px solid var(--border)}
+.int-item:last-child{border-bottom:none}
+.int-icon{width:26px;height:26px;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;border:1px solid var(--border)}
+.int-info{flex:1}
+.int-name{font-family:var(--mono);font-size:9px;color:var(--text);font-weight:500}
+.int-detail{font-family:var(--mono);font-size:7px;color:var(--text3);margin-top:1px}
+.int-status{font-family:var(--mono);font-size:7px;padding:2px 6px;border-radius:2px}
+.int-status.connected{background:rgba(74,171,109,0.12);color:var(--green);border:1px solid rgba(74,171,109,0.25)}
+.int-status.disconnected{background:rgba(74,80,104,0.2);color:var(--text3);border:1px solid var(--border)}
+.int-status.pending{background:rgba(200,168,75,0.1);color:var(--gold);border:1px solid rgba(200,168,75,0.25)}
+
+/* ── Danger Zone ── */
+.danger-card{background:rgba(196,92,122,0.04);border:1px solid rgba(196,92,122,0.2);border-radius:4px;padding:11px 12px}
+.danger-card .card-hdr{padding:0 0 8px;border-bottom:1px solid rgba(196,92,122,0.15)}
+.danger-card .card-hdr-title{color:var(--rose)}
+.danger-item{display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid rgba(196,92,122,0.08)}
+.danger-item:last-child{border-bottom:none;padding-bottom:0}
+.danger-info .danger-name{font-family:var(--mono);font-size:8px;color:var(--text)}
+.danger-info .danger-desc{font-family:var(--sans);font-size:8px;color:var(--text3);margin-top:2px}
+
+/* ── Toast ── */
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--bg3);border:1px solid var(--border2);border-radius:4px;padding:7px 14px;font-family:var(--mono);font-size:9px;color:var(--text);opacity:0;transition:all 0.25s;pointer-events:none;z-index:999;white-space:nowrap}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* ── Modal ── */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:100;display:none;align-items:center;justify-content:center}
+.modal-overlay.open{display:flex}
+.modal{background:var(--bg1);border:1px solid var(--border2);border-radius:6px;width:340px;max-height:80vh;overflow-y:auto}
+.modal-hdr{padding:12px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.modal-title{font-family:var(--mono);font-size:10px;font-weight:600;color:var(--text)}
+.modal-close{background:none;border:none;color:var(--text3);cursor:pointer;font-size:14px;padding:2px 4px;line-height:1}
+.modal-close:hover{color:var(--text)}
+.modal-body{padding:14px}
+.modal-footer{padding:10px 14px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:6px}
+
+/* ── Scrollbar ── */
+::-webkit-scrollbar{width:4px;height:4px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--bg4);border-radius:2px}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- ── Primary Nav ── -->
+  <nav class="p-nav">
+    <div class="p-nav-top">
+      <div class="p-logo">K</div>
+      <div class="p-divider"></div>
+      <a class="p-link" href="dashboard.html" title="Dashboard">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><rect x="1" y="1" width="6" height="6" rx="1"/><rect x="9" y="1" width="6" height="6" rx="1"/><rect x="1" y="9" width="6" height="6" rx="1"/><rect x="9" y="9" width="6" height="6" rx="1"/></svg>
+        <span class="p-link-label">Dash</span>
+      </a>
+      <a class="p-link" href="wallet.html" title="Wallet">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><rect x="1" y="4" width="14" height="10" rx="1.5"/><path d="M11 9a1 1 0 1 1 2 0 1 1 0 0 1-2 0z" fill="currentColor" stroke="none"/><path d="M4 4V3a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v1"/></svg>
+        <span class="p-link-label">Wallet</span>
+      </a>
+      <a class="p-link" href="portfolio.html" title="Portfolio">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><circle cx="8" cy="8" r="6.5"/><path d="M8 1.5V8l4 2.5"/></svg>
+        <span class="p-link-label">Portf.</span>
+      </a>
+      <a class="p-link" href="office.html" title="Office">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><rect x="1.5" y="3" width="13" height="10" rx="1"/><path d="M5 3V1.5M11 3V1.5M1.5 7h13"/></svg>
+        <span class="p-link-label">Office</span>
+      </a>
+    </div>
+    <div class="p-nav-bottom">
+      <div class="p-divider"></div>
+      <a class="p-link active" href="profile.html" title="Profile">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><circle cx="8" cy="5.5" r="3"/><path d="M1.5 14c0-3.038 2.91-5.5 6.5-5.5s6.5 2.462 6.5 5.5"/></svg>
+        <span class="p-link-label">Profile</span>
+      </a>
+      <a class="p-link" href="settings.html" title="Settings">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><circle cx="8" cy="8" r="2.5"/><path d="M8 1v2M8 13v2M1 8h2M13 8h2M2.93 2.93l1.41 1.41M11.66 11.66l1.41 1.41M2.93 13.07l1.41-1.41M11.66 4.34l1.41-1.41"/></svg>
+        <span class="p-link-label">Config</span>
+      </a>
+      <div class="p-avatar" id="mainAvatar" style="background:linear-gradient(135deg,var(--cyan),var(--violet))">MK</div>
+    </div>
+  </nav>
+
+  <!-- ── Secondary Nav ── -->
+  <nav class="s-nav">
+    <div class="s-nav-header">
+      <div class="s-nav-title">Profile</div>
+      <div class="s-nav-meta">Identity & connections</div>
+    </div>
+    <div class="s-nav-items">
+      <div class="s-sec-label">Active Profile</div>
+      <div class="s-item active" onclick="showPage('identity')">
+        <div class="s-dot" style="background:var(--cyan)"></div>Identity
+      </div>
+      <div class="s-item" onclick="showPage('preferences')">
+        <div class="s-dot" style="background:var(--text3)"></div>Preferences
+      </div>
+      <div class="s-item" onclick="showPage('linktree')">
+        <div class="s-dot" style="background:var(--text3)"></div>Linktree<span class="s-badge">8</span>
+      </div>
+      <div class="s-item" onclick="showPage('integrations')">
+        <div class="s-dot" style="background:var(--text3)"></div>Integrations<span class="s-badge">4</span>
+      </div>
+      <div class="s-item" onclick="showPage('portfolios')">
+        <div class="s-dot" style="background:var(--text3)"></div>Portfolios<span class="s-badge">2</span>
+      </div>
+      <div class="s-sec-label">All Profiles</div>
+      <div class="s-item" onclick="showPage('profiles')">
+        <div class="s-dot" style="background:var(--gold)"></div>Manage Profiles<span class="s-badge">3</span>
+      </div>
+      <div class="s-item" onclick="showPage('identity-export')">
+        <div class="s-dot" style="background:var(--text3)"></div>Identity Export
+      </div>
+      <div class="s-sec-label">Account</div>
+      <div class="s-item" onclick="showPage('security')">
+        <div class="s-dot" style="background:var(--text3)"></div>Security
+      </div>
+      <div class="s-item" onclick="showPage('danger')">
+        <div class="s-dot" style="background:var(--rose)"></div><span style="color:var(--rose)">Danger Zone</span>
+      </div>
+    </div>
+  </nav>
+
+  <!-- ── Main Content ── -->
+  <div class="main">
+    <div class="toolbar">
+      <span class="tb-title">PROFILE</span>
+      <span class="tb-sub" id="tbSub">/ Identity</span>
+      <div class="tb-spacer"></div>
+      <!-- Active profile indicator -->
+      <div style="display:flex;align-items:center;gap:6px;margin-right:8px">
+        <div style="width:18px;height:18px;border-radius:50%;background:linear-gradient(135deg,var(--cyan),var(--violet));display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:6px;font-weight:700;color:#000">MK</div>
+        <span style="font-family:var(--mono);font-size:8px;color:var(--text2)">Marcus K.</span>
+        <span class="card-hdr-badge badge-cyan" style="font-size:6px">Professional</span>
+      </div>
+      <button class="g-btn" onclick="openModal('switchProfile')">Switch Profile</button>
+      <button class="g-btn primary" onclick="toast('Changes saved.')">Save Changes</button>
+    </div>
+
+    <div class="content">
+
+      <!-- ── IDENTITY ── -->
+      <div id="page-identity" class="subpage active">
+        <div class="card">
+          <div class="card-hdr">
+            <span class="card-hdr-title">Identity — Professional Profile</span>
+            <span class="card-hdr-badge badge-cyan">Active</span>
+            <span class="card-hdr-badge badge-gold" style="margin-left:4px">Professional</span>
+          </div>
+          <div class="profile-hero">
+            <div class="avatar-zone">
+              <div class="big-avatar" id="bigAvatar" style="background:linear-gradient(135deg,var(--cyan),var(--violet))">
+                <span id="bigAvatarInitials" style="font-size:20px;font-weight:700;font-family:var(--mono);color:#000">MK</span>
+                <div class="avatar-overlay">CHANGE<br>PHOTO</div>
+              </div>
+              <span class="avatar-label">Profile Photo</span>
+              <div style="display:flex;gap:3px;margin-top:2px">
+                <button class="g-btn" style="padding:2px 7px;font-size:7px" onclick="toast('Upload dialog…')">Upload</button>
+                <button class="g-btn" style="padding:2px 7px;font-size:7px" onclick="toast('Removed.')">Remove</button>
+              </div>
+            </div>
+            <div class="profile-fields">
+              <div class="field-row">
+                <div class="field-group">
+                  <label class="field-label">First Name</label>
+                  <input class="field-input" value="Marcus" id="firstName" oninput="updateInitials()">
+                </div>
+                <div class="field-group">
+                  <label class="field-label">Last Name</label>
+                  <input class="field-input" value="Kimani" id="lastName" oninput="updateInitials()">
+                </div>
+              </div>
+              <div class="field-group">
+                <label class="field-label">Display Name / Handle</label>
+                <input class="field-input" value="marcus.kimani" placeholder="@handle">
+              </div>
+              <div class="field-group">
+                <label class="field-label">Professional Title</label>
+                <input class="field-input" value="Independent UX Designer & Consultant" placeholder="e.g. Freelance Designer">
+              </div>
+              <div class="field-group">
+                <label class="field-label">Bio</label>
+                <textarea class="field-input" placeholder="Brief bio for this profile…">UX designer focused on fintech and productivity tools. 8+ years independent. Based in Lagos — working globally.</textarea>
+              </div>
+              <div class="field-group">
+                <label class="field-label">Profile Type</label>
+                <div class="type-selector" style="margin-top:4px">
+                  <div class="type-pill personal" onclick="setType(this,'personal')">Personal</div>
+                  <div class="type-pill professional active" onclick="setType(this,'professional')">Professional</div>
+                  <div class="type-pill work" onclick="setType(this,'work')">Work</div>
+                  <div class="type-pill private" onclick="setType(this,'private')">Private</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="row2">
+          <div class="card">
+            <div class="card-hdr"><span class="card-hdr-title">Contact & Location</span></div>
+            <div class="card-body" style="display:flex;flex-direction:column;gap:7px">
+              <div class="field-group">
+                <label class="field-label">Email (Profile)</label>
+                <input class="field-input" value="marcus@example.com" type="email">
+              </div>
+              <div class="field-group">
+                <label class="field-label">Phone</label>
+                <input class="field-input" value="+234 800 000 0000" type="tel">
+              </div>
+              <div class="field-row">
+                <div class="field-group">
+                  <label class="field-label">City</label>
+                  <input class="field-input" value="Lagos">
+                </div>
+                <div class="field-group">
+                  <label class="field-label">Country</label>
+                  <select class="field-input">
+                    <option>Nigeria</option>
+                    <option>United States</option>
+                    <option>United Kingdom</option>
+                    <option>Canada</option>
+                  </select>
+                </div>
+              </div>
+              <div class="field-group">
+                <label class="field-label">Timezone</label>
+                <select class="field-input">
+                  <option>WAT — UTC+1 (Lagos)</option>
+                  <option>EST — UTC-5</option>
+                  <option>GMT — UTC+0</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-hdr"><span class="card-hdr-title">Identity Score</span><span class="card-hdr-badge badge-cyan">I(t) Model</span></div>
+            <div class="card-body">
+              <div class="id-stats" style="margin-bottom:10px">
+                <div class="id-stat"><div class="id-stat-val cyan">0.74</div><div class="id-stat-lbl">I(t) Score</div></div>
+                <div class="id-stat"><div class="id-stat-val">38</div><div class="id-stat-lbl">Months Active</div></div>
+                <div class="id-stat"><div class="id-stat-val gold">94%</div><div class="id-stat-lbl">Verified</div></div>
+              </div>
+              <div class="sec-label">Computed Identity Signals</div>
+              <div style="display:flex;flex-direction:column;gap:5px">
+                <div style="display:flex;justify-content:space-between;align-items:center;padding:4px 0;border-bottom:1px solid var(--border)">
+                  <span style="font-family:var(--mono);font-size:8px;color:var(--text2)">Verified income events</span>
+                  <span style="font-family:var(--mono);font-size:8px;color:var(--cyan)">247</span>
+                </div>
+                <div style="display:flex;justify-content:space-between;align-items:center;padding:4px 0;border-bottom:1px solid var(--border)">
+                  <span style="font-family:var(--mono);font-size:8px;color:var(--text2)">Client relationships</span>
+                  <span style="font-family:var(--mono);font-size:8px;color:var(--text)">11 active</span>
+                </div>
+                <div style="display:flex;justify-content:space-between;align-items:center;padding:4px 0;border-bottom:1px solid var(--border)">
+                  <span style="font-family:var(--mono);font-size:8px;color:var(--text2)">Avg EHR (lifetime)</span>
+                  <span style="font-family:var(--mono);font-size:8px;color:var(--gold)">$58/hr</span>
+                </div>
+                <div style="display:flex;justify-content:space-between;align-items:center;padding:4px 0">
+                  <span style="font-family:var(--mono);font-size:8px;color:var(--text2)">Specialization signals</span>
+                  <span style="font-family:var(--mono);font-size:8px;color:var(--text)">Fintech, Productivity</span>
+                </div>
+              </div>
+              <div style="margin-top:10px;font-family:var(--sans);font-size:8px;color:var(--text3);line-height:1.5;padding:8px;background:var(--bg2);border-radius:3px;border:1px solid var(--border)">"$58/hr UX designer with 38 months consistent history, growing Fintech specialization, and moderate concentration risk in 1 client."</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── PREFERENCES ── -->
+      <div id="page-preferences" class="subpage">
+        <div class="card">
+          <div class="card-hdr"><span class="card-hdr-title">Display Preferences</span><span class="card-hdr-badge badge-cyan">Professional Profile</span></div>
+          <div class="card-body">
+            <div class="pref-row">
+              <div class="pref-left">
+                <div class="pref-name">Show real-time earnings</div>
+                <div class="pref-desc">Display live income totals on dashboard and toolbar</div>
+              </div>
+              <div class="toggle on" onclick="this.classList.toggle('on')"></div>
+            </div>
+            <div class="pref-row">
+              <div class="pref-left">
+                <div class="pref-name">Compact number format</div>
+                <div class="pref-desc">Show $9.2K instead of $9,200 in stat rows</div>
+              </div>
+              <div class="toggle on" onclick="this.classList.toggle('on')"></div>
+            </div>
+            <div class="pref-row">
+              <div class="pref-left">
+                <div class="pref-name">EHR as range</div>
+                <div class="pref-desc">Always display effective hourly rate as a range, not a point estimate</div>
+              </div>
+              <div class="toggle on" onclick="this.classList.toggle('on')"></div>
+            </div>
+            <div class="pref-row">
+              <div class="pref-left">
+                <div class="pref-name">Show confidence indicators</div>
+                <div class="pref-desc">Display uncertainty labels on estimated metrics</div>
+              </div>
+              <div class="toggle on" onclick="this.classList.toggle('on')"></div>
+            </div>
+            <div class="pref-row">
+              <div class="pref-left">
+                <div class="pref-name">Currency</div>
+              </div>
+              <select class="field-input" style="width:120px">
+                <option>USD — $</option>
+                <option>NGN — ₦</option>
+                <option>EUR — €</option>
+                <option>GBP — £</option>
+              </select>
+            </div>
+            <div class="pref-row">
+              <div class="pref-left">
+                <div class="pref-name">Date format</div>
+              </div>
+              <select class="field-input" style="width:120px">
+                <option>DD/MM/YYYY</option>
+                <option>MM/DD/YYYY</option>
+                <option>YYYY-MM-DD</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-hdr"><span class="card-hdr-title">Insight & Alert Preferences</span></div>
+          <div class="card-body">
+            <div class="pref-row">
+              <div class="pref-left">
+                <div class="pref-name">Weekly insight digest</div>
+                <div class="pref-desc">Receive one top insight by email every Monday morning</div>
+              </div>
+              <div class="toggle on" onclick="this.classList.toggle('on')"></div>
+            </div>
+            <div class="pref-row">
+              <div class="pref-left">
+                <div class="pref-name">Rate gap alerts</div>
+                <div class="pref-desc">Notify when a client's EHR drops below 50% of your average</div>
+              </div>
+              <div class="toggle on" onclick="this.classList.toggle('on')"></div>
+            </div>
+            <div class="pref-row">
+              <div class="pref-left">
+                <div class="pref-name">Concentration risk warnings</div>
+                <div class="pref-desc">Alert when a single client exceeds 40% of monthly income</div>
+              </div>
+              <div class="toggle on" onclick="this.classList.toggle('on')"></div>
+            </div>
+            <div class="pref-row">
+              <div class="pref-left">
+                <div class="pref-name">Income event notifications</div>
+                <div class="pref-desc">Push alert when a new income event is detected and classified</div>
+              </div>
+              <div class="toggle" onclick="this.classList.toggle('on')"></div>
+            </div>
+            <div class="pref-row">
+              <div class="pref-left">
+                <div class="pref-name">Tax reserve reminders</div>
+                <div class="pref-desc">Alert when tax reserve falls below configured target %</div>
+              </div>
+              <div class="toggle on" onclick="this.classList.toggle('on')"></div>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-hdr"><span class="card-hdr-title">Privacy Preferences</span></div>
+          <div class="card-body">
+            <div class="pref-row">
+              <div class="pref-left">
+                <div class="pref-name">Profile visible to integrations</div>
+                <div class="pref-desc">Allow connected tools to read your profile display name and type</div>
+              </div>
+              <div class="toggle on" onclick="this.classList.toggle('on')"></div>
+            </div>
+            <div class="pref-row">
+              <div class="pref-left">
+                <div class="pref-name">Export identity data</div>
+                <div class="pref-desc">Allow identity export for verified reputation use cases</div>
+              </div>
+              <div class="toggle" onclick="this.classList.toggle('on')"></div>
+            </div>
+            <div class="pref-row">
+              <div class="pref-left">
+                <div class="pref-name">Improve classification with corrections</div>
+                <div class="pref-desc">Let your income corrections improve future auto-classification accuracy</div>
+              </div>
+              <div class="toggle on" onclick="this.classList.toggle('on')"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── LINKTREE ── -->
+      <div id="page-linktree" class="subpage">
+        <div class="card">
+          <div class="card-hdr">
+            <span class="card-hdr-title">Linktree — Professional Profile</span>
+            <span class="card-hdr-badge badge-cyan">8 Links</span>
+            <button class="g-btn primary" style="margin-left:auto" onclick="openModal('addLink')">+ Add Link</button>
+          </div>
+          <div class="card-body">
+            <div class="sec-label">Connected Integrations & Tools</div>
+            <div class="linktree-list">
+
+              <div class="link-item">
+                <div class="link-icon" style="background:rgba(0,212,170,0.1);border-color:rgba(0,212,170,0.2)">💳</div>
+                <div class="link-info">
+                  <div class="link-name">Stripe</div>
+                  <div class="link-url">stripe.com · marcus@example.com · 3 active products</div>
+                </div>
+                <span class="link-type" style="color:var(--cyan);border-color:rgba(0,212,170,0.3)">Payments</span>
+                <div class="link-actions">
+                  <button class="link-act-btn" onclick="toast('Opening Stripe…')" title="Open">↗</button>
+                  <button class="link-act-btn" onclick="toast('Unlinked.')" title="Unlink" style="color:var(--rose)">×</button>
+                </div>
+              </div>
+
+              <div class="link-item">
+                <div class="link-icon" style="background:rgba(74,171,109,0.1);border-color:rgba(74,171,109,0.2)">🏦</div>
+                <div class="link-info">
+                  <div class="link-name">First Bank (Plaid)</div>
+                  <div class="link-url">plaid.com · ···1842 · Last synced 2h ago</div>
+                </div>
+                <span class="link-type" style="color:var(--green);border-color:rgba(74,171,109,0.3)">Banking</span>
+                <div class="link-actions">
+                  <button class="link-act-btn" onclick="toast('Re-syncing…')">↺</button>
+                  <button class="link-act-btn" onclick="toast('Unlinked.')" style="color:var(--rose)">×</button>
+                </div>
+              </div>
+
+              <div class="link-item">
+                <div class="link-icon" style="background:rgba(200,168,75,0.1);border-color:rgba(200,168,75,0.2)">📋</div>
+                <div class="link-info">
+                  <div class="link-name">Notion Workspace</div>
+                  <div class="link-url">notion.so · marcus-design · 12 connected databases</div>
+                </div>
+                <span class="link-type" style="color:var(--gold);border-color:rgba(200,168,75,0.3)">Workspace</span>
+                <div class="link-actions">
+                  <button class="link-act-btn" onclick="toast('Opening Notion…')">↗</button>
+                  <button class="link-act-btn" onclick="toast('Unlinked.')" style="color:var(--rose)">×</button>
+                </div>
+              </div>
+
+              <div class="link-item">
+                <div class="link-icon" style="background:rgba(124,92,191,0.1);border-color:rgba(124,92,191,0.2)">📅</div>
+                <div class="link-info">
+                  <div class="link-name">Google Calendar</div>
+                  <div class="link-url">calendar.google.com · marcus@example.com · 3 calendars</div>
+                </div>
+                <span class="link-type" style="color:var(--violet);border-color:rgba(124,92,191,0.3)">Calendar</span>
+                <div class="link-actions">
+                  <button class="link-act-btn" onclick="toast('Opening Calendar…')">↗</button>
+                  <button class="link-act-btn" onclick="toast('Unlinked.')" style="color:var(--rose)">×</button>
+                </div>
+              </div>
+
+              <div class="link-item">
+                <div class="link-icon" style="background:rgba(58,124,200,0.1);border-color:rgba(58,124,200,0.2)">💼</div>
+                <div class="link-info">
+                  <div class="link-name">LinkedIn</div>
+                  <div class="link-url">linkedin.com/in/marcuskimani · 1.2K connections</div>
+                </div>
+                <span class="link-type" style="color:var(--blue);border-color:rgba(58,124,200,0.3)">Social</span>
+                <div class="link-actions">
+                  <button class="link-act-btn" onclick="toast('Opening LinkedIn…')">↗</button>
+                  <button class="link-act-btn" onclick="toast('Unlinked.')" style="color:var(--rose)">×</button>
+                </div>
+              </div>
+
+              <div class="link-item">
+                <div class="link-icon" style="background:rgba(200,124,58,0.1);border-color:rgba(200,124,58,0.2)">🎨</div>
+                <div class="link-info">
+                  <div class="link-name">Dribbble Portfolio</div>
+                  <div class="link-url">dribbble.com/marcuskimani · 48 shots</div>
+                </div>
+                <span class="link-type" style="color:var(--orange);border-color:rgba(200,124,58,0.3)">Portfolio</span>
+                <div class="link-actions">
+                  <button class="link-act-btn" onclick="toast('Opening Dribbble…')">↗</button>
+                  <button class="link-act-btn" onclick="toast('Unlinked.')" style="color:var(--rose)">×</button>
+                </div>
+              </div>
+
+              <div class="link-item">
+                <div class="link-icon" style="background:rgba(196,92,122,0.1);border-color:rgba(196,92,122,0.2)">✉️</div>
+                <div class="link-info">
+                  <div class="link-name">Gmail (Work)</div>
+                  <div class="link-url">marcus@example.com · 3 labels connected</div>
+                </div>
+                <span class="link-type" style="color:var(--rose);border-color:rgba(196,92,122,0.3)">Email</span>
+                <div class="link-actions">
+                  <button class="link-act-btn" onclick="toast('Opening Gmail…')">↗</button>
+                  <button class="link-act-btn" onclick="toast('Unlinked.')" style="color:var(--rose)">×</button>
+                </div>
+              </div>
+
+              <div class="link-item">
+                <div class="link-icon" style="background:rgba(74,80,104,0.2);border-color:var(--border2)">🔗</div>
+                <div class="link-info">
+                  <div class="link-name">Personal Website</div>
+                  <div class="link-url">marcuskimani.design</div>
+                </div>
+                <span class="link-type" style="color:var(--text3);border-color:var(--border2)">Website</span>
+                <div class="link-actions">
+                  <button class="link-act-btn" onclick="toast('Opening site…')">↗</button>
+                  <button class="link-act-btn" onclick="toast('Removed.')" style="color:var(--rose)">×</button>
+                </div>
+              </div>
+
+              <div class="add-link-row" onclick="openModal('addLink')">
+                <span style="font-size:12px;color:var(--text3)">＋</span>
+                <span>Add a link, tool, or integration</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── INTEGRATIONS ── -->
+      <div id="page-integrations" class="subpage">
+        <div class="card">
+          <div class="card-hdr"><span class="card-hdr-title">Connected Integrations</span><span class="card-hdr-badge badge-cyan">4 Active</span><button class="g-btn primary" style="margin-left:auto" onclick="toast('Opening integration catalog…')">+ Connect</button></div>
+          <div>
+            <div class="int-item">
+              <div class="int-icon" style="background:rgba(0,212,170,0.06)">💳</div>
+              <div class="int-info">
+                <div class="int-name">Stripe</div>
+                <div class="int-detail">Payments · 3 products · Last event: 2h ago</div>
+              </div>
+              <span class="int-status connected">Connected</span>
+              <button class="g-btn" style="margin-left:8px" onclick="toast('Stripe settings…')">Configure</button>
+            </div>
+            <div class="int-item">
+              <div class="int-icon" style="background:rgba(74,171,109,0.06)">🏦</div>
+              <div class="int-info">
+                <div class="int-name">Plaid (First Bank)</div>
+                <div class="int-detail">Banking · ···1842 · Syncing every 2 hours</div>
+              </div>
+              <span class="int-status connected">Connected</span>
+              <button class="g-btn" style="margin-left:8px" onclick="toast('Plaid settings…')">Configure</button>
+            </div>
+            <div class="int-item">
+              <div class="int-icon" style="background:rgba(200,168,75,0.06)">📋</div>
+              <div class="int-info">
+                <div class="int-name">Notion</div>
+                <div class="int-detail">Workspace · 12 databases connected</div>
+              </div>
+              <span class="int-status connected">Connected</span>
+              <button class="g-btn" style="margin-left:8px" onclick="toast('Notion settings…')">Configure</button>
+            </div>
+            <div class="int-item">
+              <div class="int-icon" style="background:rgba(124,92,191,0.06)">📅</div>
+              <div class="int-info">
+                <div class="int-name">Google Calendar</div>
+                <div class="int-detail">Calendar · 3 calendars · Time signal source</div>
+              </div>
+              <span class="int-status pending">Re-auth needed</span>
+              <button class="g-btn" style="margin-left:8px;border-color:var(--gold);color:var(--gold)" onclick="toast('Re-authenticating…')">Re-connect</button>
+            </div>
+            <div class="int-item">
+              <div class="int-icon">🔮</div>
+              <div class="int-info">
+                <div class="int-name">PayPal</div>
+                <div class="int-detail">Not connected · Secondary payments source</div>
+              </div>
+              <span class="int-status disconnected">Disconnected</span>
+              <button class="g-btn primary" style="margin-left:8px" onclick="toast('Connecting PayPal…')">Connect</button>
+            </div>
+            <div class="int-item">
+              <div class="int-icon">🕒</div>
+              <div class="int-info">
+                <div class="int-name">Toggl Track</div>
+                <div class="int-detail">Not connected · Time signal source</div>
+              </div>
+              <span class="int-status disconnected">Disconnected</span>
+              <button class="g-btn primary" style="margin-left:8px" onclick="toast('Connecting Toggl…')">Connect</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── PORTFOLIOS ── -->
+      <div id="page-portfolios" class="subpage">
+        <div class="card">
+          <div class="card-hdr"><span class="card-hdr-title">Portfolios — Professional Profile</span><button class="g-btn primary" style="margin-left:auto" onclick="toast('Creating new portfolio…')">+ New Portfolio</button></div>
+          <div class="card-body" style="display:flex;flex-direction:column;gap:8px">
+            <div style="padding:10px;border:1px solid rgba(0,212,170,0.2);background:rgba(0,212,170,0.03);border-radius:3px">
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+                <div style="font-family:var(--mono);font-size:9px;font-weight:600;color:var(--text)">Main Client Portfolio</div>
+                <span class="card-hdr-badge badge-cyan">Primary</span>
+              </div>
+              <div style="font-family:var(--sans);font-size:8px;color:var(--text3);margin-bottom:8px">All active client relationships and income events. Default portfolio for this profile.</div>
+              <div style="display:flex;gap:12px">
+                <span style="font-family:var(--mono);font-size:8px;color:var(--text2)">11 clients</span>
+                <span style="font-family:var(--mono);font-size:8px;color:var(--cyan)">$9,200/mo</span>
+                <span style="font-family:var(--mono);font-size:8px;color:var(--gold)">Avg $62/hr</span>
+              </div>
+              <div style="display:flex;gap:5px;margin-top:8px">
+                <button class="g-btn" onclick="window.location.href='portfolio.html'">Open →</button>
+                <button class="g-btn" onclick="toast('Portfolio settings…')">Settings</button>
+              </div>
+            </div>
+            <div style="padding:10px;border:1px solid var(--border);background:var(--bg2);border-radius:3px">
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+                <div style="font-family:var(--mono);font-size:9px;font-weight:600;color:var(--text)">Side Projects</div>
+                <span class="card-hdr-badge badge-violet">Secondary</span>
+              </div>
+              <div style="font-family:var(--sans);font-size:8px;color:var(--text3);margin-bottom:8px">Pre-revenue projects, personal ventures, experimental work.</div>
+              <div style="display:flex;gap:12px">
+                <span style="font-family:var(--mono);font-size:8px;color:var(--text2)">3 items</span>
+                <span style="font-family:var(--mono);font-size:8px;color:var(--violet)">KVS tracked</span>
+              </div>
+              <div style="display:flex;gap:5px;margin-top:8px">
+                <button class="g-btn" onclick="toast('Opening side projects…')">Open →</button>
+                <button class="g-btn" onclick="toast('Portfolio settings…')">Settings</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── PROFILES ── -->
+      <div id="page-profiles" class="subpage">
+        <div class="card">
+          <div class="card-hdr">
+            <span class="card-hdr-title">All Profiles</span>
+            <span class="card-hdr-badge badge-gold">3 Profiles</span>
+            <button class="g-btn primary" style="margin-left:auto" onclick="openModal('newProfile')">+ New Profile</button>
+          </div>
+          <div class="card-body">
+            <div class="sec-label" style="margin-bottom:10px">Profiles are independent identity contexts. Each has its own linktree, integrations, portfolios, and preferences.</div>
+            <div class="profile-cards">
+
+              <div class="profile-card active-profile">
+                <div class="pc-avatar" style="background:linear-gradient(135deg,var(--cyan),var(--violet))">MK</div>
+                <div class="pc-info">
+                  <div class="pc-name">Marcus Kimani</div>
+                  <div class="pc-type">Professional · UX Designer & Consultant</div>
+                </div>
+                <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px">
+                  <div class="pc-status"><div class="pc-dot"></div><span class="pc-status-label">Active</span></div>
+                  <span class="card-hdr-badge badge-cyan">Professional</span>
+                </div>
+                <button class="g-btn" onclick="toast('Already active.')">Active</button>
+              </div>
+
+              <div class="profile-card">
+                <div class="pc-avatar" style="background:linear-gradient(135deg,var(--blue),var(--violet))">M</div>
+                <div class="pc-info">
+                  <div class="pc-name">Marcus</div>
+                  <div class="pc-type">Personal · Personal projects & social</div>
+                </div>
+                <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px">
+                  <div class="pc-status"><div class="pc-dot" style="background:var(--text3)"></div><span class="pc-status-label" style="color:var(--text3)">Inactive</span></div>
+                  <span class="card-hdr-badge badge-blue">Personal</span>
+                </div>
+                <button class="g-btn" onclick="toast('Switched to Personal profile.')">Switch</button>
+              </div>
+
+              <div class="profile-card">
+                <div class="pc-avatar" style="background:linear-gradient(135deg,var(--gold),var(--orange))">MK</div>
+                <div class="pc-info">
+                  <div class="pc-name">M. Kimani (Studio)</div>
+                  <div class="pc-type">Work · Kimani Studio LLC entity</div>
+                </div>
+                <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px">
+                  <div class="pc-status"><div class="pc-dot" style="background:var(--text3)"></div><span class="pc-status-label" style="color:var(--text3)">Inactive</span></div>
+                  <span class="card-hdr-badge badge-gold">Work</span>
+                </div>
+                <button class="g-btn" onclick="toast('Switched to Studio profile.')">Switch</button>
+              </div>
+
+              <button class="add-profile-btn" onclick="openModal('newProfile')">
+                <span style="font-size:13px">＋</span>
+                <span>Create new profile</span>
+                <span style="margin-left:auto;font-size:7px;opacity:0.5">Private / Personal / Professional / Work</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-hdr"><span class="card-hdr-title">Profile Isolation Rules</span></div>
+          <div class="card-body">
+            <div style="display:flex;flex-direction:column;gap:6px">
+              <div class="pref-row">
+                <div class="pref-left">
+                  <div class="pref-name">Separate income streams per profile</div>
+                  <div class="pref-desc">Income events are attributed only to the profile whose connected accounts received them</div>
+                </div>
+                <div class="toggle on" onclick="this.classList.toggle('on')"></div>
+              </div>
+              <div class="pref-row">
+                <div class="pref-left">
+                  <div class="pref-name">Profile-scoped integrations</div>
+                  <div class="pref-desc">Each profile has its own set of connected tools and accounts — no cross-contamination</div>
+                </div>
+                <div class="toggle on" onclick="this.classList.toggle('on')"></div>
+              </div>
+              <div class="pref-row">
+                <div class="pref-left">
+                  <div class="pref-name">Shared identity score across profiles</div>
+                  <div class="pref-desc">Merge I(t) signals from all profiles into one unified identity score</div>
+                </div>
+                <div class="toggle" onclick="this.classList.toggle('on')"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── IDENTITY EXPORT ── -->
+      <div id="page-identity-export" class="subpage">
+        <div class="card">
+          <div class="card-hdr"><span class="card-hdr-title">Identity Export</span><span class="card-hdr-badge badge-violet">I(t) Model</span></div>
+          <div class="card-body">
+            <div style="font-family:var(--sans);font-size:9px;color:var(--text2);line-height:1.6;margin-bottom:12px">Export a verified, behavioral snapshot of your economic identity. This is not a resume — it is a longitudinal, evidence-based record of how you convert time and effort into income, derived from real financial data.</div>
+            <div style="display:flex;flex-direction:column;gap:6px">
+              <div class="pref-row">
+                <div class="pref-left">
+                  <div class="pref-name">Include EHR history</div>
+                  <div class="pref-desc">Effective hourly rate over time by client segment</div>
+                </div>
+                <div class="toggle on" onclick="this.classList.toggle('on')"></div>
+              </div>
+              <div class="pref-row">
+                <div class="pref-left">
+                  <div class="pref-name">Include client count (anonymized)</div>
+                  <div class="pref-desc">Number of verified income relationships — names redacted</div>
+                </div>
+                <div class="toggle on" onclick="this.classList.toggle('on')"></div>
+              </div>
+              <div class="pref-row">
+                <div class="pref-left">
+                  <div class="pref-name">Include specialization signals</div>
+                  <div class="pref-desc">Detected domain clusters from income patterns</div>
+                </div>
+                <div class="toggle on" onclick="this.classList.toggle('on')"></div>
+              </div>
+              <div class="pref-row">
+                <div class="pref-left">
+                  <div class="pref-name">Include raw income figures</div>
+                  <div class="pref-desc">Show exact earnings — requires explicit confirmation</div>
+                </div>
+                <div class="toggle" onclick="this.classList.toggle('on')"></div>
+              </div>
+            </div>
+            <div style="display:flex;gap:6px;margin-top:12px">
+              <button class="g-btn primary" onclick="toast('Generating export…')">Export as PDF</button>
+              <button class="g-btn" onclick="toast('Generating JSON…')">Export as JSON</button>
+              <button class="g-btn" onclick="toast('Copying shareable link…')">Shareable Link</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── SECURITY ── -->
+      <div id="page-security" class="subpage">
+        <div class="card">
+          <div class="card-hdr"><span class="card-hdr-title">Security</span></div>
+          <div class="card-body" style="display:flex;flex-direction:column;gap:8px">
+            <div class="field-group">
+              <label class="field-label">Current Password</label>
+              <input class="field-input" type="password" placeholder="••••••••••">
+            </div>
+            <div class="field-row">
+              <div class="field-group">
+                <label class="field-label">New Password</label>
+                <input class="field-input" type="password" placeholder="••••••••••">
+              </div>
+              <div class="field-group">
+                <label class="field-label">Confirm New Password</label>
+                <input class="field-input" type="password" placeholder="••••••••••">
+              </div>
+            </div>
+            <div class="pref-row" style="margin-top:4px">
+              <div class="pref-left">
+                <div class="pref-name">Two-factor authentication</div>
+                <div class="pref-desc">Require 2FA on sign-in and profile switching</div>
+              </div>
+              <div class="toggle on" onclick="this.classList.toggle('on')"></div>
+            </div>
+            <div class="pref-row">
+              <div class="pref-left">
+                <div class="pref-name">Require re-auth for profile switch</div>
+                <div class="pref-desc">Prompt for password when switching between profiles</div>
+              </div>
+              <div class="toggle" onclick="this.classList.toggle('on')"></div>
+            </div>
+            <button class="g-btn primary" style="width:fit-content;margin-top:4px" onclick="toast('Password updated.')">Update Password</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── DANGER ── -->
+      <div id="page-danger" class="subpage">
+        <div class="danger-card">
+          <div class="card-hdr"><span class="card-hdr-title">Danger Zone</span></div>
+          <div style="padding-top:8px">
+            <div class="danger-item">
+              <div class="danger-info">
+                <div class="danger-name">Archive this profile</div>
+                <div class="danger-desc">Hides the profile but preserves all data. Reversible.</div>
+              </div>
+              <button class="g-btn danger" onclick="toast('Profile archived.')">Archive Profile</button>
+            </div>
+            <div class="danger-item">
+              <div class="danger-info">
+                <div class="danger-name">Reset all preferences</div>
+                <div class="danger-desc">Restore all display and insight preferences to defaults for this profile.</div>
+              </div>
+              <button class="g-btn danger" onclick="toast('Preferences reset.')">Reset Preferences</button>
+            </div>
+            <div class="danger-item">
+              <div class="danger-info">
+                <div class="danger-name">Disconnect all integrations</div>
+                <div class="danger-desc">Removes all connected accounts from this profile. Income data is preserved.</div>
+              </div>
+              <button class="g-btn danger" onclick="toast('All integrations disconnected.')">Disconnect All</button>
+            </div>
+            <div class="danger-item">
+              <div class="danger-info">
+                <div class="danger-name">Delete this profile</div>
+                <div class="danger-desc">Permanently deletes this profile, its preferences, and linktree. Income data is not deleted.</div>
+              </div>
+              <button class="g-btn danger" onclick="toast('Confirmation required — check email.')">Delete Profile</button>
+            </div>
+            <div class="danger-item">
+              <div class="danger-info">
+                <div class="danger-name">Delete Kogi account</div>
+                <div class="danger-desc">Permanently deletes your entire account, all profiles, and all data. Irreversible.</div>
+              </div>
+              <button class="g-btn danger" onclick="toast('Deletion request sent — check email.')">Delete Account</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /content -->
+  </div><!-- /main -->
+</div><!-- /app -->
+
+<!-- ── Switch Profile Modal ── -->
+<div class="modal-overlay" id="modal-switchProfile">
+  <div class="modal">
+    <div class="modal-hdr">
+      <span class="modal-title">Switch Active Profile</span>
+      <button class="modal-close" onclick="closeModal('switchProfile')">✕</button>
+    </div>
+    <div class="modal-body" style="display:flex;flex-direction:column;gap:6px">
+      <div style="font-family:var(--mono);font-size:7px;color:var(--text3);margin-bottom:6px;letter-spacing:0.1em;text-transform:uppercase">Select a profile to activate</div>
+      <div class="profile-card active-profile" onclick="closeModal('switchProfile');toast('Already active.')">
+        <div class="pc-avatar" style="background:linear-gradient(135deg,var(--cyan),var(--violet))">MK</div>
+        <div class="pc-info"><div class="pc-name">Marcus Kimani</div><div class="pc-type">Professional</div></div>
+        <div class="pc-status"><div class="pc-dot"></div><span class="pc-status-label">Active</span></div>
+      </div>
+      <div class="profile-card" onclick="closeModal('switchProfile');toast('Switched to Personal.')">
+        <div class="pc-avatar" style="background:linear-gradient(135deg,var(--blue),var(--violet))">M</div>
+        <div class="pc-info"><div class="pc-name">Marcus</div><div class="pc-type">Personal</div></div>
+        <div class="pc-status"><div class="pc-dot" style="background:var(--text3)"></div><span class="pc-status-label" style="color:var(--text3)">Inactive</span></div>
+      </div>
+      <div class="profile-card" onclick="closeModal('switchProfile');toast('Switched to Studio.')">
+        <div class="pc-avatar" style="background:linear-gradient(135deg,var(--gold),var(--orange))">MK</div>
+        <div class="pc-info"><div class="pc-name">M. Kimani (Studio)</div><div class="pc-type">Work</div></div>
+        <div class="pc-status"><div class="pc-dot" style="background:var(--text3)"></div><span class="pc-status-label" style="color:var(--text3)">Inactive</span></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="g-btn" onclick="closeModal('switchProfile')">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── New Profile Modal ── -->
+<div class="modal-overlay" id="modal-newProfile">
+  <div class="modal">
+    <div class="modal-hdr">
+      <span class="modal-title">Create New Profile</span>
+      <button class="modal-close" onclick="closeModal('newProfile')">✕</button>
+    </div>
+    <div class="modal-body" style="display:flex;flex-direction:column;gap:8px">
+      <div class="field-group">
+        <label class="field-label">Profile Name</label>
+        <input class="field-input" placeholder="e.g. My Studio, Side Work…">
+      </div>
+      <div class="field-group">
+        <label class="field-label">Profile Type</label>
+        <div class="type-selector" style="margin-top:4px">
+          <div class="type-pill personal active" onclick="setType(this,'personal')">Personal</div>
+          <div class="type-pill professional" onclick="setType(this,'professional')">Professional</div>
+          <div class="type-pill work" onclick="setType(this,'work')">Work</div>
+          <div class="type-pill private" onclick="setType(this,'private')">Private</div>
+        </div>
+      </div>
+      <div class="field-group">
+        <label class="field-label">Short Description</label>
+        <input class="field-input" placeholder="What is this profile for?">
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="g-btn" onclick="closeModal('newProfile')">Cancel</button>
+      <button class="g-btn primary" onclick="closeModal('newProfile');toast('New profile created.')">Create Profile</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── Add Link Modal ── -->
+<div class="modal-overlay" id="modal-addLink">
+  <div class="modal">
+    <div class="modal-hdr">
+      <span class="modal-title">Add Link / Integration</span>
+      <button class="modal-close" onclick="closeModal('addLink')">✕</button>
+    </div>
+    <div class="modal-body" style="display:flex;flex-direction:column;gap:8px">
+      <div class="field-group">
+        <label class="field-label">Name</label>
+        <input class="field-input" placeholder="e.g. Twitter, Calendly, Upwork…">
+      </div>
+      <div class="field-group">
+        <label class="field-label">URL</label>
+        <input class="field-input" placeholder="https://…">
+      </div>
+      <div class="field-group">
+        <label class="field-label">Type</label>
+        <select class="field-input">
+          <option>Social</option>
+          <option>Portfolio</option>
+          <option>Payments</option>
+          <option>Banking</option>
+          <option>Workspace</option>
+          <option>Calendar</option>
+          <option>Email</option>
+          <option>Website</option>
+          <option>Contact</option>
+          <option>Other</option>
+        </select>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="g-btn" onclick="closeModal('addLink')">Cancel</button>
+      <button class="g-btn primary" onclick="closeModal('addLink');toast('Link added to linktree.')">Add Link</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast" class="toast"></div>
+
+<script>
+function showPage(id){
+  document.querySelectorAll('.subpage').forEach(p=>p.classList.remove('active'));
+  const el=document.getElementById('page-'+id);
+  if(el) el.classList.add('active');
+  document.querySelectorAll('.s-item').forEach(i=>i.classList.remove('active'));
+  event.currentTarget.classList.add('active');
+  const titles={identity:'Identity',preferences:'Preferences',linktree:'Linktree',integrations:'Integrations',portfolios:'Portfolios',profiles:'Manage Profiles','identity-export':'Identity Export',security:'Security',danger:'Danger Zone'};
+  document.getElementById('tbSub').textContent='/ '+(titles[id]||id);
+}
+function toast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2500);
+}
+function openModal(id){
+  document.getElementById('modal-'+id).classList.add('open');
+}
+function closeModal(id){
+  document.getElementById('modal-'+id).classList.remove('open');
+}
+function setType(el,type){
+  const container=el.closest('.type-selector');
+  container.querySelectorAll('.type-pill').forEach(p=>p.classList.remove('active'));
+  el.classList.add('active');
+}
+function updateInitials(){
+  const f=document.getElementById('firstName').value;
+  const l=document.getElementById('lastName').value;
+  const initials=((f[0]||'')+(l[0]||'')).toUpperCase();
+  document.getElementById('bigAvatarInitials').textContent=initials||'?';
+  document.getElementById('mainAvatar').textContent=initials||'?';
+}
+document.querySelectorAll('.modal-overlay').forEach(o=>{
+  o.addEventListener('click',function(e){if(e.target===this)this.classList.remove('open');});
+});
+</script>
+</body>
+</html>

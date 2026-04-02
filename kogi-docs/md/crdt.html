@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Apapo · CRDT / Sync Monitor</title>
+<link rel="stylesheet" href="hg-shared.css">
+<style>
+.crdt-op{display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid var(--border);font-family:var(--mono);font-size:9px}
+.crdt-op-type{color:var(--cyan);width:120px;flex-shrink:0}
+.crdt-op-field{color:var(--text3);width:100px;flex-shrink:0}
+.crdt-op-val{color:var(--text2);flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.crdt-op-actor{color:var(--text3);width:80px;text-align:right;flex-shrink:0}
+.vec-clock{display:flex;flex-wrap:wrap;gap:4px}
+.vc-cell{background:var(--bg3);border:1px solid var(--border2);border-radius:3px;padding:4px 8px;font-family:var(--mono);font-size:9px}
+.vc-node{color:var(--text3);font-size:8px}
+.vc-ts{color:var(--cyan);font-size:10px;font-weight:600}
+.peer-row{display:flex;align-items:center;gap:10px;padding:8px 12px;border-bottom:1px solid var(--border)}
+.peer-status{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.peer-node{font-family:var(--mono);font-size:10px;color:var(--text);flex:1}
+.peer-lag{font-family:var(--mono);font-size:9px}
+.peer-last{font-family:var(--mono);font-size:8px;color:var(--text3)}
+</style>
+</head>
+<body>
+<nav class="topnav">
+  <span class="topnav-logo">APAPO</span>
+  <div class="topnav-sep"></div>
+  <div class="topnav-breadcrumb"><a href="index.html">Dashboard</a><span class="sep">›</span><span class="cur">CRDT / Sync Monitor</span></div>
+  <div class="topnav-spacer"></div>
+  <div class="topnav-actions"><button class="btn btn-primary btn-sm" onclick="showToast('Triggering manual sync…')">⟳ Force Sync</button></div>
+</nav>
+<nav class="iconav" id="hg-iconav"></nav>
+
+<div class="hg-main no-subnav" style="left:var(--nav-w)">
+  <div class="hg-toolbar">
+    <span class="hg-toolbar-title">CRDT / Sync Monitor</span>
+    <span class="hg-toolbar-sub">HG-CRDT · VectorClock · CrdtLog · Federation Peers</span>
+    <div class="ml-auto flex gap-2">
+      <button class="btn btn-ghost btn-sm" onclick="showToast('Exporting CRDT log…')">⤓ Export Log</button>
+      <button class="btn btn-ghost btn-sm" id="live-btn" onclick="toggleLive()">◉ Live</button>
+    </div>
+  </div>
+  <div class="hg-tabs">
+    <div class="hg-tab active" onclick="switchCTab('overview',this)">Overview</div>
+    <div class="hg-tab" onclick="switchCTab('crdtlog',this)">CrdtLog</div>
+    <div class="hg-tab" onclick="switchCTab('vectorclock',this)">VectorClock</div>
+    <div class="hg-tab" onclick="switchCTab('federation',this)">Federation Peers</div>
+    <div class="hg-tab" onclick="switchCTab('conflicts',this)">Conflicts</div>
+  </div>
+  <div class="hg-content" id="crdt-body"></div>
+</div>
+
+<div class="toast" id="hg-toast"></div>
+<script src="hg-nav.js"></script>
+<script src="hg-data.js"></script>
+<script>
+renderNav('crdt');
+const { fedPeers, grids } = HGData;
+let liveInterval = null;
+let cTab = 'overview';
+
+const CRDT_OPS = [
+  {type:'SetField',component:'kogi.portfolio.components',field:'health_score',value:'87',actor:'KogiHealthEngine',ts:'14:02:11',crdt:'LWW'},
+  {type:'AddToSet',component:'kogi.portfolio.components',field:'tags',value:'"platform"',actor:'@alice-dev',ts:'14:01:48',crdt:'OrSet'},
+  {type:'SetField',component:'kogi.portfolio.components',field:'version',value:'"2.1.3"',actor:'@alice-dev',ts:'14:01:22',crdt:'MaxRegister'},
+  {type:'AddEdge',component:'hypergraph',field:'Collaborates',value:'@alice↔@carol',actor:'@alice-dev',ts:'14:00:58',crdt:'OrSet'},
+  {type:'SetField',component:'ume.kernel.modules',field:'lifecycle_state',value:'Running',actor:'kernel-supervisor',ts:'13:59:42',crdt:'LWW'},
+  {type:'GrowCounter',component:'kogi.portfolio.components',field:'views',value:'+1 → 1241',actor:'anon',ts:'13:59:18',crdt:'GwC'},
+  {type:'SetField',component:'qala.solutions',field:'health_score',value:'71',actor:'QalaAI',ts:'13:58:55',crdt:'LWW'},
+  {type:'RemoveFromSet',component:'kogi.portfolio.components',field:'tags',value:'"draft"',actor:'@alice-dev',ts:'13:58:32',crdt:'OrSet'},
+];
+
+function render() {
+  const body = document.getElementById('crdt-body');
+  if (cTab==='overview') body.innerHTML = renderOverview();
+  else if (cTab==='crdtlog') body.innerHTML = renderCrdtLog();
+  else if (cTab==='vectorclock') body.innerHTML = renderVectorClock();
+  else if (cTab==='federation') body.innerHTML = renderFederation();
+  else if (cTab==='conflicts') body.innerHTML = renderConflicts();
+}
+
+function renderOverview() {
+  const synced = fedPeers.filter(p=>p.status==='synced').length;
+  return `
+    <div class="stat-grid grid-4 mb-3">
+      ${[['Synced Peers',synced+'/'+fedPeers.length,'var(--green)'],['CrdtLog Ops',CRDT_OPS.length+' recent','var(--cyan)'],['Pending Ops',fedPeers.reduce((s,p)=>s+p.crdt_ops_pending,0),'var(--gold)'],['Conflicts','2 open','var(--rose)']].map(([l,v,c])=>`
+        <div class="stat-cell"><div class="stat-label">${l}</div><div class="stat-val" style="color:${c};font-size:14px">${v}</div></div>`).join('')}
+    </div>
+    <div class="grid-2 gap-3">
+      <div class="hg-card">
+        <div class="hg-card-header"><div class="hg-card-title">Recent CrdtLog Operations</div></div>
+        <div class="hg-card-body" style="padding:8px 12px">
+          ${CRDT_OPS.slice(0,5).map(op=>`
+            <div class="crdt-op">
+              <span class="crdt-op-type">${op.type}</span>
+              <span class="crdt-op-field" style="color:var(--blue)">${op.field}</span>
+              <span class="crdt-op-val">${op.value}</span>
+              <span class="badge ${op.crdt==='LWW'?'badge-blue':op.crdt==='OrSet'?'badge-green':op.crdt==='MaxRegister'?'badge-violet':'badge-gold'}" style="flex-shrink:0">${op.crdt}</span>
+              <span class="crdt-op-actor">${op.ts}</span>
+            </div>`).join('')}
+        </div>
+      </div>
+      <div class="hg-card">
+        <div class="hg-card-header"><div class="hg-card-title">Federation Peer Status</div></div>
+        <div class="hg-card-body" style="padding:0">
+          ${fedPeers.map(p=>`
+            <div class="peer-row">
+              <div class="peer-status" style="background:${p.status==='synced'?'var(--green)':p.status==='lagging'?'var(--gold)':'var(--rose)'}"></div>
+              <span class="peer-node">${p.node_id}</span>
+              <span class="peer-lag" style="color:${p.lag_ops>50?'var(--rose)':p.lag_ops>10?'var(--gold)':'var(--green)'}">${p.lag_ops} pending</span>
+              <span class="peer-last">${p.last_seen}</span>
+            </div>`).join('')}
+        </div>
+      </div>
+    </div>
+    <div class="hg-card mt-3">
+      <div class="hg-card-header"><div class="hg-card-title">CRDT Semantics Reference</div></div>
+      <div class="hg-card-body">
+        <table class="hg-table">
+          <thead><tr><th>CRDT Type</th><th>Use Case</th><th>Merge Rule</th><th>Example Field</th></tr></thead>
+          <tbody>
+            ${[['LWW','Text, status, config','Most recent timestamp wins','name, status, description'],['OR-Set','Tags, owners, children','Concurrent adds survive; tagged removes','tags, owners, toolbox_ids'],['MaxRegister','Version numbers','Always take highest value','version, monotonic counters'],['GrowOnlyCounter','Impressions, views','Only increments, never decrements','views, likes'],['P/N Counter','Budget spent','+/− deltas commute across nodes','budget_spent, consumed'],['Lattice','Lifecycle state','State must follow partial order (DAG)','lifecycle_state, status (v2)']].map(([t,u,m,e])=>`
+              <tr><td><span class="crdt crdt-${t.toLowerCase().replace(/[^a-z]/g,'').slice(0,3)}">${t}</span></td><td style="font-size:9px">${u}</td><td style="font-size:9px;color:var(--text3)">${m}</td><td style="font-size:9px;color:var(--blue)">${e}</td></tr>`).join('')}
+          </tbody>
+        </table>
+      </div>
+    </div>`;
+}
+
+function renderCrdtLog() {
+  return `<div class="hg-card">
+    <div class="hg-card-header"><div class="hg-card-title">CrdtLog — Operation Buffer</div><div class="hg-card-sub">Append-only CRDT operation log · delta sync to federation peers</div></div>
+    <div class="hg-card-body" style="padding:0">
+      <table class="hg-table">
+        <thead><tr><th>Op Type</th><th>Component</th><th>Field</th><th>Value</th><th>CRDT</th><th>Actor</th><th>Timestamp</th></tr></thead>
+        <tbody>
+          ${CRDT_OPS.map(op=>`<tr>
+            <td style="color:var(--cyan)">${op.type}</td>
+            <td style="font-size:9px;color:var(--text3)">${op.component.split('.').slice(-1)[0]}</td>
+            <td style="color:var(--blue)">${op.field}</td>
+            <td style="font-size:9px">${op.value}</td>
+            <td><span class="crdt crdt-lww">${op.crdt}</span></td>
+            <td style="color:var(--text3);font-size:9px">${op.actor}</td>
+            <td style="color:var(--text3)">${op.ts}</td>
+          </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>
+  </div>`;
+}
+
+function renderVectorClock() {
+  const nodes = [['us-east:kogi-01',42],['eu-west:kogi-02',38],['ap-east:kogi-03',31],['us-east:ume-01',28],['eu-west:ume-02',27],['eu-west:qala-01',18]];
+  return `<div class="hg-card mb-3">
+    <div class="hg-card-header"><div class="hg-card-title">VectorClock State</div><div class="hg-card-sub">NodeId → logical timestamp map for causal ordering</div></div>
+    <div class="hg-card-body">
+      <div class="vec-clock">
+        ${nodes.map(([n,ts])=>`<div class="vc-cell"><div class="vc-node">${n}</div><div class="vc-ts">${ts}</div></div>`).join('')}
+      </div>
+      <div style="margin-top:12px;font-family:var(--mono);font-size:9px;color:var(--text3);background:var(--bg3);border-radius:4px;padding:8px;line-height:1.7">
+        <span style="color:var(--text2)">tick(node_id)</span> — increment this node's counter; return new value<br>
+        <span style="color:var(--text2)">merge(other)</span> — element-wise max of all counters<br>
+        <span style="color:var(--text2)">happened_before(other)</span> — true iff self ≤ other on all nodes and ≠ other<br>
+        <span style="color:var(--text2)">concurrent_with(other)</span> — true iff neither dominates the other → LWW tiebreak on last_actor
+      </div>
+    </div>
+  </div>
+  <div class="hg-card">
+    <div class="hg-card-header"><div class="hg-card-title">Causal Ordering Visualization</div></div>
+    <div class="hg-card-body">
+      <svg width="100%" height="120" viewBox="0 0 700 120">
+        ${nodes.slice(0,4).map(([n,ts],i)=>{
+          const y=20+i*24;
+          return `<text x="10" y="${y+5}" style="font-family:IBM Plex Mono;font-size:8px;fill:var(--text3)">${n.split(':')[1]}</text>
+            ${Array.from({length:Math.min(ts,12)},(_,j)=>`<circle cx="${160+j*40}" cy="${y}" r="5" fill="var(--cyan)" opacity="${0.4+j*0.05}"/>`).join('')}
+            <line x1="160" y1="${y}" x2="${160+Math.min(ts,12)*40}" y2="${y}" stroke="var(--cyan)" stroke-width="1" opacity="0.2"/>`;
+        }).join('')}
+      </svg>
+    </div>
+  </div>`;
+}
+
+function renderFederation() {
+  const statusColors = {synced:'var(--green)',lagging:'var(--gold)',disconnected:'var(--rose)'};
+  return `<div class="stat-grid grid-3 mb-3">
+    ${[['Synced',fedPeers.filter(p=>p.status==='synced').length,'var(--green)'],['Lagging',fedPeers.filter(p=>p.status==='lagging').length,'var(--gold)'],['Disconnected',fedPeers.filter(p=>p.status==='disconnected').length,'var(--rose)']].map(([l,v,c])=>`
+      <div class="stat-cell"><div class="stat-label">${l}</div><div class="stat-val" style="color:${c}">${v}</div></div>`).join('')}
+  </div>
+  <div class="hg-card mb-3">
+    <div class="hg-card-header"><div class="hg-card-title">Federation Peers — All Grids</div></div>
+    <div class="hg-card-body" style="padding:0">
+      ${fedPeers.map(p=>`
+        <div class="peer-row">
+          <div class="peer-status" style="background:${statusColors[p.status]||'#888'}"></div>
+          <div style="flex:1">
+            <div class="peer-node">${p.node_id}</div>
+            <div style="font-family:var(--mono);font-size:8px;color:var(--text3)">${p.grid} · Trusted: ${p.trusted?'✓':'✕'}</div>
+          </div>
+          <span class="badge ${p.status==='synced'?'badge-green':p.status==='lagging'?'badge-gold':'badge-rose'}">${p.status}</span>
+          <span class="peer-lag" style="color:${p.lag_ops>50?'var(--rose)':p.lag_ops>10?'var(--gold)':'var(--green)'}">+${p.lag_ops} ops</span>
+          <span class="peer-last">${p.last_seen}</span>
+          <button class="btn btn-ghost btn-xs" onclick="showToast('Syncing ${p.node_id}…')">Sync</button>
+        </div>`).join('')}
+    </div>
+  </div>
+  <div class="hg-card">
+    <div class="hg-card-header"><div class="hg-card-title">Sync Protocol</div></div>
+    <div class="hg-card-body">
+      <div style="font-family:var(--mono);font-size:9px;color:var(--text3);line-height:2">
+        1. Source node pushes CrdtLog delta to target via HTTP/2 SSE<br>
+        2. Target calls apply_crdt_log() → merges each CrdtOperation<br>
+        3. VectorClock.merge(remote_clock) → causal ordering updated<br>
+        4. Plugins receive on_crdt_merge(ops) hook<br>
+        5. EventLog appended: CrdtMergeApplied{ops_count, merged_from}
+      </div>
+    </div>
+  </div>`;
+}
+
+function renderConflicts() {
+  return `<div class="hg-card">
+    <div class="hg-card-header"><div class="hg-card-title">Active Conflicts</div><div class="hg-card-sub">Concurrent writes detected via VectorClock.concurrent_with()</div></div>
+    <div class="hg-card-body">
+      ${[{id:'conf-001',field:'lifecycle_state',entity:'ume.kernel.modules #10',v1:'Running (us-west:ume-01)',v2:'Degraded (eu-west:ume-02)',resolution:'LWW — eu-west wins (newer ts)',resolved:false},
+         {id:'conf-002',field:'budget_spent',entity:'kogi.portfolio.components/k4',v1:'+500 (us-east)',v2:'+300 (eu-west)',resolution:'PnCounter — both deltas applied (18800 total)',resolved:true}].map(c=>`
+        <div style="background:var(--bg3);border:1px solid ${c.resolved?'var(--green)':'var(--rose)'}20;border-radius:6px;padding:10px;margin-bottom:8px">
+          <div class="flex flex-center flex-between mb-2">
+            <span style="font-family:var(--mono);font-size:9px;color:var(--cyan)">${c.id}</span>
+            <span class="badge ${c.resolved?'badge-green':'badge-rose'}">${c.resolved?'Resolved':'Open'}</span>
+          </div>
+          <div class="kv"><span class="kv-key">Field</span><span class="kv-val c-blue">${c.field}</span></div>
+          <div class="kv"><span class="kv-key">Entity</span><span class="kv-val">${c.entity}</span></div>
+          <div class="kv"><span class="kv-key">Version A</span><span class="kv-val">${c.v1}</span></div>
+          <div class="kv"><span class="kv-key">Version B</span><span class="kv-val">${c.v2}</span></div>
+          <div class="kv"><span class="kv-key">Resolution</span><span class="kv-val c-green">${c.resolution}</span></div>
+        </div>`).join('')}
+    </div>
+  </div>`;
+}
+
+function switchCTab(tab, el) {
+  cTab=tab;
+  document.querySelectorAll('.hg-tab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+  render();
+}
+
+function toggleLive() {
+  const btn = document.getElementById('live-btn');
+  if (liveInterval) { clearInterval(liveInterval); liveInterval=null; btn.textContent='◉ Live'; btn.classList.remove('badge-green'); showToast('Live updates paused'); }
+  else { liveInterval=setInterval(()=>render(),3000); btn.textContent='⏸ Live'; showToast('Live updates active'); }
+}
+
+render();
+</script>
+</body>
+</html>

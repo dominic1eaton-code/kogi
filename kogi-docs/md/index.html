@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard — Hypergrid</title>
+<link rel="stylesheet" href="shared.css">
+<style>
+.system-card {
+  background: var(--paper);
+  border: 0.5px solid var(--rule);
+  border-radius: 10px;
+  padding: 1.25rem;
+  cursor: pointer;
+  transition: border-color 0.15s, box-shadow 0.15s;
+  text-decoration: none;
+  display: block;
+  color: inherit;
+}
+.system-card:hover { border-color: var(--accent); box-shadow: 0 2px 12px rgba(42,92,255,0.08); }
+.system-card-header { display: flex; align-items: center; gap: 10px; margin-bottom: 0.875rem; }
+.system-icon {
+  width: 36px; height: 36px;
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px;
+  flex-shrink: 0;
+}
+.system-name { font-weight: 600; font-size: 14px; }
+.system-domain { font-size: 11px; color: var(--ink-3); }
+.system-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.sys-stat { }
+.sys-stat-v { font-family: var(--font-mono); font-size: 16px; font-weight: 500; color: var(--ink); }
+.sys-stat-l { font-size: 10px; color: var(--ink-4); text-transform: uppercase; letter-spacing: 0.06em; }
+
+.health-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 8px;
+  margin-top: 1rem;
+}
+.health-item {
+  background: var(--paper-2);
+  border: 0.5px solid var(--rule);
+  border-radius: 8px;
+  padding: 0.75rem 1rem;
+}
+.health-service { font-size: 12px; font-weight: 500; color: var(--ink-2); margin-bottom: 4px; }
+.health-val { display: flex; align-items: center; gap: 6px; font-size: 11px; color: var(--ink-3); }
+
+.activity-list { }
+.activity-item {
+  display: flex;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 0.5px solid var(--rule);
+  align-items: flex-start;
+}
+.activity-item:last-child { border-bottom: none; }
+.activity-dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  margin-top: 5px; flex-shrink: 0;
+}
+.activity-text { font-size: 13px; color: var(--ink-2); flex: 1; }
+.activity-text strong { color: var(--ink); font-weight: 500; }
+.activity-time { font-family: var(--font-mono); font-size: 10px; color: var(--ink-4); flex-shrink: 0; margin-top: 3px; }
+
+.crdt-bar { display: flex; gap: 3px; margin-top: 0.75rem; }
+.crdt-seg {
+  height: 6px; border-radius: 2px; flex: 1;
+  position: relative;
+  cursor: default;
+}
+
+.quick-links { display: grid; grid-template-columns: repeat(3,1fr); gap: 8px; }
+.quick-link {
+  background: var(--paper-2);
+  border: 0.5px solid var(--rule);
+  border-radius: 8px;
+  padding: 0.875rem;
+  text-decoration: none;
+  color: var(--ink-2);
+  font-size: 12px;
+  font-weight: 500;
+  transition: all 0.12s;
+  text-align: center;
+}
+.quick-link:hover { background: var(--accent-d); border-color: var(--accent); color: var(--accent); }
+.quick-link-icon { font-size: 18px; display: block; margin-bottom: 4px; }
+</style>
+</head>
+<body>
+<div id="sidebar" class="sidebar"></div>
+
+<div class="main">
+  <div class="topbar">
+    <div class="topbar-breadcrumb">
+      <span class="current">Dashboard</span>
+    </div>
+    <div class="topbar-spacer"></div>
+    <div class="topbar-actions">
+      <div class="search-bar">
+        <span class="search-icon">🔍</span>
+        <input type="text" placeholder="Search entities, cubes, nodes…" id="globalSearch">
+      </div>
+      <button class="btn btn-ghost btn-sm">⚙ Settings</button>
+    </div>
+  </div>
+
+  <div class="content">
+    <div class="page-header">
+      <div class="page-header-left">
+        <div class="page-eyebrow">Apapo Platform</div>
+        <h1 class="page-title">Platform Overview</h1>
+        <p class="page-sub">Unified dashboard for the Hypergrid substrate and all domain operating systems.</p>
+      </div>
+      <div class="page-header-actions">
+        <span class="badge badge-green">● Active</span>
+        <button class="btn btn-ghost btn-sm">↻ Refresh</button>
+        <button class="btn btn-primary btn-sm">+ New Grid</button>
+      </div>
+    </div>
+
+    <!-- Top stats -->
+    <div class="grid-4 mb-4">
+      <div class="stat">
+        <div class="stat-label">Total HyperRows</div>
+        <div class="stat-value">184.2M</div>
+        <div class="stat-delta up">↑ 2.4% from yesterday</div>
+      </div>
+      <div class="stat">
+        <div class="stat-label">Hypercubes</div>
+        <div class="stat-value">62</div>
+        <div class="stat-delta">across 3 grids</div>
+      </div>
+      <div class="stat">
+        <div class="stat-label">EventLog entries / hr</div>
+        <div class="stat-value">48.7K</div>
+        <div class="stat-delta up">↑ 12% from last hour</div>
+      </div>
+      <div class="stat">
+        <div class="stat-label">CRDT Ops / min</div>
+        <div class="stat-value">3,241</div>
+        <div class="stat-delta">0 conflicts</div>
+      </div>
+    </div>
+
+    <div class="grid-2 gap-4 mb-4">
+      <!-- Domain Systems -->
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <div class="card-title">Domain Operating Systems</div>
+            <div class="card-sub">3 grids active · 2 federation links</div>
+          </div>
+          <a href="grids.html" class="btn btn-ghost btn-sm">View all →</a>
+        </div>
+        <div class="card-body">
+          <div style="display:flex;flex-direction:column;gap:10px">
+            <a href="grids.html?grid=kogi" class="system-card">
+              <div class="system-card-header">
+                <div class="system-icon" style="background:#e8edff">🧭</div>
+                <div>
+                  <div class="system-name">Kogi</div>
+                  <div class="system-domain">Independent Worker OS · kogi://</div>
+                </div>
+                <div style="margin-left:auto"><span class="badge badge-green">Active</span></div>
+              </div>
+              <div class="system-stats">
+                <div class="sys-stat"><div class="sys-stat-v">8</div><div class="sys-stat-l">Hypercubes</div></div>
+                <div class="sys-stat"><div class="sys-stat-v">84.2M</div><div class="sys-stat-l">HyperRows</div></div>
+              </div>
+            </a>
+            <a href="grids.html?grid=ume" class="system-card">
+              <div class="system-card-header">
+                <div class="system-icon" style="background:#d6f0ea">🏢</div>
+                <div>
+                  <div class="system-name">Ume</div>
+                  <div class="system-domain">Business OS · ume://</div>
+                </div>
+                <div style="margin-left:auto"><span class="badge badge-green">Active</span></div>
+              </div>
+              <div class="system-stats">
+                <div class="sys-stat"><div class="sys-stat-v">44</div><div class="sys-stat-l">Hypercubes</div></div>
+                <div class="sys-stat"><div class="sys-stat-v">62.1M</div><div class="sys-stat-l">HyperRows</div></div>
+              </div>
+            </a>
+            <a href="grids.html?grid=qala" class="system-card">
+              <div class="system-card-header">
+                <div class="system-icon" style="background:#fde8e6">⚙</div>
+                <div>
+                  <div class="system-name">Qala</div>
+                  <div class="system-domain">Solution Factory OS · qala://</div>
+                </div>
+                <div style="margin-left:auto"><span class="badge badge-green">Active</span></div>
+              </div>
+              <div class="system-stats">
+                <div class="sys-stat"><div class="sys-stat-v">12</div><div class="sys-stat-l">Hypercubes</div></div>
+                <div class="sys-stat"><div class="sys-stat-v">37.9M</div><div class="sys-stat-l">HyperRows</div></div>
+              </div>
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Activity feed -->
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <div class="card-title">Recent Activity</div>
+            <div class="card-sub">EventLog stream · last 60 minutes</div>
+          </div>
+          <a href="eventlog.html" class="btn btn-ghost btn-sm">Event log →</a>
+        </div>
+        <div class="card-body">
+          <div class="activity-list">
+            <div class="activity-item">
+              <div class="activity-dot" style="background:var(--accent)"></div>
+              <div class="activity-text"><strong>kogi-engine</strong> wrote <code>health_score=87.4</code> to 3,241 components via WritebackService</div>
+              <div class="activity-time">2m ago</div>
+            </div>
+            <div class="activity-item">
+              <div class="activity-dot" style="background:var(--teal)"></div>
+              <div class="activity-text"><strong>@alice-dev</strong> created CrossGridLink <code>Kogi↔Ume</code> · Employs · consent pending</div>
+              <div class="activity-time">8m ago</div>
+            </div>
+            <div class="activity-item">
+              <div class="activity-dot" style="background:var(--green)"></div>
+              <div class="activity-text"><strong>CCR-0041</strong> transitioned <code>InReview → Approved</code> in qala.ccrs</div>
+              <div class="activity-time">14m ago</div>
+            </div>
+            <div class="activity-item">
+              <div class="activity-dot" style="background:var(--amber)"></div>
+              <div class="activity-text"><strong>Federation sync</strong> completed with <code>ume-production</code> — 1,204 CRDT ops applied</div>
+              <div class="activity-time">22m ago</div>
+            </div>
+            <div class="activity-item">
+              <div class="activity-dot" style="background:var(--accent)"></div>
+              <div class="activity-text"><strong>Schema change</strong> — new attr <code>attribution_weight</code> registered on <code>kogi.portfolio.links</code></div>
+              <div class="activity-time">41m ago</div>
+            </div>
+            <div class="activity-item">
+              <div class="activity-dot" style="background:var(--purple)"></div>
+              <div class="activity-text"><strong>NL query</strong> executed by <code>@bob</code> — "which active projects are over budget?"</div>
+              <div class="activity-time">58m ago</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid-2 gap-4 mb-4">
+      <!-- Infrastructure health -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Infrastructure Health</div>
+          <span class="badge badge-green">All systems nominal</span>
+        </div>
+        <div class="card-body">
+          <div class="health-grid">
+            <div class="health-item">
+              <div class="health-service">PostgreSQL</div>
+              <div class="health-val"><span class="dot green"></span> 4ms p50 · 18ms p99</div>
+            </div>
+            <div class="health-item">
+              <div class="health-service">Redis Cluster</div>
+              <div class="health-val"><span class="dot green"></span> 0.3ms p50</div>
+            </div>
+            <div class="health-item">
+              <div class="health-service">Kafka</div>
+              <div class="health-val"><span class="dot green"></span> 3 brokers · lag 0</div>
+            </div>
+            <div class="health-item">
+              <div class="health-service">ClickHouse</div>
+              <div class="health-val"><span class="dot green"></span> Analytics ready</div>
+            </div>
+            <div class="health-item">
+              <div class="health-service">Meilisearch</div>
+              <div class="health-val"><span class="dot green"></span> Index current</div>
+            </div>
+            <div class="health-item">
+              <div class="health-service">kogi-engine</div>
+              <div class="health-val"><span class="dot green"></span> 12 sub-engines</div>
+            </div>
+            <div class="health-item">
+              <div class="health-service">ume-engine</div>
+              <div class="health-val"><span class="dot amber"></span> 7/8 healthy</div>
+            </div>
+            <div class="health-item">
+              <div class="health-service">qala AI Agent</div>
+              <div class="health-val"><span class="dot green"></span> 10 capabilities</div>
+            </div>
+          </div>
+        </div>
+        <div class="card-footer flex-between">
+          <span>WritebackService gRPC · <code>:9001</code></span>
+          <a href="ai.html" style="color:var(--accent);text-decoration:none;font-size:11px">View AI engines →</a>
+        </div>
+      </div>
+
+      <!-- Quick access -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Quick Access</div>
+        </div>
+        <div class="card-body">
+          <div class="quick-links">
+            <a href="hypercube.html" class="quick-link"><span class="quick-link-icon">⊞</span>Browse Cells</a>
+            <a href="query.html" class="quick-link"><span class="quick-link-icon">›_</span>HyperQL Query</a>
+            <a href="graph.html" class="quick-link"><span class="quick-link-icon">◎</span>Hypergraph</a>
+            <a href="eventlog.html" class="quick-link"><span class="quick-link-icon">≡</span>Event Log</a>
+            <a href="ai.html" class="quick-link"><span class="quick-link-icon">✦</span>AI Signals</a>
+            <a href="federation.html" class="quick-link"><span class="quick-link-icon">⟷</span>Federation</a>
+            <a href="schema.html" class="quick-link"><span class="quick-link-icon">⊹</span>Schema</a>
+            <a href="admin.html" class="quick-link"><span class="quick-link-icon">⊚</span>Identity</a>
+            <a href="eventlog.html?mode=timetravel" class="quick-link"><span class="quick-link-icon">⏪</span>Time Travel</a>
+          </div>
+
+          <div class="divider"></div>
+
+          <div class="section-title">CRDT Operations Breakdown</div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px">
+            <span class="badge crdt-lww">LWW 41%</span>
+            <span class="badge crdt-orset">OR-Set 28%</span>
+            <span class="badge crdt-pncounter">PNCounter 12%</span>
+            <span class="badge crdt-lattice">Lattice 9%</span>
+            <span class="badge crdt-grow">GrowOnly 5%</span>
+            <span class="badge crdt-max">MaxReg 3%</span>
+            <span class="badge crdt-append">AppendLog 2%</span>
+          </div>
+          <div class="progress-bar">
+            <div class="progress-fill blue" style="width:100%;background:linear-gradient(to right,#2a5cff 0%,#007a5e 41%,#c06a00 69%,#9b1b10 81%,#2d6a1a 90%,#6b21a8 95%,#5a5a56 98%)"></div>
+          </div>
+
+          <div class="divider"></div>
+
+          <div class="section-title">Federation Peers</div>
+          <div style="display:flex;flex-direction:column;gap:6px">
+            <div class="flex-between" style="font-size:12px">
+              <div class="flex-center gap-2"><span class="dot green"></span><code>ume-production</code></div>
+              <span class="text-muted">lag 12ms · synced 2m ago</span>
+            </div>
+            <div class="flex-between" style="font-size:12px">
+              <div class="flex-center gap-2"><span class="dot amber"></span><code>qala-production</code></div>
+              <span class="text-muted">lag 340ms · degraded</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="shared-nav.js"></script>
+<script>buildSidebar('index');</script>
+</body>
+</html>

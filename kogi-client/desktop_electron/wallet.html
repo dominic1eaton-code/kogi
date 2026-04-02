@@ -1,0 +1,868 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KOGI · Wallet</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;600;700&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap');
+:root{
+  --bg:#0a0b0f;--bg1:#0f1117;--bg2:#13151e;--bg3:#181c28;
+  --border:rgba(255,255,255,0.06);--border2:rgba(255,255,255,0.1);
+  --text:#c8ccdb;--text2:#7a8099;--text3:#4a5068;
+  --cyan:#00d4aa;--gold:#c8a84b;--violet:#7c5cbf;--rose:#c45c7a;
+  --orange:#c87c3a;--blue:#3a7cc8;--green:#4aab6d;
+  --pnav-w:58px;--snav-w:168px;
+  --mono:'IBM Plex Mono',monospace;--sans:'IBM Plex Sans',sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{width:100%;height:100%;background:var(--bg);font-family:var(--sans);color:var(--text);font-size:10px;overflow:hidden}
+.app{display:flex;width:100%;height:100vh;overflow:hidden}
+.p-nav{width:var(--pnav-w);background:var(--bg1);border-right:1px solid var(--border);flex-shrink:0;display:flex;flex-direction:column;align-items:center;z-index:20}
+.p-nav-top{display:flex;flex-direction:column;align-items:center;gap:1px;flex:1;padding:8px 0;width:100%}
+.p-nav-bottom{display:flex;flex-direction:column;align-items:center;padding:8px 0;width:100%}
+.p-logo{font-family:var(--mono);font-size:11px;font-weight:700;color:var(--cyan);letter-spacing:.1em;padding:8px 0 5px;text-align:center}
+.p-avatar{width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,var(--cyan),var(--violet));display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:9px;font-weight:700;color:#000;cursor:pointer;text-decoration:none;margin-bottom:4px;transition:all .15s;border:2px solid transparent}
+.p-avatar:hover{border-color:var(--cyan)}
+.p-divider{width:32px;height:1px;background:var(--border);margin:4px 0}
+.p-link{display:flex;flex-direction:column;align-items:center;gap:2px;padding:8px 0;cursor:pointer;color:var(--text3);text-decoration:none;width:100%;transition:all .12s;border-left:2px solid transparent}
+.p-link:hover{color:var(--text2);background:rgba(255,255,255,.02)}
+.p-link.active{color:var(--cyan);border-left-color:var(--cyan);background:rgba(0,212,170,.05)}
+.p-link-label{font-family:var(--mono);font-size:6px;letter-spacing:.06em;text-transform:uppercase}
+.p-link svg{width:15px;height:15px}
+.s-nav{width:var(--snav-w);background:var(--bg1);border-right:1px solid var(--border);flex-shrink:0;display:flex;flex-direction:column;overflow:hidden}
+.s-nav-header{padding:12px 13px 9px;border-bottom:1px solid var(--border);flex-shrink:0}
+.s-nav-title{font-family:var(--mono);font-size:10px;font-weight:700;color:var(--text)}
+.s-nav-meta{font-family:var(--mono);font-size:7px;color:var(--text3);margin-top:2px}
+.s-nav-items{flex:1;overflow-y:auto;padding:4px 0}
+.s-sec-label{font-family:var(--mono);font-size:6px;letter-spacing:.14em;text-transform:uppercase;color:var(--text3);padding:8px 13px 3px}
+.s-item{display:flex;align-items:center;gap:6px;padding:5px 13px;font-family:var(--mono);font-size:8px;color:var(--text3);cursor:pointer;border-left:2px solid transparent;transition:all .1s;white-space:nowrap}
+.s-item:hover{background:var(--bg2);color:var(--text2)}
+.s-item.active{background:var(--bg2);color:var(--text);border-left-color:var(--cyan)}
+.s-dot{width:5px;height:5px;border-radius:50%;background:currentColor;flex-shrink:0}
+.s-badge{margin-left:auto;font-family:var(--mono);font-size:6px;padding:1px 4px;border-radius:2px;background:var(--bg3);color:var(--text3)}
+.s-item.active .s-badge{background:rgba(0,212,170,.12);color:var(--cyan)}
+.main{flex:1;display:flex;flex-direction:column;min-width:0;overflow:hidden}
+.toolbar{height:34px;background:var(--bg1);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 14px;gap:8px;flex-shrink:0}
+.tb-title{font-family:var(--mono);font-size:10px;font-weight:600;color:var(--text)}
+.tb-sub{font-family:var(--mono);font-size:8px;color:var(--text3)}
+.tb-sp{flex:1}
+.g-btn{background:var(--bg2);border:1px solid var(--border2);border-radius:3px;padding:3px 9px;font-family:var(--mono);font-size:8px;color:var(--text2);cursor:pointer;transition:all .12s;white-space:nowrap}
+.g-btn:hover{border-color:var(--cyan);color:var(--cyan)}
+.g-btn.p{background:var(--cyan);border-color:var(--cyan);color:#000;font-weight:600}
+.g-btn.p:hover{background:#00efc0}
+/* Hero wallet strip */
+.wallet-hero{background:var(--bg1);border-bottom:1px solid var(--border);flex-shrink:0}
+.wallet-total{display:flex;align-items:baseline;gap:8px;padding:14px 18px 8px}
+.wt-label{font-family:var(--mono);font-size:7px;letter-spacing:.14em;text-transform:uppercase;color:var(--text3)}
+.wt-amount{font-family:var(--mono);font-size:32px;font-weight:700;color:var(--text);line-height:1}
+.wt-delta{font-family:var(--mono);font-size:9px;color:var(--green)}
+.wallet-buckets{display:flex;padding:0 14px 14px;gap:8px}
+.bucket{flex:1;border-radius:4px;padding:10px 12px;cursor:pointer;transition:all .12s;border:1px solid}
+.bucket:hover{filter:brightness(1.15)}
+.bucket.spend{background:rgba(0,212,170,.08);border-color:rgba(0,212,170,.2)}
+.bucket.tax{background:rgba(200,168,75,.08);border-color:rgba(200,168,75,.2)}
+.bucket.save{background:rgba(124,92,191,.08);border-color:rgba(124,92,191,.2)}
+.bucket.proj{background:rgba(58,124,200,.08);border-color:rgba(58,124,200,.2)}
+.b-label{font-family:var(--mono);font-size:6px;letter-spacing:.12em;text-transform:uppercase;margin-bottom:4px}
+.b-amount{font-family:var(--mono);font-size:16px;font-weight:700;line-height:1}
+.b-pct{font-family:var(--mono);font-size:7px;margin-top:3px;color:var(--text2)}
+.b-bar{height:2px;border-radius:1px;margin-top:6px}
+.b-bar-fill{height:100%;border-radius:1px}
+/* stat row */
+.stat-row{display:flex;background:var(--bg2);border-bottom:1px solid var(--border);flex-shrink:0}
+.stat-cell{flex:1;padding:8px 14px;border-right:1px solid var(--border)}
+.stat-cell:last-child{border-right:none}
+.stat-lbl{font-family:var(--mono);font-size:7px;letter-spacing:.1em;text-transform:uppercase;color:var(--text3);margin-bottom:2px}
+.stat-num{font-family:var(--mono);font-size:15px;font-weight:700;color:var(--text);line-height:1}
+.cyan{color:var(--cyan)}.gold{color:var(--gold)}.rose{color:var(--rose)}.green{color:var(--green)}.violet{color:var(--violet)}
+.stat-d{font-family:var(--mono);font-size:7px;color:var(--green);margin-top:2px}
+.stat-d.neg{color:var(--rose)}
+/* content */
+.content{flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:12px}
+.subpage{display:none}.subpage.active{display:flex;flex-direction:column;gap:12px}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+.row-60-40{display:grid;grid-template-columns:3fr 2fr;gap:12px}
+.card{background:var(--bg1);border:1px solid var(--border);border-radius:4px;overflow:hidden}
+.card-hdr{padding:9px 12px 8px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px}
+.card-hdr-t{font-family:var(--mono);font-size:9px;font-weight:600;color:var(--text);flex:1}
+.bdg{font-family:var(--mono);font-size:7px;padding:1px 5px;border-radius:2px;border:1px solid}
+.bdg-c{border-color:rgba(0,212,170,.3);color:var(--cyan);background:rgba(0,212,170,.06)}
+.bdg-g{border-color:rgba(200,168,75,.3);color:var(--gold);background:rgba(200,168,75,.06)}
+.bdg-r{border-color:rgba(196,92,122,.3);color:var(--rose);background:rgba(196,92,122,.06)}
+.bdg-v{border-color:rgba(124,92,191,.3);color:var(--violet);background:rgba(124,92,191,.06)}
+.card-body{padding:11px 12px}
+.kv{display:flex;justify-content:space-between;align-items:center;padding:4px 0;border-bottom:1px solid var(--border)}
+.kv:last-child{border-bottom:none}
+.kk{font-family:var(--mono);font-size:8px;color:var(--text3)}
+.kv2{font-family:var(--mono);font-size:8px;color:var(--text2);font-weight:500}
+/* Transaction list */
+.tx-hdr{display:grid;grid-template-columns:1.5fr 1fr .9fr .7fr .7fr 70px;gap:6px;padding:5px 12px;border-bottom:1px solid var(--border2);background:var(--bg2);flex-shrink:0}
+.tx-row{display:grid;grid-template-columns:1.5fr 1fr .9fr .7fr .7fr 70px;gap:6px;padding:7px 12px;border-bottom:1px solid var(--border);align-items:center;cursor:pointer;transition:background .1s}
+.tx-row:hover{background:rgba(255,255,255,.01)}
+.tx-col{font-family:var(--mono);font-size:7px;color:var(--text3);text-transform:uppercase;letter-spacing:.08em}
+.tx-col.r{text-align:right}
+.tx-desc{font-family:var(--mono);font-size:8px;color:var(--text)}
+.tx-client{font-family:var(--mono);font-size:8px;color:var(--text2)}
+.tx-src{font-family:var(--mono);font-size:7px;color:var(--text3)}
+.tx-amt{font-family:var(--mono);font-size:9px;font-weight:600;text-align:right}
+.tx-amt.pos{color:var(--cyan)}
+.tx-amt.neg{color:var(--rose)}
+.tx-date{font-family:var(--mono);font-size:7px;color:var(--text3)}
+.tx-split{display:flex;gap:2px;justify-content:flex-end}
+.tx-seg{height:8px;border-radius:1px}
+/* Income split visual */
+.split-visual{display:flex;height:20px;border-radius:3px;overflow:hidden;margin:8px 0}
+.split-seg{display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:7px;color:#000;font-weight:600}
+/* Tax panel */
+.tax-warning{padding:10px 12px;background:rgba(200,168,75,.06);border:1px solid rgba(200,168,75,.25);border-radius:3px;margin-bottom:8px}
+.tw-title{font-family:var(--mono);font-size:9px;font-weight:600;color:var(--gold);margin-bottom:3px}
+.tw-body{font-family:var(--sans);font-size:8px;color:var(--text2);line-height:1.5}
+/* Slider */
+.slider-blk{margin:10px 0}
+.slider-lbl{display:flex;justify-content:space-between;font-family:var(--mono);font-size:7px;color:var(--text3);margin-bottom:4px}
+input[type=range]{width:100%;appearance:none;height:4px;border-radius:2px;background:var(--bg3);outline:none;cursor:pointer}
+input[type=range]::-webkit-slider-thumb{appearance:none;width:12px;height:12px;border-radius:50%;background:var(--cyan);cursor:pointer}
+/* Income event in wallet */
+.ie-row{display:flex;align-items:flex-start;gap:10px;padding:8px 0;border-bottom:1px solid var(--border)}
+.ie-row:last-child{border-bottom:none}
+.ie-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;margin-top:2px}
+.ie-info{flex:1}
+.ie-title{font-family:var(--mono);font-size:8px;color:var(--text);font-weight:500;margin-bottom:1px}
+.ie-meta{font-family:var(--mono);font-size:7px;color:var(--text3);margin-bottom:4px}
+.ie-split{display:flex;gap:5px;flex-wrap:wrap}
+.ie-seg{font-family:var(--mono);font-size:7px;padding:1px 5px;border-radius:2px}
+.ie-amt{font-family:var(--mono);font-size:9px;font-weight:700;color:var(--cyan);white-space:nowrap}
+/* Progress bars */
+.prog-row{display:flex;align-items:center;gap:8px;padding:4px 0}
+.prog-lbl{font-family:var(--mono);font-size:7px;color:var(--text3);width:80px;flex-shrink:0}
+.prog-track{flex:1;height:12px;background:var(--bg3);border-radius:2px;overflow:hidden}
+.prog-fill{height:100%;border-radius:2px}
+.prog-val{font-family:var(--mono);font-size:7px;color:var(--text2);width:42px;text-align:right;flex-shrink:0}
+/* forecast chart */
+.forecast-bars{display:flex;align-items:flex-end;gap:4px;height:60px}
+.fc-bar{flex:1;border-radius:2px 2px 0 0;min-height:2px;position:relative}
+.fc-bar span{position:absolute;bottom:calc(100%+2px);left:50%;transform:translateX(-50%);font-family:var(--mono);font-size:6px;color:var(--text3);white-space:nowrap}
+/* Project income table */
+.pj-inc-row{display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--border);cursor:pointer}
+.pj-inc-row:last-child{border-bottom:none}
+.pj-inc-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+.pj-inc-name{font-family:var(--mono);font-size:8px;color:var(--text);flex:1}
+.pj-inc-client{font-family:var(--mono);font-size:7px;color:var(--text3);width:80px;flex-shrink:0}
+.pj-inc-pct{font-family:var(--mono);font-size:7px;color:var(--text3);width:28px;text-align:right}
+.pj-inc-amt{font-family:var(--mono);font-size:8px;font-weight:600;color:var(--cyan);width:50px;text-align:right}
+/* settings tab */
+.setting-row{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border)}
+.setting-row:last-child{border-bottom:none}
+.setting-info{flex:1}
+.setting-label{font-family:var(--mono);font-size:8px;color:var(--text);margin-bottom:2px}
+.setting-sub{font-family:var(--mono);font-size:7px;color:var(--text3)}
+.toggle{width:32px;height:16px;border-radius:8px;background:var(--cyan);cursor:pointer;position:relative;flex-shrink:0}
+.toggle::after{content:'';position:absolute;width:12px;height:12px;border-radius:50%;background:#000;top:2px;right:2px;transition:right .15s}
+.toggle.off{background:var(--bg3)}
+.toggle.off::after{right:18px}
+/* modal */
+.mo{position:fixed;inset:0;background:rgba(0,0,0,.7);display:none;align-items:center;justify-content:center;z-index:100;backdrop-filter:blur(4px)}
+.mo.open{display:flex}
+.modal{background:var(--bg1);border:1px solid var(--border2);border-radius:6px;width:420px;max-width:95vw;max-height:85vh;overflow:auto}
+.mhdr{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1px solid var(--border)}
+.mhdr-t{font-family:var(--mono);font-size:10px;font-weight:700;color:var(--text)}
+.mc{font-family:var(--mono);font-size:12px;color:var(--text3);cursor:pointer;padding:2px 6px;border-radius:3px}
+.mc:hover{color:var(--text);background:var(--bg2)}
+.mbody{padding:14px 16px;display:flex;flex-direction:column;gap:10px}
+.fg{display:flex;flex-direction:column;gap:5px}
+.fl{font-family:var(--mono);font-size:7px;color:var(--text3);text-transform:uppercase;letter-spacing:.1em}
+.fi{background:var(--bg2);border:1px solid var(--border2);border-radius:3px;padding:6px 10px;font-family:var(--mono);font-size:9px;color:var(--text);outline:none;width:100%}
+.fi:focus{border-color:var(--cyan)}
+.mfoot{padding:10px 16px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:7px}
+.btn{font-family:var(--mono);font-size:8px;padding:5px 12px;border-radius:3px;cursor:pointer;border:1px solid}
+.btn-c{background:var(--bg2);border-color:var(--border2);color:var(--text2)}
+.btn-p{background:var(--cyan);border-color:var(--cyan);color:#000;font-weight:600}
+/* toast */
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--bg3);border:1px solid var(--border2);border-radius:4px;padding:7px 14px;font-family:var(--mono);font-size:8px;color:var(--text2);opacity:0;transition:all .2s;z-index:200;pointer-events:none;white-space:nowrap}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+::-webkit-scrollbar{width:4px;height:4px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px}
+</style>
+</head>
+<body>
+<div class="app">
+
+<!-- PRIMARY NAV -->
+<nav class="p-nav">
+  <div class="p-nav-top">
+    <div class="p-logo">K</div>
+    <a href="profile.html" class="p-avatar" title="Profile">MJ</a>
+    <div class="p-divider"></div>
+    <a href="dashboard.html" class="p-link" title="Dashboard">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+      <span class="p-link-label">Dash</span>
+    </a>
+    <a href="portfolio.html" class="p-link" title="Portfolio">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="3"/><path d="M3 12h3m12 0h3M12 3v3m0 12v3"/><circle cx="12" cy="12" r="9"/></svg>
+      <span class="p-link-label">Portfolio</span>
+    </a>
+    <a href="wallet.html" class="p-link active" title="Wallet">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 14a1 1 0 1 1 0-2 1 1 0 0 1 0 2z" fill="currentColor"/><path d="M2 10h20M7 7V5a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v2"/></svg>
+      <span class="p-link-label">Wallet</span>
+    </a>
+    <a href="office.html" class="p-link" title="Office">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+      <span class="p-link-label">Office</span>
+    </a>
+  </div>
+  <div class="p-nav-bottom">
+    <a href="settings.html" class="p-link" title="Settings">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      <span class="p-link-label">Settings</span>
+    </a>
+  </div>
+</nav>
+
+<!-- SECONDARY NAV -->
+<nav class="s-nav">
+  <div class="s-nav-header">
+    <div class="s-nav-title">Smart Wallet</div>
+    <div class="s-nav-meta">Balance $11,340 · Mar 2026</div>
+  </div>
+  <div class="s-nav-items">
+    <div class="s-sec-label">Overview</div>
+    <div class="s-item active" onclick="nav('overview','Overview',this)"><div class="s-dot"></div>Wallet Overview</div>
+    <div class="s-item" onclick="nav('splits','Split Configuration',this)"><div class="s-dot"></div>Split Configuration</div>
+    <div class="s-item" onclick="nav('income-events','Income Events',this)"><div class="s-dot"></div>Income Events<span class="s-badge">24</span></div>
+
+    <div class="s-sec-label">Buckets</div>
+    <div class="s-item" onclick="nav('spendable','Spendable',this)"><div class="s-dot" style="color:var(--cyan)"></div>Spendable<span class="s-badge">$3,841</span></div>
+    <div class="s-item" onclick="nav('tax','Tax Reserve',this)"><div class="s-dot" style="color:var(--gold)"></div>Tax Reserve<span class="s-badge">$3,176</span></div>
+    <div class="s-item" onclick="nav('savings','Savings',this)"><div class="s-dot" style="color:var(--violet)"></div>Savings<span class="s-badge">$4,323</span></div>
+
+    <div class="s-sec-label">Projects</div>
+    <div class="s-item" onclick="nav('proj-income','Project Income',this)"><div class="s-dot"></div>Project Income</div>
+    <div class="s-item" onclick="nav('proj-forecast','Income Forecast',this)"><div class="s-dot"></div>Income Forecast</div>
+    <div class="s-item" onclick="nav('pending-income','Pending Income',this)"><div class="s-dot"></div>Pending Income<span class="s-badge" style="color:var(--gold)">$9.6K</span></div>
+
+    <div class="s-sec-label">History & Analysis</div>
+    <div class="s-item" onclick="nav('history','Transaction History',this)"><div class="s-dot"></div>Full History</div>
+    <div class="s-item" onclick="nav('monthly','Monthly Summary',this)"><div class="s-dot"></div>Monthly Summary</div>
+    <div class="s-item" onclick="nav('by-client','Income by Client',this)"><div class="s-dot"></div>Income by Client</div>
+    <div class="s-item" onclick="nav('by-source','Income by Source',this)"><div class="s-dot"></div>Income by Source</div>
+
+    <div class="s-sec-label">Configuration</div>
+    <div class="s-item" onclick="nav('connections','Connections',this)"><div class="s-dot"></div>Bank Connections<span class="s-badge" style="color:var(--cyan)">2</span></div>
+    <div class="s-item" onclick="nav('wallet-settings','Wallet Settings',this)"><div class="s-dot"></div>Wallet Settings</div>
+  </div>
+</nav>
+
+<!-- MAIN -->
+<div class="main">
+  <div class="toolbar">
+    <span class="tb-title">Smart Wallet</span>
+    <span class="tb-sub" id="tb-sub">/ Overview</span>
+    <div class="tb-sp"></div>
+    <button class="g-btn" onclick="t('Syncing bank connections…')">↻ Sync</button>
+    <button class="g-btn" onclick="nav('splits','Split Configuration',null)">⊟ Edit Splits</button>
+    <button class="g-btn p" onclick="openM('manual-income')">+ Log Income</button>
+  </div>
+
+  <!-- WALLET HERO -->
+  <div class="wallet-hero">
+    <div class="wallet-total">
+      <div>
+        <div class="wt-label">Total Wallet Balance</div>
+        <div style="display:flex;align-items:baseline;gap:10px">
+          <div class="wt-amount">$11,340</div>
+          <div class="wt-delta">↑ $2,100 since Mar 27</div>
+        </div>
+      </div>
+      <div style="margin-left:auto;text-align:right">
+        <div class="wt-label">Monthly Income</div>
+        <div style="font-family:var(--mono);font-size:18px;font-weight:700;color:var(--gold)">$9,200</div>
+      </div>
+    </div>
+    <div class="wallet-buckets">
+      <div class="bucket spend" onclick="nav('spendable','Spendable',null)">
+        <div class="b-label" style="color:var(--cyan)">Available to Spend</div>
+        <div class="b-amount" style="color:var(--cyan)">$3,841</div>
+        <div class="b-pct">34% of balance</div>
+        <div class="b-bar" style="background:rgba(0,212,170,.15)"><div class="b-bar-fill" style="width:34%;background:var(--cyan)"></div></div>
+      </div>
+      <div class="bucket tax" onclick="nav('tax','Tax Reserve',null)">
+        <div class="b-label" style="color:var(--gold)">Tax Reserve</div>
+        <div class="b-amount" style="color:var(--gold)">$3,176</div>
+        <div class="b-pct">28% · Q2 est. due Jun 15</div>
+        <div class="b-bar" style="background:rgba(200,168,75,.15)"><div class="b-bar-fill" style="width:80%;background:var(--gold)"></div></div>
+      </div>
+      <div class="bucket save" onclick="nav('savings','Savings',null)">
+        <div class="b-label" style="color:var(--violet)">Savings</div>
+        <div class="b-amount" style="color:var(--violet)">$4,323</div>
+        <div class="b-pct">38% · Emergency fund</div>
+        <div class="b-bar" style="background:rgba(124,92,191,.15)"><div class="b-bar-fill" style="width:58%;background:var(--violet)"></div></div>
+      </div>
+      <div class="bucket proj" onclick="nav('pending-income','Pending Income',null)">
+        <div class="b-label" style="color:var(--blue)">Pending Income</div>
+        <div class="b-amount" style="color:var(--blue)">$9,600</div>
+        <div class="b-pct">Invoiced / in-progress</div>
+        <div class="b-bar" style="background:rgba(58,124,200,.15)"><div class="b-bar-fill" style="width:72%;background:var(--blue)"></div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <!-- ── OVERVIEW ── -->
+    <div id="page-overview" class="subpage active">
+      <div class="row-60-40">
+        <div style="display:flex;flex-direction:column;gap:12px">
+          <!-- Recent income events with splits -->
+          <div class="card">
+            <div class="card-hdr"><div class="card-hdr-t">Recent Income — Auto-Split Applied</div><span class="bdg bdg-c">Live</span><button class="g-btn" onclick="nav('income-events','Income Events',null)" style="margin-left:4px">All →</button></div>
+            <div class="card-body">
+              <div class="ie-row">
+                <div class="ie-dot" style="background:var(--cyan)"></div>
+                <div class="ie-info">
+                  <div class="ie-title">Brand Identity M3 — Meridian Creative</div>
+                  <div class="ie-meta">Stripe · INV-0039 · Mar 27, 11:04am</div>
+                  <div class="ie-split">
+                    <span class="ie-seg" style="background:rgba(0,212,170,.15);color:var(--cyan)">Spend $798</span>
+                    <span class="ie-seg" style="background:rgba(200,168,75,.15);color:var(--gold)">Tax $588</span>
+                    <span class="ie-seg" style="background:rgba(124,92,191,.15);color:var(--violet)">Save $714</span>
+                  </div>
+                </div>
+                <div class="ie-amt">$2,100</div>
+              </div>
+              <div class="ie-row">
+                <div class="ie-dot" style="background:var(--violet)"></div>
+                <div class="ie-info">
+                  <div class="ie-title">Social Campaign March — Bloom Agency</div>
+                  <div class="ie-meta">Stripe · INV-0038 · Mar 22</div>
+                  <div class="ie-split">
+                    <span class="ie-seg" style="background:rgba(0,212,170,.15);color:var(--cyan)">Spend $456</span>
+                    <span class="ie-seg" style="background:rgba(200,168,75,.15);color:var(--gold)">Tax $336</span>
+                    <span class="ie-seg" style="background:rgba(124,92,191,.15);color:var(--violet)">Save $408</span>
+                  </div>
+                </div>
+                <div class="ie-amt">$1,200</div>
+              </div>
+              <div class="ie-row">
+                <div class="ie-dot" style="background:var(--rose)"></div>
+                <div class="ie-info">
+                  <div class="ie-title">Monthly Retainer — RetailCo Group</div>
+                  <div class="ie-meta">Bank ACH · Mar 15</div>
+                  <div class="ie-split">
+                    <span class="ie-seg" style="background:rgba(0,212,170,.15);color:var(--cyan)">Spend $245</span>
+                    <span class="ie-seg" style="background:rgba(200,168,75,.15);color:var(--gold)">Tax $180</span>
+                    <span class="ie-seg" style="background:rgba(124,92,191,.15);color:var(--violet)">Save $219</span>
+                  </div>
+                </div>
+                <div class="ie-amt">$644</div>
+              </div>
+            </div>
+          </div>
+          <!-- Monthly trend -->
+          <div class="card">
+            <div class="card-hdr"><div class="card-hdr-t">Monthly Income Trend</div><span class="bdg bdg-c">Mar MTD</span></div>
+            <div class="card-body">
+              <div class="forecast-bars" style="height:70px;margin-bottom:6px">
+                <div class="fc-bar" style="height:52%;background:var(--bg3)"><span>Oct $5.1K</span></div>
+                <div class="fc-bar" style="height:62%;background:var(--bg3)"><span>Nov $6.2K</span></div>
+                <div class="fc-bar" style="height:74%;background:var(--bg3)"><span>Dec $7.4K</span></div>
+                <div class="fc-bar" style="height:66%;background:var(--bg3)"><span>Jan $6.6K</span></div>
+                <div class="fc-bar" style="height:81%;background:var(--bg3)"><span>Feb $8.1K</span></div>
+                <div class="fc-bar" style="height:100%;background:var(--cyan)"><span style="color:var(--cyan)">Mar $9.2K</span></div>
+                <div class="fc-bar" style="height:88%;background:rgba(0,212,170,.25);border:1px dashed rgba(0,212,170,.4)"><span style="color:var(--text3)">Apr $8.8K</span></div>
+              </div>
+              <div style="display:flex;gap:5px;font-family:var(--mono);font-size:6px;color:var(--text3)">
+                <span style="display:flex;align-items:center;gap:3px"><span style="width:8px;height:8px;background:var(--cyan);border-radius:1px;display:inline-block"></span>Actual</span>
+                <span style="display:flex;align-items:center;gap:3px;margin-left:8px"><span style="width:8px;height:8px;background:rgba(0,212,170,.25);border:1px dashed rgba(0,212,170,.4);border-radius:1px;display:inline-block"></span>Forecast</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:12px">
+          <!-- Split preview -->
+          <div class="card">
+            <div class="card-hdr"><div class="card-hdr-t">Split Config</div><button class="g-btn" onclick="nav('splits','Split Configuration',null)">Edit →</button></div>
+            <div class="card-body">
+              <div style="font-family:var(--mono);font-size:7px;color:var(--text3);margin-bottom:6px">Applied to every income event automatically</div>
+              <div class="split-visual">
+                <div class="split-seg" style="width:34%;background:var(--cyan)">34%</div>
+                <div class="split-seg" style="width:28%;background:var(--gold)">28%</div>
+                <div class="split-seg" style="width:38%;background:var(--violet)">38%</div>
+              </div>
+              <div class="kv"><div class="kk">Spendable</div><div class="kv2 cyan">34%</div></div>
+              <div class="kv"><div class="kk">Tax Reserve</div><div class="kv2 gold">28%</div></div>
+              <div class="kv"><div class="kk">Savings</div><div class="kv2 violet">38%</div></div>
+              <div style="margin-top:8px;font-family:var(--mono);font-size:7px;color:var(--text3)">On $1,000 income → $340 spend · $280 tax · $380 save</div>
+            </div>
+          </div>
+          <!-- Tax quick status -->
+          <div class="card">
+            <div class="card-hdr"><div class="card-hdr-t">Tax Reserve Status</div><span class="bdg bdg-g">Q2 2026</span></div>
+            <div class="card-body">
+              <div class="kv"><div class="kk">Reserve balance</div><div class="kv2 gold">$3,176</div></div>
+              <div class="kv"><div class="kk">Q2 estimate</div><div class="kv2">$4,000</div></div>
+              <div class="kv"><div class="kk">Shortfall</div><div class="kv2 rose">-$824</div></div>
+              <div class="kv"><div class="kk">Due date</div><div class="kv2">Jun 15, 2026</div></div>
+              <div style="margin-top:8px;height:6px;background:var(--bg3);border-radius:3px;overflow:hidden">
+                <div style="height:100%;width:79%;background:var(--gold);border-radius:3px"></div>
+              </div>
+              <div style="font-family:var(--mono);font-size:7px;color:var(--text3);margin-top:4px">79% funded · $824 needed by Jun 15</div>
+              <button class="g-btn" style="width:100%;margin-top:8px" onclick="nav('tax','Tax Reserve',null)">View Tax Detail →</button>
+            </div>
+          </div>
+          <!-- Connected accounts -->
+          <div class="card">
+            <div class="card-hdr"><div class="card-hdr-t">Connected Accounts</div><button class="g-btn p" onclick="openM('connect-account')">+ Connect</button></div>
+            <div class="card-body">
+              <div class="kv"><div class="kk">Chase Checking ••4821</div><div class="kv2 cyan">● Connected</div></div>
+              <div class="kv"><div class="kk">Stripe Account</div><div class="kv2 cyan">● Connected</div></div>
+              <div class="kv"><div class="kk">PayPal</div><div class="kv2" style="color:var(--text3)">Not connected</div></div>
+              <button class="g-btn" style="width:100%;margin-top:8px" onclick="nav('connections','Connections',null)">Manage Connections →</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── SPLIT CONFIGURATION ── -->
+    <div id="page-splits" class="subpage">
+      <div class="card">
+        <div class="card-hdr"><div class="card-hdr-t">Split Configuration</div><span class="bdg bdg-c">Live</span></div>
+        <div class="card-body">
+          <div style="font-family:var(--sans);font-size:9px;color:var(--text2);margin-bottom:12px;line-height:1.5">Every income event is automatically split into these three buckets the moment it lands. Adjust the percentages below — they must sum to 100%.</div>
+          <div style="display:flex;gap:8px;margin-bottom:12px">
+            <div style="flex:1;padding:10px;border-radius:3px;background:rgba(0,212,170,.06);border:1px solid rgba(0,212,170,.2)">
+              <div style="font-family:var(--mono);font-size:6px;text-transform:uppercase;color:var(--cyan);margin-bottom:4px">Spendable</div>
+              <div style="font-family:var(--mono);font-size:18px;font-weight:700;color:var(--cyan)" id="sp-pct">34%</div>
+              <div style="font-family:var(--mono);font-size:7px;color:var(--text3);margin-top:2px">Per $1,000: <span id="sp-ex">$340</span></div>
+            </div>
+            <div style="flex:1;padding:10px;border-radius:3px;background:rgba(200,168,75,.06);border:1px solid rgba(200,168,75,.2)">
+              <div style="font-family:var(--mono);font-size:6px;text-transform:uppercase;color:var(--gold);margin-bottom:4px">Tax Reserve</div>
+              <div style="font-family:var(--mono);font-size:18px;font-weight:700;color:var(--gold)" id="tx-pct">28%</div>
+              <div style="font-family:var(--mono);font-size:7px;color:var(--text3);margin-top:2px">Per $1,000: <span id="tx-ex">$280</span></div>
+            </div>
+            <div style="flex:1;padding:10px;border-radius:3px;background:rgba(124,92,191,.06);border:1px solid rgba(124,92,191,.2)">
+              <div style="font-family:var(--mono);font-size:6px;text-transform:uppercase;color:var(--violet);margin-bottom:4px">Savings</div>
+              <div style="font-family:var(--mono);font-size:18px;font-weight:700;color:var(--violet)" id="sv-pct">38%</div>
+              <div style="font-family:var(--mono);font-size:7px;color:var(--text3);margin-top:2px">Per $1,000: <span id="sv-ex">$380</span></div>
+            </div>
+          </div>
+          <div class="slider-blk">
+            <div class="slider-lbl"><span style="color:var(--cyan)">Spendable %</span><span id="sp-lbl" style="color:var(--cyan)">34%</span></div>
+            <input type="range" min="10" max="80" value="34" oninput="updateSplits('spend',this.value)">
+          </div>
+          <div class="slider-blk">
+            <div class="slider-lbl"><span style="color:var(--gold)">Tax Reserve %</span><span id="tx-lbl" style="color:var(--gold)">28%</span></div>
+            <input type="range" min="10" max="60" value="28" oninput="updateSplits('tax',this.value)">
+          </div>
+          <div style="padding:8px;background:rgba(0,212,170,.04);border:1px solid rgba(0,212,170,.15);border-radius:3px;margin-top:8px">
+            <div style="font-family:var(--mono);font-size:7px;color:var(--cyan)">Savings is auto-calculated = 100% − Spendable − Tax Reserve</div>
+          </div>
+          <button class="g-btn p" style="width:100%;margin-top:12px" onclick="t('Split configuration saved!')">Save Configuration</button>
+          <div style="margin-top:10px">
+            <div style="font-family:var(--mono);font-size:7px;color:var(--text3);letter-spacing:.1em;text-transform:uppercase;margin-bottom:6px">Preset Templates</div>
+            <div style="display:flex;gap:5px;flex-wrap:wrap">
+              <button class="g-btn" onclick="applyPreset(34,28)">Conservative (34/28/38)</button>
+              <button class="g-btn" onclick="applyPreset(50,25)">Balanced (50/25/25)</button>
+              <button class="g-btn" onclick="applyPreset(60,20)">Growth (60/20/20)</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── INCOME EVENTS ── -->
+    <div id="page-income-events" class="subpage" style="gap:0">
+      <div style="height:30px;background:var(--bg2);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 12px;gap:6px;flex-shrink:0">
+        <div style="font-family:var(--mono);font-size:7px;padding:2px 7px;border-radius:2px;border:1px solid var(--cyan);color:var(--cyan);background:rgba(0,212,170,.06);cursor:pointer">All</div>
+        <div style="font-family:var(--mono);font-size:7px;padding:2px 7px;border-radius:2px;border:1px solid var(--border);color:var(--text3);cursor:pointer">Stripe</div>
+        <div style="font-family:var(--mono);font-size:7px;padding:2px 7px;border-radius:2px;border:1px solid var(--border);color:var(--text3);cursor:pointer">Bank</div>
+        <div style="font-family:var(--mono);font-size:7px;padding:2px 7px;border-radius:2px;border:1px solid var(--border);color:var(--text3);cursor:pointer">Manual</div>
+        <div style="font-family:var(--mono);font-size:7px;padding:2px 7px;border-radius:2px;border:1px solid rgba(200,168,75,.4);color:var(--gold);cursor:pointer">Unclassified</div>
+        <div style="margin-left:auto"><button class="g-btn p" onclick="openM('manual-income')">+ Manual</button></div>
+      </div>
+      <div class="tx-hdr">
+        <div class="tx-col">Description / Client</div>
+        <div class="tx-col">Project</div>
+        <div class="tx-col">Source</div>
+        <div class="tx-col r">Amount</div>
+        <div class="tx-col">Date</div>
+        <div class="tx-col r">Splits</div>
+      </div>
+      <div style="flex:1;overflow-y:auto">
+        <div class="tx-row"><div><div class="tx-desc">Brand Identity M3</div><div class="tx-client">Meridian Creative</div></div><div class="tx-client">Brand ID Refresh</div><div class="tx-src">Stripe</div><div class="tx-amt pos">$2,100</div><div class="tx-date">Mar 27</div><div class="tx-split"><div class="tx-seg" style="width:36%;background:var(--cyan);height:8px;border-radius:1px"></div><div class="tx-seg" style="width:28%;background:var(--gold);height:8px;border-radius:1px"></div><div class="tx-seg" style="width:36%;background:var(--violet);height:8px;border-radius:1px"></div></div></div>
+        <div class="tx-row"><div><div class="tx-desc">Social Campaign Mar</div><div class="tx-client">Bloom Agency</div></div><div class="tx-client">Social Kit Q2</div><div class="tx-src">Stripe</div><div class="tx-amt pos">$1,200</div><div class="tx-date">Mar 22</div><div class="tx-split"><div class="tx-seg" style="width:34%;background:var(--cyan);height:8px;border-radius:1px"></div><div class="tx-seg" style="width:28%;background:var(--gold);height:8px;border-radius:1px"></div><div class="tx-seg" style="width:38%;background:var(--violet);height:8px;border-radius:1px"></div></div></div>
+        <div class="tx-row" style="background:rgba(200,168,75,.04)"><div><div class="tx-desc" style="color:var(--gold)">Deposit ACH-3841 ⚠</div><div class="tx-client" style="color:var(--gold)">Unclassified</div></div><div class="tx-client">—</div><div class="tx-src">Bank ACH</div><div class="tx-amt pos">$920</div><div class="tx-date">Mar 19</div><div><button class="g-btn p" style="font-size:6px;padding:2px 6px" onclick="openM('classify')">Classify</button></div></div>
+        <div class="tx-row"><div><div class="tx-desc">Monthly Retainer</div><div class="tx-client">RetailCo Group</div></div><div class="tx-client">Quarterly Reports</div><div class="tx-src">Bank</div><div class="tx-amt pos">$644</div><div class="tx-date">Mar 15</div><div class="tx-split"><div class="tx-seg" style="width:34%;background:var(--cyan);height:8px;border-radius:1px"></div><div class="tx-seg" style="width:28%;background:var(--gold);height:8px;border-radius:1px"></div><div class="tx-seg" style="width:38%;background:var(--violet);height:8px;border-radius:1px"></div></div></div>
+        <div class="tx-row"><div><div class="tx-desc">Brand Identity M2</div><div class="tx-client">Meridian Creative</div></div><div class="tx-client">Brand ID Refresh</div><div class="tx-src">Stripe</div><div class="tx-amt pos">$1,400</div><div class="tx-date">Feb 28</div><div class="tx-split"><div class="tx-seg" style="width:34%;background:var(--cyan);height:8px;border-radius:1px"></div><div class="tx-seg" style="width:28%;background:var(--gold);height:8px;border-radius:1px"></div><div class="tx-seg" style="width:38%;background:var(--violet);height:8px;border-radius:1px"></div></div></div>
+        <div class="tx-row"><div><div class="tx-desc">Social Campaign Feb</div><div class="tx-client">Bloom Agency</div></div><div class="tx-client">Social Kit Q2</div><div class="tx-src">Stripe</div><div class="tx-amt pos">$1,000</div><div class="tx-date">Feb 22</div><div class="tx-split"><div class="tx-seg" style="width:34%;background:var(--cyan);height:8px;border-radius:1px"></div><div class="tx-seg" style="width:28%;background:var(--gold);height:8px;border-radius:1px"></div><div class="tx-seg" style="width:38%;background:var(--violet);height:8px;border-radius:1px"></div></div></div>
+      </div>
+    </div>
+
+    <!-- ── SPENDABLE ── -->
+    <div id="page-spendable" class="subpage">
+      <div class="row2">
+        <div class="card">
+          <div class="card-hdr"><div class="card-hdr-t">Spendable Balance</div><span class="bdg bdg-c">Available Now</span></div>
+          <div class="card-body">
+            <div style="font-family:var(--mono);font-size:28px;font-weight:700;color:var(--cyan);margin-bottom:4px">$3,841</div>
+            <div style="font-family:var(--mono);font-size:8px;color:var(--text3);margin-bottom:12px">Verified safe to spend after tax and savings reserves</div>
+            <div class="kv"><div class="kk">This month inflow</div><div class="kv2">$9,200</div></div>
+            <div class="kv"><div class="kk">Split rate</div><div class="kv2 cyan">34%</div></div>
+            <div class="kv"><div class="kk">Calculation</div><div class="kv2">$9,200 × 0.34</div></div>
+            <div style="margin-top:10px;padding:8px;background:rgba(0,212,170,.05);border-radius:3px;border:1px solid rgba(0,212,170,.15)">
+              <div style="font-family:var(--mono);font-size:8px;color:var(--cyan)">This is the only number you need to make spending decisions. Tax and savings are already set aside.</div>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-hdr"><div class="card-hdr-t">Spendable by Source</div></div>
+          <div class="card-body">
+            <div class="prog-row"><span class="prog-lbl">Meridian</span><div class="prog-track"><div class="prog-fill" style="width:48%;background:var(--cyan)"></div></div><span class="prog-val" style="color:var(--cyan)">$1,501</span></div>
+            <div class="prog-row"><span class="prog-lbl">TechVault</span><div class="prog-track"><div class="prog-fill" style="width:22%;background:var(--gold)"></div></div><span class="prog-val">$688</span></div>
+            <div class="prog-row"><span class="prog-lbl">Bloom</span><div class="prog-track"><div class="prog-fill" style="width:13%;background:var(--violet)"></div></div><span class="prog-val">$407</span></div>
+            <div class="prog-row"><span class="prog-lbl">RetailCo</span><div class="prog-track"><div class="prog-fill" style="width:7%;background:var(--rose)"></div></div><span class="prog-val">$219</span></div>
+            <div class="prog-row"><span class="prog-lbl">Others</span><div class="prog-track"><div class="prog-fill" style="width:10%;background:var(--text3)"></div></div><span class="prog-val">$313</span></div>
+            <div style="font-family:var(--mono);font-size:7px;color:var(--text3);margin-top:8px">Remaining spendable after tax + savings splits</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── TAX RESERVE ── -->
+    <div id="page-tax" class="subpage">
+      <div class="row-60-40">
+        <div style="display:flex;flex-direction:column;gap:12px">
+          <div class="card">
+            <div class="card-hdr"><div class="card-hdr-t">Tax Reserve</div><span class="bdg bdg-g">Q2 2026</span></div>
+            <div class="card-body">
+              <div class="tax-warning">
+                <div class="tw-title">⚠ Q2 Shortfall: $824</div>
+                <div class="tw-body">At your current split rate (28%), you will reach $4,000 by Apr 28 — 47 days before the Jun 15 deadline. You're on track. Raise the split to 32% to reach the target earlier.</div>
+              </div>
+              <div style="font-family:var(--mono);font-size:28px;font-weight:700;color:var(--gold);margin-bottom:4px">$3,176</div>
+              <div style="font-family:var(--mono);font-size:8px;color:var(--text3);margin-bottom:10px">Current tax reserve balance</div>
+              <div class="kv"><div class="kk">Q2 target estimate</div><div class="kv2 gold">$4,000</div></div>
+              <div class="kv"><div class="kk">Funded</div><div class="kv2">79.4%</div></div>
+              <div class="kv"><div class="kk">Shortfall</div><div class="kv2 rose">$824</div></div>
+              <div class="kv"><div class="kk">Due date</div><div class="kv2">Jun 15, 2026</div></div>
+              <div class="kv"><div class="kk">Current rate</div><div class="kv2">28% per event</div></div>
+              <div style="height:6px;background:var(--bg3);border-radius:3px;margin:10px 0;overflow:hidden"><div style="height:100%;width:79%;background:var(--gold);border-radius:3px"></div></div>
+              <button class="g-btn" style="width:100%" onclick="nav('splits','Split Configuration',null)">Adjust Tax Split →</button>
+            </div>
+          </div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:12px">
+          <div class="card">
+            <div class="card-hdr"><div class="card-hdr-t">Quarterly Timeline</div></div>
+            <div class="card-body">
+              <div class="kv"><div class="kk" style="color:var(--green)">✓ Q1 2026 paid</div><div class="kv2">Apr 15 · $3,100</div></div>
+              <div class="kv"><div class="kk" style="color:var(--gold)">⟳ Q2 2026 saving</div><div class="kv2 gold">$3,176/$4,000</div></div>
+              <div class="kv"><div class="kk">Q3 2026 est.</div><div class="kv2 text3">Sep 15 · ~$4,200</div></div>
+              <div class="kv"><div class="kk">Q4 2026 est.</div><div class="kv2 text3">Jan 15 '27 · ~$4,500</div></div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-hdr"><div class="card-hdr-t">Auto-Reserve Log</div></div>
+            <div class="card-body">
+              <div class="kv"><div class="kk">Mar 27 — $2,100 event</div><div class="kv2 gold">+$588 reserved</div></div>
+              <div class="kv"><div class="kk">Mar 22 — $1,200 event</div><div class="kv2 gold">+$336 reserved</div></div>
+              <div class="kv"><div class="kk">Mar 15 — $644 event</div><div class="kv2 gold">+$180 reserved</div></div>
+              <div class="kv"><div class="kk">Mar totals</div><div class="kv2 gold">+$1,104 reserved</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── SAVINGS ── -->
+    <div id="page-savings" class="subpage">
+      <div class="row2">
+        <div class="card">
+          <div class="card-hdr"><div class="card-hdr-t">Savings</div><span class="bdg bdg-v">Emergency Fund</span></div>
+          <div class="card-body">
+            <div style="font-family:var(--mono);font-size:28px;font-weight:700;color:var(--violet);margin-bottom:4px">$4,323</div>
+            <div style="font-family:var(--mono);font-size:8px;color:var(--text3);margin-bottom:12px">38% of all income auto-saved</div>
+            <div class="kv"><div class="kk">Target (3mo expenses)</div><div class="kv2 violet">$9,000</div></div>
+            <div class="kv"><div class="kk">Funded</div><div class="kv2">48%</div></div>
+            <div class="kv"><div class="kk">At current rate</div><div class="kv2">~4.5 months to target</div></div>
+            <div style="height:6px;background:var(--bg3);border-radius:3px;margin:10px 0;overflow:hidden"><div style="height:100%;width:48%;background:var(--violet);border-radius:3px"></div></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-hdr"><div class="card-hdr-t">Savings Goals</div><button class="g-btn p" onclick="openM('savings-goal')">+ Goal</button></div>
+          <div class="card-body">
+            <div class="kv"><div class="kk">Emergency Fund (3mo)</div><div class="kv2 violet">$4,323/$9,000</div></div>
+            <div style="height:3px;background:var(--bg3);border-radius:2px;margin:3px 0 8px;overflow:hidden"><div style="height:100%;width:48%;background:var(--violet)"></div></div>
+            <div class="kv"><div class="kk">Equipment Upgrade</div><div class="kv2">$0/$2,500</div></div>
+            <div style="height:3px;background:var(--bg3);border-radius:2px;margin:3px 0 8px;overflow:hidden"><div style="height:100%;width:0%;background:var(--blue)"></div></div>
+            <button class="g-btn" style="width:100%;margin-top:4px" onclick="openM('savings-goal')">Add Savings Goal →</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── PROJECT INCOME ── -->
+    <div id="page-proj-income" class="subpage">
+      <div class="card">
+        <div class="card-hdr"><div class="card-hdr-t">Income by Project — March 2026</div><span class="bdg bdg-c">6 Projects</span></div>
+        <div class="card-body">
+          <div class="pj-inc-row"><div class="pj-inc-dot" style="background:var(--cyan)"></div><div class="pj-inc-name">Brand Identity Refresh</div><div class="pj-inc-client">Meridian</div><div style="flex:1;height:8px;background:var(--bg3);border-radius:2px;overflow:hidden;margin:0 8px"><div style="height:100%;width:52%;background:var(--cyan);border-radius:2px"></div></div><div class="pj-inc-pct">52%</div><div class="pj-inc-amt">$4,800</div></div>
+          <div class="pj-inc-row"><div class="pj-inc-dot" style="background:var(--gold)"></div><div class="pj-inc-name">Mobile App UI</div><div class="pj-inc-client">TechVault</div><div style="flex:1;height:8px;background:var(--bg3);border-radius:2px;overflow:hidden;margin:0 8px"><div style="height:100%;width:35%;background:var(--gold);border-radius:2px"></div></div><div class="pj-inc-pct">35%</div><div class="pj-inc-amt">$3,200</div></div>
+          <div class="pj-inc-row"><div class="pj-inc-dot" style="background:var(--violet)"></div><div class="pj-inc-name">Social Media Kit Q2</div><div class="pj-inc-client">Bloom</div><div style="flex:1;height:8px;background:var(--bg3);border-radius:2px;overflow:hidden;margin:0 8px"><div style="height:100%;width:13%;background:var(--violet);border-radius:2px"></div></div><div class="pj-inc-pct">13%</div><div class="pj-inc-amt">$1,200</div></div>
+          <div class="pj-inc-row"><div class="pj-inc-dot" style="background:var(--rose)"></div><div class="pj-inc-name">Quarterly Reports</div><div class="pj-inc-client">RetailCo</div><div style="flex:1;height:8px;background:var(--bg3);border-radius:2px;overflow:hidden;margin:0 8px"><div style="height:100%;width:7%;background:var(--rose);border-radius:2px"></div></div><div class="pj-inc-pct">7%</div><div class="pj-inc-amt" style="color:var(--rose)">$600</div></div>
+          <div class="pj-inc-row"><div class="pj-inc-dot" style="background:var(--blue)"></div><div class="pj-inc-name">Logo Suite</div><div class="pj-inc-client">Apex</div><div style="flex:1;height:8px;background:var(--bg3);border-radius:2px;overflow:hidden;margin:0 8px"><div style="height:100%;width:10%;background:var(--blue);border-radius:2px"></div></div><div class="pj-inc-pct">10%</div><div class="pj-inc-amt">$960</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── INCOME FORECAST ── -->
+    <div id="page-proj-forecast" class="subpage">
+      <div class="row2">
+        <div class="card">
+          <div class="card-hdr"><div class="card-hdr-t">Income Forecast — April 2026</div><span class="bdg bdg-g">Estimated</span></div>
+          <div class="card-body">
+            <div style="font-family:var(--mono);font-size:24px;font-weight:700;color:var(--text);margin-bottom:4px">$8,800 <span style="font-size:12px;color:var(--text3)">est.</span></div>
+            <div style="font-family:var(--mono);font-size:7px;color:var(--text3);margin-bottom:10px">Based on active projects + recurring patterns</div>
+            <div class="kv"><div class="kk">Brand Identity final</div><div class="kv2 cyan">$2,200 (due Apr 15)</div></div>
+            <div class="kv"><div class="kk">TechVault Phase 2 (if close)</div><div class="kv2">$3,600 est.</div></div>
+            <div class="kv"><div class="kk">Bloom retainer renewal</div><div class="kv2">$1,200</div></div>
+            <div class="kv"><div class="kk">RetailCo retainer</div><div class="kv2 rose">$644</div></div>
+            <div class="kv"><div class="kk">Skyline Labs (if closed)</div><div class="kv2 violet">$4,000 deposit</div></div>
+            <div style="margin-top:8px;font-family:var(--mono);font-size:7px;color:var(--text3)">Confidence: Medium · Based on project milestones + recurring patterns</div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-hdr"><div class="card-hdr-t">Pending Income</div><span class="bdg bdg-v">$9,600 outstanding</span></div>
+          <div class="card-body">
+            <div class="kv"><div class="kk">Brand Identity final</div><div class="kv2 cyan">$2,200</div></div>
+            <div class="kv"><div class="kk">Mobile App UI (invoiced)</div><div class="kv2 cyan">$3,600</div></div>
+            <div class="kv"><div class="kk">GreenLeaf proposal</div><div class="kv2 gold">$5,000</div></div>
+            <div class="kv"><div class="kk">Skyline Labs (negotiation)</div><div class="kv2 violet">$12,000</div></div>
+            <div style="margin-top:8px;padding:7px;background:rgba(58,124,200,.06);border:1px solid rgba(58,124,200,.2);border-radius:3px">
+              <div style="font-family:var(--mono);font-size:8px;color:var(--blue)">$22,800 total pipeline value — not yet received.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── PENDING INCOME ── -->
+    <div id="page-pending-income" class="subpage">
+      <div class="card">
+        <div class="card-hdr"><div class="card-hdr-t">Pending Income — Invoiced & In-Progress</div><span class="bdg bdg-v">$9,600</span></div>
+        <div class="card-body">
+          <div style="display:flex;flex-direction:column;gap:6px">
+            <div style="display:flex;align-items:center;gap:10px;padding:8px;background:var(--bg2);border-radius:3px;border:1px solid rgba(0,212,170,.15)">
+              <div style="font-family:var(--mono);font-size:7px;color:var(--cyan);width:60px;flex-shrink:0">INVOICED</div>
+              <div style="flex:1"><div style="font-family:var(--mono);font-size:8px;color:var(--text);font-weight:500">Mobile App UI — INV-0041</div><div style="font-family:var(--mono);font-size:7px;color:var(--text3)">TechVault Inc · Sent Mar 26 · Net 15</div></div>
+              <div style="font-family:var(--mono);font-size:9px;font-weight:600;color:var(--cyan)">$3,600</div>
+              <button class="g-btn" onclick="t('Sending reminder…')">Remind</button>
+            </div>
+            <div style="display:flex;align-items:center;gap:10px;padding:8px;background:var(--bg2);border-radius:3px;border:1px solid rgba(0,212,170,.15)">
+              <div style="font-family:var(--mono);font-size:7px;color:var(--gold);width:60px;flex-shrink:0">MILESTONE</div>
+              <div style="flex:1"><div style="font-family:var(--mono);font-size:8px;color:var(--text);font-weight:500">Brand Identity — Final Delivery</div><div style="font-family:var(--mono);font-size:7px;color:var(--text3)">Meridian Creative · Due Apr 15</div></div>
+              <div style="font-family:var(--mono);font-size:9px;font-weight:600;color:var(--gold)">$2,200</div>
+              <button class="g-btn" onclick="t('Milestone noted')">Track</button>
+            </div>
+            <div style="display:flex;align-items:center;gap:10px;padding:8px;background:var(--bg2);border-radius:3px;border:1px solid rgba(200,168,75,.15)">
+              <div style="font-family:var(--mono);font-size:7px;color:var(--gold);width:60px;flex-shrink:0">PROPOSAL</div>
+              <div style="flex:1"><div style="font-family:var(--mono);font-size:8px;color:var(--text);font-weight:500">Brand Strategy Package</div><div style="font-family:var(--mono);font-size:7px;color:var(--text3)">GreenLeaf Co · Sent Mar 25 · 4d waiting</div></div>
+              <div style="font-family:var(--mono);font-size:9px;font-weight:600;color:var(--gold)">$5,000</div>
+              <button class="g-btn" onclick="t('Following up…')">Follow Up</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── HISTORY ── -->
+    <div id="page-history" class="subpage" style="gap:0">
+      <div style="height:30px;background:var(--bg2);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 12px;gap:6px;flex-shrink:0">
+        <select style="background:var(--bg2);border:1px solid var(--border2);border-radius:3px;padding:2px 8px;font-family:var(--mono);font-size:8px;color:var(--text);outline:none">
+          <option>March 2026</option><option>February 2026</option><option>January 2026</option><option>All time</option>
+        </select>
+        <div style="margin-left:auto"><button class="g-btn" onclick="t('Exporting CSV…')">Export CSV</button></div>
+      </div>
+      <div class="tx-hdr">
+        <div class="tx-col">Description</div><div class="tx-col">Client</div><div class="tx-col">Source</div><div class="tx-col r">Amount</div><div class="tx-col">Date</div><div class="tx-col r">Status</div>
+      </div>
+      <div style="flex:1;overflow-y:auto">
+        <div class="tx-row"><div class="tx-desc">Brand Identity M3</div><div class="tx-client">Meridian</div><div class="tx-src">Stripe</div><div class="tx-amt pos">$2,100</div><div class="tx-date">Mar 27</div><div style="text-align:right"><span style="font-family:var(--mono);font-size:6px;color:var(--cyan)">Classified</span></div></div>
+        <div class="tx-row"><div class="tx-desc">Social Campaign</div><div class="tx-client">Bloom</div><div class="tx-src">Stripe</div><div class="tx-amt pos">$1,200</div><div class="tx-date">Mar 22</div><div style="text-align:right"><span style="font-family:var(--mono);font-size:6px;color:var(--cyan)">Classified</span></div></div>
+        <div class="tx-row"><div class="tx-desc">Deposit ACH-3841</div><div class="tx-client" style="color:var(--gold)">Unclassified</div><div class="tx-src">Bank</div><div class="tx-amt pos">$920</div><div class="tx-date">Mar 19</div><div style="text-align:right"><span style="font-family:var(--mono);font-size:6px;color:var(--gold)">Pending</span></div></div>
+        <div class="tx-row"><div class="tx-desc">Monthly Retainer</div><div class="tx-client">RetailCo</div><div class="tx-src">Bank</div><div class="tx-amt pos">$644</div><div class="tx-date">Mar 15</div><div style="text-align:right"><span style="font-family:var(--mono);font-size:6px;color:var(--cyan)">Classified</span></div></div>
+        <div class="tx-row"><div class="tx-desc">Brand Identity M2</div><div class="tx-client">Meridian</div><div class="tx-src">Stripe</div><div class="tx-amt pos">$1,400</div><div class="tx-date">Feb 28</div><div style="text-align:right"><span style="font-family:var(--mono);font-size:6px;color:var(--cyan)">Classified</span></div></div>
+        <div class="tx-row"><div class="tx-desc">Mobile App M1</div><div class="tx-client">TechVault</div><div class="tx-src">Stripe</div><div class="tx-amt pos">$1,200</div><div class="tx-date">Feb 20</div><div style="text-align:right"><span style="font-family:var(--mono);font-size:6px;color:var(--cyan)">Classified</span></div></div>
+        <div class="tx-row"><div class="tx-desc">Social Feb</div><div class="tx-client">Bloom</div><div class="tx-src">Stripe</div><div class="tx-amt pos">$1,000</div><div class="tx-date">Feb 19</div><div style="text-align:right"><span style="font-family:var(--mono);font-size:6px;color:var(--cyan)">Classified</span></div></div>
+      </div>
+    </div>
+
+    <!-- ── MONTHLY SUMMARY ── -->
+    <div id="page-monthly" class="subpage">
+      <div class="row3">
+        <div class="card"><div class="card-hdr"><div class="card-hdr-t">March 2026</div><span class="bdg bdg-c">Current</span></div><div class="card-body"><div class="kv"><div class="kk">Total income</div><div class="kv2 cyan">$9,200</div></div><div class="kv"><div class="kk">To spendable</div><div class="kv2">$3,128</div></div><div class="kv"><div class="kk">To tax reserve</div><div class="kv2 gold">$2,576</div></div><div class="kv"><div class="kk">To savings</div><div class="kv2 violet">$3,496</div></div><div class="kv"><div class="kk">Unclassified</div><div class="kv2 gold">$920</div></div></div></div>
+        <div class="card"><div class="card-hdr"><div class="card-hdr-t">February 2026</div></div><div class="card-body"><div class="kv"><div class="kk">Total income</div><div class="kv2">$8,120</div></div><div class="kv"><div class="kk">To spendable</div><div class="kv2">$2,761</div></div><div class="kv"><div class="kk">To tax reserve</div><div class="kv2 gold">$2,274</div></div><div class="kv"><div class="kk">To savings</div><div class="kv2 violet">$3,086</div></div><div class="kv"><div class="kk">Unclassified</div><div class="kv2">$0</div></div></div></div>
+        <div class="card"><div class="card-hdr"><div class="card-hdr-t">January 2026</div></div><div class="card-body"><div class="kv"><div class="kk">Total income</div><div class="kv2">$6,600</div></div><div class="kv"><div class="kk">To spendable</div><div class="kv2">$2,244</div></div><div class="kv"><div class="kk">To tax reserve</div><div class="kv2 gold">$1,848</div></div><div class="kv"><div class="kk">To savings</div><div class="kv2 violet">$2,508</div></div><div class="kv"><div class="kk">Unclassified</div><div class="kv2">$0</div></div></div></div>
+      </div>
+    </div>
+
+    <!-- ── BY CLIENT ── -->
+    <div id="page-by-client" class="subpage">
+      <div class="card">
+        <div class="card-hdr"><div class="card-hdr-t">Income by Client — March 2026</div></div>
+        <div class="card-body">
+          <div class="prog-row"><span class="prog-lbl">Meridian</span><div class="prog-track"><div class="prog-fill" style="width:48%;background:var(--cyan)"></div></div><span class="prog-val cyan">$4,416</span></div>
+          <div class="prog-row"><span class="prog-lbl">TechVault</span><div class="prog-track"><div class="prog-fill" style="width:22%;background:var(--gold)"></div></div><span class="prog-val">$2,024</span></div>
+          <div class="prog-row"><span class="prog-lbl">Bloom</span><div class="prog-track"><div class="prog-fill" style="width:13%;background:var(--violet)"></div></div><span class="prog-val">$1,196</span></div>
+          <div class="prog-row"><span class="prog-lbl">Apex</span><div class="prog-track"><div class="prog-fill" style="width:10%;background:var(--blue)"></div></div><span class="prog-val">$920</span></div>
+          <div class="prog-row"><span class="prog-lbl">RetailCo</span><div class="prog-track"><div class="prog-fill" style="width:7%;background:var(--rose)"></div></div><span class="prog-val rose">$644</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── BY SOURCE ── -->
+    <div id="page-by-source" class="subpage">
+      <div class="card">
+        <div class="card-hdr"><div class="card-hdr-t">Income by Source — March 2026</div></div>
+        <div class="card-body">
+          <div class="prog-row"><span class="prog-lbl">Stripe</span><div class="prog-track"><div class="prog-fill" style="width:62%;background:var(--cyan)"></div></div><span class="prog-val cyan">$5,716</span></div>
+          <div class="prog-row"><span class="prog-lbl">Bank ACH</span><div class="prog-track"><div class="prog-fill" style="width:28%;background:var(--gold)"></div></div><span class="prog-val">$2,564</span></div>
+          <div class="prog-row"><span class="prog-lbl">Manual</span><div class="prog-track"><div class="prog-fill" style="width:10%;background:var(--violet)"></div></div><span class="prog-val">$920</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── CONNECTIONS ── -->
+    <div id="page-connections" class="subpage">
+      <div class="card">
+        <div class="card-hdr"><div class="card-hdr-t">Bank & Payment Connections</div><button class="g-btn p" onclick="openM('connect-account')">+ Connect Account</button></div>
+        <div class="card-body">
+          <div style="display:flex;flex-direction:column;gap:8px">
+            <div style="display:flex;align-items:center;gap:10px;padding:10px;background:var(--bg2);border-radius:3px;border:1px solid rgba(0,212,170,.15)">
+              <div style="font-size:20px">🏦</div>
+              <div style="flex:1"><div style="font-family:var(--mono);font-size:9px;color:var(--text);font-weight:500">Chase Checking ••4821</div><div style="font-family:var(--mono);font-size:7px;color:var(--text3);margin-top:2px">Connected via Plaid · Last sync 2 min ago</div></div>
+              <span style="font-family:var(--mono);font-size:7px;color:var(--cyan)">● Active</span>
+              <button class="g-btn" onclick="t('Refreshing connection…')">Refresh</button>
+            </div>
+            <div style="display:flex;align-items:center;gap:10px;padding:10px;background:var(--bg2);border-radius:3px;border:1px solid rgba(0,212,170,.15)">
+              <div style="font-size:20px">💳</div>
+              <div style="flex:1"><div style="font-family:var(--mono);font-size:9px;color:var(--text);font-weight:500">Stripe Account</div><div style="font-family:var(--mono);font-size:7px;color:var(--text3);margin-top:2px">Connected via Stripe Connect · Real-time</div></div>
+              <span style="font-family:var(--mono);font-size:7px;color:var(--cyan)">● Active</span>
+              <button class="g-btn" onclick="t('Stripe reconnected')">Reconnect</button>
+            </div>
+            <div style="display:flex;align-items:center;gap:10px;padding:10px;background:var(--bg2);border-radius:3px;border:1px solid var(--border)">
+              <div style="font-size:20px">🅿</div>
+              <div style="flex:1"><div style="font-family:var(--mono);font-size:9px;color:var(--text);font-weight:500">PayPal</div><div style="font-family:var(--mono);font-size:7px;color:var(--text3);margin-top:2px">Not connected — click to add</div></div>
+              <button class="g-btn p" onclick="openM('connect-account')">Connect</button>
+            </div>
+            <div style="display:flex;align-items:center;gap:10px;padding:10px;background:var(--bg2);border-radius:3px;border:1px solid var(--border)">
+              <div style="font-size:20px">🏧</div>
+              <div style="flex:1"><div style="font-family:var(--mono);font-size:9px;color:var(--text);font-weight:500">Add Another Bank Account</div><div style="font-family:var(--mono);font-size:7px;color:var(--text3);margin-top:2px">Connect via Plaid · Read-only · We never move money</div></div>
+              <button class="g-btn p" onclick="openM('connect-account')">+ Add</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── WALLET SETTINGS ── -->
+    <div id="page-wallet-settings" class="subpage">
+      <div class="card">
+        <div class="card-hdr"><div class="card-hdr-t">Wallet Settings</div></div>
+        <div class="card-body">
+          <div class="setting-row"><div class="setting-info"><div class="setting-label">Auto-split on every income event</div><div class="setting-sub">Apply your configured split the moment income is detected</div></div><div class="toggle" onclick="this.classList.toggle('off')"></div></div>
+          <div class="setting-row"><div class="setting-info"><div class="setting-label">Notify on new income detected</div><div class="setting-sub">Push notification when a payment lands</div></div><div class="toggle" onclick="this.classList.toggle('off')"></div></div>
+          <div class="setting-row"><div class="setting-info"><div class="setting-label">Notify on unclassified income</div><div class="setting-sub">Alert when a deposit can't be auto-classified</div></div><div class="toggle" onclick="this.classList.toggle('off')"></div></div>
+          <div class="setting-row"><div class="setting-info"><div class="setting-label">Tax reserve warnings</div><div class="setting-sub">Alert when reserve falls below quarterly estimate</div></div><div class="toggle" onclick="this.classList.toggle('off')"></div></div>
+          <div class="setting-row"><div class="setting-info"><div class="setting-label">Income classification confidence threshold</div><div class="setting-sub">Ask me to confirm if confidence below 70%</div></div><div class="toggle" onclick="this.classList.toggle('off')"></div></div>
+          <div class="setting-row"><div class="setting-info"><div class="setting-label">Manual entry mode</div><div class="setting-sub">Allow manual income logging without bank connection</div></div><div class="toggle off" onclick="this.classList.toggle('off')"></div></div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /content -->
+</div><!-- /main -->
+</div><!-- /app -->
+
+<!-- MODALS -->
+<div class="mo" id="m-manual-income">
+  <div class="modal">
+    <div class="mhdr"><div class="mhdr-t">Log Income Manually</div><div class="mc" onclick="closeM('manual-income')">✕</div></div>
+    <div class="mbody">
+      <div class="fg"><div class="fl">Amount</div><input class="fi" placeholder="e.g. $1,500"></div>
+      <div class="fg"><div class="fl">Client</div><select class="fi"><option>Meridian Creative</option><option>TechVault Inc</option><option>Bloom Agency</option><option>RetailCo Group</option><option>Other…</option></select></div>
+      <div class="fg"><div class="fl">Project (optional)</div><select class="fi"><option>Brand Identity Refresh</option><option>Mobile App UI</option><option>Social Media Kit Q2</option><option>None</option></select></div>
+      <div class="fg"><div class="fl">Source</div><select class="fi"><option>Bank Transfer</option><option>Cash</option><option>Check</option><option>Stripe</option><option>PayPal</option><option>Other</option></select></div>
+      <div class="fg"><div class="fl">Date Received</div><input class="fi" type="date"></div>
+    </div>
+    <div class="mfoot"><button class="btn btn-c" onclick="closeM('manual-income')">Cancel</button><button class="btn btn-p" onclick="closeM('manual-income');t('Income logged and split applied!')">Log & Split</button></div>
+  </div>
+</div>
+<div class="mo" id="m-classify">
+  <div class="modal">
+    <div class="mhdr"><div class="mhdr-t">Classify Income Event</div><div class="mc" onclick="closeM('classify')">✕</div></div>
+    <div class="mbody">
+      <div style="padding:8px;background:var(--bg2);border-radius:3px;margin-bottom:4px"><div style="font-family:var(--mono);font-size:7px;color:var(--text3)">Event</div><div style="font-family:var(--mono);font-size:9px;color:var(--gold)">Deposit ACH-3841 · Mar 19 · $920</div></div>
+      <div class="fg"><div class="fl">Assign to Client</div><select class="fi"><option>Apex Studios</option><option>Bloom Agency</option><option>Meridian Creative</option><option>New client…</option></select></div>
+      <div class="fg"><div class="fl">Link to Project</div><select class="fi"><option>Logo Suite</option><option>Brand Identity Refresh</option><option>None</option></select></div>
+    </div>
+    <div class="mfoot"><button class="btn btn-c" onclick="closeM('classify')">Cancel</button><button class="btn btn-p" onclick="closeM('classify');t('Classified! EHR recalculated.')">Classify & Save</button></div>
+  </div>
+</div>
+<div class="mo" id="m-connect-account">
+  <div class="modal">
+    <div class="mhdr"><div class="mhdr-t">Connect Account</div><div class="mc" onclick="closeM('connect-account')">✕</div></div>
+    <div class="mbody">
+      <div style="font-family:var(--sans);font-size:9px;color:var(--text2);line-height:1.5;margin-bottom:8px">We connect read-only via Plaid. We never move money or store credentials.</div>
+      <div class="fg"><div class="fl">Connection Type</div><select class="fi"><option>Bank Account (Plaid)</option><option>Stripe Connect</option><option>PayPal Connect</option><option>Manual Entry Only</option></select></div>
+    </div>
+    <div class="mfoot"><button class="btn btn-c" onclick="closeM('connect-account')">Cancel</button><button class="btn btn-p" onclick="closeM('connect-account');t('Redirecting to secure connection…')">Connect Securely</button></div>
+  </div>
+</div>
+<div class="mo" id="m-savings-goal">
+  <div class="modal">
+    <div class="mhdr"><div class="mhdr-t">Add Savings Goal</div><div class="mc" onclick="closeM('savings-goal')">✕</div></div>
+    <div class="mbody">
+      <div class="fg"><div class="fl">Goal Name</div><input class="fi" placeholder="e.g. New Laptop"></div>
+      <div class="fg"><div class="fl">Target Amount</div><input class="fi" placeholder="e.g. $2,500"></div>
+      <div class="fg"><div class="fl">Target Date (optional)</div><input class="fi" type="date"></div>
+    </div>
+    <div class="mfoot"><button class="btn btn-c" onclick="closeM('savings-goal')">Cancel</button><button class="btn btn-p" onclick="closeM('savings-goal');t('Savings goal created!')">Create Goal</button></div>
+  </div>
+</div>
+
+<div id="toast" class="toast"></div>
+<script>
+function nav(id,label,el){
+  document.querySelectorAll('.subpage').forEach(p=>p.classList.remove('active'));
+  const pg=document.getElementById('page-'+id);if(pg)pg.classList.add('active');
+  document.getElementById('tb-sub').textContent='/ '+label;
+  document.querySelectorAll('.s-item').forEach(i=>i.classList.remove('active'));
+  if(el)el.classList.add('active');
+}
+function updateSplits(which,val){
+  val=parseInt(val);
+  const sp=parseInt(document.querySelector('input[oninput*="spend"]').value);
+  const tx=parseInt(document.querySelector('input[oninput*="tax"]').value);
+  const sv=Math.max(0,100-sp-tx);
+  document.getElementById('sp-pct').textContent=sp+'%';
+  document.getElementById('tx-pct').textContent=tx+'%';
+  document.getElementById('sv-pct').textContent=sv+'%';
+  document.getElementById('sp-lbl').textContent=sp+'%';
+  document.getElementById('tx-lbl').textContent=tx+'%';
+  document.getElementById('sp-ex').textContent='$'+Math.round(sp*10);
+  document.getElementById('tx-ex').textContent='$'+Math.round(tx*10);
+  document.getElementById('sv-ex').textContent='$'+Math.round(sv*10);
+}
+function applyPreset(sp,tx){
+  document.querySelector('input[oninput*="spend"]').value=sp;
+  document.querySelector('input[oninput*="tax"]').value=tx;
+  updateSplits('',0);t('Preset applied!');
+}
+function openM(id){const m=document.getElementById('m-'+id);if(m)m.classList.add('open');}
+function closeM(id){const m=document.getElementById('m-'+id);if(m)m.classList.remove('open');}
+function t(msg){const el=document.getElementById('toast');el.textContent=msg;el.classList.add('show');setTimeout(()=>el.classList.remove('show'),2500);}
+document.querySelectorAll('.mo').forEach(m=>m.addEventListener('click',function(e){if(e.target===this)this.classList.remove('open');}));
+</script>
+</body>
+</html>

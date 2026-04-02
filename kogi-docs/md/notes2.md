@@ -1,6 +1,5 @@
 #
 
-
 kogi - an operating system to give independent workers everything that they need to manage their portfolio's of work
 
 home
@@ -1269,12 +1268,18 @@ portfolio
 - Mercury (banking)
 - Deel (contractor payments)
 - pandorapp app
+- clockify
+- harvest
+- bonsai
+- toggl track
+- qwilr
 
 wallet
 - wellsfargo
 - bank of america
 - stripe
 - venmo
+- plaid
 - klarna
 - paypal
 - relayfi
@@ -1298,10 +1303,13 @@ wallet
 - kickstarter
 - freshbooks
 - soci.ai
-
+- openclaw
+- eXp microsites 
+- SAP
 
 marketplace
 - tigerbeetle
+- honeybook
 - acorn
 - amazon
 - ebay
@@ -1310,6 +1318,11 @@ marketplace
 - LTK
 - etsy
 - shopify
+- wix
+- pixpa
+- fueler
+- journo portfolio
+- Softr + Airtable 
 - shopmy
 - beacons
 - mavely
@@ -1331,6 +1344,7 @@ marketplace
 - taskrabbit
 - fiverr
 - upwork
+- oddwork
 - freelancer.com
 - peopleperhour
 - guru
@@ -1361,6 +1375,14 @@ marketplace
 - zendesk
 - app.cal.com
 - scribe
+- slido.com
+- APIOpenStudio
+- Gitcoin
+- Colony
+- Coordinape
+- Mint
+- YNAB
+- Copilot Money
 
 spaces|community
 - slack
@@ -1402,6 +1424,9 @@ spaces|community
 - zoom
 - skype
 - community.com
+- peerspace
+- gigster
+- spacer
 
 
 assistant
@@ -2527,7 +2552,6 @@ domain operating system
 - supporting module systems
 - utility|auxiliary systems
 
-
 ---
 
 * Add saved view persistence (filters/sorts/groups/pivots) into the views cube.
@@ -2611,8 +2635,99 @@ persona-PC
 - persona-PC can join spaces associate with the game project, chat and meet others interesting in the game project and connect with the game's project community
 
 persona-collective
-- 
+
 
 ---
 
 appstore + operating system for the independent work economy
+
+pacman -S mingw-w64-x86_64-toolchain mingw-w64-x86_64-pkg-config
+
+
+kogi+qala - solution (product, service, goods, platform, application, system) strategy; solution strategic management system
+
+qala - solution orchestration system
+kogi - portfolio orchestration system
+ume - organization orchestration system
+
+
+dashboard relevance sorting engine
+dashboard tile system
+    - tile = smallest "meaningful" unit of information
+    - tile engine
+      - tile relevance+sorting engine
+      - tile adjudication engine - judge which tiles should show up on dashboard and where and what infomration they should display
+      - tile search+filter+index engine
+      - tile filter engine
+      - tile recommendation engine - recommend tiles to user to add/display/create on dashbaord
+      - tile analytics+telemtry+insights engine - insights, analysis, metris and collect tile data
+      - tile data engine - tile data pipelines management engine
+      - tile grouping engine - manage tile groups, rows, columns
+      - tile behavior+orchestration engine - core tile orchestration, coordination and behavior management engine
+      - tile risk engine - tile fault tolerance, error correction, inaccuracies management, redundancy management, risk management engine
+
+map all of the features discussed in this chat and give a features list for each of the 8 core subsystems of the qala platform: 
+qala platform
+    - dashboard system
+    - solution system (solution books, solution models manegaemnt, documentation, IP management, solution data management, solution state mangement+estimation+configuration, solutions registry+index+catalogue) 
+    - factory system (solution factory management, solution (product) lines management, solution and  multi-solution environments orchestrations+coordination, solution workflows+orchstration+tasks automation system) 
+    - environment system (solution environments management, testing, testbeds, dev environments, sandbox environments, deployment environments, QA environments, custom environmentsm environnment data+configuration+models management) 
+    - tool system (3rd party integration management, tools, toolchains, toolkits, toolsets, toolboxes, tool hierarcharies+graphs+trees) 
+    - observatory system (analytics, insights, metrics, data)
+    - work (execution, project management) system 
+    - operations (management) system - logistics, supply chain, vendors management, , distribution+deployment management 
+
+ume+kogi - centers marketing system+engine
+
+---
+
+innovation is making impossible lives possible
+
+---
+
+Management focuses on configuring and maintaining individual system components (servers, apps, databases) to ensure they run correctly, often using automation for single tasks. Orchestration coordinates multiple automated tasks, managing complex workflows, dependencies, and scaling across systems, like a conductor for IT infrastructure. [1, 2, 3, 4, 5]  
+Key Differences: 
+
+• Scope: Management is often limited to a single machine or component (e.g., configuring a server). Orchestration manages the "big picture," connecting multiple systems and services. 
+• Function: Management ensures a server is running with the correct software. Orchestration ensures an application is deployed, load-balanced, and scaled across ten servers. 
+• Tools: Management uses tools like Ansible, Chef, and Puppet. Orchestration uses tools like Kubernetes, Docker Swarm, and Terraform. [1, 2, 6, 7, 8, 9]  
+
+Summary Table: 
+
+• Management (Configuration/Infrastructure): Focuses on the state of an individual component (e.g., "Is the firewall on?"). 
+• Orchestration (Workflow): Focuses on the process of multiple components (e.g., "Deploy app to new VM, update load balancer, start traffic"). [1, 2, 3, 5, 10]  
+
+Essentially, management sets up the individual pieces, while orchestration acts as the conductor that makes them work together in harmony. [2, 5]  
+
+AI can make mistakes, so double-check responses
+
+[1] https://kodekloud.com/blog/configuration-vs-orchestration-management/
+[2] https://www.youtube.com/watch?v=hvG26VeufFc
+[3] https://www.networkcomputing.com/cloud-networking/infrastructure-management-vs-orchestration
+[4] https://www.digi.com/blog/post/network-orchestration-vs-network-management
+[5] https://www.pass4sure.com/blog/a-deep-dive-into-configuration-management-and-orchestration/
+[6] https://www.youtube.com/watch?v=6VvhtRp9Bpc
+[7] https://www.f5.com/company/blog/management-is-not-orchestration
+[8] https://www.parkplacetechnologies.com/blog/it-automation-vs-orchestration-differences-use-cases/
+[9] https://www.chef.io/blog/infrastructure-provisioning-vs-configuration-management-vs-configuration-orchestration-how-iac-makes-them-all-better
+[10] https://www.youtube.com/watch?v=Jfwriqqkwi4
+
+---
+
+kogi helps infer, sort, filter, search, manage+administer, orchestrate, adjudicate, and negotiate the engagements (value generating activity) of an independent worker
+
+engagements are a container/representation of the time, effort, money and relationships, grouped in a single vector:
+
+e = [t, e, m, r]
+
+where t, e, m, r form an orthogonal basis, and e (engagements) are points on this 4 dimensional axis. the kogi system infers e and works with the user to find optimal e's that satisfy the optimization problen of min(S + dA, S*) of changing/transforming an independent worker's portfolio configuration state from suboptimal to "optimal" (value maximization, where value has dimensions of [impact, revenue, outcome realization])
+
+this generalizes to any domain operating system, where a domain-OS is such a system that has states S and optimal (minima, maxima; either local and/or global) states S*, where the domain-OS is a tranformational system that iterates through configuration states, changing the configuration of the root element of the system (for kogi it is portfolios/portfolio-states, for qala it is solutions/solutions-states, for ume it is organizations/organization-states) through a series of actions A, where actions A are taken by an executor E, in order to satifsy the optimization equation min(S + dA, S*) subject to constraints
+
+---
+
+**INCENTIVE MECHANISM DESIGNS FOR QALA, UME, KOGI AND DOMAIN OPERATING SYSTEM
+    - keep system in check+balance
+    - encourage "ideal" system configurations across agents, users, hosts (platform operators, admins, developers)
+
+kogi as employee (independent worker in an organization) effort, time, labor, work tracking and management system and ume becomes the aggregator for employee data+information, aggregating and providing aggregate views of all employees combined efforts, time, labor, and works

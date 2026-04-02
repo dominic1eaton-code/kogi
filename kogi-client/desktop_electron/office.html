@@ -1,0 +1,1007 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KOGI · Office</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;600;700&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap');
+:root{
+  --bg:#0a0b0f;--bg1:#0f1117;--bg2:#13151e;--bg3:#181c28;--bg4:#1e2235;
+  --border:rgba(255,255,255,0.06);--border2:rgba(255,255,255,0.1);--border3:#232a42;
+  --text:#c8ccdb;--text2:#7a8099;--text3:#4a5068;
+  --cyan:#00d4aa;--gold:#c8a84b;--violet:#7c5cbf;--rose:#c45c7a;
+  --orange:#c87c3a;--blue:#3a7cc8;--green:#4aab6d;--pink:#bf5ca0;
+  --pnav-w:58px;--snav-w:168px;
+  --mono:'IBM Plex Mono',monospace;--sans:'IBM Plex Sans',sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{width:100%;height:100%;background:var(--bg);font-family:var(--sans);color:var(--text);font-size:10px;overflow:hidden}
+.app{display:flex;width:100%;height:100vh;overflow:hidden}
+
+/* ── Primary Nav ── */
+.p-nav{width:var(--pnav-w);background:var(--bg1);border-right:1px solid var(--border);flex-shrink:0;display:flex;flex-direction:column;align-items:center;z-index:20}
+.p-nav-top{display:flex;flex-direction:column;align-items:center;gap:1px;flex:1;padding:8px 0;width:100%}
+.p-nav-bottom{display:flex;flex-direction:column;align-items:center;padding:8px 0;width:100%}
+.p-logo{font-family:var(--mono);font-size:11px;font-weight:700;color:var(--cyan);letter-spacing:0.1em;padding:8px 0 5px;text-align:center;cursor:pointer}
+.p-avatar{width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,var(--cyan),var(--violet));display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:9px;font-weight:700;color:#000;cursor:pointer;text-decoration:none;margin-bottom:4px;transition:all 0.15s;border:2px solid transparent}
+.p-avatar:hover{border-color:var(--cyan)}
+.p-divider{width:32px;height:1px;background:var(--border);margin:4px 0}
+.p-link{display:flex;flex-direction:column;align-items:center;gap:2px;padding:8px 0;cursor:pointer;color:var(--text3);text-decoration:none;width:100%;transition:all 0.12s;border-left:2px solid transparent}
+.p-link:hover{color:var(--text2);background:rgba(255,255,255,0.02)}
+.p-link.active{color:var(--cyan);border-left-color:var(--cyan);background:rgba(0,212,170,0.05)}
+.p-link-label{font-family:var(--mono);font-size:6px;letter-spacing:0.06em;text-transform:uppercase}
+.p-link svg{width:15px;height:15px}
+
+/* ── Secondary Nav ── */
+.s-nav{width:var(--snav-w);background:var(--bg1);border-right:1px solid var(--border);flex-shrink:0;display:flex;flex-direction:column;overflow:hidden}
+.s-nav-header{padding:12px 13px 9px;border-bottom:1px solid var(--border);flex-shrink:0}
+.s-nav-title{font-family:var(--mono);font-size:10px;font-weight:700;color:var(--text)}
+.s-nav-meta{font-family:var(--mono);font-size:7px;color:var(--text3);margin-top:2px}
+.s-nav-items{flex:1;overflow-y:auto;padding:4px 0}
+.s-sec-label{font-family:var(--mono);font-size:6px;letter-spacing:0.14em;text-transform:uppercase;color:var(--text3);padding:8px 13px 3px}
+.s-item{display:flex;align-items:center;gap:6px;padding:5px 13px;font-family:var(--mono);font-size:8px;color:var(--text3);cursor:pointer;border-left:2px solid transparent;transition:all 0.1s;white-space:nowrap;text-decoration:none}
+.s-item:hover{background:var(--bg2);color:var(--text2)}
+.s-item.active{background:var(--bg2);color:var(--text);border-left-color:var(--cyan)}
+.s-dot{width:5px;height:5px;border-radius:50%;background:currentColor;flex-shrink:0}
+.s-badge{margin-left:auto;font-family:var(--mono);font-size:6px;padding:1px 4px;border-radius:2px;background:var(--bg3);color:var(--text3)}
+.s-item.active .s-badge{background:rgba(0,212,170,0.12);color:var(--cyan)}
+.s-pulse{width:5px;height:5px;border-radius:50%;background:var(--cyan);flex-shrink:0;animation:pulse 2s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.3}}
+
+/* ── Main ── */
+.main{flex:1;display:flex;flex-direction:column;min-width:0;overflow:hidden}
+.toolbar{height:34px;background:var(--bg1);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 14px;gap:8px;flex-shrink:0}
+.tb-title{font-family:var(--mono);font-size:10px;font-weight:600;color:var(--text)}
+.tb-sub{font-family:var(--mono);font-size:8px;color:var(--text3)}
+.tb-spacer{flex:1}
+.g-btn{background:var(--bg2);border:1px solid var(--border2);border-radius:3px;padding:3px 9px;font-family:var(--mono);font-size:8px;color:var(--text2);cursor:pointer;transition:all 0.12s;white-space:nowrap}
+.g-btn:hover{border-color:var(--cyan);color:var(--cyan)}
+.g-btn.primary{background:var(--cyan);border-color:var(--cyan);color:#000;font-weight:600}
+.g-btn.primary:hover{background:#00efc0}
+.tab-grp{display:flex;background:var(--bg2);border:1px solid var(--border);border-radius:3px;overflow:hidden}
+.tab{padding:3px 10px;font-family:var(--mono);font-size:7px;color:var(--text3);cursor:pointer;border-right:1px solid var(--border);transition:all 0.1s}
+.tab:last-child{border-right:none}.tab.on{background:var(--bg3);color:var(--text)}
+
+/* ── Stat Row ── */
+.stat-row{display:flex;background:var(--bg2);border-bottom:1px solid var(--border);flex-shrink:0}
+.stat-cell{flex:1;padding:9px 14px;border-right:1px solid var(--border)}
+.stat-cell:last-child{border-right:none}
+.stat-lbl{font-family:var(--mono);font-size:7px;letter-spacing:0.1em;text-transform:uppercase;color:var(--text3);margin-bottom:3px}
+.stat-num{font-family:var(--mono);font-size:16px;font-weight:700;color:var(--text);line-height:1}
+.cyan{color:var(--cyan)}.gold{color:var(--gold)}.rose{color:var(--rose)}.green{color:var(--green)}.violet{color:var(--violet)}
+.stat-d{font-family:var(--mono);font-size:7px;color:var(--green);margin-top:2px}
+.stat-d.neg{color:var(--rose)}
+
+/* ── Content ── */
+.content{flex:1;overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:10px}
+.subpage{display:none}.subpage.active{display:flex;flex-direction:column;gap:10px}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+.row-70-30{display:grid;grid-template-columns:2fr 1fr;gap:10px}
+
+/* ── Cards ── */
+.card{background:var(--bg1);border:1px solid var(--border);border-radius:4px;overflow:hidden}
+.card-hdr{padding:9px 12px 8px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px}
+.card-hdr-title{font-family:var(--mono);font-size:9px;font-weight:600;color:var(--text);flex:1}
+.card-hdr-badge{font-family:var(--mono);font-size:7px;padding:1px 5px;border-radius:2px;border:1px solid}
+.badge-cyan{border-color:rgba(0,212,170,0.3);color:var(--cyan);background:rgba(0,212,170,0.06)}
+.badge-gold{border-color:rgba(200,168,75,0.3);color:var(--gold);background:rgba(200,168,75,0.06)}
+.badge-rose{border-color:rgba(196,92,122,0.3);color:var(--rose);background:rgba(196,92,122,0.06)}
+.badge-green{border-color:rgba(74,171,109,0.3);color:var(--green);background:rgba(74,171,109,0.06)}
+.badge-violet{border-color:rgba(124,92,191,0.3);color:var(--violet);background:rgba(124,92,191,0.06)}
+.card-body{padding:11px 12px}
+.sec-label{font-family:var(--mono);font-size:7px;letter-spacing:0.12em;text-transform:uppercase;color:var(--text3);margin-bottom:7px}
+
+/* ── KV Rows ── */
+.kv{display:flex;justify-content:space-between;align-items:center;padding:4px 0;border-bottom:1px solid var(--border)}
+.kv:last-child{border-bottom:none}
+.kv-k{font-family:var(--mono);font-size:8px;color:var(--text3)}
+.kv-v{font-family:var(--mono);font-size:8px;color:var(--text2);font-weight:500}
+.kv-v.cyan{color:var(--cyan)}.kv-v.gold{color:var(--gold)}.kv-v.rose{color:var(--rose)}.kv-v.green{color:var(--green)}
+
+/* ── Feed ── */
+.feed-item{display:flex;gap:10px;padding:7px 0;border-bottom:1px solid var(--border)}
+.feed-item:last-child{border-bottom:none}
+.feed-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0;margin-top:2px}
+.feed-dot.cyan{background:var(--cyan)}.feed-dot.gold{background:var(--gold)}.feed-dot.rose{background:var(--rose)}.feed-dot.green{background:var(--green)}.feed-dot.violet{background:var(--violet)}.feed-dot.blue{background:var(--blue)}
+.feed-body{flex:1}
+.feed-title{font-family:var(--mono);font-size:8px;color:var(--text);margin-bottom:1px}
+.feed-meta{font-family:var(--mono);font-size:7px;color:var(--text3)}
+.feed-amt{font-family:var(--mono);font-size:8px;font-weight:600}
+.feed-amt.pos{color:var(--cyan)}.feed-amt.neg{color:var(--rose)}
+
+/* ── Pipeline Board ── */
+.pipe-board{display:grid;grid-template-columns:repeat(6,minmax(180px,1fr));gap:8px;min-height:400px;overflow-x:auto}
+.pipe-col{background:var(--bg2);border-radius:4px;border:1px solid var(--border);display:flex;flex-direction:column;min-height:300px}
+.pipe-col-hdr{padding:8px 10px 6px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:6px;flex-shrink:0}
+.pipe-col-label{font-family:var(--mono);font-size:7.5px;font-weight:600;text-transform:uppercase;letter-spacing:0.08em;flex:1}
+.pipe-col-count{font-family:var(--mono);font-size:7px;color:var(--text3);padding:1px 4px;border-radius:2px;background:var(--bg3)}
+.pipe-col-val{font-family:var(--mono);font-size:7px;color:var(--text3)}
+.pipe-col-body{flex:1;padding:7px;display:flex;flex-direction:column;gap:5px;overflow-y:auto}
+
+/* ── Pipeline Cards ── */
+.pipe-card{background:var(--bg1);border:1px solid var(--border);border-radius:3px;padding:8px 9px;cursor:pointer;transition:all 0.1s}
+.pipe-card:hover{border-color:var(--border2);background:rgba(255,255,255,0.02)}
+.pipe-card-name{font-family:var(--mono);font-size:8px;font-weight:600;color:var(--text);margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pipe-card-client{font-family:var(--mono);font-size:7px;color:var(--text3);margin-bottom:5px}
+.pipe-card-meta{display:flex;align-items:center;gap:5px}
+.pipe-card-val{font-family:var(--mono);font-size:9px;font-weight:700;color:var(--text2)}
+.pipe-card-tag{font-family:var(--mono);font-size:6px;padding:1px 4px;border-radius:2px;border:1px solid}
+.pipe-card-actions{display:flex;gap:4px;margin-top:5px}
+.pipe-card-btn{font-family:var(--mono);font-size:6.5px;padding:2px 6px;border-radius:2px;border:1px solid var(--border);background:var(--bg2);color:var(--text3);cursor:pointer;transition:all 0.1s}
+.pipe-card-btn:hover{border-color:var(--cyan);color:var(--cyan)}
+.pipe-card-prob{display:flex;align-items:center;gap:4px;margin-top:4px}
+.prob-bar{flex:1;height:2px;background:var(--bg3);border-radius:1px;overflow:hidden}
+.prob-fill{height:100%;border-radius:1px}
+.prob-label{font-family:var(--mono);font-size:6px;color:var(--text3);width:24px;text-align:right}
+
+/* ── Priority queue ── */
+.priority-item{display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid var(--border);cursor:pointer}
+.priority-item:last-child{border-bottom:none}
+.priority-item:hover .pi-name{color:var(--cyan)}
+.pi-num{font-family:var(--mono);font-size:7px;color:var(--text3);width:14px;text-align:right;flex-shrink:0}
+.pi-icon{font-size:12px;flex-shrink:0}
+.pi-info{flex:1;min-width:0}
+.pi-name{font-family:var(--mono);font-size:8px;color:var(--text);font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pi-meta{font-family:var(--mono);font-size:7px;color:var(--text3)}
+.pi-val{font-family:var(--mono);font-size:8px;font-weight:600;color:var(--text2);text-align:right;flex-shrink:0}
+.pi-tag{font-family:var(--mono);font-size:6px;padding:1px 4px;border-radius:2px;border:1px solid;font-weight:600;flex-shrink:0}
+
+/* ── Project Cards ── */
+.proj-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:8px}
+.proj-card{background:var(--bg2);border:1px solid var(--border);border-radius:4px;padding:10px 11px;cursor:pointer;transition:all 0.1s}
+.proj-card:hover{border-color:var(--border2)}
+.proj-status{display:inline-block;font-family:var(--mono);font-size:6px;font-weight:700;padding:2px 6px;border-radius:2px;margin-bottom:5px;text-transform:uppercase;letter-spacing:0.06em}
+.status-active{background:rgba(0,212,170,0.12);color:var(--cyan)}
+.status-review{background:rgba(200,168,75,0.12);color:var(--gold)}
+.status-hold{background:rgba(196,92,122,0.1);color:var(--rose)}
+.status-complete{background:rgba(74,171,109,0.12);color:var(--green)}
+.status-draft{background:var(--bg3);color:var(--text3)}
+.proj-name{font-family:var(--mono);font-size:9px;font-weight:600;color:var(--text);margin-bottom:2px}
+.proj-client{font-family:var(--mono);font-size:7px;color:var(--text3);margin-bottom:7px}
+.proj-metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;margin-bottom:7px}
+.proj-metric-val{font-family:var(--mono);font-size:9px;font-weight:600;color:var(--text)}
+.proj-metric-lbl{font-family:var(--mono);font-size:6px;color:var(--text3)}
+.proj-progress{display:flex;flex-direction:column;gap:3px}
+.proj-prog-track{height:3px;background:var(--bg3);border-radius:2px;overflow:hidden}
+.proj-prog-fill{height:100%;border-radius:2px;transition:width 0.8s}
+.proj-prog-label{display:flex;justify-content:space-between;font-family:var(--mono);font-size:6.5px;color:var(--text3)}
+
+/* ── Engagement List ── */
+.engage-row{display:flex;align-items:flex-start;gap:8px;padding:7px 0;border-bottom:1px solid var(--border);cursor:pointer}
+.engage-row:last-child{border-bottom:none}
+.engage-row:hover .en-name{color:var(--cyan)}
+.en-status{width:6px;height:6px;border-radius:50%;flex-shrink:0;margin-top:4px}
+.en-info{flex:1}
+.en-name{font-family:var(--mono);font-size:8.5px;color:var(--text);font-weight:600;margin-bottom:2px}
+.en-client{font-family:var(--mono);font-size:7px;color:var(--text3)}
+.en-tags{display:flex;gap:3px;margin-top:3px;flex-wrap:wrap}
+.en-tag{font-family:var(--mono);font-size:6px;padding:1px 4px;border-radius:2px;border:1px solid;font-weight:600}
+.en-right{text-align:right;flex-shrink:0}
+.en-val{font-family:var(--mono);font-size:9px;font-weight:600;color:var(--text)}
+.en-ehr{font-family:var(--mono);font-size:7px;color:var(--text3)}
+.en-date{font-family:var(--mono);font-size:7px;color:var(--text3)}
+
+/* ── Insight ── */
+.insight{border-radius:4px;padding:10px 12px;border:1px solid;margin-bottom:7px}
+.insight:last-child{margin-bottom:0}
+.insight.amber{border-color:rgba(200,168,75,0.3);background:rgba(200,168,75,0.04)}
+.insight.rose{border-color:rgba(196,92,122,0.3);background:rgba(196,92,122,0.04)}
+.insight.cyan{border-color:rgba(0,212,170,0.3);background:rgba(0,212,170,0.04)}
+.insight.blue{border-color:rgba(58,124,200,0.3);background:rgba(58,124,200,0.04)}
+.insight-type{font-family:var(--mono);font-size:6px;letter-spacing:0.14em;text-transform:uppercase;font-weight:700;margin-bottom:3px}
+.amber .insight-type{color:var(--gold)}.rose .insight-type{color:var(--rose)}.cyan .insight-type{color:var(--cyan)}.blue .insight-type{color:var(--blue)}
+.insight-title{font-family:var(--mono);font-size:10px;font-weight:600;color:var(--text);margin-bottom:4px}
+.insight-body{font-family:var(--sans);font-size:9px;color:var(--text2);line-height:1.55;margin-bottom:8px}
+.insight-acts{display:flex;gap:6px;flex-wrap:wrap}
+.i-act{font-family:var(--mono);font-size:7px;padding:3px 9px;border-radius:3px;border:1px solid;cursor:pointer;transition:all 0.1s}
+.i-act.primary{background:var(--cyan);border-color:var(--cyan);color:#000;font-weight:600}
+.i-act.primary:hover{background:#00efc0}
+.i-act.ghost{border-color:var(--border2);color:var(--text3)}
+.i-act.ghost:hover{border-color:var(--text2);color:var(--text2)}
+
+/* ── Proposal Card ── */
+.prop-card{background:var(--bg2);border:1px solid var(--border);border-radius:4px;padding:10px 12px;margin-bottom:7px;cursor:pointer;transition:all 0.1s}
+.prop-card:last-child{margin-bottom:0}
+.prop-card:hover{border-color:var(--border2)}
+.prop-header{display:flex;align-items:center;gap:6px;margin-bottom:5px}
+.prop-name{font-family:var(--mono);font-size:9px;font-weight:600;color:var(--text);flex:1}
+.prop-val{font-family:var(--mono);font-size:10px;font-weight:700}
+.prop-meta{display:flex;gap:10px;margin-bottom:6px}
+.prop-meta-item{font-family:var(--mono);font-size:7px;color:var(--text3)}
+.prop-stage{font-family:var(--mono);font-size:6px;font-weight:700;padding:2px 6px;border-radius:2px;border:1px solid;text-transform:uppercase;letter-spacing:0.06em}
+.prop-actions{display:flex;gap:5px}
+.prop-btn{font-family:var(--mono);font-size:7px;padding:3px 8px;border-radius:3px;border:1px solid var(--border2);background:var(--bg1);color:var(--text3);cursor:pointer;transition:all 0.1s}
+.prop-btn:hover{border-color:var(--cyan);color:var(--cyan)}
+.prop-progress{display:flex;align-items:center;gap:6px;margin:5px 0}
+.prop-stages{display:flex;flex:1;gap:2px}
+.prop-stage-dot{flex:1;height:3px;background:var(--bg3);border-radius:1px}
+.prop-stage-dot.done{background:var(--cyan)}.prop-stage-dot.curr{background:var(--gold)}
+
+/* ── Calendar events ── */
+.cal-event{display:flex;align-items:flex-start;gap:8px;padding:6px 0;border-bottom:1px solid var(--border);cursor:pointer}
+.cal-event:last-child{border-bottom:none}
+.cal-event:hover .cal-title{color:var(--cyan)}
+.cal-time{font-family:var(--mono);font-size:7px;color:var(--text3);width:60px;flex-shrink:0;line-height:1.3}
+.cal-dot{width:5px;height:5px;border-radius:50%;flex-shrink:0;margin-top:3px}
+.cal-info{flex:1}
+.cal-title{font-family:var(--mono);font-size:8px;color:var(--text);font-weight:600;margin-bottom:1px}
+.cal-meta{font-family:var(--mono);font-size:7px;color:var(--text3)}
+.cal-val{font-family:var(--mono);font-size:8px;font-weight:600;color:var(--text2);flex-shrink:0}
+
+/* ── Scrollbar ── */
+::-webkit-scrollbar{width:4px;height:4px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px}
+
+/* ── Toast ── */
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--bg3);border:1px solid var(--border2);border-radius:4px;padding:7px 14px;font-family:var(--mono);font-size:8px;color:var(--text2);opacity:0;transition:all 0.2s;z-index:200;pointer-events:none;white-space:nowrap}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* ── Modal ── */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:100;align-items:center;justify-content:center}
+.modal-overlay.show{display:flex}
+.modal{background:var(--bg2);border:1px solid var(--border2);border-radius:5px;width:420px;max-height:80vh;overflow:hidden;display:flex;flex-direction:column}
+.modal-hdr{padding:12px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px}
+.modal-title{font-family:var(--mono);font-size:10px;font-weight:700;color:var(--text);flex:1}
+.modal-body{padding:14px;overflow-y:auto;display:flex;flex-direction:column;gap:10px}
+.modal-foot{padding:10px 14px;border-top:1px solid var(--border);display:flex;gap:6px;justify-content:flex-end}
+.form-group{display:flex;flex-direction:column;gap:4px}
+.form-label{font-family:var(--mono);font-size:7.5px;text-transform:uppercase;letter-spacing:0.08em;color:var(--text3)}
+.form-input{background:var(--bg1);border:1px solid var(--border2);border-radius:3px;padding:5px 8px;font-family:var(--mono);font-size:8px;color:var(--text);outline:none}
+.form-input:focus{border-color:var(--cyan)}
+.form-select{background:var(--bg1);border:1px solid var(--border2);border-radius:3px;padding:5px 8px;font-family:var(--mono);font-size:8px;color:var(--text);outline:none;cursor:pointer}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+</style>
+</head>
+<body>
+<div class="app">
+
+<!-- ══ PRIMARY NAV ══ -->
+<nav class="p-nav">
+  <div class="p-nav-top">
+    <div class="p-logo">K</div>
+    <a href="profile.html" class="p-avatar" title="Profile">MJ</a>
+    <div class="p-divider"></div>
+    <a href="dashboard.html" class="p-link" title="Dashboard">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+      <span class="p-link-label">Dash</span>
+    </a>
+    <a href="portfolio.html" class="p-link" title="Portfolio">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="3"/><path d="M3 12h3m12 0h3M12 3v3m0 12v3"/><circle cx="12" cy="12" r="9"/></svg>
+      <span class="p-link-label">Portfolio</span>
+    </a>
+    <a href="wallet.html" class="p-link" title="Wallet">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 14a1 1 0 1 1 0-2 1 1 0 0 1 0 2z" fill="currentColor"/><path d="M2 10h20M7 7V5a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v2"/></svg>
+      <span class="p-link-label">Wallet</span>
+    </a>
+    <a href="office.html" class="p-link active" title="Office">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+      <span class="p-link-label">Office</span>
+    </a>
+  </div>
+  <div class="p-nav-bottom">
+    <a href="settings.html" class="p-link" title="Settings">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      <span class="p-link-label">Settings</span>
+    </a>
+  </div>
+</nav>
+
+<!-- ══ SECONDARY NAV ══ -->
+<nav class="s-nav">
+  <div class="s-nav-header">
+    <div class="s-nav-title">Office</div>
+    <div class="s-nav-meta">Marcus Johnson · March 2026</div>
+  </div>
+  <div class="s-nav-items">
+    <div class="s-sec-label">Workspace</div>
+    <div class="s-item active" onclick="showPage('overview')"><div class="s-pulse"></div>Overview<span class="s-badge">Live</span></div>
+    <div class="s-item" onclick="showPage('priority')"><div class="s-dot"></div>Priority Queue<span class="s-badge">7</span></div>
+    <div class="s-item" onclick="showPage('calendar')"><div class="s-dot"></div>Calendar<span class="s-badge">3</span></div>
+
+    <div class="s-sec-label">Pipeline</div>
+    <div class="s-item" onclick="showPage('pipeline')"><div class="s-dot"></div>Pipeline Board<span class="s-badge">9</span></div>
+    <div class="s-item" onclick="showPage('prospects')"><div class="s-dot"></div>Prospects<span class="s-badge">5</span></div>
+    <div class="s-item" onclick="showPage('proposals')"><div class="s-dot"></div>Proposals<span class="s-badge">4</span></div>
+    <div class="s-item" onclick="showPage('negotiations')"><div class="s-dot" style="background:var(--gold)"></div>Negotiations<span class="s-badge">2</span></div>
+
+    <div class="s-sec-label">Projects</div>
+    <div class="s-item" onclick="showPage('projects')"><div class="s-dot"></div>All Projects<span class="s-badge">11</span></div>
+    <div class="s-item" onclick="showPage('proj-active')"><div class="s-dot" style="background:var(--cyan)"></div>Active<span class="s-badge">6</span></div>
+    <div class="s-item" onclick="showPage('proj-review')"><div class="s-dot" style="background:var(--gold)"></div>In Review<span class="s-badge">2</span></div>
+    <div class="s-item" onclick="showPage('proj-complete')"><div class="s-dot" style="background:var(--green)"></div>Completed<span class="s-badge">3</span></div>
+
+    <div class="s-sec-label">Engagements</div>
+    <div class="s-item" onclick="showPage('engagements')"><div class="s-dot"></div>All Engagements</div>
+    <div class="s-item" onclick="showPage('retainers')"><div class="s-dot"></div>Retainers<span class="s-badge">2</span></div>
+    <div class="s-item" onclick="showPage('recurring')"><div class="s-dot"></div>Recurring Work</div>
+
+    <div class="s-sec-label">Income Links</div>
+    <div class="s-item" onclick="showPage('invoices')"><div class="s-dot"></div>Invoices<span class="s-badge">6</span></div>
+    <div class="s-item" onclick="showPage('income-events')"><div class="s-dot"></div>Income Events</div>
+  </div>
+</nav>
+
+<!-- ══ MAIN ══ -->
+<div class="main">
+  <div class="toolbar">
+    <span class="tb-title">Office</span>
+    <span class="tb-sub" id="tb-sub">/ Overview</span>
+    <div class="tb-spacer"></div>
+    <div class="tab-grp">
+      <div class="tab on" onclick="toast('Week view')">Week</div>
+      <div class="tab" onclick="toast('Month view')">Month</div>
+      <div class="tab" onclick="toast('Quarter view')">Quarter</div>
+    </div>
+    <button class="g-btn" onclick="showModal('new-prospect')">+ Prospect</button>
+    <button class="g-btn primary" onclick="showModal('new-project')">+ Project</button>
+  </div>
+
+  <!-- Stat Row -->
+  <div class="stat-row">
+    <div class="stat-cell">
+      <div class="stat-lbl">Pipeline Value</div>
+      <div class="stat-num violet">$48,200</div>
+      <div class="stat-d">9 open opportunities</div>
+    </div>
+    <div class="stat-cell">
+      <div class="stat-lbl">Weighted Pipeline</div>
+      <div class="stat-num gold">$22,100</div>
+      <div class="stat-d">Probability-adjusted</div>
+    </div>
+    <div class="stat-cell">
+      <div class="stat-lbl">In-Flight Revenue</div>
+      <div class="stat-num cyan">$11,800</div>
+      <div class="stat-d">6 active projects</div>
+    </div>
+    <div class="stat-cell">
+      <div class="stat-lbl">Proposals Out</div>
+      <div class="stat-num">4</div>
+      <div class="stat-d">Avg 7d waiting</div>
+    </div>
+    <div class="stat-cell">
+      <div class="stat-lbl">Close Rate</div>
+      <div class="stat-num green">62%</div>
+      <div class="stat-d">↑ 8% vs last quarter</div>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <!-- ── OVERVIEW ── -->
+    <div id="page-overview" class="subpage active">
+      <div class="row-70-30">
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <!-- Pipeline snapshot -->
+          <div class="card">
+            <div class="card-hdr">
+              <span class="card-hdr-title">Pipeline — Stage Overview</span>
+              <span class="card-hdr-badge badge-violet">9 Opportunities</span>
+              <button class="g-btn" onclick="showPage('pipeline')" style="margin-left:4px">Full Board →</button>
+            </div>
+            <div class="card-body">
+              <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:4px">
+                <div style="text-align:center;padding:8px 4px;background:var(--bg2);border-radius:3px;border:1px solid var(--border)">
+                  <div style="font-family:var(--mono);font-size:6px;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:3px">Lead</div>
+                  <div style="font-family:var(--mono);font-size:14px;font-weight:700;color:var(--text3)">2</div>
+                  <div style="font-family:var(--mono);font-size:7px;color:var(--text3)">$8K</div>
+                </div>
+                <div style="text-align:center;padding:8px 4px;background:var(--bg2);border-radius:3px;border:1px solid var(--border)">
+                  <div style="font-family:var(--mono);font-size:6px;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:3px">Discovery</div>
+                  <div style="font-family:var(--mono);font-size:14px;font-weight:700;color:var(--violet)">2</div>
+                  <div style="font-family:var(--mono);font-size:7px;color:var(--text3)">$18K</div>
+                </div>
+                <div style="text-align:center;padding:8px 4px;background:var(--bg2);border-radius:3px;border:1px solid var(--border)">
+                  <div style="font-family:var(--mono);font-size:6px;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:3px">Proposal</div>
+                  <div style="font-family:var(--mono);font-size:14px;font-weight:700;color:var(--blue)">3</div>
+                  <div style="font-family:var(--mono);font-size:7px;color:var(--text3)">$12.5K</div>
+                </div>
+                <div style="text-align:center;padding:8px 4px;background:rgba(200,168,75,0.06);border-radius:3px;border:1px solid rgba(200,168,75,0.2)">
+                  <div style="font-family:var(--mono);font-size:6px;color:var(--gold);text-transform:uppercase;letter-spacing:.08em;margin-bottom:3px">Negotiation</div>
+                  <div style="font-family:var(--mono);font-size:14px;font-weight:700;color:var(--gold)">2</div>
+                  <div style="font-family:var(--mono);font-size:7px;color:var(--gold)">$17K</div>
+                </div>
+                <div style="text-align:center;padding:8px 4px;background:rgba(0,212,170,0.04);border-radius:3px;border:1px solid rgba(0,212,170,0.15)">
+                  <div style="font-family:var(--mono);font-size:6px;color:var(--cyan);text-transform:uppercase;letter-spacing:.08em;margin-bottom:3px">Closing</div>
+                  <div style="font-family:var(--mono);font-size:14px;font-weight:700;color:var(--cyan)">0</div>
+                  <div style="font-family:var(--mono);font-size:7px;color:var(--cyan)">—</div>
+                </div>
+                <div style="text-align:center;padding:8px 4px;background:rgba(74,171,109,0.04);border-radius:3px;border:1px solid rgba(74,171,109,0.15)">
+                  <div style="font-family:var(--mono);font-size:6px;color:var(--green);text-transform:uppercase;letter-spacing:.08em;margin-bottom:3px">Won (Mo)</div>
+                  <div style="font-family:var(--mono);font-size:14px;font-weight:700;color:var(--green)">3</div>
+                  <div style="font-family:var(--mono);font-size:7px;color:var(--green)">$24K</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Active Projects -->
+          <div class="card">
+            <div class="card-hdr">
+              <span class="card-hdr-title">Active Projects</span>
+              <span class="card-hdr-badge badge-cyan">6 Active · 2 In Review</span>
+              <button class="g-btn" onclick="showPage('projects')" style="margin-left:4px">All Projects →</button>
+            </div>
+            <div class="card-body">
+              <div class="proj-grid">
+                <div class="proj-card" onclick="toast('Opening Brand Identity project…')">
+                  <div class="proj-status status-active">Active</div>
+                  <div class="proj-name">Brand Identity Refresh</div>
+                  <div class="proj-client">Meridian Creative · Design Work</div>
+                  <div class="proj-metrics">
+                    <div><div class="proj-metric-val cyan">$4,800</div><div class="proj-metric-lbl">Earned</div></div>
+                    <div><div class="proj-metric-val">$94/hr</div><div class="proj-metric-lbl">EHR</div></div>
+                    <div><div class="proj-metric-val">18d</div><div class="proj-metric-lbl">Left</div></div>
+                  </div>
+                  <div class="proj-progress">
+                    <div class="proj-prog-track"><div class="proj-prog-fill" style="width:68%;background:var(--cyan)"></div></div>
+                    <div class="proj-prog-label"><span>68% Complete</span><span>$7,000 total</span></div>
+                  </div>
+                </div>
+                <div class="proj-card" onclick="toast('Opening Mobile App UI project…')">
+                  <div class="proj-status status-review">In Review</div>
+                  <div class="proj-name">Mobile App UI</div>
+                  <div class="proj-client">TechVault Inc · Design Work</div>
+                  <div class="proj-metrics">
+                    <div><div class="proj-metric-val gold">$3,200</div><div class="proj-metric-lbl">Earned</div></div>
+                    <div><div class="proj-metric-val">$67/hr</div><div class="proj-metric-lbl">EHR</div></div>
+                    <div><div class="proj-metric-val">5d</div><div class="proj-metric-lbl">Left</div></div>
+                  </div>
+                  <div class="proj-progress">
+                    <div class="proj-prog-track"><div class="proj-prog-fill" style="width:90%;background:var(--gold)"></div></div>
+                    <div class="proj-prog-label"><span>90% Complete</span><span>$3,600 total</span></div>
+                  </div>
+                </div>
+                <div class="proj-card" onclick="toast('Opening Social Media Kit project…')">
+                  <div class="proj-status status-active">Active</div>
+                  <div class="proj-name">Social Media Kit Q2</div>
+                  <div class="proj-client">Bloom Agency · Design Work</div>
+                  <div class="proj-metrics">
+                    <div><div class="proj-metric-val violet">$0</div><div class="proj-metric-lbl">Earned</div></div>
+                    <div><div class="proj-metric-val">$55/hr</div><div class="proj-metric-lbl">EHR est.</div></div>
+                    <div><div class="proj-metric-val">28d</div><div class="proj-metric-lbl">Left</div></div>
+                  </div>
+                  <div class="proj-progress">
+                    <div class="proj-prog-track"><div class="proj-prog-fill" style="width:10%;background:var(--violet)"></div></div>
+                    <div class="proj-prog-label"><span>10% Complete</span><span>$2,400 fixed</span></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Engagements -->
+          <div class="card">
+            <div class="card-hdr">
+              <span class="card-hdr-title">Active Engagements</span>
+              <span class="card-hdr-badge badge-green">2 Retainers</span>
+              <button class="g-btn" onclick="showPage('engagements')" style="margin-left:4px">View All →</button>
+            </div>
+            <div class="card-body">
+              <div class="engage-row" onclick="toast('Opening Meridian retainer…')">
+                <div class="en-status" style="background:var(--cyan)"></div>
+                <div class="en-info">
+                  <div class="en-name">Brand Retainer — Meridian Creative</div>
+                  <div class="en-client">Monthly · Ongoing since Jan 2026</div>
+                  <div class="en-tags">
+                    <span class="en-tag" style="color:var(--cyan);border-color:rgba(0,212,170,0.3);background:rgba(0,212,170,0.07)">Retainer</span>
+                    <span class="en-tag" style="color:var(--green);border-color:rgba(74,171,109,0.3);background:rgba(74,171,109,0.07)">Growing</span>
+                  </div>
+                </div>
+                <div class="en-right">
+                  <div class="en-val">$2,200/mo</div>
+                  <div class="en-ehr">$94/hr EHR</div>
+                  <div class="en-date">Next: Apr 1</div>
+                </div>
+              </div>
+              <div class="engage-row" onclick="toast('Opening Bloom retainer…')">
+                <div class="en-status" style="background:var(--violet)"></div>
+                <div class="en-info">
+                  <div class="en-name">Social Strategy — Bloom Agency</div>
+                  <div class="en-client">Bi-monthly · Started Feb 2026</div>
+                  <div class="en-tags">
+                    <span class="en-tag" style="color:var(--violet);border-color:rgba(124,92,191,0.3);background:rgba(124,92,191,0.07)">Recurring</span>
+                  </div>
+                </div>
+                <div class="en-right">
+                  <div class="en-val">$1,200/mo</div>
+                  <div class="en-ehr">$55/hr EHR</div>
+                  <div class="en-date">Next: Apr 15</div>
+                </div>
+              </div>
+              <div class="engage-row" onclick="toast('Opening RetailCo reports…')">
+                <div class="en-status" style="background:var(--rose)"></div>
+                <div class="en-info">
+                  <div class="en-name">Quarterly Reports — RetailCo Group</div>
+                  <div class="en-client">Quarterly · 2 years active</div>
+                  <div class="en-tags">
+                    <span class="en-tag" style="color:var(--rose);border-color:rgba(196,92,122,0.3);background:rgba(196,92,122,0.07)">Rate Gap</span>
+                    <span class="en-tag" style="color:var(--rose);border-color:rgba(196,92,122,0.3);background:rgba(196,92,122,0.07)">Review</span>
+                  </div>
+                </div>
+                <div class="en-right">
+                  <div class="en-val" style="color:var(--rose)">$644/mo</div>
+                  <div class="en-ehr" style="color:var(--rose)">$18/hr EHR</div>
+                  <div class="en-date">Q2 due May</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right column -->
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <!-- Priority Queue -->
+          <div class="card">
+            <div class="card-hdr">
+              <span class="card-hdr-title">Priority Queue</span>
+              <span class="card-hdr-badge badge-rose">7 Actions</span>
+            </div>
+            <div class="card-body">
+              <div class="priority-item" onclick="toast('Following up with Skyline…')">
+                <div class="pi-num">1</div>
+                <div class="pi-icon">🔥</div>
+                <div class="pi-info">
+                  <div class="pi-name">Follow up — Skyline Labs</div>
+                  <div class="pi-meta">Counter-offer · 3d no reply</div>
+                </div>
+                <div class="pi-val">$12K</div>
+              </div>
+              <div class="priority-item" onclick="toast('Reviewing Mobile App UI…')">
+                <div class="pi-num">2</div>
+                <div class="pi-icon">📋</div>
+                <div class="pi-info">
+                  <div class="pi-name">Review deliverables — TechVault</div>
+                  <div class="pi-meta">In Review · Client awaiting</div>
+                </div>
+                <div class="pi-val">$3.6K</div>
+              </div>
+              <div class="priority-item" onclick="toast('Opening RetailCo rate review…')">
+                <div class="pi-num">3</div>
+                <div class="pi-icon">⚠️</div>
+                <div class="pi-info">
+                  <div class="pi-name">Rate review — RetailCo</div>
+                  <div class="pi-meta">EHR $18/hr · 71% below avg</div>
+                </div>
+                <span class="pi-tag" style="color:var(--rose);border-color:rgba(196,92,122,0.3);background:rgba(196,92,122,0.08)">Urgent</span>
+              </div>
+              <div class="priority-item" onclick="toast('Opening GreenLeaf proposal…')">
+                <div class="pi-num">4</div>
+                <div class="pi-icon">📄</div>
+                <div class="pi-info">
+                  <div class="pi-name">Proposal follow-up — GreenLeaf</div>
+                  <div class="pi-meta">Sent Mar 25 · 4d waiting</div>
+                </div>
+                <div class="pi-val">$5K</div>
+              </div>
+              <div class="priority-item" onclick="toast('Booking initial call with NovaBrands…')">
+                <div class="pi-num">5</div>
+                <div class="pi-icon">📞</div>
+                <div class="pi-info">
+                  <div class="pi-name">Initial call — NovaBrands</div>
+                  <div class="pi-meta">Tomorrow 2pm</div>
+                </div>
+                <div class="pi-val">$8K</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Pipeline insight -->
+          <div class="insight amber">
+            <div class="insight-type">⚡ Pipeline Intelligence</div>
+            <div class="insight-title">2 deals stalled in negotiation</div>
+            <div class="insight-body">Skyline Labs ($12K) and DataHive ($5K) have been in negotiation for 6+ days without movement. Each day of delay reduces close probability by ~4%.</div>
+            <div class="insight-acts">
+              <button class="i-act primary" onclick="toast('Opening follow-up templates…')">Draft Follow-ups</button>
+              <button class="i-act ghost" onclick="toast('Snoozing…')">Snooze 2d</button>
+            </div>
+          </div>
+
+          <!-- Today's schedule -->
+          <div class="card">
+            <div class="card-hdr">
+              <span class="card-hdr-title">Today — Mar 29</span>
+              <span class="card-hdr-badge badge-cyan">3 Events</span>
+            </div>
+            <div class="card-body">
+              <div class="cal-event" onclick="toast('Opening Meridian sync…')">
+                <div class="cal-time">10:00am</div>
+                <div class="cal-dot" style="background:var(--cyan)"></div>
+                <div class="cal-info">
+                  <div class="cal-title">Meridian Weekly Sync</div>
+                  <div class="cal-meta">Brand Identity M4 review</div>
+                </div>
+                <div class="cal-val" style="color:var(--cyan)">Retainer</div>
+              </div>
+              <div class="cal-event" onclick="toast('Opening Apex review…')">
+                <div class="cal-time">2:00pm</div>
+                <div class="cal-dot" style="background:var(--violet)"></div>
+                <div class="cal-info">
+                  <div class="cal-title">Apex Studios — Discovery Call</div>
+                  <div class="cal-meta">New scope discussion</div>
+                </div>
+                <div class="cal-val">$6K est.</div>
+              </div>
+              <div class="cal-event" onclick="toast('Opening Skyline follow-up…')">
+                <div class="cal-time">4:30pm</div>
+                <div class="cal-dot" style="background:var(--gold)"></div>
+                <div class="cal-info">
+                  <div class="cal-title">Skyline Labs — Negotiation Call</div>
+                  <div class="cal-meta">Counter-offer response</div>
+                </div>
+                <div class="cal-val">$12K</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── PIPELINE BOARD ── -->
+    <div id="page-pipeline" class="subpage">
+      <div class="card" style="overflow:visible">
+        <div class="card-hdr">
+          <span class="card-hdr-title">Pipeline Board</span>
+          <span class="card-hdr-badge badge-violet">$48,200 total</span>
+          <button class="g-btn" onclick="showModal('new-prospect')" style="margin-left:auto">+ Add Lead</button>
+        </div>
+        <div style="padding:10px;overflow-x:auto">
+          <div class="pipe-board">
+            <!-- Lead -->
+            <div class="pipe-col">
+              <div class="pipe-col-hdr" style="border-left:3px solid var(--text3)">
+                <span class="pipe-col-label" style="color:var(--text3)">Lead</span>
+                <span class="pipe-col-count">2</span>
+                <span class="pipe-col-val">$8K</span>
+              </div>
+              <div class="pipe-col-body">
+                <div class="pipe-card" onclick="toast('Opening PineMedia lead…')">
+                  <div class="pipe-card-name">PineMedia Co</div>
+                  <div class="pipe-card-client">Referral via Bloom Agency</div>
+                  <div class="pipe-card-meta">
+                    <span class="pipe-card-val">$5,000</span>
+                    <span class="pipe-card-tag" style="color:var(--violet);border-color:rgba(124,92,191,0.3);background:rgba(124,92,191,0.07)">Warm</span>
+                  </div>
+                  <div class="pipe-card-prob"><div class="prob-bar"><div class="prob-fill" style="width:20%;background:var(--text3)"></div></div><span class="prob-label">20%</span></div>
+                  <div class="pipe-card-actions">
+                    <button class="pipe-card-btn" onclick="event.stopPropagation();toast('Scheduling call…')">Schedule</button>
+                    <button class="pipe-card-btn" onclick="event.stopPropagation();toast('Moving to Discovery…')">→ Qualify</button>
+                  </div>
+                </div>
+                <div class="pipe-card" onclick="toast('Opening UrbanTech lead…')">
+                  <div class="pipe-card-name">UrbanTech Labs</div>
+                  <div class="pipe-card-client">LinkedIn inbound</div>
+                  <div class="pipe-card-meta">
+                    <span class="pipe-card-val">$3,000</span>
+                    <span class="pipe-card-tag" style="color:var(--text3);border-color:var(--border2)">Cold</span>
+                  </div>
+                  <div class="pipe-card-prob"><div class="prob-bar"><div class="prob-fill" style="width:10%;background:var(--text3)"></div></div><span class="prob-label">10%</span></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Discovery -->
+            <div class="pipe-col">
+              <div class="pipe-col-hdr" style="border-left:3px solid var(--violet)">
+                <span class="pipe-col-label" style="color:var(--violet)">Discovery</span>
+                <span class="pipe-col-count">2</span>
+                <span class="pipe-col-val">$18K</span>
+              </div>
+              <div class="pipe-col-body">
+                <div class="pipe-card" onclick="toast('Opening NovaBrands discovery…')">
+                  <div class="pipe-card-name">NovaBrands Inc</div>
+                  <div class="pipe-card-client">Initial call tomorrow</div>
+                  <div class="pipe-card-meta">
+                    <span class="pipe-card-val">$8,000</span>
+                    <span class="pipe-card-tag" style="color:var(--cyan);border-color:rgba(0,212,170,0.3);background:rgba(0,212,170,0.07)">Hot</span>
+                  </div>
+                  <div class="pipe-card-prob"><div class="prob-bar"><div class="prob-fill" style="width:40%;background:var(--violet)"></div></div><span class="prob-label">40%</span></div>
+                  <div class="pipe-card-actions">
+                    <button class="pipe-card-btn" onclick="event.stopPropagation();toast('Call tomorrow 2pm')">Tomorrow 2pm</button>
+                    <button class="pipe-card-btn" onclick="event.stopPropagation();toast('Drafting proposal…')">Draft Prop</button>
+                  </div>
+                </div>
+                <div class="pipe-card" onclick="toast('Opening Apex discovery…')">
+                  <div class="pipe-card-name">Apex Studios</div>
+                  <div class="pipe-card-client">Existing client · New scope</div>
+                  <div class="pipe-card-meta">
+                    <span class="pipe-card-val">$10,000</span>
+                    <span class="pipe-card-tag" style="color:var(--green);border-color:rgba(74,171,109,0.3);background:rgba(74,171,109,0.07)">Existing</span>
+                  </div>
+                  <div class="pipe-card-prob"><div class="prob-bar"><div class="prob-fill" style="width:55%;background:var(--violet)"></div></div><span class="prob-label">55%</span></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Proposal -->
+            <div class="pipe-col">
+              <div class="pipe-col-hdr" style="border-left:3px solid var(--blue)">
+                <span class="pipe-col-label" style="color:var(--blue)">Proposal Sent</span>
+                <span class="pipe-col-count">3</span>
+                <span class="pipe-col-val">$12.5K</span>
+              </div>
+              <div class="pipe-col-body">
+                <div class="pipe-card" onclick="toast('Opening GreenLeaf proposal…')">
+                  <div class="pipe-card-name">GreenLeaf Co</div>
+                  <div class="pipe-card-client">Brand Strategy Package · Mar 25</div>
+                  <div class="pipe-card-meta">
+                    <span class="pipe-card-val">$5,000</span>
+                    <span class="pipe-card-tag" style="color:var(--gold);border-color:rgba(200,168,75,0.3);background:rgba(200,168,75,0.07)">4d Wait</span>
+                  </div>
+                  <div class="pipe-card-prob"><div class="prob-bar"><div class="prob-fill" style="width:65%;background:var(--blue)"></div></div><span class="prob-label">65%</span></div>
+                  <div class="pipe-card-actions">
+                    <button class="pipe-card-btn" onclick="event.stopPropagation();toast('Following up…')">Follow Up</button>
+                  </div>
+                </div>
+                <div class="pipe-card" onclick="toast('Opening BrightPath proposal…')">
+                  <div class="pipe-card-name">BrightPath Digital</div>
+                  <div class="pipe-card-client">E-commerce Redesign · Mar 22</div>
+                  <div class="pipe-card-meta">
+                    <span class="pipe-card-val">$6,500</span>
+                    <span class="pipe-card-tag" style="color:var(--rose);border-color:rgba(196,92,122,0.3);background:rgba(196,92,122,0.07)">7d Wait</span>
+                  </div>
+                  <div class="pipe-card-prob"><div class="prob-bar"><div class="prob-fill" style="width:45%;background:var(--blue)"></div></div><span class="prob-label">45%</span></div>
+                </div>
+                <div class="pipe-card" onclick="toast('Opening MindSpace proposal…')">
+                  <div class="pipe-card-name">MindSpace App</div>
+                  <div class="pipe-card-client">Brand Refresh · Mar 28</div>
+                  <div class="pipe-card-meta">
+                    <span class="pipe-card-val">$1,000</span>
+                    <span class="pipe-card-tag" style="color:var(--text3);border-color:var(--border2)">New</span>
+                  </div>
+                  <div class="pipe-card-prob"><div class="prob-bar"><div class="prob-fill" style="width:30%;background:var(--blue)"></div></div><span class="prob-label">30%</span></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Negotiation -->
+            <div class="pipe-col">
+              <div class="pipe-col-hdr" style="border-left:3px solid var(--gold)">
+                <span class="pipe-col-label" style="color:var(--gold)">Negotiation</span>
+                <span class="pipe-col-count">2</span>
+                <span class="pipe-col-val">$17K</span>
+              </div>
+              <div class="pipe-col-body">
+                <div class="pipe-card" onclick="toast('Opening Skyline negotiation…')">
+                  <div class="pipe-card-name">Skyline Labs</div>
+                  <div class="pipe-card-client">Counter-offer received · 3d stalled</div>
+                  <div class="pipe-card-meta">
+                    <span class="pipe-card-val">$12,000</span>
+                    <span class="pipe-card-tag" style="color:var(--rose);border-color:rgba(196,92,122,0.3);background:rgba(196,92,122,0.07)">⚠ Stalled</span>
+                  </div>
+                  <div class="pipe-card-prob"><div class="prob-bar"><div class="prob-fill" style="width:75%;background:var(--gold)"></div></div><span class="prob-label">75%</span></div>
+                  <div class="pipe-card-actions">
+                    <button class="pipe-card-btn" onclick="event.stopPropagation();toast('Opening counter-offer…')">Counter</button>
+                    <button class="pipe-card-btn" onclick="event.stopPropagation();toast('Calling Skyline…')">Call 4:30pm</button>
+                  </div>
+                </div>
+                <div class="pipe-card" onclick="toast('Opening DataHive negotiation…')">
+                  <div class="pipe-card-name">DataHive Corp</div>
+                  <div class="pipe-card-client">Terms review · 6d in negotiation</div>
+                  <div class="pipe-card-meta">
+                    <span class="pipe-card-val">$5,000</span>
+                    <span class="pipe-card-tag" style="color:var(--gold);border-color:rgba(200,168,75,0.3);background:rgba(200,168,75,0.07)">Active</span>
+                  </div>
+                  <div class="pipe-card-prob"><div class="prob-bar"><div class="prob-fill" style="width:70%;background:var(--gold)"></div></div><span class="prob-label">70%</span></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Closing -->
+            <div class="pipe-col">
+              <div class="pipe-col-hdr" style="border-left:3px solid var(--cyan)">
+                <span class="pipe-col-label" style="color:var(--cyan)">Closing</span>
+                <span class="pipe-col-count">0</span>
+                <span class="pipe-col-val">—</span>
+              </div>
+              <div class="pipe-col-body" style="align-items:center;justify-content:center">
+                <div style="font-family:var(--mono);font-size:8px;color:var(--text3);text-align:center;padding:20px">Move deals<br>here to close</div>
+              </div>
+            </div>
+
+            <!-- Won -->
+            <div class="pipe-col">
+              <div class="pipe-col-hdr" style="border-left:3px solid var(--green)">
+                <span class="pipe-col-label" style="color:var(--green)">Won — Mar</span>
+                <span class="pipe-col-count">3</span>
+                <span class="pipe-col-val">$24K</span>
+              </div>
+              <div class="pipe-col-body">
+                <div class="pipe-card" style="opacity:0.7" onclick="toast('Opening Meridian Q2…')">
+                  <div class="pipe-card-name">Meridian Q2 Retainer</div>
+                  <div class="pipe-card-client">Closed Mar 1</div>
+                  <div class="pipe-card-meta"><span class="pipe-card-val" style="color:var(--green)">$8,800</span></div>
+                </div>
+                <div class="pipe-card" style="opacity:0.7" onclick="toast('Opening Bloom Social Kit…')">
+                  <div class="pipe-card-name">Bloom Social Kit Q2</div>
+                  <div class="pipe-card-client">Closed Mar 12</div>
+                  <div class="pipe-card-meta"><span class="pipe-card-val" style="color:var(--green)">$2,400</span></div>
+                </div>
+                <div class="pipe-card" style="opacity:0.7" onclick="toast('Opening TechVault Mobile…')">
+                  <div class="pipe-card-name">TechVault Mobile App</div>
+                  <div class="pipe-card-client">Closed Mar 18</div>
+                  <div class="pipe-card-meta"><span class="pipe-card-val" style="color:var(--green)">$3,600</span></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── PROJECTS ── -->
+    <div id="page-projects" class="subpage">
+      <div class="card">
+        <div class="card-hdr">
+          <span class="card-hdr-title">All Projects</span>
+          <span class="card-hdr-badge badge-cyan">11 Total</span>
+          <div style="margin-left:auto;display:flex;gap:5px">
+            <div class="tab-grp">
+              <div class="tab on">All</div>
+              <div class="tab" onclick="toast('Active filter')">Active</div>
+              <div class="tab" onclick="toast('Review filter')">Review</div>
+              <div class="tab" onclick="toast('Complete filter')">Done</div>
+            </div>
+            <button class="g-btn primary" onclick="showModal('new-project')">+ Project</button>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="proj-grid">
+            <div class="proj-card" onclick="toast('Opening Brand Identity…')"><div class="proj-status status-active">Active</div><div class="proj-name">Brand Identity Refresh</div><div class="proj-client">Meridian Creative · Design Work</div><div class="proj-metrics"><div><div class="proj-metric-val cyan">$4,800</div><div class="proj-metric-lbl">Earned</div></div><div><div class="proj-metric-val">$94/hr</div><div class="proj-metric-lbl">EHR</div></div><div><div class="proj-metric-val">18d</div><div class="proj-metric-lbl">Left</div></div></div><div class="proj-progress"><div class="proj-prog-track"><div class="proj-prog-fill" style="width:68%;background:var(--cyan)"></div></div><div class="proj-prog-label"><span>68%</span><span>$7,000</span></div></div></div>
+            <div class="proj-card" onclick="toast('Opening Mobile App UI…')"><div class="proj-status status-review">In Review</div><div class="proj-name">Mobile App UI</div><div class="proj-client">TechVault Inc · Design Work</div><div class="proj-metrics"><div><div class="proj-metric-val gold">$3,200</div><div class="proj-metric-lbl">Earned</div></div><div><div class="proj-metric-val">$67/hr</div><div class="proj-metric-lbl">EHR</div></div><div><div class="proj-metric-val">5d</div><div class="proj-metric-lbl">Left</div></div></div><div class="proj-progress"><div class="proj-prog-track"><div class="proj-prog-fill" style="width:90%;background:var(--gold)"></div></div><div class="proj-prog-label"><span>90%</span><span>$3,600</span></div></div></div>
+            <div class="proj-card" onclick="toast('Opening Quarterly Reports…')"><div class="proj-status status-active">Active</div><div class="proj-name">Quarterly Reports</div><div class="proj-client">RetailCo Group · Consulting</div><div class="proj-metrics"><div><div class="proj-metric-val rose">$600</div><div class="proj-metric-lbl">Earned</div></div><div><div class="proj-metric-val" style="color:var(--rose)">$18/hr</div><div class="proj-metric-lbl">EHR ⚠</div></div><div><div class="proj-metric-val">31d</div><div class="proj-metric-lbl">Left</div></div></div><div class="proj-progress"><div class="proj-prog-track"><div class="proj-prog-fill" style="width:18%;background:var(--rose)"></div></div><div class="proj-prog-label"><span>18%</span><span>$3,200</span></div></div></div>
+            <div class="proj-card" onclick="toast('Opening Social Media Kit…')"><div class="proj-status status-active">Active</div><div class="proj-name">Social Media Kit Q2</div><div class="proj-client">Bloom Agency · Design Work</div><div class="proj-metrics"><div><div class="proj-metric-val violet">$0</div><div class="proj-metric-lbl">Earned</div></div><div><div class="proj-metric-val">$55/hr</div><div class="proj-metric-lbl">EHR est.</div></div><div><div class="proj-metric-val">28d</div><div class="proj-metric-lbl">Left</div></div></div><div class="proj-progress"><div class="proj-prog-track"><div class="proj-prog-fill" style="width:10%;background:var(--violet)"></div></div><div class="proj-prog-label"><span>10%</span><span>$2,400</span></div></div></div>
+            <div class="proj-card" onclick="toast('Opening Apex Brand System…')"><div class="proj-status status-hold">On Hold</div><div class="proj-name">Apex Brand System</div><div class="proj-client">Apex Studios · Design Work</div><div class="proj-metrics"><div><div class="proj-metric-val">$920</div><div class="proj-metric-lbl">Earned</div></div><div><div class="proj-metric-val">$48/hr</div><div class="proj-metric-lbl">EHR</div></div><div><div class="proj-metric-val">—</div><div class="proj-metric-lbl">Paused</div></div></div><div class="proj-progress"><div class="proj-prog-track"><div class="proj-prog-fill" style="width:35%;background:var(--rose)"></div></div><div class="proj-prog-label"><span>35%</span><span>$2,800</span></div></div></div>
+            <div class="proj-card" onclick="toast('Opening Meridian Q1 final…')"><div class="proj-status status-complete">Completed</div><div class="proj-name">Meridian Q1 Campaign</div><div class="proj-client">Meridian Creative · Design Work</div><div class="proj-metrics"><div><div class="proj-metric-val green">$5,200</div><div class="proj-metric-lbl">Earned</div></div><div><div class="proj-metric-val">$88/hr</div><div class="proj-metric-lbl">EHR</div></div><div><div class="proj-metric-val">Mar 15</div><div class="proj-metric-lbl">Closed</div></div></div><div class="proj-progress"><div class="proj-prog-track"><div class="proj-prog-fill" style="width:100%;background:var(--green)"></div></div><div class="proj-prog-label"><span>100%</span><span>$5,200</span></div></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── PROPOSALS ── -->
+    <div id="page-proposals" class="subpage">
+      <div class="card">
+        <div class="card-hdr">
+          <span class="card-hdr-title">Proposals — Active</span>
+          <span class="card-hdr-badge badge-blue">4 Sent · $12,500 total</span>
+          <button class="g-btn primary" onclick="toast('Opening proposal builder…')" style="margin-left:auto">+ New Proposal</button>
+        </div>
+        <div class="card-body">
+          <div class="prop-card">
+            <div class="prop-header">
+              <span class="prop-name">Brand Strategy Package — GreenLeaf Co</span>
+              <span class="prop-stage" style="color:var(--gold);border-color:rgba(200,168,75,0.3);background:rgba(200,168,75,0.08)">Awaiting</span>
+              <span class="prop-val gold">$5,000</span>
+            </div>
+            <div class="prop-meta">
+              <span class="prop-meta-item">📅 Sent Mar 25</span>
+              <span class="prop-meta-item">⏱ 4 days waiting</span>
+              <span class="prop-meta-item">📊 65% probability</span>
+            </div>
+            <div class="prop-progress">
+              <div class="prop-stages">
+                <div class="prop-stage-dot done"></div>
+                <div class="prop-stage-dot done"></div>
+                <div class="prop-stage-dot curr"></div>
+                <div class="prop-stage-dot"></div>
+                <div class="prop-stage-dot"></div>
+              </div>
+              <span style="font-family:var(--mono);font-size:7px;color:var(--gold)">Client Review</span>
+            </div>
+            <div class="prop-actions">
+              <button class="prop-btn" onclick="toast('Sending follow-up to GreenLeaf…')">Send Follow-up</button>
+              <button class="prop-btn" onclick="toast('Editing proposal…')">Edit Proposal</button>
+              <button class="prop-btn" onclick="toast('Mark as Won…')">Mark Won ✓</button>
+              <button class="prop-btn" onclick="toast('Mark as Lost…')">Mark Lost ✗</button>
+            </div>
+          </div>
+
+          <div class="prop-card">
+            <div class="prop-header">
+              <span class="prop-name">E-commerce Redesign — BrightPath Digital</span>
+              <span class="prop-stage" style="color:var(--rose);border-color:rgba(196,92,122,0.3);background:rgba(196,92,122,0.08)">Stale</span>
+              <span class="prop-val rose">$6,500</span>
+            </div>
+            <div class="prop-meta">
+              <span class="prop-meta-item">📅 Sent Mar 22</span>
+              <span class="prop-meta-item">⏱ 7 days waiting</span>
+              <span class="prop-meta-item">📊 45% probability</span>
+            </div>
+            <div class="prop-progress">
+              <div class="prop-stages">
+                <div class="prop-stage-dot done"></div>
+                <div class="prop-stage-dot done"></div>
+                <div class="prop-stage-dot curr" style="background:var(--rose)"></div>
+                <div class="prop-stage-dot"></div>
+                <div class="prop-stage-dot"></div>
+              </div>
+              <span style="font-family:var(--mono);font-size:7px;color:var(--rose)">No Response · 7d</span>
+            </div>
+            <div class="prop-actions">
+              <button class="prop-btn" onclick="toast('Sending urgent follow-up…')">Urgent Follow-up</button>
+              <button class="prop-btn" onclick="toast('Editing proposal…')">Edit</button>
+              <button class="prop-btn" onclick="toast('Marked as Lost')">Mark Lost ✗</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── PRIORITY ── -->
+    <div id="page-priority" class="subpage">
+      <div class="row-70-30">
+        <div class="card">
+          <div class="card-hdr"><span class="card-hdr-title">Priority Queue — This Week</span><span class="card-hdr-badge badge-rose">7 Actions</span></div>
+          <div class="card-body">
+            <div class="priority-item" onclick="toast('Following up with Skyline…')"><div class="pi-num">1</div><div class="pi-icon">🔥</div><div class="pi-info"><div class="pi-name">Follow up — Skyline Labs negotiation</div><div class="pi-meta">$12K deal · 3d no reply · Call at 4:30pm today</div></div><div class="pi-val">$12K</div></div>
+            <div class="priority-item" onclick="toast('Reviewing Mobile App UI…')"><div class="pi-num">2</div><div class="pi-icon">📋</div><div class="pi-info"><div class="pi-name">Review & approve deliverables — TechVault</div><div class="pi-meta">Mobile App UI · 90% done · Client awaiting approval</div></div><div class="pi-val">$3.6K</div></div>
+            <div class="priority-item" onclick="toast('Opening RetailCo rate review…')"><div class="pi-num">3</div><div class="pi-icon">⚠️</div><div class="pi-info"><div class="pi-name">Rate renegotiation — RetailCo Group</div><div class="pi-meta">$18/hr EHR · 71% below portfolio avg · 2yr relationship</div></div><span class="pi-tag" style="color:var(--rose);border-color:rgba(196,92,122,0.3);background:rgba(196,92,122,0.08)">Urgent</span></div>
+            <div class="priority-item" onclick="toast('Following up on GreenLeaf proposal…')"><div class="pi-num">4</div><div class="pi-icon">📄</div><div class="pi-info"><div class="pi-name">Proposal follow-up — GreenLeaf Co</div><div class="pi-meta">$5K Brand Strategy · Sent Mar 25 · 4d waiting</div></div><div class="pi-val">$5K</div></div>
+            <div class="priority-item" onclick="toast('Booking NovaBrands call…')"><div class="pi-num">5</div><div class="pi-icon">📞</div><div class="pi-info"><div class="pi-name">Initial call — NovaBrands Inc</div><div class="pi-meta">Tomorrow 2pm · $8K estimated scope</div></div><div class="pi-val">$8K</div></div>
+            <div class="priority-item" onclick="toast('Proposing Phase 2 to TechVault…')"><div class="pi-num">6</div><div class="pi-icon">💡</div><div class="pi-info"><div class="pi-name">Propose Phase 2 — TechVault Mobile App</div><div class="pi-meta">Project closing · High EHR client · Strike while hot</div></div><div class="pi-val">$4K est.</div></div>
+            <div class="priority-item" onclick="toast('Opening Apex discovery prep…')"><div class="pi-num">7</div><div class="pi-icon">🎯</div><div class="pi-info"><div class="pi-name">Discovery call prep — Apex Studios</div><div class="pi-meta">Today 2pm · New scope · $10K estimated</div></div><div class="pi-val">$10K</div></div>
+          </div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <div class="insight cyan"><div class="insight-type">↑ Opportunity</div><div class="insight-title">$50K reachable this month</div><div class="insight-body">Closing Skyline ($12K) + TechVault Phase 2 ($4K) + GreenLeaf ($5K) = $21K in high-probability wins. Combined with in-flight revenue, you could reach a $30K month.</div><div class="insight-acts"><button class="i-act primary" onclick="toast('Opening win plan…')">Build Win Plan</button></div></div>
+          <div class="card"><div class="card-hdr"><span class="card-hdr-title">This Week's Wins</span></div><div class="card-body"><div class="kv"><span class="kv-k">Calls scheduled</span><span class="kv-v cyan">3</span></div><div class="kv"><span class="kv-k">Proposals active</span><span class="kv-v">4</span></div><div class="kv"><span class="kv-k">Deals in negotiation</span><span class="kv-v gold">2</span></div><div class="kv"><span class="kv-k">At-risk actions</span><span class="kv-v rose">3</span></div></div></div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /content -->
+</div><!-- /main -->
+</div><!-- /app -->
+
+<!-- ── MODALS ── -->
+<div class="modal-overlay" id="modal-new-prospect">
+  <div class="modal">
+    <div class="modal-hdr"><span class="modal-title">Add Lead / Prospect</span><button class="g-btn" onclick="closeModal('new-prospect')">✕</button></div>
+    <div class="modal-body">
+      <div class="form-group"><div class="form-label">Company / Name</div><input class="form-input" placeholder="e.g. Horizon Brands" style="width:100%"></div>
+      <div class="form-row">
+        <div class="form-group"><div class="form-label">Estimated Value</div><input class="form-input" placeholder="$0" style="width:100%"></div>
+        <div class="form-group"><div class="form-label">Source</div><select class="form-select" style="width:100%"><option>Referral</option><option>Inbound</option><option>LinkedIn</option><option>Cold</option><option>Existing Client</option></select></div>
+      </div>
+      <div class="form-group"><div class="form-label">Initial Stage</div><select class="form-select" style="width:100%"><option>Lead</option><option>Discovery</option><option>Proposal</option></select></div>
+      <div class="form-group"><div class="form-label">Notes</div><input class="form-input" placeholder="Context or first contact notes…" style="width:100%"></div>
+    </div>
+    <div class="modal-foot"><button class="g-btn" onclick="closeModal('new-prospect')">Cancel</button><button class="g-btn primary" onclick="toast('Lead added to pipeline');closeModal('new-prospect')">Add Lead</button></div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-new-project">
+  <div class="modal">
+    <div class="modal-hdr"><span class="modal-title">New Project</span><button class="g-btn" onclick="closeModal('new-project')">✕</button></div>
+    <div class="modal-body">
+      <div class="form-group"><div class="form-label">Project Name</div><input class="form-input" placeholder="e.g. Brand Guidelines 2026" style="width:100%"></div>
+      <div class="form-group"><div class="form-label">Client</div><select class="form-select" style="width:100%"><option>— Select client —</option><option>Meridian Creative</option><option>TechVault Inc</option><option>Bloom Agency</option><option>RetailCo Group</option><option>Apex Studios</option></select></div>
+      <div class="form-group"><div class="form-label">Portfolio</div><select class="form-select" style="width:100%"><option>Design Work</option><option>Design Work → Branding</option><option>Design Work → UI/UX</option><option>Consulting</option><option>Products</option><option>Root Portfolio</option></select></div>
+      <div class="form-row">
+        <div class="form-group"><div class="form-label">Contract Type</div><select class="form-select" style="width:100%"><option>Fixed Fee</option><option>Hourly</option><option>Retainer</option><option>Milestone</option></select></div>
+        <div class="form-group"><div class="form-label">Total Value</div><input class="form-input" placeholder="$0" style="width:100%"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><div class="form-label">Start Date</div><input class="form-input" type="date" style="width:100%"></div>
+        <div class="form-group"><div class="form-label">Due Date</div><input class="form-input" type="date" style="width:100%"></div>
+      </div>
+    </div>
+    <div class="modal-foot"><button class="g-btn" onclick="closeModal('new-project')">Cancel</button><button class="g-btn primary" onclick="toast('Project created successfully');closeModal('new-project')">Create Project</button></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+<script>
+function showPage(id){
+  document.querySelectorAll('.subpage').forEach(p=>p.classList.remove('active'));
+  const el=document.getElementById('page-'+id);
+  if(el)el.classList.add('active');
+  document.querySelectorAll('.s-item').forEach(i=>i.classList.remove('active'));
+  document.getElementById('tb-sub').textContent='/ '+{overview:'Overview',pipeline:'Pipeline Board',proposals:'Proposals',projects:'All Projects',priority:'Priority Queue',calendar:'Calendar',prospects:'Prospects',negotiations:'Negotiations',engagements:'Engagements',retainers:'Retainers',recurring:'Recurring Work',invoices:'Invoices','income-events':'Income Events','proj-active':'Active','proj-review':'In Review','proj-complete':'Completed','proj-health':'Project Health'}[id]||id;
+}
+function showModal(id){document.getElementById('modal-'+id).classList.add('show');}
+function closeModal(id){document.getElementById('modal-'+id).classList.remove('show');}
+let toastTimer;
+function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>t.classList.remove('show'),2200);}
+</script>
+</body>
+</html>

@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hypercube — Hypergrid</title>
+<link rel="stylesheet" href="shared.css">
+<style>
+.cube-toolbar {
+  background: var(--paper);
+  border-bottom: 0.5px solid var(--rule);
+  padding: 8px 2rem;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  position: sticky;
+  top: 48px;
+  z-index: 40;
+}
+.cube-name-display {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--accent);
+  font-weight: 500;
+}
+.cube-dim-pills {
+  display: flex;
+  gap: 4px;
+  margin-left: auto;
+}
+.dim-pill {
+  background: var(--paper-2);
+  border: 0.5px solid var(--rule);
+  border-radius: 4px;
+  padding: 3px 8px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--ink-3);
+}
+.dim-pill.active { background: var(--accent-d); border-color: var(--accent); color: var(--accent); }
+
+/* Spreadsheet grid */
+.spreadsheet-container {
+  overflow: auto;
+  max-height: calc(100vh - 160px);
+}
+.spreadsheet {
+  border-collapse: collapse;
+  font-size: 12px;
+  min-width: max-content;
+}
+.spreadsheet th {
+  background: var(--paper-2);
+  border-right: 0.5px solid var(--rule);
+  border-bottom: 1px solid var(--rule);
+  padding: 6px 12px;
+  white-space: nowrap;
+  text-align: left;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-4);
+}
+.spreadsheet th.row-header {
+  width: 36px;
+  min-width: 36px;
+  position: sticky;
+  left: 0;
+  z-index: 20;
+  text-align: center;
+  background: var(--paper-3);
+}
+.spreadsheet th.d1-col {
+  min-width: 220px;
+  background: var(--paper-3);
+  position: sticky;
+  left: 36px;
+  z-index: 20;
+}
+.spreadsheet th .col-meta {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+.spreadsheet th .crdt-chip {
+  font-size: 8px;
+  padding: 1px 4px;
+  border-radius: 2px;
+}
+.spreadsheet td {
+  border-right: 0.5px solid var(--rule);
+  border-bottom: 0.5px solid var(--rule);
+  padding: 0;
+  min-width: 140px;
+  max-width: 260px;
+}
+.cell {
+  padding: 5px 10px;
+  min-height: 32px;
+  cursor: pointer;
+  position: relative;
+  transition: background 0.1s;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.cell:hover { background: var(--accent-d); }
+.cell.selected { background: var(--accent-d); outline: 2px solid var(--accent); outline-offset: -2px; }
+.cell.ai-cell { background: #f3e8ff; }
+.cell.formula-cell { background: #e4f2de; }
+
+td.row-num-col {
+  min-width: 36px; max-width: 36px;
+  position: sticky; left: 0; z-index: 5;
+  background: var(--paper-3);
+}
+td.row-num-col .cell {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  color: var(--ink-4);
+  justify-content: center;
+  padding: 5px 4px;
+}
+td.d1-cell {
+  min-width: 220px;
+  position: sticky;
+  left: 36px;
+  z-index: 5;
+  background: var(--paper-2);
+}
+td.d1-cell .cell { font-weight: 500; color: var(--ink); }
+.cell-val-text   { color: var(--ink-2); }
+.cell-val-num    { font-family: var(--font-mono); color: var(--ink); font-size: 12px; }
+.cell-val-badge  { }
+.cell-val-ai     { color: var(--purple); font-family: var(--font-mono); font-size: 11px; }
+.cell-val-ai::before { content: '✦ '; opacity: 0.6; font-size: 9px; }
+.cell-val-formula { color: var(--green); font-family: var(--font-mono); font-size: 11px; }
+.cell-val-orset  { font-size: 11px; color: var(--teal); }
+.cell-val-null   { color: var(--ink-4); font-size: 11px; font-style: italic; }
+
+.cell-panel {
+  width: 320px;
+  border-left: 0.5px solid var(--rule);
+  background: var(--paper);
+  overflow-y: auto;
+  flex-shrink: 0;
+}
+.cell-panel-header {
+  padding: 1rem;
+  border-bottom: 0.5px solid var(--rule);
+  background: var(--paper-2);
+}
+.cell-panel-coord {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--ink-3);
+  margin-bottom: 4px;
+}
+.cell-panel-key { font-size: 15px; font-weight: 600; color: var(--ink); }
+.cell-panel-body { padding: 1rem; }
+.cell-field { margin-bottom: 1rem; }
+.cell-field-label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--ink-4); margin-bottom: 4px; }
+.cell-field-val { font-size: 13px; color: var(--ink-2); }
+.cell-field-val.mono { font-family: var(--font-mono); font-size: 12px; }
+
+.row-count-bar {
+  background: var(--paper-2);
+  border-top: 0.5px solid var(--rule);
+  padding: 6px 1rem;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--ink-3);
+  display: flex;
+  gap: 1.5rem;
+}
+
+.view-tabs-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 2rem;
+  border-bottom: 0.5px solid var(--rule);
+  background: var(--paper-2);
+  overflow-x: auto;
+}
+.view-tab {
+  padding: 4px 10px;
+  border-radius: 5px;
+  font-size: 12px;
+  cursor: pointer;
+  color: var(--ink-3);
+  white-space: nowrap;
+  border: 0.5px solid transparent;
+}
+.view-tab:hover { background: var(--paper-3); color: var(--ink); }
+.view-tab.active { background: var(--paper); border-color: var(--rule); color: var(--ink); font-weight: 500; }
+.view-tab-add { color: var(--accent); font-size: 14px; cursor: pointer; padding: 4px 8px; }
+</style>
+</head>
+<body>
+<div id="sidebar" class="sidebar"></div>
+
+<div class="main">
+  <div class="topbar">
+    <div class="topbar-breadcrumb">
+      <a href="grids.html">Grids</a>
+      <span class="sep">›</span>
+      <a href="grids.html?grid=kogi">kogi-production</a>
+      <span class="sep">›</span>
+      <span class="current">kogi.portfolio.components</span>
+    </div>
+    <div class="topbar-spacer"></div>
+    <div class="topbar-actions">
+      <button class="btn btn-ghost btn-sm" onclick="document.getElementById('asofPanel').classList.toggle('open')">⏪ AS_OF</button>
+      <button class="btn btn-ghost btn-sm" onclick="window.location='query.html'">HyperQL ›_</button>
+      <button class="btn btn-ghost btn-sm" onclick="document.getElementById('filterModal').classList.add('open')">⊟ Filter</button>
+      <button class="btn btn-primary btn-sm" onclick="document.getElementById('newRowModal').classList.add('open')">+ New Row</button>
+    </div>
+  </div>
+
+  <!-- View tabs bar -->
+  <div class="view-tabs-bar">
+    <div class="view-tab active">📋 All Components</div>
+    <div class="view-tab">✅ Active Projects</div>
+    <div class="view-tab">💰 Finances</div>
+    <div class="view-tab">⚡ Health Dashboard</div>
+    <div class="view-tab">📅 Gantt</div>
+    <div class="view-tab">📊 KPI Sheet</div>
+    <div class="view-tab">🔗 Link Network</div>
+    <span class="view-tab-add">+ Save View</span>
+  </div>
+
+  <!-- Cube toolbar -->
+  <div class="cube-toolbar">
+    <span class="cube-name-display">kogi.portfolio.components</span>
+    <span class="badge badge-blue">N=2</span>
+    <span class="badge badge-gray">Hybrid</span>
+    <span class="badge badge-gray">84.2M rows</span>
+    <div class="cube-dim-pills">
+      <span class="dim-pill active">D₁ EntityAxis</span>
+      <span class="dim-pill active">D₂ PropertyAxis</span>
+    </div>
+    <div class="search-bar" style="min-width:200px">
+      <span class="search-icon">🔍</span>
+      <input type="text" placeholder="Filter rows…" id="rowFilter">
+    </div>
+    <button class="btn btn-ghost btn-sm" onclick="toggleCellPanel()">⊡ Cell Info</button>
+    <a href="schema.html?cube=kogi.portfolio.components" class="btn btn-ghost btn-sm">Schema ⊹</a>
+  </div>
+
+  <!-- Main spreadsheet area -->
+  <div style="display:flex;flex:1">
+    <div style="flex:1;overflow:hidden;display:flex;flex-direction:column">
+      <div class="spreadsheet-container" id="sheetContainer">
+        <table class="spreadsheet" id="mainSheet">
+          <thead>
+            <tr>
+              <th class="row-header">#</th>
+              <th class="d1-col">
+                <div class="col-meta">D₁ · component_id <span class="badge badge-gray crdt-chip" style="font-size:8px">UUID</span></div>
+              </th>
+              <th><div class="col-meta">name <span class="badge crdt-lww crdt-chip">LWW</span></div></th>
+              <th><div class="col-meta">status <span class="badge crdt-lattice crdt-chip">Lattice</span></div></th>
+              <th><div class="col-meta">item_type <span class="badge crdt-lww crdt-chip">LWW</span></div></th>
+              <th><div class="col-meta">health_score <span class="badge crdt-system crdt-chip">AI</span></div></th>
+              <th><div class="col-meta">risk_score <span class="badge crdt-system crdt-chip">AI</span></div></th>
+              <th><div class="col-meta">budget <span class="badge crdt-lww crdt-chip">LWW</span></div></th>
+              <th><div class="col-meta">budget_spent <span class="badge crdt-pncounter crdt-chip">PNCounter</span></div></th>
+              <th><div class="col-meta">budget_remaining <span class="badge crdt-system crdt-chip">Formula</span></div></th>
+              <th><div class="col-meta">owners <span class="badge crdt-orset crdt-chip">OR-Set</span></div></th>
+              <th><div class="col-meta">tags <span class="badge crdt-orset crdt-chip">OR-Set</span></div></th>
+              <th><div class="col-meta">version <span class="badge crdt-max crdt-chip">MaxReg</span></div></th>
+              <th><div class="col-meta">updated_at <span class="badge crdt-lww crdt-chip">LWW</span></div></th>
+            </tr>
+          </thead>
+          <tbody id="sheetBody"></tbody>
+        </table>
+      </div>
+      <div class="row-count-bar">
+        <span>ROWS: 84,241,802</span>
+        <span>VISIBLE: 50</span>
+        <span>SELECTED: <span id="selCount">0</span></span>
+        <span>SCHEMA v3 · 48 attr keys</span>
+        <span style="margin-left:auto">CURSOR: <span id="cursorPos">—</span></span>
+      </div>
+    </div>
+
+    <!-- Cell inspector panel -->
+    <div class="cell-panel" id="cellPanel" style="display:none">
+      <div class="cell-panel-header">
+        <div class="cell-panel-coord" id="cpCoord">D₁: — · D₂: —</div>
+        <div class="cell-panel-key" id="cpKey">Select a cell</div>
+      </div>
+      <div class="cell-panel-body">
+        <div class="cell-field">
+          <div class="cell-field-label">Value</div>
+          <div class="cell-field-val" id="cpValue">—</div>
+        </div>
+        <div class="cell-field">
+          <div class="cell-field-label">Type</div>
+          <div class="cell-field-val" id="cpType">—</div>
+        </div>
+        <div class="cell-field">
+          <div class="cell-field-label">CRDT Semantics</div>
+          <div class="cell-field-val" id="cpCrdt">—</div>
+        </div>
+        <div class="cell-field">
+          <div class="cell-field-label">VectorClock</div>
+          <div class="cell-field-val mono" id="cpVC" style="font-size:11px;color:var(--ink-3)">—</div>
+        </div>
+        <div class="cell-field">
+          <div class="cell-field-label">Last Actor</div>
+          <div class="cell-field-val mono" id="cpActor">—</div>
+        </div>
+        <div class="cell-field">
+          <div class="cell-field-label">Updated At</div>
+          <div class="cell-field-val mono" id="cpTime">—</div>
+        </div>
+        <div class="cell-field">
+          <div class="cell-field-label">Write Permission</div>
+          <div class="cell-field-val" id="cpPerm">—</div>
+        </div>
+        <hr>
+        <button class="btn btn-ghost btn-sm" style="width:100%;justify-content:center" id="editCellBtn">Edit Value</button>
+        <button class="btn btn-ghost btn-sm" style="width:100%;justify-content:center;margin-top:6px" onclick="window.location='eventlog.html'">View Cell History</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- New Row Modal -->
+<div class="modal-overlay" id="newRowModal">
+  <div class="modal" style="max-width:580px">
+    <div class="modal-header">
+      <span class="modal-title">New HyperRow — kogi.portfolio.components</span>
+      <button class="modal-close" onclick="document.getElementById('newRowModal').classList.remove('open')">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="field-row">
+        <div class="field"><label>Name</label><input type="text" placeholder="Entity name"></div>
+        <div class="field"><label>Type</label>
+          <select><option>Project</option><option>Program</option><option>Task</option><option>Gig</option><option>Asset</option><option>Resource</option></select>
+        </div>
+      </div>
+      <div class="field-row">
+        <div class="field"><label>Status</label>
+          <select><option>Draft</option><option>Active</option><option>Paused</option><option>Completed</option></select>
+        </div>
+        <div class="field"><label>Visibility</label>
+          <select><option>Private</option><option>Protected</option><option>Public</option></select>
+        </div>
+      </div>
+      <div class="field"><label>Budget (USD)</label><input type="number" placeholder="0.00"></div>
+      <div class="field"><label>Tags (comma-separated)</label><input type="text" placeholder="e.g. design, freelance, q2-2026"><div class="hint">Tags use OR-Set CRDT — concurrent additions from multiple nodes all survive</div></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="document.getElementById('newRowModal').classList.remove('open')">Cancel</button>
+      <button class="btn btn-primary">Create Row</button>
+    </div>
+  </div>
+</div>
+
+<!-- Filter Modal -->
+<div class="modal-overlay" id="filterModal">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title">DimSlice Filter</span>
+      <button class="modal-close" onclick="document.getElementById('filterModal').classList.remove('open')">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="field-row">
+        <div class="field"><label>Attribute Key</label>
+          <select><option>status</option><option>item_type</option><option>health_score</option><option>owners</option><option>tags</option></select>
+        </div>
+        <div class="field"><label>Operator</label>
+          <select><option>=</option><option>≠</option><option>&gt;</option><option>&lt;</option><option>IN</option><option>CONTAINS</option></select>
+        </div>
+      </div>
+      <div class="field"><label>Value</label><input type="text" placeholder="e.g. Active, @alice, project"></div>
+      <div class="callout callout-info" style="margin-top:0.5rem"><span class="callout-icon">QL</span><div class="callout-text">This generates a HyperQL <code>WHERE cell[D₁, "attr"].value = '...'</code> predicate. Switch to <a href="query.html" style="color:var(--accent)">HyperQL Console</a> for complex multi-condition queries.</div></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="document.getElementById('filterModal').classList.remove('open')">Cancel</button>
+      <button class="btn btn-primary">Apply Filter</button>
+    </div>
+  </div>
+</div>
+
+<script src="shared-nav.js"></script>
+<script>
+buildSidebar('hypercube');
+
+const rows = [
+  { id:'3f4a1c...', name:'Brand Identity — Client A', type:'Project', status:'Active', health:87.4, risk:18.2, budget:12000, spent:8420, owners:'@alice-dev', tags:'design, branding, q1', ver:'1.4.0', ts:'2026-03-22T14:30Z' },
+  { id:'8b2d9e...', name:'Motion Graphics Pack', type:'Project', status:'Active', health:72.1, risk:34.5, budget:8000, spent:6100, owners:'@alice-dev', tags:'motion, video', ver:'2.1.0', ts:'2026-03-21T10:12Z' },
+  { id:'c1e4f2...', name:'Mobile App v3', type:'Project', status:'Paused', health:44.0, risk:61.2, budget:45000, spent:38200, owners:'@alice-dev, @bob', tags:'mobile, react-native', ver:'0.3.1', ts:'2026-03-20T09:00Z' },
+  { id:'a2b8d1...', name:'Freelance Design', type:'Program', status:'Active', health:81.3, risk:22.0, budget:30000, spent:18900, owners:'@alice-dev', tags:'freelance', ver:'1.0.0', ts:'2026-03-22T08:40Z' },
+  { id:'9d3c7f...', name:'Grant Application — NESTA', type:'Grant', status:'Draft', health:null, risk:null, budget:25000, spent:0, owners:'@alice-dev', tags:'grant, arts-council', ver:'0.1.0', ts:'2026-03-19T16:20Z' },
+  { id:'7e1a4b...', name:'Logo Refresh — Fintech Co', type:'Gig', status:'Completed', health:94.2, risk:4.1, budget:3500, spent:3500, owners:'@alice-dev', tags:'logo, fintech', ver:'1.0.2', ts:'2026-03-18T11:30Z' },
+  { id:'5f8c2a...', name:'Website Audit', type:'Task', status:'Active', health:68.9, risk:28.4, budget:1200, spent:480, owners:'@alice-dev', tags:'web, audit', ver:'0.2.0', ts:'2026-03-22T13:15Z' },
+  { id:'2a9e6d...', name:'Annual Report Design', type:'Project', status:'Active', health:79.5, risk:31.8, budget:9500, spent:4100, owners:'@alice-dev, @carol', tags:'print, annual-report', ver:'1.1.0', ts:'2026-03-21T14:50Z' },
+];
+
+function statusBadge(s) {
+  const m = {Active:'badge-green',Draft:'badge-amber',Paused:'badge-amber',Completed:'badge-blue',Archived:'badge-gray'};
+  return `<span class="badge ${m[s]||'badge-gray'}">${s}</span>`;
+}
+function healthColor(v) {
+  if (v === null) return 'var(--ink-4)';
+  if (v >= 80) return 'var(--green)';
+  if (v >= 60) return 'var(--amber)';
+  return 'var(--red)';
+}
+
+function renderSheet() {
+  const body = document.getElementById('sheetBody');
+  body.innerHTML = rows.map((r, i) => `
+    <tr>
+      <td class="row-num-col"><div class="cell">${i+1}</div></td>
+      <td class="d1-cell"><div class="cell" onclick="selectCell(this,'${r.id}','component_id','${r.id}','UUID','LWW','${r.ts}','@system','System')"><span class="cell-val-text text-mono" style="font-size:11px;color:var(--accent)">${r.id}</span></div></td>
+      <td><div class="cell" onclick="selectCell(this,'${r.id}','name','${r.name}','Text','LWW','${r.ts}','@alice-dev','Editor')"><span class="cell-val-text">${r.name}</span></div></td>
+      <td><div class="cell" onclick="selectCell(this,'${r.id}','status','${r.status}','Enum (Lattice)','Lattice','${r.ts}','@alice-dev','Manager')">${statusBadge(r.status)}</div></td>
+      <td><div class="cell" onclick="selectCell(this,'${r.id}','item_type','${r.type}','Enum','LWW','${r.ts}','@alice-dev','Editor')"><span class="cell-val-text">${r.type}</span></div></td>
+      <td class="${r.health?'ai-cell':''}"><div class="cell" onclick="selectCell(this,'${r.id}','health_score','${r.health?r.health:null}','AI (Number)','System LWW','${r.ts}','kogi-engine','System')"><span class="cell-val-ai" style="color:${healthColor(r.health)}">${r.health !== null ? r.health.toFixed(1) : '—'}</span></div></td>
+      <td class="${r.risk?'ai-cell':''}"><div class="cell" onclick="selectCell(this,'${r.id}','risk_score','${r.risk?r.risk:null}','AI (Number)','System LWW','${r.ts}','kogi-engine','System')"><span class="cell-val-ai">${r.risk !== null ? r.risk.toFixed(1) : '—'}</span></div></td>
+      <td><div class="cell" onclick="selectCell(this,'${r.id}','budget','$${r.budget.toLocaleString()}','Currency','LWW','${r.ts}','@alice-dev','Manager')"><span class="cell-val-num">$${r.budget.toLocaleString()}</span></div></td>
+      <td><div class="cell" onclick="selectCell(this,'${r.id}','budget_spent','$${r.spent.toLocaleString()}','Number','PNCounter','${r.ts}','@alice-dev','Manager')"><span class="cell-val-num">$${r.spent.toLocaleString()}</span></div></td>
+      <td class="formula-cell"><div class="cell"><span class="cell-val-formula">$${(r.budget-r.spent).toLocaleString()}</span></div></td>
+      <td><div class="cell"><span class="cell-val-orset">${r.owners}</span></div></td>
+      <td><div class="cell"><span class="cell-val-orset">${r.tags}</span></div></td>
+      <td><div class="cell"><span class="cell-val-num text-mono" style="font-size:11px">${r.ver}</span></div></td>
+      <td><div class="cell"><span class="cell-val-text text-mono" style="font-size:10px;color:var(--ink-3)">${r.ts.split('T')[0]}</span></div></td>
+    </tr>`).join('');
+}
+
+let selectedCell = null;
+function selectCell(el, rowId, col, val, type, crdt, ts, actor, perm) {
+  if (selectedCell) selectedCell.classList.remove('selected');
+  el.classList.add('selected');
+  selectedCell = el;
+  document.getElementById('cpCoord').textContent = `D₁: ${rowId} · D₂: ${col}`;
+  document.getElementById('cpKey').textContent = col;
+  document.getElementById('cpValue').textContent = val === 'null' ? 'null' : val;
+  document.getElementById('cpType').innerHTML = `<span class="badge badge-gray">${type}</span>`;
+  document.getElementById('cpCrdt').innerHTML = `<span class="badge crdt-${crdt.toLowerCase().replace(/[^a-z]/g,'')}">${crdt}</span>`;
+  document.getElementById('cpVC').textContent = `{"node-us-east-1": 42, "node-eu-west-1": 37}`;
+  document.getElementById('cpActor').textContent = actor;
+  document.getElementById('cpTime').textContent = ts;
+  document.getElementById('cpPerm').textContent = perm;
+  document.getElementById('cursorPos').textContent = `${col} / row ${rowId}`;
+  document.getElementById('cellPanel').style.display = '';
+}
+
+function toggleCellPanel() {
+  const p = document.getElementById('cellPanel');
+  p.style.display = p.style.display === 'none' ? '' : 'none';
+}
+
+renderSheet();
+</script>
+</body>
+</html>

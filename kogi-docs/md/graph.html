@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hypergraph — Hypergrid</title>
+<link rel="stylesheet" href="shared.css">
+<style>
+.graph-layout {
+  display: grid;
+  grid-template-columns: 280px 1fr 300px;
+  height: calc(100vh - 48px);
+  overflow: hidden;
+}
+.graph-left-panel {
+  border-right: 0.5px solid var(--rule);
+  overflow-y: auto;
+  background: var(--paper);
+}
+.graph-canvas-area {
+  background: #f4f2ed;
+  position: relative;
+  overflow: hidden;
+}
+.graph-right-panel {
+  border-left: 0.5px solid var(--rule);
+  overflow-y: auto;
+  background: var(--paper);
+}
+
+/* Canvas nodes */
+.graph-canvas {
+  width: 100%;
+  height: 100%;
+  position: relative;
+}
+.graph-toolbar {
+  position: absolute;
+  top: 12px; left: 50%;
+  transform: translateX(-50%);
+  background: var(--paper);
+  border: 0.5px solid var(--rule);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 4px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+  z-index: 20;
+}
+.graph-tool-btn {
+  width: 28px; height: 28px;
+  border-radius: 5px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font-size: 14px;
+  display: flex; align-items: center; justify-content: center;
+  color: var(--ink-3);
+  transition: background 0.1s;
+}
+.graph-tool-btn:hover, .graph-tool-btn.active { background: var(--paper-2); color: var(--ink); }
+.graph-tool-sep { width: 0.5px; background: var(--rule); height: 16px; margin: 0 4px; }
+
+/* SVG node styles */
+.node-circle { cursor: pointer; transition: opacity 0.2s; }
+.node-circle:hover { opacity: 0.85; }
+.node-label { font-family: 'DM Sans', sans-serif; font-size: 11px; fill: var(--ink-2); pointer-events: none; }
+.node-sub { font-family: 'DM Mono', monospace; font-size: 9px; fill: var(--ink-4); pointer-events: none; }
+.edge-line { stroke-width: 1.5; fill: none; marker-end: url(#arrow); }
+.edge-label { font-family: 'DM Mono', monospace; font-size: 9px; fill: var(--ink-4); }
+
+/* Panel sections */
+.panel-section { padding: 1rem; border-bottom: 0.5px solid var(--rule); }
+.panel-section:last-child { border-bottom: none; }
+.panel-title { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: var(--ink-3); margin-bottom: 0.75rem; }
+
+/* Edge list */
+.edge-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 0;
+  border-bottom: 0.5px solid var(--rule);
+  font-size: 12px;
+}
+.edge-item:last-child { border-bottom: none; }
+.edge-type-badge {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  padding: 2px 5px;
+  border-radius: 3px;
+  flex-shrink: 0;
+}
+.edge-nodes { color: var(--ink-2); flex: 1; min-width: 0; }
+.edge-nodes code { font-size: 10px; }
+.edge-weight { font-family: var(--font-mono); font-size: 10px; color: var(--ink-4); }
+
+.consent-badge {
+  display: flex; align-items: center; gap: 4px;
+  font-size: 10px;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+.consent-accepted { background: var(--green-d); color: var(--green); }
+.consent-pending  { background: var(--amber-d); color: var(--amber); }
+.consent-none     { background: var(--paper-3); color: var(--ink-4); }
+
+/* Node info in right panel */
+.node-detail-header {
+  padding: 1rem;
+  border-bottom: 0.5px solid var(--rule);
+  background: var(--paper-2);
+}
+.nd-id { font-family: var(--font-mono); font-size: 10px; color: var(--accent); margin-bottom: 3px; }
+.nd-name { font-size: 15px; font-weight: 600; color: var(--ink); }
+.nd-type { font-size: 11px; color: var(--ink-3); margin-top: 2px; }
+
+/* Analytics cards */
+.analytics-card {
+  background: var(--paper-2);
+  border-radius: 6px;
+  padding: 0.75rem;
+  margin-bottom: 6px;
+}
+.ac-label { font-size: 10px; color: var(--ink-4); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 2px; }
+.ac-val { font-family: var(--font-mono); font-size: 18px; font-weight: 500; color: var(--ink); }
+</style>
+</head>
+<body>
+<div id="sidebar" class="sidebar"></div>
+
+<div class="main">
+  <div class="topbar">
+    <div class="topbar-breadcrumb">
+      <a href="grids.html">Grids</a>
+      <span class="sep">›</span>
+      <span class="current">Hypergraph</span>
+    </div>
+    <div class="topbar-spacer"></div>
+    <div class="topbar-actions">
+      <div class="pill-row">
+        <span class="pill-opt sel" onclick="filterEdges(this,'all')">All edges</span>
+        <span class="pill-opt" onclick="filterEdges(this,'hierarchy')">Hierarchy</span>
+        <span class="pill-opt" onclick="filterEdges(this,'dependency')">Dependency</span>
+        <span class="pill-opt" onclick="filterEdges(this,'crossgrid')">CrossGridLink</span>
+        <span class="pill-opt" onclick="filterEdges(this,'klnk')">KLNK</span>
+      </div>
+      <button class="btn btn-primary btn-sm" onclick="document.getElementById('addEdgeModal').classList.add('open')">+ Add Edge</button>
+    </div>
+  </div>
+
+  <div class="graph-layout">
+    <!-- Left: Node explorer / edge list -->
+    <div class="graph-left-panel">
+      <div class="panel-section">
+        <div class="panel-title">Graph Stats</div>
+        <div class="grid-2 gap-2">
+          <div class="analytics-card"><div class="ac-label">Nodes</div><div class="ac-val">184.2M</div></div>
+          <div class="analytics-card"><div class="ac-label">Edges</div><div class="ac-val">842K</div></div>
+          <div class="analytics-card"><div class="ac-label">CrossGridLinks</div><div class="ac-val">12,041</div></div>
+          <div class="analytics-card"><div class="ac-label">Shadow Cells</div><div class="ac-val">9,882</div></div>
+        </div>
+      </div>
+
+      <div class="panel-section">
+        <div class="panel-title">Search Nodes</div>
+        <div class="search-bar">
+          <span class="search-icon">🔍</span>
+          <input type="text" placeholder="Node ID or namespace…" id="nodeSearch">
+        </div>
+      </div>
+
+      <div class="panel-section">
+        <div class="panel-title">Edge Types</div>
+        <div style="display:flex;flex-direction:column;gap:6px">
+          <div class="flex-between text-sm">
+            <div class="flex-center gap-2"><div style="width:10px;height:10px;border-radius:2px;background:var(--accent)"></div> Hierarchy</div>
+            <span class="text-mono text-muted">204,841</span>
+          </div>
+          <div class="flex-between text-sm">
+            <div class="flex-center gap-2"><div style="width:10px;height:10px;border-radius:2px;background:var(--red)"></div> Dependency</div>
+            <span class="text-mono text-muted">381,204</span>
+          </div>
+          <div class="flex-between text-sm">
+            <div class="flex-center gap-2"><div style="width:10px;height:10px;border-radius:2px;background:var(--teal)"></div> Association</div>
+            <span class="text-mono text-muted">98,441</span>
+          </div>
+          <div class="flex-between text-sm">
+            <div class="flex-center gap-2"><div style="width:10px;height:10px;border-radius:2px;background:var(--purple)"></div> CrossGridLink</div>
+            <span class="text-mono text-muted">12,041</span>
+          </div>
+          <div class="flex-between text-sm">
+            <div class="flex-center gap-2"><div style="width:10px;height:10px;border-radius:2px;background:var(--amber)"></div> Employs</div>
+            <span class="text-mono text-muted">84,120</span>
+          </div>
+          <div class="flex-between text-sm">
+            <div class="flex-center gap-2"><div style="width:10px;height:10px;border-radius:2px;background:var(--green)"></div> Collaborates</div>
+            <span class="text-mono text-muted">61,882</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel-section">
+        <div class="panel-title">Pending Consents</div>
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <div style="background:var(--amber-d);border-radius:6px;padding:0.75rem">
+            <div class="flex-between mb-2">
+              <span class="badge badge-amber">CrossGridLink</span>
+              <span class="text-xs text-muted">3 min ago</span>
+            </div>
+            <div style="font-size:12px;color:var(--ink-2)"><strong>@alice-dev</strong> → <code>ume://acme-corp/hr/</code></div>
+            <div style="font-size:11px;color:var(--ink-3);margin-top:4px">Employs · mirrored: name, status, health_score</div>
+            <div class="flex-center gap-2 mt-2">
+              <button class="btn btn-ghost btn-sm">Decline</button>
+              <button class="btn btn-accent btn-sm">Accept</button>
+            </div>
+          </div>
+          <div style="background:var(--amber-d);border-radius:6px;padding:0.75rem">
+            <div class="flex-between mb-2">
+              <span class="badge badge-amber">CrossGridLink</span>
+              <span class="text-xs text-muted">1 hr ago</span>
+            </div>
+            <div style="font-size:12px;color:var(--ink-2)"><strong>@bob</strong> → <code>qala://root-factory/solutions/</code></div>
+            <div style="font-size:11px;color:var(--ink-3);margin-top:4px">Collaborates · mirrored: solution metadata</div>
+            <div class="flex-center gap-2 mt-2">
+              <button class="btn btn-ghost btn-sm">Decline</button>
+              <button class="btn btn-accent btn-sm">Accept</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Center: Graph canvas -->
+    <div class="graph-canvas-area">
+      <div class="graph-toolbar">
+        <button class="graph-tool-btn active" title="Select">↖</button>
+        <button class="graph-tool-btn" title="Pan">✥</button>
+        <button class="graph-tool-btn" title="Add edge">+</button>
+        <div class="graph-tool-sep"></div>
+        <button class="graph-tool-btn" title="Zoom in" onclick="zoomIn()">+</button>
+        <button class="graph-tool-btn" title="Zoom out" onclick="zoomOut()">−</button>
+        <button class="graph-tool-btn" title="Fit view" onclick="fitView()">⊡</button>
+        <div class="graph-tool-sep"></div>
+        <button class="graph-tool-btn" title="BFS layout">⊚</button>
+        <button class="graph-tool-btn" title="Force layout">⊛</button>
+      </div>
+
+      <svg id="graphSVG" width="100%" height="100%" style="position:absolute;inset:0">
+        <defs>
+          <marker id="arrow" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+            <path d="M0,0 L0,6 L8,3 z" fill="#9c9c97"/>
+          </marker>
+          <marker id="arrow-blue" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+            <path d="M0,0 L0,6 L8,3 z" fill="#2a5cff"/>
+          </marker>
+          <marker id="arrow-red" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+            <path d="M0,0 L0,6 L8,3 z" fill="#c0281a"/>
+          </marker>
+        </defs>
+
+        <!-- Background grid -->
+        <pattern id="smallGrid" width="20" height="20" patternUnits="userSpaceOnUse">
+          <path d="M 20 0 L 0 0 0 20" fill="none" stroke="#e6e2d8" stroke-width="0.5"/>
+        </pattern>
+        <rect width="100%" height="100%" fill="url(#smallGrid)"/>
+
+        <!-- Edges -->
+        <g id="edgeLayer">
+          <line x1="350" y1="180" x2="220" y2="320" class="edge-line" stroke="#2a5cff" stroke-dasharray="4,3" marker-end="url(#arrow-blue)"/>
+          <text x="272" y="248" class="edge-label">Hierarchy</text>
+
+          <line x1="350" y1="180" x2="490" y2="320" class="edge-line" stroke="#c0281a" marker-end="url(#arrow-red)"/>
+          <text x="430" y="248" class="edge-label">Dependency</text>
+
+          <line x1="220" y1="320" x2="155" y2="460" class="edge-line" stroke="#9c9c97" marker-end="url(#arrow)"/>
+          <text x="160" y="398" class="edge-label">Contains</text>
+
+          <line x1="490" y1="320" x2="580" y2="460" class="edge-line" stroke="#c0281a" marker-end="url(#arrow-red)"/>
+          <text x="527" y="398" class="edge-label">Dependency</text>
+
+          <line x1="490" y1="320" x2="390" y2="460" class="edge-line" stroke="#9c9c97" marker-end="url(#arrow)"/>
+          <text x="427" y="398" class="edge-label">Association</text>
+
+          <!-- CrossGridLink — dashed purple -->
+          <line x1="220" y1="320" x2="680" y2="220" class="edge-line" stroke="#6b21a8" stroke-dasharray="6,3" stroke-width="2" marker-end="url(#arrow)"/>
+          <text x="440" y="255" class="edge-label" style="fill:#6b21a8">CrossGridLink (Employs)</text>
+        </g>
+
+        <!-- Nodes -->
+        <g id="nodeLayer">
+          <!-- Root node -->
+          <g onclick="selectNode('alice-portfolio')" style="cursor:pointer">
+            <circle cx="350" cy="180" r="28" fill="#e8edff" stroke="#2a5cff" stroke-width="2"/>
+            <text x="350" y="176" class="node-label" text-anchor="middle" font-weight="600" fill="#1a3db5">Alice</text>
+            <text x="350" y="190" class="node-sub" text-anchor="middle">Portfolio</text>
+          </g>
+
+          <!-- Hierarchy children -->
+          <g onclick="selectNode('brand-identity')" style="cursor:pointer">
+            <circle cx="220" cy="320" r="22" fill="#f0ede5" stroke="#d8d4cb" stroke-width="1.5"/>
+            <text x="220" y="316" class="node-label" text-anchor="middle">Brand ID</text>
+            <text x="220" y="329" class="node-sub" text-anchor="middle">Project</text>
+          </g>
+          <g onclick="selectNode('mobile-app')" style="cursor:pointer">
+            <circle cx="490" cy="320" r="22" fill="#fde8e6" stroke="#c0281a" stroke-width="1.5" stroke-dasharray="3,2"/>
+            <text x="490" y="316" class="node-label" text-anchor="middle">Mobile App</text>
+            <text x="490" y="329" class="node-sub" text-anchor="middle">Project · ⚠</text>
+          </g>
+
+          <!-- Leaves -->
+          <g style="cursor:pointer">
+            <circle cx="155" cy="460" r="16" fill="#f0ede5" stroke="#d8d4cb" stroke-width="1"/>
+            <text x="155" y="456" class="node-label" text-anchor="middle" style="font-size:9px">Task A</text>
+            <text x="155" y="468" class="node-sub" text-anchor="middle">Task</text>
+          </g>
+          <g style="cursor:pointer">
+            <circle cx="580" cy="460" r="16" fill="#f0ede5" stroke="#d8d4cb" stroke-width="1"/>
+            <text x="580" y="456" class="node-label" text-anchor="middle" style="font-size:9px">Redux Dep</text>
+            <text x="580" y="468" class="node-sub" text-anchor="middle">Dependency</text>
+          </g>
+          <g style="cursor:pointer">
+            <circle cx="390" cy="460" r="16" fill="#f0ede5" stroke="#d8d4cb" stroke-width="1"/>
+            <text x="390" y="456" class="node-label" text-anchor="middle" style="font-size:9px">Design Sys</text>
+            <text x="390" y="468" class="node-sub" text-anchor="middle">Resource</text>
+          </g>
+
+          <!-- CrossGridLink target — different grid -->
+          <g onclick="selectNode('acme-org')" style="cursor:pointer">
+            <circle cx="680" cy="220" r="24" fill="#f3e8ff" stroke="#6b21a8" stroke-width="2" stroke-dasharray="4,2"/>
+            <text x="680" y="216" class="node-label" text-anchor="middle" style="fill:#6b21a8">Acme Corp</text>
+            <text x="680" y="229" class="node-sub" text-anchor="middle" style="fill:#6b21a8">ume:// · 🔒</text>
+          </g>
+        </g>
+
+        <!-- Legend -->
+        <g transform="translate(20, 540)">
+          <rect x="0" y="0" width="240" height="88" rx="6" fill="white" fill-opacity="0.9" stroke="#d8d4cb" stroke-width="0.5"/>
+          <text x="10" y="16" style="font-family:DM Mono;font-size:9px;fill:#9c9c97;letter-spacing:0.1em">LEGEND</text>
+          <circle cx="20" cy="30" r="6" fill="#e8edff" stroke="#2a5cff" stroke-width="1.5"/>
+          <text x="32" y="34" style="font-family:DM Sans;font-size:10px;fill:#3a3a38">Same-Grid Node</text>
+          <circle cx="20" cy="50" r="6" fill="#f3e8ff" stroke="#6b21a8" stroke-width="1.5" stroke-dasharray="2,1"/>
+          <text x="32" y="54" style="font-family:DM Sans;font-size:10px;fill:#3a3a38">CrossGridLink (remote)</text>
+          <line x1="10" y1="70" x2="26" y2="70" stroke="#c0281a" stroke-width="2" marker-end="url(#arrow-red)"/>
+          <text x="32" y="74" style="font-family:DM Sans;font-size:10px;fill:#3a3a38">Dependency edge</text>
+        </g>
+      </svg>
+    </div>
+
+    <!-- Right: Node detail panel -->
+    <div class="graph-right-panel">
+      <div class="node-detail-header" id="nodeDetailHeader">
+        <div class="nd-id">— select a node —</div>
+        <div class="nd-name" id="ndName">No node selected</div>
+        <div class="nd-type" id="ndType">Click any node in the graph</div>
+      </div>
+
+      <div id="nodeDetailBody">
+        <div class="panel-section">
+          <div class="panel-title">Connected Edges</div>
+          <div id="nodeEdgeList" style="color:var(--ink-4);font-size:12px">—</div>
+        </div>
+
+        <div class="panel-section">
+          <div class="panel-title">Graph Analytics</div>
+          <div class="grid-2 gap-2">
+            <div class="analytics-card"><div class="ac-label">Degree</div><div class="ac-val" id="ndDegree">—</div></div>
+            <div class="analytics-card"><div class="ac-label">In-degree</div><div class="ac-val" id="ndIn">—</div></div>
+            <div class="analytics-card"><div class="ac-label">Betweenness</div><div class="ac-val" id="ndBetween">—</div></div>
+            <div class="analytics-card"><div class="ac-label">Cluster</div><div class="ac-val" id="ndCluster">—</div></div>
+          </div>
+        </div>
+
+        <div class="panel-section">
+          <div class="panel-title">Quick Actions</div>
+          <div style="display:flex;flex-direction:column;gap:6px">
+            <button class="btn btn-ghost btn-sm">⊠ View in Hypercube</button>
+            <button class="btn btn-ghost btn-sm">◎ Traverse from here</button>
+            <button class="btn btn-ghost btn-sm">⟷ Add CrossGridLink</button>
+            <button class="btn btn-ghost btn-sm">≡ View cell history</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Add Edge Modal -->
+<div class="modal-overlay" id="addEdgeModal">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title">Add Hypergraph Edge</span>
+      <button class="modal-close" onclick="document.getElementById('addEdgeModal').classList.remove('open')">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="field-row">
+        <div class="field"><label>From Node (D₁ key)</label><input type="text" placeholder="UUID or namespace path"></div>
+        <div class="field"><label>To Node (D₁ key)</label><input type="text" placeholder="UUID or namespace path"></div>
+      </div>
+      <div class="field">
+        <label>Edge Type</label>
+        <select id="edgeTypeSelect" onchange="updateConsentUI()">
+          <option value="Hierarchy">Hierarchy</option>
+          <option value="Dependency">Dependency</option>
+          <option value="Association">Association</option>
+          <option value="Contains">Contains</option>
+          <option value="CrossGridLink">CrossGridLink ⟷</option>
+          <option value="Collaborates">Collaborates (mutual consent)</option>
+          <option value="Employs">Employs (worker consent)</option>
+          <option value="InvestedIn">InvestedIn (target consent)</option>
+        </select>
+      </div>
+      <div class="field-row">
+        <div class="field"><label>Direction</label>
+          <select><option>Directed</option><option>Bidirectional</option></select>
+        </div>
+        <div class="field"><label>Weight (0–1)</label><input type="number" min="0" max="1" step="0.1" value="1.0"></div>
+      </div>
+      <div id="consentSection" style="display:none">
+        <div class="callout callout-warn"><span class="callout-icon">⟷</span><div class="callout-text">This edge type requires consent. A ConsentRequest will be sent to the target node owner. The edge will be created with <code>consent_status=Pending</code>.</div></div>
+        <div class="field"><label>Proposed Mirrored Attributes</label><input type="text" placeholder="name, status, health_score"></div>
+        <div class="field"><label>Proposed Write-back Attributes (optional)</label><input type="text" placeholder="leave empty for read-only"></div>
+        <div class="field"><label>Update Policy</label>
+          <select><option>RealTime</option><option>Batched</option><option>Manual</option></select>
+        </div>
+        <div class="field"><label>Consent Message</label><textarea placeholder="Optional message to the target node owner…"></textarea></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="document.getElementById('addEdgeModal').classList.remove('open')">Cancel</button>
+      <button class="btn btn-primary" id="addEdgeBtn">Create Edge</button>
+    </div>
+  </div>
+</div>
+
+<script src="shared-nav.js"></script>
+<script>
+buildSidebar('graph');
+
+const nodeData = {
+  'alice-portfolio': { name: "Alice's Portfolio", type: "kogi.portfolio.components · Portfolio", id: "3f4a1c-uuid", degree: 12, indegree: 4, between: 0.41, cluster: 3 },
+  'brand-identity':  { name: "Brand Identity — Client A", type: "kogi.portfolio.components · Project", id: "8b2d9e-uuid", degree: 5, indegree: 2, between: 0.12, cluster: 3 },
+  'mobile-app':      { name: "Mobile App v3", type: "kogi.portfolio.components · Project ⚠ High Risk", id: "c1e4f2-uuid", degree: 8, indegree: 3, between: 0.28, cluster: 3 },
+  'acme-org':        { name: "Acme Corp", type: "ume://acme-corp/ · Organization [CrossGrid]", id: "d9e8f7-uuid", degree: 2, indegree: 1, between: 0.05, cluster: 7 },
+};
+
+const nodeEdges = {
+  'alice-portfolio': [
+    { type:'Hierarchy', from:'alice-portfolio', to:'brand-identity', weight:1.0, consent:'none' },
+    { type:'Hierarchy', from:'alice-portfolio', to:'mobile-app', weight:1.0, consent:'none' },
+    { type:'CrossGridLink', from:'alice-portfolio', to:'acme-org', weight:0.8, consent:'accepted' },
+  ],
+  'brand-identity': [
+    { type:'Hierarchy', from:'alice-portfolio', to:'brand-identity', weight:1.0, consent:'none' },
+    { type:'Contains', from:'brand-identity', to:'task-a', weight:1.0, consent:'none' },
+  ],
+  'mobile-app': [
+    { type:'Hierarchy', from:'alice-portfolio', to:'mobile-app', weight:1.0, consent:'none' },
+    { type:'Dependency', from:'mobile-app', to:'redux-dep', weight:1.0, consent:'none' },
+    { type:'Association', from:'mobile-app', to:'design-sys', weight:0.6, consent:'none' },
+  ],
+};
+
+function selectNode(id) {
+  const n = nodeData[id];
+  if (!n) return;
+  document.getElementById('ndName').textContent = n.name;
+  document.getElementById('ndType').textContent = n.type;
+  document.getElementById('ndDegree').textContent = n.degree;
+  document.getElementById('ndIn').textContent = n.indegree;
+  document.getElementById('ndBetween').textContent = n.between.toFixed(2);
+  document.getElementById('ndCluster').textContent = `#${n.cluster}`;
+
+  const edges = nodeEdges[id] || [];
+  const typeColors = { Hierarchy:'badge-blue', Dependency:'badge-red', CrossGridLink:'badge-purple', Association:'badge-teal', Contains:'badge-gray', Employs:'badge-amber' };
+  let html = '';
+  edges.forEach(e => {
+    const cc = e.consent === 'accepted' ? 'consent-accepted' : e.consent === 'pending' ? 'consent-pending' : 'consent-none';
+    const cl = e.consent === 'none' ? '' : `<span class="consent-badge ${cc}">${e.consent}</span>`;
+    html += `<div class="edge-item">
+      <span class="edge-type-badge badge ${typeColors[e.type]||'badge-gray'}">${e.type}</span>
+      <div class="edge-nodes"><code>${e.from}</code> → <code>${e.to}</code></div>
+      <span class="edge-weight">${e.weight.toFixed(1)}</span>
+      ${cl}
+    </div>`;
+  });
+  document.getElementById('nodeEdgeList').innerHTML = html || '<span style="color:var(--ink-4)">No edges</span>';
+}
+
+function filterEdges(el, type) {
+  document.querySelectorAll('.pill-opt').forEach(p => p.classList.remove('sel'));
+  el.classList.add('sel');
+}
+
+function updateConsentUI() {
+  const v = document.getElementById('edgeTypeSelect').value;
+  const needs = ['CrossGridLink','Collaborates','Employs','InvestedIn'].includes(v);
+  document.getElementById('consentSection').style.display = needs ? '' : 'none';
+  document.getElementById('addEdgeBtn').textContent = needs ? 'Send Consent Request' : 'Create Edge';
+}
+
+function zoomIn() {}
+function zoomOut() {}
+function fitView() {}
+</script>
+</body>
+</html>

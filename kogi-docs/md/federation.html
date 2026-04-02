@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Federation — Hypergrid</title>
+<link rel="stylesheet" href="shared.css">
+<style>
+.fed-layout { display: grid; grid-template-columns: 1fr 300px; gap: 0; height: calc(100vh - 48px); overflow: hidden; }
+.fed-main { overflow-y: auto; padding: 2rem; }
+.fed-sidebar { border-left: 0.5px solid var(--rule); overflow-y: auto; padding: 1.25rem; }
+
+.peer-card {
+  background: var(--paper);
+  border: 0.5px solid var(--rule);
+  border-radius: 10px;
+  overflow: hidden;
+  margin-bottom: 10px;
+  transition: border-color 0.15s;
+}
+.peer-header {
+  padding: 1rem 1.25rem;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.peer-icon {
+  width: 40px; height: 40px;
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px;
+  flex-shrink: 0;
+}
+.peer-name { font-weight: 600; font-size: 14px; color: var(--ink); }
+.peer-url  { font-family: var(--font-mono); font-size: 10px; color: var(--ink-3); }
+.peer-meta { display: flex; gap: 1.5rem; margin-top: 0.75rem; font-size: 12px; }
+.pm-item   { color: var(--ink-3); }
+.pm-item strong { color: var(--ink); }
+.peer-footer {
+  padding: 8px 1.25rem;
+  border-top: 0.5px solid var(--rule);
+  background: var(--paper-2);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 11px;
+  color: var(--ink-3);
+}
+
+.sync-timeline {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+.sync-entry {
+  display: flex;
+  gap: 12px;
+  padding: 8px 0;
+  border-bottom: 0.5px solid var(--rule);
+  font-size: 12px;
+  align-items: flex-start;
+}
+.sync-entry:last-child { border-bottom: none; }
+.sync-dot-col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0;
+  flex-shrink: 0;
+  padding-top: 4px;
+}
+.sync-dot { width: 8px; height: 8px; border-radius: 50%; }
+.sync-line { width: 1px; flex: 1; background: var(--rule); margin: 2px 0; min-height: 20px; }
+.sync-content { flex: 1; }
+.sync-what { color: var(--ink-2); margin-bottom: 2px; }
+.sync-meta { font-family: var(--font-mono); font-size: 10px; color: var(--ink-4); }
+
+.vc-display {
+  background: var(--paper-2);
+  border: 0.5px solid var(--rule);
+  border-radius: 6px;
+  padding: 0.875rem 1rem;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--ink-2);
+  line-height: 1.8;
+}
+
+.topology-svg-wrap {
+  background: #f4f2ed;
+  border: 0.5px solid var(--rule);
+  border-radius: 10px;
+  overflow: hidden;
+  margin-bottom: 1.5rem;
+}
+</style>
+</head>
+<body>
+<div id="sidebar" class="sidebar"></div>
+
+<div class="main">
+  <div class="topbar">
+    <div class="topbar-breadcrumb">
+      <span class="current">Federation</span>
+    </div>
+    <div class="topbar-spacer"></div>
+    <div class="topbar-actions">
+      <button class="btn btn-ghost btn-sm">Force Sync All</button>
+      <button class="btn btn-primary btn-sm" onclick="document.getElementById('addPeerModal').classList.add('open')">+ Add Peer</button>
+    </div>
+  </div>
+
+  <div class="fed-layout">
+    <div class="fed-main">
+      <div class="page-header">
+        <div>
+          <div class="page-eyebrow">HG-FED · CRDT Delta Sync</div>
+          <h1 class="page-title">Federation</h1>
+          <p class="page-sub">Multi-node CRDT synchronization, CrossGridLink routing, and federation topology. Active Grid: kogi-production · node-us-east-1.</p>
+        </div>
+      </div>
+
+      <div class="grid-4 mb-4">
+        <div class="stat"><div class="stat-label">Federation Peers</div><div class="stat-value">2</div><div class="stat-delta">1 healthy · 1 degraded</div></div>
+        <div class="stat"><div class="stat-label">CRDT Ops Synced / hr</div><div class="stat-value">1,204K</div><div class="stat-delta up">↑ normal range</div></div>
+        <div class="stat"><div class="stat-label">Max Lag</div><div class="stat-value">340ms</div><div class="stat-delta down">qala-production degraded</div></div>
+        <div class="stat"><div class="stat-label">VectorClock Nodes</div><div class="stat-value">3 / 255</div><div class="stat-delta">max cap: 255 (HLC upgrade pending)</div></div>
+      </div>
+
+      <!-- Topology diagram -->
+      <div class="topology-svg-wrap">
+        <svg viewBox="0 0 700 180" style="width:100%;height:180px">
+          <defs>
+            <marker id="fed-arrow" markerWidth="7" markerHeight="7" refX="5" refY="2.5" orient="auto">
+              <path d="M0,0 L0,5 L7,2.5 z" fill="#9c9c97"/>
+            </marker>
+          </defs>
+          <!-- Grid nodes -->
+          <rect x="40" y="60" width="120" height="60" rx="8" fill="white" stroke="#2a5cff" stroke-width="1.5"/>
+          <text x="100" y="88" style="font-family:DM Mono;font-size:10px;fill:#2a5cff;text-anchor:middle;font-weight:500">kogi-production</text>
+          <text x="100" y="104" style="font-family:DM Mono;font-size:9px;fill:#9c9c97;text-anchor:middle">node-us-east-1</text>
+          <circle cx="150" cy="67" r="5" fill="#34a853"/>
+
+          <rect x="290" y="60" width="120" height="60" rx="8" fill="white" stroke="#007a5e" stroke-width="1.5"/>
+          <text x="350" y="88" style="font-family:DM Mono;font-size:10px;fill:#007a5e;text-anchor:middle;font-weight:500">ume-production</text>
+          <text x="350" y="104" style="font-family:DM Mono;font-size:9px;fill:#9c9c97;text-anchor:middle">node-us-east-1</text>
+          <circle cx="400" cy="67" r="5" fill="#34a853"/>
+
+          <rect x="540" y="60" width="120" height="60" rx="8" fill="white" stroke="#c06a00" stroke-width="1.5" stroke-dasharray="4,2"/>
+          <text x="600" y="88" style="font-family:DM Mono;font-size:10px;fill:#c06a00;text-anchor:middle;font-weight:500">qala-production</text>
+          <text x="600" y="104" style="font-family:DM Mono;font-size:9px;fill:#9c9c97;text-anchor:middle">node-eu-west-1 ⚠</text>
+          <circle cx="650" cy="67" r="5" fill="#fbbc04"/>
+
+          <!-- Federation Coordinator -->
+          <rect x="255" y="140" width="190" height="30" rx="6" fill="#f0ede5" stroke="#d8d4cb"/>
+          <text x="350" y="160" style="font-family:DM Mono;font-size:9px;fill:#6b6b68;text-anchor:middle">FederationCoordinator · CrossGridLink routing</text>
+
+          <!-- Sync lines -->
+          <line x1="160" y1="90" x2="290" y2="90" stroke="#9c9c97" stroke-width="1.5" marker-end="url(#fed-arrow)"/>
+          <line x1="290" y1="90" x2="160" y2="90" stroke="#9c9c97" stroke-width="1.5" marker-end="url(#fed-arrow)"/>
+          <text x="225" y="83" style="font-family:DM Mono;font-size:8px;fill:#9c9c97;text-anchor:middle">CRDT delta</text>
+          <text x="225" y="100" style="font-family:DM Mono;font-size:8px;fill:#9c9c97;text-anchor:middle">CrossGridLink</text>
+
+          <line x1="410" y1="90" x2="540" y2="90" stroke="#c06a00" stroke-width="1.5" stroke-dasharray="4,2" marker-end="url(#fed-arrow)"/>
+          <text x="475" y="85" style="font-family:DM Mono;font-size:8px;fill:#c06a00;text-anchor:middle">degraded</text>
+
+          <!-- Coordinator connections -->
+          <line x1="200" y1="120" x2="290" y2="148" stroke="#d8d4cb" stroke-width="1"/>
+          <line x1="445" y1="148" x2="540" y2="120" stroke="#d8d4cb" stroke-width="1"/>
+        </svg>
+      </div>
+
+      <div class="tabs">
+        <button class="tab-btn active" onclick="showFedTab('peers',this)">Peers</button>
+        <button class="tab-btn" onclick="showFedTab('sync',this)">Sync Log</button>
+        <button class="tab-btn" onclick="showFedTab('vc',this)">VectorClock</button>
+        <button class="tab-btn" onclick="showFedTab('shadow',this)">Shadow Cells</button>
+      </div>
+
+      <!-- Peers -->
+      <div id="fed-peers">
+        <div class="peer-card">
+          <div class="peer-header">
+            <div class="peer-icon" style="background:var(--teal-d)">🏢</div>
+            <div style="flex:1">
+              <div class="peer-name">ume-production</div>
+              <div class="peer-url">grpcs://ume.hypergrid.io:9001 · node-us-east-1</div>
+            </div>
+            <div class="flex-center gap-2">
+              <span class="badge badge-green">Healthy</span>
+              <button class="btn btn-ghost btn-sm">Sync</button>
+              <button class="btn btn-ghost btn-sm">Configure</button>
+            </div>
+          </div>
+          <div class="peer-meta" style="padding:0 1.25rem 1rem">
+            <div class="pm-item"><strong>Lag:</strong> 12ms</div>
+            <div class="pm-item"><strong>Last sync:</strong> 2m ago</div>
+            <div class="pm-item"><strong>Trust level:</strong> Grid</div>
+            <div class="pm-item"><strong>Topics:</strong> crdt.delta.kogi-grid · shadow.sync.kogi-grid</div>
+          </div>
+          <div class="peer-footer">
+            <div class="dot green"></div> FederationPeer edge active · VectorClock aligned · 1,204 ops/hr synced
+          </div>
+        </div>
+
+        <div class="peer-card" style="border-color:var(--amber)">
+          <div class="peer-header">
+            <div class="peer-icon" style="background:var(--amber-d)">⚙</div>
+            <div style="flex:1">
+              <div class="peer-name">qala-production</div>
+              <div class="peer-url">grpcs://qala.hypergrid.io:9001 · node-eu-west-1</div>
+            </div>
+            <div class="flex-center gap-2">
+              <span class="badge badge-amber">Degraded</span>
+              <button class="btn btn-ghost btn-sm">Force Sync</button>
+              <button class="btn btn-danger btn-sm">Suspend</button>
+            </div>
+          </div>
+          <div class="peer-meta" style="padding:0 1.25rem 1rem">
+            <div class="pm-item"><strong>Lag:</strong> <span style="color:var(--amber)">340ms</span></div>
+            <div class="pm-item"><strong>Last sync:</strong> 18m ago</div>
+            <div class="pm-item"><strong>Trust level:</strong> Grid</div>
+            <div class="pm-item"><strong>Pending ops:</strong> <span style="color:var(--amber)">8,420</span></div>
+          </div>
+          <div class="peer-footer" style="color:var(--amber)">
+            <div class="dot amber"></div> High Kafka consumer lag · eu-west-1 zone connectivity issue · reconnecting…
+          </div>
+        </div>
+      </div>
+
+      <!-- Sync Log -->
+      <div id="fed-sync" style="display:none">
+        <div class="sync-timeline" id="syncTimeline"></div>
+      </div>
+
+      <!-- VectorClock -->
+      <div id="fed-vc" style="display:none">
+        <div class="callout callout-info mb-3">
+          <span class="callout-icon">VC</span>
+          <div class="callout-text">The VectorClock tracks causal ordering across all federation nodes. The current implementation is <code>HashMap&lt;NodeId, u64&gt;</code> with a 255-node ceiling. The HLC (Hybrid Logical Clock) upgrade removes this ceiling — each cell stores a 16-byte timestamp instead of an O(N) vector.</div>
+        </div>
+        <div class="grid-2 gap-3">
+          <div>
+            <div class="section-title mb-2">Current VectorClock State</div>
+            <div class="vc-display">
+{<br>
+&nbsp;&nbsp;"node-us-east-1":  8,420,414,<br>
+&nbsp;&nbsp;"node-us-east-1-2": 8,401,032,<br>
+&nbsp;&nbsp;"node-eu-west-1":  6,201,003<br>
+}<br><br>
+<span style="color:var(--ink-4)">// 3 / 255 nodes used</span><br>
+<span style="color:var(--ink-4)">// happened_before: A ≤ B iff ∀n A[n] ≤ B[n]</span>
+            </div>
+          </div>
+          <div>
+            <div class="section-title mb-2">HLC Upgrade (Proposed)</div>
+            <div class="vc-display" style="border-color:var(--green)">
+<span style="color:var(--green)">// Hybrid Logical Clock — 16 bytes/cell</span><br>
+struct HlcTimestamp {<br>
+&nbsp;&nbsp;wall_ms:  u64,  <span style="color:var(--ink-4)">// 8 bytes</span><br>
+&nbsp;&nbsp;logical:  u16,  <span style="color:var(--ink-4)">// 2 bytes</span><br>
+&nbsp;&nbsp;node_id:  u32,  <span style="color:var(--ink-4)">// 4 bytes</span><br>
+&nbsp;&nbsp;_pad:     u16,  <span style="color:var(--ink-4)">// 2 bytes</span><br>
+}<br><br>
+<span style="color:var(--green)">// Benefits:</span><br>
+<span style="color:var(--ink-4)">// No 255-node ceiling (32-bit node_id)</span><br>
+<span style="color:var(--ink-4)">// O(1) instead of O(N) per cell</span><br>
+<span style="color:var(--ink-4)">// Delta sync via time-range scan</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Shadow Cells -->
+      <div id="fed-shadow" style="display:none">
+        <div class="section-title mb-2">Active Shadow Cells — 9,882 total</div>
+        <table class="hg-table">
+          <thead><tr><th>Shadow ID</th><th>Source Grid</th><th>Source Entity</th><th>Mirrored Attrs</th><th>Status</th><th>Last Sync</th><th>Actions</th></tr></thead>
+          <tbody>
+            <tr>
+              <td class="mono" style="font-size:10px">sc-a1b2c3</td>
+              <td class="mono">ume://acme-corp/</td>
+              <td class="mono">@alice-dev portfolio</td>
+              <td class="mono text-xs">task_count, availability, health_score</td>
+              <td><span class="badge badge-green">Active</span></td>
+              <td class="mono text-xs">2m ago</td>
+              <td><button class="btn btn-ghost btn-sm" style="padding:2px 7px;font-size:10px">Force sync</button></td>
+            </tr>
+            <tr>
+              <td class="mono" style="font-size:10px">sc-d4e5f6</td>
+              <td class="mono">kogi://carol/</td>
+              <td class="mono">collaboration node</td>
+              <td class="mono text-xs">name, status, attribution_weight</td>
+              <td><span class="badge badge-green">Active</span></td>
+              <td class="mono text-xs">5m ago</td>
+              <td><button class="btn btn-ghost btn-sm" style="padding:2px 7px;font-size:10px">Force sync</button></td>
+            </tr>
+            <tr>
+              <td class="mono" style="font-size:10px">sc-g7h8i9</td>
+              <td class="mono">qala://root-factory/</td>
+              <td class="mono">platform solutions</td>
+              <td class="mono text-xs">lifecycle_state, version, quality_score</td>
+              <td><span class="badge badge-amber">Degraded</span></td>
+              <td class="mono text-xs">18m ago</td>
+              <td><button class="btn btn-ghost btn-sm" style="padding:2px 7px;font-size:10px">Force sync</button></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Right sidebar -->
+    <div class="fed-sidebar">
+      <div class="section-title mb-2">CRDT Conflict Log</div>
+      <div class="callout callout-ok mb-3"><span class="callout-icon">✓</span><div class="callout-text">0 unresolved conflicts in the last 24 hours. All LWW conflicts resolved deterministically.</div></div>
+
+      <div class="section-title mb-2">Recent Conflict Records</div>
+      <div style="display:flex;flex-direction:column;gap:6px;margin-bottom:1rem">
+        <div style="background:var(--paper-2);border-radius:6px;padding:8px;font-size:11px">
+          <div class="flex-between"><span class="text-mono text-xs">name · @alice-dev · budget_spent</span><span class="badge badge-green" style="font-size:8px">Resolved</span></div>
+          <div style="color:var(--ink-3);margin-top:2px">LWW: node-eu-west-1 won (higher VectorClock). 2h ago.</div>
+        </div>
+        <div style="background:var(--paper-2);border-radius:6px;padding:8px;font-size:11px">
+          <div class="flex-between"><span class="text-mono text-xs">OR-Set: owners · brand-identity</span><span class="badge badge-green" style="font-size:8px">Resolved</span></div>
+          <div style="color:var(--ink-3);margin-top:2px">Concurrent add+add: both survived (OR-Set semantics). Yesterday.</div>
+        </div>
+      </div>
+
+      <div class="section-title mb-2">Kafka Topics</div>
+      <div style="display:flex;flex-direction:column;gap:4px;font-size:11px;margin-bottom:1rem">
+        <div class="flex-between"><span class="text-mono">crdt.delta.kogi-grid</span><span class="badge badge-green" style="font-size:8px">OK</span></div>
+        <div class="flex-between"><span class="text-mono">shadow.sync.kogi-grid</span><span class="badge badge-green" style="font-size:8px">OK</span></div>
+        <div class="flex-between"><span class="text-mono">events.audit.kogi-grid</span><span class="badge badge-green" style="font-size:8px">OK</span></div>
+        <div class="flex-between"><span class="text-mono">crdt.ack.kogi-grid</span><span class="badge badge-green" style="font-size:8px">OK</span></div>
+      </div>
+
+      <div class="section-title mb-2">Offline Recovery</div>
+      <div class="callout callout-info"><span class="callout-icon">i</span><div class="callout-text">If qala-production reconnects after a partition, the CRDT merge engine replays all accumulated CrdtLog operations in causal order. CRDT convergence is guaranteed — no manual conflict resolution needed.</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- Add Peer Modal -->
+<div class="modal-overlay" id="addPeerModal">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title">Add Federation Peer</span>
+      <button class="modal-close" onclick="document.getElementById('addPeerModal').classList.remove('open')">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="callout callout-info"><span class="callout-icon">INFO</span><div class="callout-text">Adding a peer creates a <code>FederationPeer</code> edge in the Hypergraph and begins Kafka delta sync. mTLS certificates must be exchanged before connection.</div></div>
+      <div class="field"><label>Peer gRPC Endpoint</label><input type="text" placeholder="grpcs://peer.hypergrid.io:9001"></div>
+      <div class="field"><label>Node ID</label><input type="text" placeholder="node-eu-central-1"></div>
+      <div class="field"><label>Trust Level</label>
+        <select><option>Grid (full CRDT sync)</option><option>Organization (scoped)</option><option>Public (read-only)</option></select>
+      </div>
+      <div class="field"><label>TLS Certificate</label><textarea placeholder="Paste peer TLS certificate (PEM format)…" style="min-height:80px;font-family:var(--font-mono);font-size:11px"></textarea></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="document.getElementById('addPeerModal').classList.remove('open')">Cancel</button>
+      <button class="btn btn-primary">Add Peer</button>
+    </div>
+  </div>
+</div>
+
+<script src="shared-nav.js"></script>
+<script>
+buildSidebar('federation');
+
+const syncEntries = [
+  { dot:'green',  what:'Delta sync completed · ume-production',       meta:'1,204 ops applied · lag 12ms · 2m ago' },
+  { dot:'amber',  what:'Shadow cell sync degraded · qala-production',  meta:'8,420 ops pending · Kafka lag · 18m ago' },
+  { dot:'blue',   what:'CrossGridLink consent accepted',               meta:'@alice-dev ↔ acme-corp · ShadowCell provisioned · 22m ago' },
+  { dot:'green',  what:'Delta sync completed · ume-production',       meta:'890 ops applied · lag 9ms · 32m ago' },
+  { dot:'green',  what:'Federation handshake · qala-production',       meta:'VectorClock aligned · peer resumed · 1h ago' },
+  { dot:'blue',   what:'New FederationPeer edge created',              meta:'qala-production added · mTLS verified · 2h ago' },
+];
+
+document.getElementById('syncTimeline').innerHTML = syncEntries.map((e,i) => `
+  <div class="sync-entry">
+    <div class="sync-dot-col">
+      <div class="sync-dot" style="background:${e.dot==='green'?'#34a853':e.dot==='amber'?'var(--amber)':'var(--accent)'}"></div>
+      ${i < syncEntries.length-1 ? '<div class="sync-line"></div>' : ''}
+    </div>
+    <div class="sync-content">
+      <div class="sync-what">${e.what}</div>
+      <div class="sync-meta">${e.meta}</div>
+    </div>
+  </div>`).join('');
+
+function showFedTab(name, btn) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  ['peers','sync','vc','shadow'].forEach(t => {
+    const el = document.getElementById(`fed-${t}`);
+    if (el) el.style.display = t === name ? '' : 'none';
+  });
+}
+</script>
+</body>
+</html>

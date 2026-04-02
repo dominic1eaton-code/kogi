@@ -8,8 +8,8 @@
 **Version:** 1.0  
 **Date:** March 2026  
 **Status:** Authoritative Reference  
-**Scope:** Hypergrid N-Dimensional Distributed Spreadsheet System as the universal substrate for domain-specific operating systems  
-**Systems Covered:** Hypergrid (substrate) · Kogi (Independent Worker OS) · Ume (Business OS) · Qala (Solution Factory OS)  
+**Scope:** Hypergrid N-Dimensional Distributed Spreadsheet System as the universal substrate for domain-specific operating systems
+**Systems Covered:** Hypergrid (substrate) · Kogi (Independent Worker OS) · Ume (Business OS) · Qala (Solution Factory OS)
 
 ---
 
