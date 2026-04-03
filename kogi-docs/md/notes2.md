@@ -2677,7 +2677,19 @@ qala platform
     - work (execution, project management) system 
     - operations (management) system - logistics, supply chain, vendors management, , distribution+deployment management 
 
+qala systems - refined
+    - workbench system - solution books, workspaces, dashboard|overview
+    - registry system - solution index/registry
+    - factory system - solution product lines orchestrations, coordinations
+    - environment system - solution environments
+    - tool system - solution tooling, toolboxes
+    - work|project system - solution project management system, backlog management system
+    - operations system - solution operations management, distribution, supply chain, logistics, inventory management, vendors management
+    - artifact system - solution artifacts management, configuration managemnet system, release management, deployment management systems, version+change control management system
+
 ume+kogi - centers marketing system+engine
+
+payroll allocation ~ 30% of operational budget allocated to payroll
 
 ---
 
@@ -2751,3 +2763,12 @@ Songhai Institute of Systemics and Systemology
 Dominic Eaton Software Engineering Consulting Firm LLC
 
 ---
+
+leads management system
+- either attract leads or buy leads
+- employee, customer, client, stakeholder, investor leads
+- lead nurturing
+
+
+kogi - track and manage a portfolio through its engagements
+qala - track and manage a solution through its builds
