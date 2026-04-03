@@ -2731,3 +2731,23 @@ this generalizes to any domain operating system, where a domain-OS is such a sys
     - encourage "ideal" system configurations across agents, users, hosts (platform operators, admins, developers)
 
 kogi as employee (independent worker in an organization) effort, time, labor, work tracking and management system and ume becomes the aggregator for employee data+information, aggregating and providing aggregate views of all employees combined efforts, time, labor, and works
+
+
+AI agents would interface with the kogi/ume/qala systems of record, as AI agent context's (context window's) are short lived ephemeral entites, but the kogi system of record is long lived and persistent, so AI agents, and human agents, operate on a ground truth, common system of record data (the hypergrid, N dimensional spreadsheet-database hybrid system), while still keeping (safety) barriers between AI agents and human users, and not requiring AI agents to be non ephemeral entities (safety design)
+
+---
+
+Mungu Inc.
+
+Obatala Venture Capital Studios
+
+Wolof.io
+    - kogi division
+    - qala division
+    - ume division
+
+Songhai Institute of Systemics and Systemology
+
+Dominic Eaton Software Engineering Consulting Firm LLC
+
+---
