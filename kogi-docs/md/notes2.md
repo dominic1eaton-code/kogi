@@ -25,7 +25,7 @@ marketplace
         - review
         - match
         - campaign
-        - funnels
+        - funnels   
         - fundraise, resource gather
         - trade
         - allocate
@@ -2791,3 +2791,31 @@ Obatala Venture Capital Studios
 
 Dominic Eaton Software Consulting Firm
 
+---
+
+ume software defined organization factory
+- create+track+manage+administer organization entities, where ume is factory for producting, managing and controlling organizations, and organizations are composed of entites
+
+kogi
+portfolio - domain
+portfolio item - root element
+portfolio engagement - fundamental operator
+
+qala
+solution - domain
+solution component - root element
+solution build - fundamental operator
+
+ume
+organization - domain
+organization unit - root element
+organization entity (the organization/business vehicle) - fundamental operator
+
+
+Design the shared graph schema across all three systems (very powerful) and produce a unified ontology for the combined three systems:
+ume organization factory operating system
+kogi portfolio factory operating system
+qala solution factory operating system
+
+
+---
