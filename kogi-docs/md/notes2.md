@@ -2772,3 +2772,22 @@ leads management system
 
 kogi - track and manage a portfolio through its engagements
 qala - track and manage a solution through its builds
+
+---
+
+Mungu Inc. - Parent Company
+
+Obatala Venture Capital Studios
+
+- Studio: Wolof.io
+    - Shango SBU
+      - hypergrid division
+      - apapo division
+      - software factory - the shango forge division
+    - Kogi SBU
+    - Qala SBU
+    - Ume SBU
+- Studio: Songhai Institute of Systemics and Systemology
+
+Dominic Eaton Software Consulting Firm
+
