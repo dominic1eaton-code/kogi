@@ -2775,6 +2775,21 @@ qala - track and manage a solution through its builds
 
 ---
 
+# 🔷 QALA — CORE 8 SUBSYSTEMS
+
+```text
+1. Studio System
+2. Registry System
+3. Work System
+4. Factory System
+5. Artifact System
+6. Environment System
+7. Test System
+8. Operations System
+```
+
+---
+
 Mungu Inc. - Parent Company
 
 Obatala Venture Capital Studios
@@ -2804,7 +2819,7 @@ portfolio engagement - fundamental operator
 qala
 solution - domain
 solution component - root element
-solution build - fundamental operator
+solution build - fundamental operator 
 
 ume
 organization - domain
@@ -2817,5 +2832,56 @@ ume organization factory operating system
 kogi portfolio factory operating system
 qala solution factory operating system
 
+sites environemnts
+* production site
+* staging site
+* test site
+* backups sites
+
+the shango forge - code forge, software factory OS
+
+* approving, rejecting, issuing budgets for automation tasks; work orders, one task - one goal - one definition of done
+    - missions, mission statement
+    - visions, vision statements
+    - goals
+    - objectives
+    - milestones
+    - outcomes
+    - results
+    - impact; impact analysis
+    - work|task breakdown structures; persistence; contributions - atomic file|artifact storage; session survival - context management system; AI knowledge graph construction
+* headless builds, harness
+* metaprompting - base91 encoded prompts/ontologies in order to significantly cut down on token usage and have LLMs only operate on encoded data vs full humnan lanugage expressed prompts
+
+---
+
+ume - software defined organization SDO factory
+
+* 8 core client apps
+* 8 core domain apps
+* 8 core subsystems
+
+8 top level, user facing client subsystems/apps:
+
+- organization designer|builder
+  - organization functions, lines, departments, SBUs, divisions
+  - sub organizations, teams, entittes, groups
+  - units - platoon, squad, member, battalion, army
+  - team types - tiger teams, squads, chapters, guilds, teams
+  - business model + value proposition system management
+    - business model types
+      - franchise models
+      - multi entity models
+      - standard models
+      - small|medium|enterprise/large business models
+      - custom business models
+      - industry business models
+        - medical business models
+        - legal business models
+        - tech|engineering business models
+        - goods+services business models
+        - misc. business models
+
+- organization manager|executor|maintainer|administrator
 
 ---
