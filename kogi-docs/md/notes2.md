@@ -2152,6 +2152,13 @@ kogi portfolio graphs
             - shango platform
               - codeforge
                 + software factory
+            - apapo platform
+                + domain+data+model operating system
+                + DSL OS domain specific language
+                + bridge|interface between domain specific platform and hypergrid
+                + domain centric design system, domain driven design platform
+                + distributed+federated host platform - apapo hosts
+                + distributed orchestration + coordination system, talks to, orchestrates, mediates, coordinates domain hosts (e.g. kogi hosts, ume hosts, qala hosts, sambara hosts, oru hosts, etc...)
               - hypergrid
                 + data model (micro)kernel
                 + distributed hybrid N dimensional spreadsheet + database + graph
@@ -2160,13 +2167,6 @@ kogi portfolio graphs
                 + shared data|domain model layer
                 + root space+workspace+namespace system - root operational context model|container
                 + data layer on top of + interface between persistence+infrastructure layer (postgres, Meilisearch, kafka, redis, valkey, mongoDB, clickhouse, neo4j, etc...)
-              - apapo
-                + domain+data+model operating system
-                + DSL OS domain specific language
-                + bridge|interface between domain specific platform and hypergrid
-                + domain centric design system, domain driven design platform
-                + distributed+federated host platform - apapo hosts
-                + distributed orchestration + coordination system, talks to, orchestrates, mediates, coordinates domain hosts (e.g. kogi hosts, ume hosts, qala hosts, sambara hosts, oru hosts, etc...)
             - kogi platform
               + work portfolio management platform
               + work portfolio is root domain+grid+element
@@ -2794,7 +2794,7 @@ Mungu Inc. - Parent Company
 
 Obatala Venture Capital Studios
 
-- Studio: Wolof.io
+- Studio: Wolof.io - IncentiveCompany
     - Shango SBU
       - hypergrid division
       - apapo division
@@ -2802,7 +2802,8 @@ Obatala Venture Capital Studios
     - Kogi SBU
     - Qala SBU
     - Ume SBU
-- Studio: Songhai Institute of Systemics and Systemology
+    - Apapo SBU
+- Studio: Songhai Institute of Systemics and Systemology  - IncentiveCompany
 
 Dominic Eaton Software Consulting Firm
 
@@ -2838,7 +2839,12 @@ sites environemnts
 * test site
 * backups sites
 
-the shango forge - code forge, software factory OS
+the shango forge - code forge, software factory OS - system+software designer
+    - system - process - component - interface - event+state - data structure - data type
+    - clock, time system, synchronization system
+    - component factory system
+    - convert ideas to software systems at scale
+      - software system design, maintance, implementation, deployment, lifecycle management system
 
 * approving, rejecting, issuing budgets for automation tasks; work orders, one task - one goal - one definition of done
     - missions, mission statement
@@ -2885,3 +2891,84 @@ ume - software defined organization SDO factory
 - organization manager|executor|maintainer|administrator
 
 ---
+
+- business, idea, product
+- culture, communications, cash flow, clarity of/in vision
+- flat organization - tribes, sqauds, chapters, tiger teams, teams, members, cells, units, lines, domains, functions, departments, divisinos, SBUs
+
+8 main pages * 13 subpages * 5 subsubpages = 520 page views into the system - composing a platform's UIUX - stored in a hypergrid sheet/cube
+
+- frontend client
+  - component
+    - system
+      - page
+        - view
+
+
+educator
+examiner
+executor
+
+---
+
+4/25/26
+- tentative release: kogi pre-alpha version 0.9.9.0-prealpha
+- tentative release: qala pre-alpha version 0.9.9.0-prealpha
+
+5/1/26
+- tentative establishment: mungu inc - parent company
+- tentative establishment: obatala venture capital studios - tech startup portfolio + fund
+- tentative establishment: wolof.io technology company - software productivity tools
+- tentative establishment: songhai institute - systems engineering and theory research institute
+- tentative establishment: dominic eaton software consulting firm - software consulting and contracting firm
+
+https://dominiceaton001.wixsite.com/wolof
+https://dominiceaton001.wixsite.com/dominic-eaton-softwa
+https://dominiceaton001.wixsite.com/obatala-venture-capi
+
+
+
+KOGI - integration of dongo unified financial system
+
+- studio offices - studio office management system
+    - front office - income generation
+    - middle office - income protection
+    - back office - income administration and management
+
+- studio kits:
+    - brand kit
+    - press kit
+    - media kit
+
+
+- dominic eaton software consulting firm llc
+  - consulting division
+  - contracting division
+
+- wolof.io - incentive company incentiveco
+    - kogi llc - portco
+      - kogi productivity division
+        - kogi indepent work portfolio operating system product
+      - kogi communication division
+        - dongo pay, (micro)finance
+        - dedun network, mobile
+      - kogi e-commerce(economy) division
+        - dagba marketplace
+    - ume llc - portco
+      - ume enterprise solutions division
+        - ume organization operating system product
+    - qala llc - portco
+        - solution operating systems division
+          - solution factory operating system product
+    - shango llc - portfco
+        - shango forge division
+          - shango software factory software factory product
+    - apapo llc - portco
+        - apapo+hypergrid infrastructure division
+
+---
+
+investment flows
+equity governance
+execution engines
+risk boundaries
