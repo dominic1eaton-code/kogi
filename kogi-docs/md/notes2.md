@@ -7,6 +7,17 @@ home
 office
 studio 
 
+
+users can create and sell items in their portfolio.
+
+e.g.
+a user, user 1, creates a real estate investment playbook and adds it to a real estate portfolio. They put their playbook on the marketplace for other users to buy.
+
+another user, user 2, wants to get into real estate, but has never invested or done real estate before. They use a "real estate project" template where the template guides them on things they need to do to get started, as well as helps them find resources on the marketplace. The platform's digital assistant finds user's 1 real estate investment playbook and recommeds it to user 2 for purchase and usage. user 2 decides to purchase the playbook, which is then made available to user's 2 newly created real estate portfolio. user 2 begins to use the project template and playbooks to begin acquiring real estate assets, which they also add and build their real estate portfolio with. user 2 decides to begin flipping and selling some of their real estate on the marketplace, and exchanging other pieces of real estate assets in the "real estate portfolio" on the exchange. user 2 subscribes to all of user 1's real estate related (portfolio+programs+projects sorted by a "real estate" tag/topic) portfolio components that are publicly offered. User 2 later decides to take all that they have learned, from all of the guides+resources+playbooks gathered on the kogi platform and from other 3rd party services+platforms, and creates a real estate project management platform, to help not only manage their real estate assets portfolio, but also help manage the real estate assets portfolio of others.
+
+a user 3 decides to start a real estate investment mastermind, creates a project for it under their "masterminds portfolio", and decides to offer this portfolio component on the marketplace. user 1 sees this mastermind offering on the marketplace, participates in the offering, and later takes what they've learned and creates an updated real estate investment playbook, where this playbook, which user 2 is notified about as they are subscribed to received notifictions, is then automatically sent out to user 2, where user 2 later decides to use this updated playbook. user 1 offered a discount for loyal subscribers to their portfolio, so user 2 received a significant discount on the new playbook.
+
+
 marketplace
     - work
         - gigs
@@ -36,6 +47,15 @@ marketplace
         - find, find talent  (labor, skills, etc...), find resources, find portfolios (and portfolio components (programs, projects, assets, etc...))
     - equity crowdfunding, group economics, regulation crowdfunding, schedule forms/document management system, analytics + capitalization rates/tables + investment metrics
 
+
+exchange
+    - exchange: portfolios, skills, resources, labors, workers, gigs, tasks, jobs, deals, etc...
+    - equity crowdfunding, group economics
+    - financial instruments exchange, liquiity, equity, portfolio assets
+    - portfolio commodities exchange, items, goods, services, products, capital, artifacts
+    - portfolio resources echange
+    - resources+item+users matching
+
 community
     - feed
     - timeline
@@ -45,13 +65,6 @@ community
     - rooms
     - resource sharing, resource access, resource shared economics
 
-exchange
-    - exchange: portfolios, skills, resources, labors, workers, gigs, tasks, jobs, deals, etc...
-    - equity crowdfunding, group economics
-    - financial instruments exchange, liquiity, equity, portfolio assets
-    - portfolio commodities exchange, items, goods, services, products, capital, artifacts
-    - portfolio resources echange
-    - resources+item+users matching
 
 center
     - organizations
@@ -481,6 +494,8 @@ the solution spreadsheet is the underlying baseline (data)structure of the entir
 
 The solution+solutionSystem is the primary domain of the platform and the solution is the central/root element of the platform:
 
+solution management system
+
 solution
     - solution component
         - solution part
@@ -607,7 +622,9 @@ solution book
     - registries
     - data, metadta
 
-solution package(s)
+solution release, distribution package(s)
+solution builds
+solution WBS packages
 
 solution factory SF
     - solution environment SE
@@ -651,7 +668,7 @@ solution artifact management system - inventory mangaement, binary management, c
 solution resource management system
 solution testing, testbeds, benchmarking, performance, QA
 
-solution requirements
+solution requirements management system
 
 reusability, sustainability, renewability, recyclability, closed loop systems, eco-aware solution design
 
