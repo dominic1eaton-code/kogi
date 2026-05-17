@@ -864,7 +864,7 @@ work management system
 
 - workspace
     - work dashboard
-    - work backlogs + backloags management system
+    - work backlogs + backlogs management system
     - work governance
     - work content management system
         - files
@@ -938,6 +938,8 @@ work management system
     - solution, product, service, good, platform, application, investment, estate, real estate, devices/hardware
   - artifact
     - documents, files, archives, outcomes, deliverables, plans, reports, charters, registers, risk registers, project plans, status reports, project charters, etc...
+
+
 - work breakdown structure WBS; portfolio.items
     - work package
         - theme
